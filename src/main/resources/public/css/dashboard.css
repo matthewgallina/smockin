@@ -1,0 +1,58 @@
+
+#no-data-label {
+    margin: 100px;
+    text-align: center;
+}
+
+#server-status-running {
+    margin-left: 20px;
+    color: #53c653;
+}
+
+#server-status-stopped {
+    margin-left: 20px;
+    color: #ff8080;
+}
+
+#server-status-restarting {
+    margin-left: 20px;
+    color: orange;
+}
+
+.jumbotron {
+    padding-top: 28px;
+    padding-bottom: 28px;
+    margin-bottom: 8px;
+}
+
+.start-button {
+    margin-top: 13px;
+    width: 150px;
+    height: 40px;
+}
+
+.stop-button {
+    margin-top: 25px;
+    width: 150px;
+    height: 40px;
+}
+
+.mock-server-config {
+    font-size: 18px;
+}
+
+#add-endpoint-button {
+    margin-top: 15px;
+}
+
+#server-config {
+    font-size: 16px;
+}
+
+.status-active {
+    color: #53c653;
+}
+
+.status-inactive {
+    color: #ff8080;
+}

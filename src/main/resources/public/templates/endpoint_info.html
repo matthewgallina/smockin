@@ -1,0 +1,220 @@
+<link rel="stylesheet" href="../css/endpoint_info.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <h3>
+            <div class="row">
+                <div class="col-sm-9" style="margin-top: 4px;">
+                    {{ newEndpointHeading }}
+                </div>
+                <div class="col-sm-3 endpoint-status-row">
+                    {{ endpointStatusLabel }}
+                    <div id="endpoint-status" class="btn-group" uib-dropdown>
+                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled">
+                            <span>{{ endpoint.status }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="endpoint-status-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem">
+                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ activeStatus }}</a>
+                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ inActiveStatus }}</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </h3>
+
+        <br />
+
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+        <div class="row">
+            <div class="col-sm-6">
+
+                <div class="form-group">
+                    <label for="path" class="ng-binding">{{ pathLabel }}</label>
+                    <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="true" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
+                </div>
+
+                <div class="form-group">
+                    <label for="method" class="ng-binding">{{ methodLabel }}</label>
+                    <br />
+                    <div id="method" class="btn-group" uib-dropdown>
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                            <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
+                            <span ng-if="endpoint.method == null">{{ methodDropDownLabel }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem" ng-repeat="m in httpMethods">
+                                <a ng-click="doSelectHttpMethod(m)">{{ m }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                    <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
+                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                </div>
+
+                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                    <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
+                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" />
+                </div>
+
+                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                    <label for="response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+                    <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
+                </div>
+
+                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                    <label for="response-headers" class="ng-binding default-label-color">{{ responseHeadersLabel }}</label>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+
+                            <table id="response-headers" class="table table-striped">
+                                <thead>
+                                <tr>
+                                    <th class="default-label-color">{{ responseHeaderNameLabel }}</th>
+                                    <th class="default-label-color">{{ responseHeaderValueLabel }}</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="rh in responseHeaderList">
+                                    <td>
+                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    </td>
+                                    <td>
+                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    </td>
+                                    <td class="remove-resp-head-row-button">
+                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)">{{ removeResponseHeaderButtonLabel }}</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-sm-6">
+
+                <div id="mock-type-radio-group" class="btn-group" role="group">
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'SEQ'">{{ sequenceResponsesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'RULE'">{{ rulesRadioLabel }}</label>
+                </div>
+
+                <br />
+
+                <div ng-show="endpoint.mockType == mockTypeSeq">
+
+                    <div class="add-button-div">
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddSequence()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addSequenceButtonLabel }}</button>
+                    </div>
+
+                    <div class="no-results-found" ng-if="endpoint.definitions.length == 0">
+                        {{noSeqFound}}
+                    </div>
+
+                    <table class="table table-striped seq-table" ng-if="endpoint.definitions.length > 0">
+                        <thead>
+                        <tr>
+                            <th>{{ orderNoLabel }}</th>
+                            <th>{{ responseBodyLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="x in endpoint.definitions">
+                            <td>{{ x.orderNo }}</td>
+                            <td>{{ x.responseBody }}</td>
+                            <td class="action-button-table-cell">
+
+                                <a href="" ng-click="doMoveSeqUp(x, $index)">
+                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doMoveSeqDown(x, $index)" class="condition-arg-down-button">
+                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                </a>
+                                <button type="button" class="btn btn-primary view-seq-button" ng-click="doOpenViewSequence(x)">{{ viewButtonLabel }}</button>
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+                <div ng-show="endpoint.mockType == mockTypeRule">
+
+                    <div class="add-button-div">
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddRule()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRuleButtonLabel }}</button>
+                    </div>
+
+                    <div class="no-results-found" ng-if="endpoint.rules.length == 0">
+                        {{noRulesFound}}
+                    </div>
+
+                    <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
+                        <thead>
+                        <tr>
+                            <th>{{ ruleLabel }}</th>
+                            <th>{{ responseBodyLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="x in endpoint.rules">
+                            <td>{{ x.orderNo }}</td>
+                            <td>{{ x.responseBody }}</td>
+                            <td class="action-button-table-cell">
+
+                                <a href="" ng-click="doMoveRuleUp(x, $index)">
+                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doMoveRuleDown(x, $index)" class="condition-arg-down-button">
+                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                </a>
+                                <button type="button" class="btn btn-primary view-rule-button" ng-click="doOpenViewRule(x)">{{ viewButtonLabel }}</button>
+
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr />
+
+        <div class="action-buttons">
+            <div class="row">
+                <div class="col-sm-9 restart-mock-server-instruction">
+                    {{ serverRestartInstruction }}
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="extId != null">{{ deleteButtonLabel }}</button>
+                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()">{{ saveButtonLabel }}</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

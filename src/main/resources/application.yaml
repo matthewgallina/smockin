@@ -1,0 +1,45 @@
+server:
+  port: 8000
+
+jpa:
+  show-sql: false
+  hibernate:
+    ddl-auto: create-drop
+datasource:
+  url: jdbc:h2:mem:smockindev
+  driver-class-name: org.h2.Driver
+  username: sa
+  password:
+
+logging:
+  file: ${user.home}/.smockin/log/smockin.log
+  pattern:
+    console: "%d %-5level %logger : %msg%n"
+    file: "%d %-5level [%thread] %logger : %msg%n"
+  level:
+    org.springframework: WARN
+    com.smockin: INFO
+    org.hibernate: WARN
+    ROOT: WARN
+
+---
+# NOTE
+# The 'start.sh' script overrides the below DB related params using values defined
+# in the DB config file: '$USER_HOME/.smockin/db/db.properties'.
+spring:
+  profiles:
+    active: production
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url:
+    driver-class-name:
+    username:
+    password:
+    maximumPoolSize: 10
+    hikari:
+      poolName: smockinpool
+      idle-timeout: 10000

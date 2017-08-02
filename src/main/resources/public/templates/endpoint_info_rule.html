@@ -1,0 +1,153 @@
+<link rel="stylesheet" href="../css/endpoint_info_rule.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">{{ newEndpointRuleHeading }}</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="row">
+        <div class="col-sm-6">
+
+            <div class="form-group">
+                <label for="contentType" class="ng-binding">{{ contentTypeLabel }}</label>
+                <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+            </div>
+
+            <div class="form-group">
+                <label for="httpStatusCode" class="ng-binding">{{ httpStatusCodeLabel }}</label>
+                <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.httpStatusCode" placeholder="{{ httpStatusCodePlaceholderTxt }}" type="text" />
+            </div>
+
+            <div class="form-group">
+                <label for="response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+                <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="response-headers" class="ng-binding">{{ responseHeadersLabel }}</label>
+                <div class="panel panel-default">
+                    <div class="panel-body">
+
+                        <table id="response-headers" class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>{{ responseHeaderNameLabel }}</th>
+                                <th>{{ responseHeaderValueLabel }}</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="rh in responseHeaderList">
+                                <td>
+                                    <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                </td>
+                                <td>
+                                    <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                </td>
+                                <td class="remove-resp-head-row-button">
+                                    <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)">{{ removeResponseHeaderButtonLabel }}</button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-sm-6">
+
+            <table ng-table="tableParams" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{ ruleConditionsTableLabel }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr data-ng-repeat="grp in ruleResponse.groups">
+                        <td>
+                            <span>
+
+                                <div class="condition-arg-buttons">
+                                    <a href="" ng-click="doMoveConditionUp($index)">
+                                        <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                                    </a>
+                                    <a href="" ng-click="doMoveConditionDown($index)" class="condition-arg-down-button">
+                                        <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                    </a>
+                                    <a href="" ng-click="doRemoveCondition($index)" class="condition-arg-remove-button">
+                                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                    </a>
+                                </div>
+
+                                <b>
+                                    <i ng-if="$first">IF</i>
+                                    <i ng-if="!$first">OR</i>
+                                </b>
+                            </span>
+
+                            <br />
+                            <span class="indent-line-1 rule_group_color">
+                                (
+                            </span>
+
+                            <span data-ng-repeat="arg in grp.conditions">
+
+                               <span class="indent-line-1">
+                                    <br />
+                                    <b>
+                                        <i ng-if="!$first" class="indent-line-1 rule_group_color">
+                                            AND
+                                            <br />
+                                        </i>
+                                    </b>
+                                </span>
+                                <span class="indent-line-2">
+                                    <span class="condition-arg-small-font">
+                                        {{ arg.matchType.name }} <span ng-show="arg.matchType.value != 'REQUEST_BODY'">:</span>
+                                    </span>
+                                    <b ng-show="arg.matchType.value != 'REQUEST_BODY'">
+                                        <span ng-if="arg.matchType.value == 'PATH_VARIABLE_WILD'">
+                                            var
+                                        </span>
+                                        {{ arg.fieldName }}
+                                    </b>
+                                    <span class="condition-arg-small-font">
+                                        {{arg.comparator.tableName}}<span ng-if="(arg.comparator.value == 'EQUALS' || arg.comparator.value == 'CONTAINS') && arg.comparator.dataType == 'TEXT' && !arg.caseSensitive">IgnoreCase</span>
+                                    </span>
+                                    <span ng-if="arg.matchValue != null">
+                                        <span ng-if="arg.dataType== 'TEXT'">( '<b>{{ arg.matchValue }}</b>' )</span>
+                                        <span ng-if="arg.dataType== 'NUMERIC'"><b>{{ arg.matchValue }}</b></span>
+                                    </span>
+                                </span>
+                            </span>
+
+                            <br />
+                            <span class="indent-line-1 rule_group_color">
+                                )
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="add-condition-div">
+                <button class="btn btn-primary" type="button" ng-click="doAddCondition()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addConditionButtonLabel }}</button>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveRule()">{{ saveButtonLabel }}</button>
+</div>

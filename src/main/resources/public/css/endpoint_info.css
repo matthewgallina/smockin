@@ -1,0 +1,107 @@
+
+#method {
+    width : 100%;
+}
+
+#method-button {
+    width : 100%;
+    text-align: left;
+}
+
+#mock-type-radio-group {
+    width: 100%;
+    margin-top: 25px;
+}
+
+.mock-type-radio-button {
+    width: 50%;
+}
+
+.add-button-div {
+    width: 100%;
+    margin-top: 20px;
+    text-align: right;
+}
+
+.add-button {
+    width: 160px;
+}
+
+.action-buttons {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.action-button-table-cell {
+    text-align: right;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+#response-body {
+    height: 220px;
+}
+
+.default-label-color {
+    color: cadetblue;
+}
+
+#add-response-header-row {
+    width: 100%;
+}
+
+.remove-resp-head-row-button {
+    text-align: center;
+}
+
+.restart-mock-server-instruction {
+    text-align: left;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.condition-arg-down-button {
+    margin-left: 3px;
+}
+
+.view-rule-button {
+    margin-left: 15px;
+}
+
+.view-seq-button {
+    margin-left: 15px;
+}
+
+.action-button-table-cell a:hover {
+    text-decoration: none;
+}
+
+.seq-table {
+    min-height: 150px;
+}
+
+.rule-table {
+    min-height: 150px;
+}
+
+.no-results-found {
+    min-height: 150px;
+    margin-top: 100px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.endpoint-status-row {
+    text-align: right;
+}
+
+#endpoint-status {
+    margin-left: 20px;
+}
+
+#endpoint-status-button {
+    width: 120px;
+}

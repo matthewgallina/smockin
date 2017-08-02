@@ -1,0 +1,11 @@
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}
+
+.container-fluid {
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.navbar-default .navbar-brand {
+    color: #fff;
+}

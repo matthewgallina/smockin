@@ -1,0 +1,18 @@
+
+.modal-header {
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+#response-body {
+    height: 200px;
+}
+
+#add-response-header-row {
+    width: 100%;
+}
+
+.remove-resp-head-row-button {
+    text-align: center;
+}

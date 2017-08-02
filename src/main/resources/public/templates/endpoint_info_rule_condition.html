@@ -1,0 +1,159 @@
+<link rel="stylesheet" href="../css/endpoint_info_rule_condition.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">{{ newEndpointRuleConditionHeading }}</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="row">
+        <div class="col-sm-6">
+
+        <div class="form-group">
+            <label for="matching-type-div" class="ng-binding">{{ matchTypeLabel }}</label>
+            <br />
+            <div id="matching-type-div" class="btn-group" uib-dropdown>
+                <button id="matching-type-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                    <span ng-if="condition.matchType != null">{{ condition.matchType.name }}</span>
+                    <span ng-if="condition.matchType == null">{{ selectDropDownLabel }}</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button-1">
+                    <li role="menuitem" ng-repeat="m in matchingTypes">
+                        <a ng-click="doSelectMatchingType(m)">{{ m.name }}</a>
+                    </li>
+                </ul>
+            </div>
+            <span ng-show="condition.matchType != null && condition.matchType.value != 'REQUEST_BODY'">
+                <br />
+                <input id="fieldName" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="condition.fieldName" placeholder="{{ condition.matchType.fieldPlaceholderText }}" type="text" />
+            </span>
+        </div>
+
+        <div class="form-group">
+            <label for="comparator-div" class="ng-binding">{{ comparatorLabel }}</label>
+            <br />
+            <div id="comparator-div" class="btn-group" uib-dropdown>
+                <button id="comparator-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                    <span ng-if="condition.comparator != null">{{ condition.comparator.dropDownName }}</span>
+                    <span ng-if="condition.comparator == null">{{ selectDropDownLabel }}</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button-2">
+                    <li role="menuitem" ng-repeat="c in comparators">
+                        <a ng-click="doSelectComparator(c)">{{ c.dropDownName }}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="false">
+            <label for="data-type-div" class="ng-binding">{{ dataTypeLabel }}</label>
+            <br />
+            <div id="data-type-div" class="btn-group" uib-dropdown ng-show="condition.comparator != null && condition.comparator.value == 'EQUALS'">
+                <button id="data-type-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                    <span ng-if="condition.dataType != null">{{ condition.dataType }}</span>
+                    <span ng-if="condition.dataType == null">{{ selectDropDownLabel }}</span>
+                    <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button-3">
+                    <li role="menuitem" ng-repeat="d in dataTypes">
+                        <a ng-click="doSelectDataType(d)">{{ d }}</a>
+                    </li>
+                </ul>
+            </div>
+            <div ng-show="condition.comparator != null && condition.comparator.value != 'EQUALS'">
+                {{ textDataTypeLabel }}
+            </div>
+        </div>
+
+        <div class="form-group" ng-hide="condition.comparator != null && condition.comparator.value == 'IS_MISSING'">
+            <label for="match-value" class="ng-binding">{{ matchValueLabel }}</label>
+            <textarea id="match-value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="condition.matchValue"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="checkbox" ng-hide="condition.comparator.value == 'IS_MISSING' || ( condition.comparator.value == 'EQUALS' && condition.comparator.dataType == 'NUMERIC')">
+                    <label>
+                        <input type="checkbox" ng-model="condition.caseSensitive">
+                        {{ caseSensitiveLabel }}
+                    </label>
+                </div>
+
+            </div>
+            <div class="col-sm-6 add-condition-button-row">
+                <button class="btn btn-primary add-arg-button" type="button" ng-click="doAddRuleConditionArg()">{{ addConditionArgButtonLabel }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+            </div>
+        </div>
+
+        </div>
+        <div class="col-sm-6">
+
+            <table ng-table="tableParams" class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{ ruleConditionArgsTableLabel }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="ca in conditionArgs">
+                    <td>
+                        <span>
+
+                            <div class="condition-arg-buttons">
+                                <a href="" ng-click="doMoveConditionArgUp($index)">
+                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doMoveConditionArgDown($index)" class="condition-arg-down-button">
+                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doRemoveConditionArg($index)" class="condition-arg-remove-button">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </a>
+                            </div>
+
+                            <b>
+                                <i ng-if="$first" class="rule_group_color">IF</i>
+                                <i ng-if="!$first" class="rule_group_color">AND</i>
+                            </b>
+                            <br />
+                        </span>
+                        <span class="indent-line-1">
+                            <span class="condition-arg-small-font">
+                                {{ ca.matchType.name }} <span ng-show="ca.matchType.value != 'REQUEST_BODY'">:</span>
+                            </span>
+                        </span>
+                        <br />
+                        <span class="indent-line-2">
+                            <b ng-show="ca.matchType.value != 'REQUEST_BODY'">
+                                <span ng-if="ca.matchType.value == 'PATH_VARIABLE_WILD'">
+                                    var
+                                </span>
+                                {{ ca.fieldName }}
+                            </b>
+                        </span>
+                        <span class="condition-arg-small-font">
+                            {{ca.comparator.tableName}}<span ng-if="(ca.comparator.value == 'EQUALS' || ca.comparator.value == 'CONTAINS') && ca.comparator.dataType == 'TEXT' && !ca.caseSensitive">IgnoreCase</span>
+                        </span>
+                        <span ng-if="ca.matchValue != null">
+                            <span ng-if="ca.dataType== 'TEXT'">( '<b>{{ ca.matchValue }}</b>' )</span>
+                            <span ng-if="ca.dataType== 'NUMERIC'"><b>{{ ca.matchValue }}</b></span>
+                        </span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doAddRuleGroup()">{{ addGroupButtonLabel }}</button>
+</div>

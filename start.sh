@@ -139,8 +139,6 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 #
 
 
-# alias mvn='/home/mgallina/apps/apache-maven-3.5.0/bin/mvn'
-
 
 if ( $USE_DEBUG ); then
   mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT $VM_ARGS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"

@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="../css/server_config.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h3 class="modal-title" id="modal-title">{{ serverConfigHeading }}</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group">
+        <label for="port" class="ng-binding">{{ portLabel }}</label>
+        <input id="port" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.port" placeholder="{{ portPlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <label for="maxThreads" class="ng-binding">{{ maxThreadsLabel }}</label>
+        <input id="maxThreads" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.maxThreads" placeholder="{{ maxThreadsPlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <label for="minThreads" class="ng-binding">{{ minThreadsLabel }}</label>
+        <input id="minThreads" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.minThreads" placeholder="{{ minThreadsPlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <label for="timeOutMillis" class="ng-binding">{{ timeOutMillisLabel }}</label>
+        <input id="timeOutMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.timeOutMillis" placeholder="{{ timeOutMillisPlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <input id="autoStart"  ng-model="serverConfig.autoStart" type="checkbox" />
+        <label for="autoStart" class="ng-binding">{{ autoStartLabel }}</label>
+    </div>
+
+    <div class="form-group">
+        <input id="autoRefresh"  ng-model="serverConfig.autoRefresh" type="checkbox" />
+        <label for="autoRefresh" class="ng-binding">{{ autoRefreshLabel }}</label>
+    </div>
+
+    <br />
+    <div class="restart-message">{{ restartServerMessage }}</div>
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveConfig()">{{ saveButtonLabel }}</button>
+</div>

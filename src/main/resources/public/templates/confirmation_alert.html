@@ -1,0 +1,14 @@
+<link rel="stylesheet" href="../css/confirmation_alert.css" crossorigin="anonymous" />
+
+<div class="modal-header modal-header-{{alertType}}">
+    <h3 class="modal-title" id="modal-title">{{ heading }}</h3>
+</div>
+
+<div class="modal-body" id="modal-body">
+    {{ body }}
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-{{alertType}}" type="button" ng-click="doContinue()">{{ continueButtonLabel }}</button>
+</div>

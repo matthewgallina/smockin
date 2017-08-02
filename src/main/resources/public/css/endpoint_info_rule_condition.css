@@ -1,0 +1,87 @@
+
+.modal-dialog {
+    width: 600px;
+}
+
+
+.modal-header {
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+#matching-type-button {
+    width: 100%;
+    text-align: left;
+}
+
+#comparator-button {
+    width: 100%;
+    text-align: left;
+}
+
+#data-type-button {
+    width: 100%;
+    text-align: left;
+}
+
+#matching-type-div {
+    width: 100%;
+}
+
+#comparator-div {
+    width: 100%;
+}
+
+#data-type-div {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+#match-value {
+    height: 200px;
+}
+
+.add-condition-button-row {
+    text-align: right;
+}
+
+.add-arg-button {
+    width: 140px;
+}
+
+.indent-line-1 {
+    padding-left: 15px;
+}
+
+.indent-line-2 {
+    padding-left: 30px;
+}
+
+.rule_group_color {
+    color: green;
+}
+
+.condition-arg-buttons {
+    font-size: 12px;
+    text-align: right;
+}
+
+.condition-arg-down-button {
+    margin-left: 3px;
+}
+
+.condition-arg-remove-button {
+    margin-left: 12px;
+}
+
+.condition-arg-small-font {
+    font-size: 11px;
+}
+
+.condition-arg-buttons a:hover {
+    text-decoration: none;
+}

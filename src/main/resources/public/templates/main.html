@@ -1,0 +1,52 @@
+<!DOCTYPE HTML>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<html>
+
+    <head>
+        <title>Smockin</title>
+        <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous" />
+        <link rel="stylesheet" href="../css/smockin_navbar.css" crossorigin="anonymous" />
+        <link rel="stylesheet" href="../css/main.css" crossorigin="anonymous" />
+        <link rel="stylesheet" href="../css/overlay.css" crossorigin="anonymous" />
+    </head>
+
+    <body ng-app="smockinApp">
+
+        <div ng-include="'overlay.html'"></div>
+
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        <img alt="Smockin" src="">
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div ng-view></div>
+
+        <!-- AngularJS -->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js" type="text/javascript"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js" type="text/javascript"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-animate.js" type="text/javascript"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.js" type="text/javascript"></script>
+
+        <!-- Bootstrap -->
+        <script src="../js/lib/ui-bootstrap-tpls-2.5.0.min.js"></script>
+
+        <!-- Controllers -->
+        <script src="../js/controller/main.js"></script>
+        <script src="../js/controller/dashboard.js"></script>
+        <script src="../js/controller/server_config.js"></script>
+        <script src="../js/controller/endpoint_info.js"></script>
+        <script src="../js/controller/endpoint_info_rule.js"></script>
+        <script src="../js/controller/endpoint_info_rule_condition.js"></script>
+        <script src="../js/controller/endpoint_info_seq.js"></script>
+        <script src="../js/controller/confirmation_alert.js"></script>
+
+    </body>
+
+</html>

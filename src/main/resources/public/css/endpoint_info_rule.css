@@ -1,0 +1,59 @@
+
+.modal-header {
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.modal-dialog {
+    width: 900px;
+}
+
+.add-condition-div {
+    width: 100%;
+    text-align: right;
+}
+
+#response-body {
+    height: 200px;
+}
+.indent-line-1 {
+    padding-left: 15px;
+}
+
+.indent-line-2 {
+    padding-left: 30px;
+}
+
+.rule_group_color {
+    color: green;
+}
+
+.condition-arg-buttons {
+    font-size: 12px;
+    text-align: right;
+}
+
+.condition-arg-down-button {
+    margin-left: 3px;
+}
+
+.condition-arg-remove-button {
+    margin-left: 12px;
+}
+
+.condition-arg-small-font {
+    font-size: 11px;
+}
+
+#add-response-header-row {
+    width: 100%;
+}
+
+.remove-resp-head-row-button {
+    text-align: center;
+}
+
+.condition-arg-buttons a:hover {
+    text-decoration: none;
+}
