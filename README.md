@@ -72,7 +72,8 @@ QUICK START
             curl -i -X GET http://localhost:8001/hello
 
 
-    Please note more information can be found in the README.txt file bundled within this project.
+    Further information on running and configuring SMOCKIN, can be found within the README.txt file 
+    bundled within this project.
 
 
 
