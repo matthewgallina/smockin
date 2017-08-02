@@ -247,6 +247,7 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
         HikariCP                    -       https://brettwooldridge.github.io/HikariCP
         Apache Commons              -       https://commons.apache.org/
         Apache Http Components      -       https://hc.apache.org/
+        Apache Commons IO           -       https://commons.apache.org/proper/commons-io/
         JUnit                       -       http://junit.org
         Mockito                     -       http://site.mockito.org/
 
