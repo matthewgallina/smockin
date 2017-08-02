@@ -55,15 +55,15 @@ QUICK START
         - (Simply close both Command Prompt windows, when you wish to terminate the application)
 
 
-    - Go to the address: http://localhost:8000/index.html
+    - Open the Admin UI: http://localhost:8000/index.html
 
-    - In the UI, create a new endpoint: 
-        - Path = /hello
-        - Method = GET
-        - Add a sequenced response:
-            - Content Type = application/json
-            - HTTP Status Code = 200
-            - Response Body = { "message" : "hello world" }
+    - Create a new mock endpoint:
+        - Path     =    /hello
+        - Method   =    GET
+        - Add a sequenced response type:
+            - Content Type       =    application/json
+            - HTTP Status Code   =    200
+            - Response Body      =    { "message" : "hello world" }
 
     - Start / Restart the mock server
     
