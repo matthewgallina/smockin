@@ -19,4 +19,5 @@ dist
 /bin
 *.pid
 src/main/main.iml
-binary/lib/smockin-*-SNAPSHOT.jar
+binary
+TODO
