@@ -3,28 +3,29 @@
 The Web Service Simulation Framework for application development and QA testing
 
 
+
 OVERVIEW
 
     SMOCKIN is a light framework that can be used for setting up mock RESTful web service simulations.
     for use in either development or QA testing.
 
-    Whether you are a mobile developer who needs to simulate a remote server or working with a complex SOA, SMOCKIN 
-    can help by simulating any services that may be otherwise difficult / time consuming to set up.
+    Whether you are a mobile developer who needs to simulate a remote server or working with a complex SOA, 
+    SMOCKIN can help by simulating any services that may be otherwise difficult / time consuming to set up.
 
-    With the ability to vary the output of your web service by using easy to set up sequences and rules, SMOCKIN can 
-    help to simulate all of your different use cases.
+    With the ability to vary the output of your web service by using easy to set up sequences and rules, 
+    SMOCKIN can help to simulate all of your different use cases.
 
-    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either locally on a 
-    developers machine or centrally on a development teams' server.
+    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
+    locally on a developers machine or centrally on a development teams' server.
 
     Features include:
 
         - An Internal Mocking Server which is used to serve your mocked endpoints.
 
-        - The Admin UI for:
-            -- Creating and editing your mocked endpoints.
-            -- Applying 'rules' or 'sequenced responses' to your mocked endpoints.
-            -- Configuring, Starting and Stopping the Internal Mocking Server.
+        - Admin UI for:
+            - Creating and editing your mocked endpoints.
+            - Applying 'rules' or 'sequenced responses' to your mocked endpoints.
+            - Configuring, Starting and Stopping the Internal Mocking Server.
 
 
 
@@ -57,8 +58,9 @@ GETTING STARTED
             - Run the script 'install.bat'.
 
 
-        This creates a config directory under your user called .smockin, containing a H2 JAR and db.properties file. 
-        The H2 DB file will also be situated from here, if you choose to use the default DB config.)
+        This creates a config directory under the current user called .smockin, containing 
+        a H2 JAR and db.properties file. 
+        (The H2 DB file will also be situated from here, if you choose to use the default DB config.)
 
         To use your own DB vendor:
 
@@ -71,11 +73,11 @@ GETTING STARTED
 
     Running:
 
-        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) are all available on the 
-        local machine.
+        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) 
+          are all available on the local machine.
 
-          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the ''.smockin/app.properties' file. The 'Mock 
-          Server' port can be changed from within the application from the Dashboard.)
+          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the .smockin/app.properties' file. 
+          The 'Mock Server' port can be changed from within the application from the Dashboard.)
 
         Linux / OSX
 
@@ -84,13 +86,13 @@ GETTING STARTED
                 chmod +x start.sh
                 chmod +x shutdown.sh
 
-            - Run the script 'start.sh' to build and run SMOCKIN like so (this also launches the default H2 database in TCP 
-            mode.):
+            - Run the script 'start.sh' to build and run SMOCKIN like so (this also launches the default 
+              H2 database in TCP mode.):
 
         Windows
 
-            - Run the script 'start.bat' to build and run SMOCKIN like so (this also launches the default H2 database in TCP 
-            mode.):
+            - Run the script 'start.bat' to build and run SMOCKIN like so (this also launches the default 
+              H2 database in TCP mode.):
 
 
         SMOCKIN runs off port 8000 by default and accessible from this address:
@@ -116,7 +118,8 @@ GETTING STARTED
 
     Uninstalling:
 
-        - To uninstall Smockin, firstly shutdown both the Smockin application and then H2 database (See 'Stopping' above).
+        - To uninstall Smockin, firstly shutdown both the Smockin application and then H2 database 
+          (See 'Stopping' above).
 
         - Then run the following script:
 
@@ -130,12 +133,14 @@ GETTING STARTED
 
         (This will remove any config and db files relating to Smockin from your system.)
 
-        - Finally you can simply erase the main Smockin application directory from wherever you copied it on your system.
+        - Finally you can simply erase the main Smockin application directory from wherever you copied 
+          it on your system.
 
 
     Development Modes (Linux & OSX & running from source only):
 
-        By default 'start.sh' starts the SMOCKIN asynchronously (in the background) using a H2 DB (in TCP mode).
+        By default 'start.sh' starts the SMOCKIN asynchronously (in the background) using a 
+        H2 DB (in TCP mode).
 
         To aid development, SMOCKIN can also be started in the following modes:
 
