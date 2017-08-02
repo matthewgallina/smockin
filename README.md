@@ -57,6 +57,20 @@ QUICK START
 
     - Go to the address: http://localhost:8000/index.html
 
+    - In the UI, create a new endpoint: 
+        - Path = /hello
+        - Method = GET
+        - Add a sequenced response:
+            - Content Type = application/json
+            - HTTP Status Code = 200
+            - Response Body = { "message" : "hello world" }
+
+    - Start / Restart the mock server
+    
+    - Send a request to http://localhost:8001/hello
+        e.g. 
+            curl -i -X GET http://localhost:8001/hello
+
 
 
 GETTING STARTED
