@@ -236,17 +236,19 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
 
     SMOCKIN is built upon the following open source frameworks:
 
-        Spring Boot   -    https://projects.spring.io/spring-boot
-        Hibernate     -    http://hibernate.org
-        Spark         -    http://sparkjava.com
-        Maven         -    https://maven.apache.org
-        AngularJS     -    https://angularjs.org
-        UI Bootstrap  -    https://angular-ui.github.io/bootstrap
-        vkBeautify    -    https://github.com/vkiryukhin/vkBeautify
-        H2            -    http://www.h2database.com
-        HikariCP      -    https://brettwooldridge.github.io/HikariCP
-        JUnit         -    http://junit.org
-        Mockito       -    http://site.mockito.org/
+        Spring Boot                 -       https://projects.spring.io/spring-boot
+        Hibernate                   -       http://hibernate.org
+        Spark                       -       http://sparkjava.com
+        Maven                       -       https://maven.apache.org
+        AngularJS                   -       https://angularjs.org
+        UI Bootstrap                -       https://angular-ui.github.io/bootstrap
+        vkBeautify                  -       https://github.com/vkiryukhin/vkBeautify
+        H2                          -       http://www.h2database.com
+        HikariCP                    -       https://brettwooldridge.github.io/HikariCP
+        Apache Commons              -       https://commons.apache.org/
+        Apache Http Components      -       https://hc.apache.org/
+        JUnit                       -       http://junit.org
+        Mockito                     -       http://site.mockito.org/
 
 
 
