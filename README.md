@@ -29,21 +29,41 @@ OVERVIEW
 
 
 
+REQUIREMENTS
+
+    - Java 8
+    - Maven 3
+
+    Please Note
+        -   All bash scripts were written and tested on GNU Bash version 3.2.57(1)-release.
+        -   All BAT files were were written and tested on Windows 7.
+
+
+
+QUICK START
+
+    Linux / OSX
+
+        - run install.sh
+        - run start.sh
+        - (run shutdown.sh when you wish to terminate the application)
+
+    Windows
+
+        - run install.bat
+        - run start.bat
+        - (Simply close both Command Prompt windows, when you wish to terminate the application)
+
+
+    - Go to the address: http://localhost:8000/index.html
+
+
+
 GETTING STARTED
-
-    Requirements:
-
-        - Java 8
-        - Maven 3
-
-        Please Note
-            -   All bash scripts were written and tested on GNU Bash version 3.2.57(1)-release.
-            -   All BAT files were were written and tested on Windows 7.
-
 
     Installing:
 
-        - From GitHub, clone or download and unpack to a suitable location.
+        - clone or download (and unpack) SMOCKIN to a suitable location on your system.
 
         Linux / OSX
 
@@ -76,8 +96,9 @@ GETTING STARTED
         - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) 
           are all available on the local machine.
 
-          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the .smockin/app.properties' file. 
-          The 'Mock Server' port can be changed from within the application from the Dashboard.)
+          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the 
+          .smockin/app.properties' file. The 'Mock Server' port can be changed from within the 
+          application from the Dashboard.)
 
         Linux / OSX
 
