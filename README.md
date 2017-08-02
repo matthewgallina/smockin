@@ -8,14 +8,14 @@ OVERVIEW
     SMOCKIN is a light framework that can be used for setting up mock RESTful web service simulations.
     for use in either development or QA testing.
 
-    Whether you are a mobile developer who needs to simulate a remote server or working with a complex SOA, SMOCKIN can help by
-    simulating any services that may be otherwise difficult / time consuming to set up.
+    Whether you are a mobile developer who needs to simulate a remote server or working with a complex SOA, SMOCKIN 
+    can help by simulating any services that may be otherwise difficult / time consuming to set up.
 
-    With the ability to vary the output of your web service by using easy to set up sequences and rules, SMOCKIN can help to simulate
-    all of your different use cases.
+    With the ability to vary the output of your web service by using easy to set up sequences and rules, SMOCKIN can 
+    help to simulate all of your different use cases.
 
-    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either locally on a developers machine
-    or centrally on a development teams' server.
+    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either locally on a 
+    developers machine or centrally on a development teams' server.
 
     Features include:
 
@@ -57,7 +57,8 @@ GETTING STARTED
             - Run the script 'install.bat'.
 
 
-        This creates a config directory under your user called .smockin, containing a H2 JAR and db.properties file. The H2 DB file will also be situated from here, if you choose to use the default DB config.)
+        This creates a config directory under your user called .smockin, containing a H2 JAR and db.properties file. 
+        The H2 DB file will also be situated from here, if you choose to use the default DB config.)
 
         To use your own DB vendor:
 
@@ -70,10 +71,11 @@ GETTING STARTED
 
     Running:
 
-        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) are all available on the local machine.
+        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) are all available on the 
+        local machine.
 
-          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the ''.smockin/app.properties' file. The 'Mock Server' port can
-          be changed from within the application from the Dashboard.)
+          (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the ''.smockin/app.properties' file. The 'Mock 
+          Server' port can be changed from within the application from the Dashboard.)
 
         Linux / OSX
 
@@ -82,18 +84,21 @@ GETTING STARTED
                 chmod +x start.sh
                 chmod +x shutdown.sh
 
-            - Run the script 'start.sh' to build and run SMOCKIN like so (this also launches the default H2 database in TCP mode.):
+            - Run the script 'start.sh' to build and run SMOCKIN like so (this also launches the default H2 database in TCP 
+            mode.):
 
         Windows
 
-            - Run the script 'start.bat' to build and run SMOCKIN like so (this also launches the default H2 database in TCP mode.):
+            - Run the script 'start.bat' to build and run SMOCKIN like so (this also launches the default H2 database in TCP 
+            mode.):
 
 
         SMOCKIN runs off port 8000 by default and accessible from this address:
 
             http://localhost:8000/index.html
 
-        For those who simply want to see SMOCKIN in action, there is a script available which will add a small
+
+        If you simply want to see SMOCKIN in action, there is a script available which will add a small
         data set of predefined mocked endpoints and rules to the DB. To install this, please see the section
         'DEVELOPMENT SCRIPTS > Sample Data' below.
 
@@ -211,5 +216,6 @@ ABOUT
 
     Why the name SMOCKIN? Whilst it may sound like an old english middle ages embroidery technique, the name
     actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra
-    letter to play on the concept of software mocking and there you have it. Yes, far too much thought did go into this...
-
+    letter to play on the concept of software mocking and there you have it. 
+    
+    Yes, way too much thought went into that...
