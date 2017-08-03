@@ -1,0 +1,45 @@
+
+.modal-header {
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+#http-client {
+    display: none;
+    width: 500px;
+    position: absolute;
+    top: 250px;
+    right: 30px;
+    z-index: 200;
+    overflow-x: hidden;
+}
+
+
+#method-button {
+    width : 100%;
+}
+
+#request-method {
+    width : 100%;
+}
+
+#request-body {
+    height: 160px;
+}
+
+.default-label-color {
+    color: cadetblue;
+}
+
+#add-request-header-row {
+    width: 100%;
+}
+
+.remove-req-head-row-button {
+    text-align: center;
+}
+
+#response-body {
+    height: 120px;
+}
