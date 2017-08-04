@@ -3,17 +3,14 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
 
 
     //
-    // Constants
+    // Constants / Vars
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
-    var RestfulServerType = globalVars.RestfulServerType;
-
 
     //
     // Labels
     $scope.clientHeading = "HTTP Client";
-    $scope.urlLabel = "Path";
-    $scope.urlPlaceholderTxt = "Endpoint URL to call";
-    $scope.methodLabel = "Method";
+    $scope.urlLabel = "Request Path";
+    $scope.urlPlaceholderTxt = "Endpoint URL to call (e.g /hello)";
     $scope.methodDropDownLabel = "Select...";
     $scope.requestBodyLabel = "Request Body";
     $scope.requestHeadersLabel = "Request Headers";
@@ -24,6 +21,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
 
     //
     // Buttons
+    $scope.clearButtonLabel = 'Clear';
     $scope.closeButtonLabel = 'Close';
     $scope.sendButtonLabel = 'Send';
 
@@ -86,15 +84,27 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
 
     $scope.doSend = function() {
 
-        console.log($scope.clientRequest);
-
+        // Validation
         if (utils.isBlank($scope.clientRequest.url)) {
-            showAlert("'Path' is required");
+            showAlert("'Request Path' is required");
+            return;
+        }
+
+        if (!$scope.clientRequest.url.startsWith("/")) {
+            showAlert("Invalid 'Request Path'. (expected format: /hello)");
             return;
         }
 
         if (utils.isBlank($scope.clientRequest.method)) {
-            showAlert("'Method' is required");
+            showAlert("'Request Method' is required");
+            return;
+        }
+
+        if (($scope.clientRequest.method == "POST"
+            || $scope.clientRequest.method == "PUT"
+            || $scope.clientRequest.method == "PATCH")
+                && $scope.clientRequest.body == null) {
+            showAlert("'Request Body' is required");
             return;
         }
 
@@ -106,6 +116,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
             }
         }
 
+        // Build Request
         var reqData = {
             "method" : $scope.clientRequest.method,
             "headers" : {},
@@ -117,14 +128,41 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
             reqData.headers[$scope.clientRequest.headers[h].name] = $scope.clientRequest.headers[h].value;
         }
 
+        // Response Handler
         var serverCallbackFunc = function (status, data) {
 
             if (status == 200) {
 
-                $scope.clientResponse = data.status
-                    + "\n" + data.contentType
-                    + "\n" + data.body
-                    + "\n" + data.headers;
+                var responseBodyPart = "";
+
+                if (data.status == 404) {
+
+                    responseBodyPart =
+                        "Error communicating with url:"
+                        + "\n"
+                        + (" " + reqData.url)
+                        + "\n\n"
+                        + "- Is " + reqData.url + " a valid endpoint?"
+                        + "\n"
+                        + "- Is the mock server running?";
+
+                } else {
+
+                    var headersText = objToString(data.headers);
+
+                    responseBodyPart =
+                        "Headers:"
+                        + "\n"
+                        + headersText
+                        + "\n"
+                        + data.body;
+
+                }
+
+                $scope.clientResponse =
+                    "HTTP Status Code: " + data.status
+                    + "\n\n"
+                    + responseBodyPart;
 
                 return;
             }
@@ -132,28 +170,35 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
             showAlert("Oops looks like something went wrong!");
         };
 
+        // Send Request
         restClient.doPost($http, '/httpclientcall', reqData, serverCallbackFunc);
 
+    };
+
+    $scope.doClear = function() {
+
+        $scope.clientRequest = {
+            "url" : null,
+            "method" : null,
+            "body" : null,
+            "headers" : []
+        };
+
+        $scope.clientResponse = "";
     };
 
     $scope.doClose = function() {
         angular.element( document.getElementById("http-client") ).css('display', 'none');
     };
 
-    function loadMockServerDetails() {
-
-        restClient.doGet($http, '/mockedserver/config/' + RestfulServerType, function(status, data) {
-
-            if (status == 200) {
-                $scope.clientRequest.url = "http://localhost:" + data.port + "/";
-                return;
+    function objToString (obj) {
+        var str = '';
+        for (var p in obj) {
+            if (obj.hasOwnProperty(p)) {
+                str += '   ' + p + ': ' + obj[p] + '\n';
             }
-
-            showAlert("Oops looks like something went wrong!");
-        });
-
+        }
+        return str;
     }
-
-    loadMockServerDetails();
 
 });

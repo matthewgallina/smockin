@@ -13,7 +13,7 @@
         <link rel="stylesheet" href="../css/http_client.css" crossorigin="anonymous" />
     </head>
 
-    <body ng-app="smockinApp" ng-controller="mainController">
+    <body ng-app="smockinApp" ng-controller="mainController" class="ng-cloak">
 
         <div ng-include="'http_client.html'"></div>
 
@@ -35,7 +35,7 @@
                             <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ toolsLabel }} <span class="caret"></span></a>
                             <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
                                 <li>
-                                    <a href="#" ng-click="doOpenHttpClient()">{{ testClientLink }}</a>
+                                    <a href="" ng-click="doOpenHttpClient()">{{ testClientLink }}</a>
                                 </li>
                             </ul>
                         </li>

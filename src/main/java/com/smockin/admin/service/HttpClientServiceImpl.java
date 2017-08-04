@@ -3,11 +3,16 @@ package com.smockin.admin.service;
 import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.exception.MockServerException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,12 +26,28 @@ import java.util.Map;
 @Service
 public class HttpClientServiceImpl implements HttpClientService {
 
+    private final Logger logger = LoggerFactory.getLogger(HttpClientServiceImpl.class);
+
+    @Autowired
+    private MockedServerEngineService mockedServerEngineService;
+
     @Override
     public HttpClientResponseDTO handleCall(final HttpClientCallDTO dto) throws ValidationException {
+        logger.debug("handleCall called");
+
+        debugDTO(dto);
 
         validateRequest(dto);
 
         try {
+
+            final MockServerState state = mockedServerEngineService.getRestServerState();
+
+            if (!state.isRunning()) {
+                return new HttpClientResponseDTO(404);
+            }
+
+            dto.setUrl("http://localhost:" + state.getPort() + dto.getUrl());
 
             switch (dto.getMethod()) {
                 case GET:
@@ -43,8 +64,8 @@ public class HttpClientServiceImpl implements HttpClientService {
                     throw new ValidationException("Invalid / Unsupported method: " + dto.getMethod());
             }
 
-        } catch (IOException ex) {
-            return new HttpClientResponseDTO(404, "Error communicating with url: " + dto.getUrl() + ". Check the path is valid and that the mock server running...");
+        } catch (IOException | MockServerException ex) {
+            return new HttpClientResponseDTO(404);
         }
 
     }
@@ -145,6 +166,21 @@ public class HttpClientServiceImpl implements HttpClientService {
                 extractResponseHeaders(httpResponse),
                 extractResponseBody(httpResponse)
         );
+    }
+
+    private void debugDTO(final HttpClientCallDTO dto) {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug( "URL : " + dto.getUrl() );
+            logger.debug( "METHOD : " + dto.getMethod().name() );
+            logger.debug( "BODY : " + dto.getBody() );
+            logger.debug( "HEADERS : " );
+
+            for (Map.Entry<String, String> h : dto.getHeaders().entrySet()) {
+                logger.debug( h.getKey() +  " : " + h.getValue() );
+            }
+        }
+
     }
 
 }

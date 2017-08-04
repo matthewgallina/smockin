@@ -13,3 +13,13 @@
 .tools-link {
     color: #fff !important;
 }
+
+.default .navbar-nav > .open > a {
+    background-color: transparent;
+    background-image: none;
+}
+
+.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:focus, .navbar-default .navbar-nav > .open > a:hover {
+    background-color: transparent;
+    background-image: none;
+}

@@ -2,86 +2,104 @@
 
     <div id="http-client" draggable class="modal-content">
 
-        <div class="modal-header">
-            <h3 class="modal-title" id="modal-title">{{ clientHeading }}</h3>
-        </div>
-
         <div class="modal-body" id="modal-body">
 
             <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
-            <div class="form-group">
-                <label for="url" class="ng-binding">{{ urlLabel }}</label>
-                <input id="url" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.url" placeholder="{{ urlPlaceholderTxt }}" type="text" />
-            </div>
+            <div class="row">
+                <div class="col-lg-6">
 
-            <div class="form-group">
-                <label for="request-method" class="ng-binding">{{ methodLabel }}</label>
-                <br />
-                <div id="request-method" class="btn-group" uib-dropdown>
-                    <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
-                        <span ng-if="clientRequest.method != null">{{ clientRequest.method }}</span>
-                        <span ng-if="clientRequest.method == null">{{ methodDropDownLabel }}</span>
-                        <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                        <li role="menuitem" ng-repeat="m in httpMethods">
-                            <a ng-click="doSelectHttpMethod(m)">{{ m }}</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+                    <div class="form-group">
+                        <label for="path" class="ng-binding default-label-color">{{ urlLabel }}</label>
 
-            <div class="form-group">
-                <label for="request-body" class="ng-binding default-label-color">{{ requestBodyLabel }}</label>
-                <textarea id="request-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.body"></textarea>
-            </div>
+                        <div id="path" class="input-group">
+                            <span class="input-group-btn">
 
-            <div class="form-group">
-                <label for="request-headers" class="ng-binding default-label-color">{{ requestHeadersLabel }}</label>
+                                <div class="btn-group" uib-dropdown>
+                                    <button id="client-method-button" type="button" class="btn btn-default btn-secondary" uib-dropdown-toggle ng-disabled="disabled">
+                                        <span ng-if="clientRequest.method != null">{{ clientRequest.method }}</span>
+                                        <span ng-if="clientRequest.method == null">{{ methodDropDownLabel }}</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                                        <li role="menuitem" ng-repeat="m in httpMethods">
+                                            <a ng-click="doSelectHttpMethod(m)">{{ m }}</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </span>
+                        <input id="url" class="form-control" ng-model="clientRequest.url" placeholder="{{ urlPlaceholderTxt }}" type="text" />
+                        </div>
+                    </div>
 
-                <div class="panel panel-default">
-                    <div class="panel-body">
+                    <div class="form-group">
+                        <label for="request-headers" class="ng-binding default-label-color">{{ requestHeadersLabel }}</label>
 
-                        <table id="request-headers" class="table table-striped">
-                            <thead>
-                            <tr>
-                                <th class="default-label-color">{{ requestHeaderNameLabel }}</th>
-                                <th class="default-label-color">{{ requestHeaderValueLabel }}</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="rh in clientRequest.headers">
-                                <td>
-                                    <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
-                                </td>
-                                <td>
-                                    <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
-                                </td>
-                                <td class="remove-req-head-row-button">
-                                    <button type="button" class="btn btn-warning" ng-click="doRemoveRequestHeaderRow($index)">{{ removeRequestHeaderButtonLabel }}</button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <div class="panel panel-default request-headers-panel">
+                            <div class="panel-body">
+
+                                <div class="no-request-headers" ng-show="clientRequest.headers.length == 0">
+                                    No Headers Defined
+                                </div>
+
+                                <table id="request-headers" class="table table-striped" ng-show="clientRequest.headers.length > 0">
+                                    <thead>
+                                    <tr>
+                                        <th class="default-label-color">{{ requestHeaderNameLabel }}</th>
+                                        <th class="default-label-color">{{ requestHeaderValueLabel }}</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="rh in clientRequest.headers">
+                                        <td>
+                                            <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                        </td>
+                                        <td>
+                                            <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                        </td>
+                                        <td class="remove-req-head-row-button">
+                                            <button type="button" class="btn btn-warning" ng-click="doRemoveRequestHeaderRow($index)">{{ removeRequestHeaderButtonLabel }}</button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
 
                         <button id="add-request-header-row" type="button" class="btn btn-info" ng-click="doAddRequestHeaderRow()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRequestHeaderButtonLabel }}</button>
 
                     </div>
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label for="response-body" class="ng-binding default-label-color">{{ clientResponseLabel }}</label>
-                <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientResponse" ng-readonly="true"></textarea>
+                </div>
+                <div class="col-lg-6">
+
+                    <div class="form-group">
+                        <label for="client-request-body" class="ng-binding default-label-color">{{ requestBodyLabel }}</label>
+                        <textarea id="client-request-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.body"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="client-response-body" class="ng-binding default-label-color">{{ clientResponseLabel }}</label>
+                        <textarea id="client-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientResponse" ng-readonly="true"></textarea>
+                    </div>
+
+                </div>
             </div>
 
         </div>
 
         <div class="modal-footer">
-            <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
-            <button class="btn btn-primary" type="button" ng-click="doSend()">{{ sendButtonLabel }}</button>
+            <div class="row">
+                <div class="col-lg-4 modal-footer-buttons">
+                    <button class="btn btn-warning" type="button" ng-click="doClear()">{{ clearButtonLabel }}</button>
+                </div>
+                <div class="col-lg-8">
+                    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+                    <button class="btn btn-primary" type="button" ng-click="doSend()">{{ sendButtonLabel }}</button>
+                </div>
+            </div>
         </div>
 
     </div>

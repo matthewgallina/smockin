@@ -30,7 +30,7 @@ app.controller('mainController', function($scope, $location, $http, $timeout, gl
 
     //
     // Buttons / Links
-    $scope.testClientLink = "Test Client";
+    $scope.testClientLink = "Open Http Client";
 
 
     //

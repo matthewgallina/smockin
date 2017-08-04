@@ -17,9 +17,8 @@ public class HttpClientResponseDTO {
 
     }
 
-    public HttpClientResponseDTO(final int status, final String body) {
+    public HttpClientResponseDTO(final int status) {
         this.status = status;
-        this.body = body;
     }
 
     public HttpClientResponseDTO(final int status, final String contentType, final Map<String, String> headers, final String body) {
