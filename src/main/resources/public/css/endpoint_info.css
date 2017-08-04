@@ -105,3 +105,7 @@
 #endpoint-status-button {
     width: 120px;
 }
+
+.newEndpointHeading {
+    margin-top: 4px;
+}

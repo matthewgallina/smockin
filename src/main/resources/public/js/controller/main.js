@@ -20,6 +20,41 @@ app.config(function($routeProvider) {
 
 
 //
+// Main Controller
+app.controller('mainController', function($scope, $location, $http, $timeout, globalVars, restClient) {
+
+    //
+    // Labels
+    $scope.toolsLabel = "Tools";
+
+
+    //
+    // Buttons / Links
+    $scope.testClientLink = "Open Http Client";
+
+
+    //
+    // Functions
+    $scope.doOpenHttpClient = function() {
+        angular.element( document.getElementById("http-client") ).css('display', 'block');
+    };
+
+});
+
+
+//
+// Directives
+app.directive('draggable', function() {
+	return {
+		restrict: 'A',
+		link: function(scope, elem, attr, ctrl) {
+			elem.draggable();
+		}
+	};
+});
+
+
+//
 // Services
 app.service('restClient', function() {
 
