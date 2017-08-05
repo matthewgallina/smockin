@@ -4,8 +4,6 @@ The Web Service Simulation Framework for application development and QA testing
 
 http://www.smockin.com
 
-http://www.smockin.com
-
 
 OVERVIEW
 
