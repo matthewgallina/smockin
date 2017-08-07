@@ -1,12 +1,13 @@
 
 .modal-header {
+    padding: 10px;
     color: #fff;
     border-radius: 4px;
     background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
 }
 
 #response-body {
-    height: 200px;
+    height: 170px;
 }
 
 #add-response-header-row {
