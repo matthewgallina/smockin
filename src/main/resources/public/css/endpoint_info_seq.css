@@ -17,3 +17,9 @@
 .remove-resp-head-row-button {
     text-align: center;
 }
+
+.help-tip-response-body {
+    position: absolute;
+    top: 160px;
+    right: 18px;
+}
