@@ -244,7 +244,7 @@ public class MockedRestServerEngineTest {
 
         Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
             {
-                put("name", "Roger");
+                put(":name", "Roger");
             }
         });
 
@@ -263,7 +263,7 @@ public class MockedRestServerEngineTest {
 
         Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
             {
-                put("name", "Roger");
+                put(":name", "Roger");
             }
         });
 

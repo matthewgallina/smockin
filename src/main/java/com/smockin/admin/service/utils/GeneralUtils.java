@@ -97,7 +97,7 @@ public final class GeneralUtils {
     public static String findPathVarIgnoreCase(final Request request, final String pathVarName) {
 
         for (Map.Entry<String, String> pv : request.params().entrySet()) {
-            if (pv.getKey().equalsIgnoreCase(pathVarName)) {
+            if (pv.getKey().equalsIgnoreCase((pathVarName.startsWith(":"))?pathVarName:(":"+pathVarName))) {
                 return pv.getValue();
             }
         }
