@@ -1,0 +1,98 @@
+
+<div class="section-heading">{{ inboundParamsInResponseTitle }}</div>
+
+<div class="section-body">
+    Inbound parameters can be included in the response body of your simulated endpoints by using the following naming convention:
+
+    <br /><br />
+
+    <b class="token-color">
+    ${REQ_HEAD=<i>param_name</i>}
+    <br />
+    ${REQ_PARAM=<i>param_name</i>}
+    <br />
+    ${PATH_VAR=<i>param_name</i>}
+    </b>
+
+    <br />
+    <br />
+    <br />
+
+    To give an example, let's assume the url:
+    <br/>
+    <br/>
+    <b>http://localhost:8001/hello?firstname=joe</b>
+
+    <br/>
+    <br/>
+
+    To include the request parameter 'firstname' in your response you would do the following:
+
+    <br />
+    <br />
+
+    <b>{ "msg" : "Hello <span class="token-color">${REQ_PARAM=firstname}</span>!" }</b>
+
+    <br />
+    <br />
+
+    This would then return:
+
+    <br />
+    <br />
+
+    <b>{ "msg" : "Hello joe!" }</b>
+
+    <br />
+    <br />
+
+    In the event the request parameter 'firstname' is not present in the request, a blank value will be returned instead:
+
+    <br />
+    <br />
+
+    <b>{ "msg" : "Hello !" }</b>
+
+    <br />
+    <br />
+    <br />
+
+    Below is an example of combining all 3 input types within a response:
+
+    <br />
+    <br />
+
+    The simulated endpoint setup:
+    <br />
+    <br />
+    <b>
+        <div class="row">
+            <div class="col-sm-2">Method:</div>
+            <div class="col-sm-10">GET</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">URL:</div>
+            <div class="col-sm-10">http://localhost:8001/greeting/:lastname</div>
+        </div>
+        <div class="row">
+            <div class="col-sm-2">Response Body:</div>
+            <div class="col-sm-10">{ "msg" : "Greetings <span class="token-color">${REQ_PARAM=title} ${PATH_VAR=lastname}</span>. How are you on this <span class="token-color">${REQ_HEAD=weather}</span> day" }</div>
+        </div>
+    </b>
+
+    <br />
+
+    Calling into the endpoint:
+    <br />
+    <br />
+    <b>curl -i -H "weather: sunny" -X GET http://localhost:8001/greeting/Smith?title=Mr</b>
+
+    <br />
+    <br />
+
+    Output from call:
+    <br />
+    <br />
+    <b>{ "msg" : "Greetings Mr Smith. How are you on this sunny day" }</b>
+
+</div>

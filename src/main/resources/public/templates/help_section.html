@@ -1,0 +1,32 @@
+<link rel="stylesheet" href="../css/help_section.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <h3>{{ helpHeading }}</h3>
+        <hr />
+        <br />
+
+        <h4>{{ contentsHeading }}</h4>
+
+        <p><a href="#!/help#inboundParamsInResponseSection" target="_self">{{ inboundParamsInResponseTitle }}</a></p>
+
+        <br />
+        <hr />
+
+        <!-- Add all help section below -->
+
+        <div id="inboundParamsInResponseSection" name="inboundParamsInResponseSection">
+            <div ng-include="'help/inbound_params_in_response.html'"></div>
+        </div>
+
+        <!-- End of help sections -->
+
+        <br />
+        <hr />
+        <br />
+
+    </div>
+
+</div>
