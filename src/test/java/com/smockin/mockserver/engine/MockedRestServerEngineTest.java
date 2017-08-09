@@ -4,6 +4,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.mockserver.service.MockOrderingCounterService;
+import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
@@ -34,6 +35,9 @@ public class MockedRestServerEngineTest {
 
     @Mock
     private RuleEngine ruleEngine;
+
+    @Mock
+    private ProxyService proxyService;
 
     @Mock
     private MockOrderingCounterService mockOrderingCounterService;

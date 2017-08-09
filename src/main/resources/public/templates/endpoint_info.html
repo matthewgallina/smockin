@@ -112,8 +112,9 @@
             <div class="col-sm-6">
 
                 <div id="mock-type-radio-group" class="btn-group" role="group">
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'SEQ'">{{ sequenceResponsesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'RULE'">{{ rulesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxy }}'">{{ proxyRadioLabel }}</label>
                 </div>
 
                 <br />
@@ -125,7 +126,7 @@
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.definitions.length == 0">
-                        {{noSeqFound}}
+                        {{ noSeqFound }}
                     </div>
 
                     <table class="table table-striped seq-table" ng-if="endpoint.definitions.length > 0">
@@ -193,6 +194,15 @@
                         </tr>
                         </tbody>
                     </table>
+
+                </div>
+
+                <div ng-show="endpoint.mockType == mockTypeProxy">
+
+                    <div class="form-group proxy-timeout-group">
+                        <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
+                        <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
 
                 </div>
 

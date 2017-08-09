@@ -14,7 +14,7 @@
 }
 
 .mock-type-radio-button {
-    width: 50%;
+    width: 33%;
 }
 
 .add-button-div {
@@ -108,4 +108,8 @@
 
 .newEndpointHeading {
     margin-top: 4px;
+}
+
+.proxy-timeout-group {
+    margin-top: 15px;
 }

@@ -7,10 +7,7 @@ import com.smockin.admin.service.utils.GeneralUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
-import com.smockin.mockserver.service.InboundParamMatchService;
-import com.smockin.mockserver.service.InboundParamMatchServiceImpl;
-import com.smockin.mockserver.service.MockOrderingCounterService;
-import com.smockin.mockserver.service.RuleEngine;
+import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +36,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Autowired
     private RuleEngine ruleEngine;
+
+    @Autowired
+    private ProxyService proxyService;
 
     @Autowired
     private MockOrderingCounterService mockOrderingCounterService;
@@ -213,6 +213,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         switch (mock.getMockType()) {
             case RULE:
                 outcome = ruleEngine.process(req, mock.getRules());
+                break;
+            case PROXY:
+                outcome = proxyService.waitForResponse(mock.getPath());
                 break;
             case SEQ:
             default:

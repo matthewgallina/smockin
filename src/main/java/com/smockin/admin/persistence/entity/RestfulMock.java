@@ -29,8 +29,11 @@ public class RestfulMock extends Identifier {
     private RecordStatusEnum status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "MOCK_TYPE", nullable = false, length = 4)
+    @Column(name = "MOCK_TYPE", nullable = false, length = 10)
     private MockTypeEnum mockType;
+
+    @Column(name = "PROXY_TIME_OUT_MILLIS", nullable = false)
+    private int proxyTimeOutInMillis;
 
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
@@ -46,11 +49,12 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, int proxyTimeOutInMillis) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
+        this.proxyTimeOutInMillis = proxyTimeOutInMillis;
     }
 
     public String getPath() {
@@ -79,6 +83,13 @@ public class RestfulMock extends Identifier {
     }
     public void setMockType(MockTypeEnum mockType) {
         this.mockType = mockType;
+    }
+
+    public int getProxyTimeOutInMillis() {
+        return proxyTimeOutInMillis;
+    }
+    public void setProxyTimeOutInMillis(int proxyTimeOutInMillis) {
+        this.proxyTimeOutInMillis = proxyTimeOutInMillis;
     }
 
     public int getInitializationOrder() {
