@@ -1,5 +1,6 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.dto.ProxiedDTO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class ProxyServiceImpl implements ProxyService {
     private final Logger logger = LoggerFactory.getLogger(ProxyServiceImpl.class);
 
     private final Semaphore lock = new Semaphore(1);
-    private Map<String, List<String>> responsesMap = new HashMap<String, List<String>>();
+    private Map<String, List<ProxiedDTO>> responsesQueueMap = new HashMap<String, List<ProxiedDTO>>();
 
     @Override
     public RestfulResponse waitForResponse(final String path) {
@@ -31,17 +32,16 @@ public class ProxyServiceImpl implements ProxyService {
 
             lock.acquire();
 
-            final List<String> responses = responsesMap.get(path);
+            final List<ProxiedDTO> responses = responsesQueueMap.get(path);
 
             if (responses == null || responses.isEmpty()) {
-
+                // TODO wait
+            } else {
+                final ProxiedDTO proxiedResponse = responses.get(0);
+                lock.release();
+                return new RestfulResponse(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<Map.Entry<String, String>>());
             }
 
-            final String proxiedResponseBody = responses.get(0);
-
-            lock.release();
-
-            return new RestfulResponse(200, "application/json", proxiedResponseBody, new HashSet<Map.Entry<String, String>>());
         } catch (InterruptedException ex) {
             logger.error("Error whilst waiting for mock proxied response", ex);
         }
@@ -50,15 +50,15 @@ public class ProxyServiceImpl implements ProxyService {
     }
 
     @Override
-    public void addResponse(final String path, final String responseBody) {
+    public void addResponse(final ProxiedDTO dto) {
 
         try {
 
             lock.acquire();
 
-            final List<String> responses = responsesMap.getOrDefault(path, new ArrayList<String>());
-            responses.add(responseBody);
-            responsesMap.put(path, responses); // not sure we need this line...
+            final List<ProxiedDTO> responses = responsesQueueMap.getOrDefault(dto.getPath(), new ArrayList<ProxiedDTO>());
+            responses.add(dto);
+            responsesQueueMap.put(dto.getPath(), responses); // not sure we need this line...
 
             lock.release();
 
