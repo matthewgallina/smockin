@@ -16,7 +16,7 @@ public class RestfulMockDTO {
     private RestMethodEnum method;
     private RecordStatusEnum status;
     private MockTypeEnum mockType;
-    private int proxyTimeoutInMillis;
+    private long proxyTimeoutInMillis;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
@@ -24,7 +24,7 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, int proxyTimeoutInMillis) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeoutInMillis) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -60,10 +60,10 @@ public class RestfulMockDTO {
         this.mockType = mockType;
     }
 
-    public int getProxyTimeoutInMillis() {
+    public long getProxyTimeoutInMillis() {
         return proxyTimeoutInMillis;
     }
-    public void setProxyTimeoutInMillis(int proxyTimeoutInMillis) {
+    public void setProxyTimeoutInMillis(long proxyTimeoutInMillis) {
         this.proxyTimeoutInMillis = proxyTimeoutInMillis;
     }
 

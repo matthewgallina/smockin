@@ -1,4 +1,4 @@
-package com.smockin.admin.dto;
+package com.smockin.mockserver.service.dto;
 
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -13,6 +13,17 @@ public class ProxiedDTO {
     private int httpStatusCode;
     private String responseContentType;
     private String body;
+
+    public ProxiedDTO() {
+    }
+
+    public ProxiedDTO(String path, RestMethodEnum method, int httpStatusCode, String responseContentType, String body) {
+        this.path = path;
+        this.method = method;
+        this.httpStatusCode = httpStatusCode;
+        this.responseContentType = responseContentType;
+        this.body = body;
+    }
 
     public String getPath() {
         return path;

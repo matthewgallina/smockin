@@ -14,6 +14,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.MediaType;
 import spark.Request;
 
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class RuleEngineTest {
         // Setup
         rules = new ArrayList<RestfulMockDefinitionRule>();
 
-        final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(null, 1, 200, "application/json", "{ \"msg\" : \"foobar\" }");
+        final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(null, 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"foobar\" }");
         final RestfulMockDefinitionRuleGroup group = new RestfulMockDefinitionRuleGroup(rule, 1);
         final RestfulMockDefinitionRuleGroupCondition condition = new RestfulMockDefinitionRuleGroupCondition(group, "name", RuleDataTypeEnum.TEXT, RuleComparatorEnum.EQUALS, "joe", RuleMatchingTypeEnum.REQUEST_BODY, false);
 

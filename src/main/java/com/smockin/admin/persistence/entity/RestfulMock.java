@@ -33,7 +33,7 @@ public class RestfulMock extends Identifier {
     private MockTypeEnum mockType;
 
     @Column(name = "PROXY_TIME_OUT_MILLIS", nullable = false)
-    private int proxyTimeOutInMillis;
+    private long proxyTimeOutInMillis;
 
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
@@ -49,7 +49,7 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, int proxyTimeOutInMillis) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -85,10 +85,10 @@ public class RestfulMock extends Identifier {
         this.mockType = mockType;
     }
 
-    public int getProxyTimeOutInMillis() {
+    public long getProxyTimeOutInMillis() {
         return proxyTimeOutInMillis;
     }
-    public void setProxyTimeOutInMillis(int proxyTimeOutInMillis) {
+    public void setProxyTimeOutInMillis(long proxyTimeOutInMillis) {
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
     }
 

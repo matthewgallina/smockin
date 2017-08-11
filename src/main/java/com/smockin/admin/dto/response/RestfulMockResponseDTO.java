@@ -19,7 +19,7 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     private Date dateCreated;
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
-    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, Date dateCreated, int proxyTimeoutInMillis) {
+    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis) {
         super(path, method, status, mockType, proxyTimeoutInMillis);
         this.extId = extId;
         this.dateCreated = dateCreated;

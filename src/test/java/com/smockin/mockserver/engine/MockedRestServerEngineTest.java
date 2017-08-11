@@ -3,6 +3,7 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
@@ -110,6 +111,25 @@ public class MockedRestServerEngineTest {
     }
 
     @Test
+    public void getDefault_Proxy_Test() {
+
+        // Setup
+        restfulMock.setMockType(MockTypeEnum.PROXY);
+
+        // Test
+        final RestfulResponse result = engine.getDefault(restfulMock);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals(404, result.getHttpStatusCode());
+        Assert.assertNull(result.getResponseContentType());
+        Assert.assertNull(result.getResponseBody());
+        Assert.assertTrue(result.getHeaders().isEmpty());
+    }
+
+
+
+        @Test
     public void processRequest__Test() {
 
         // TODO

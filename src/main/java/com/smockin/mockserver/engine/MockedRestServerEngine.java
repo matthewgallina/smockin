@@ -3,13 +3,12 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponse;
-import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,7 +214,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 outcome = ruleEngine.process(req, mock.getRules());
                 break;
             case PROXY:
-                outcome = proxyService.waitForResponse(mock.getPath());
+                outcome = proxyService.waitForResponse(mock);
                 break;
             case SEQ:
             default:
@@ -242,6 +241,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     RestfulResponse getDefault(final RestfulMock restfulMock) {
+
+        if (MockTypeEnum.PROXY.equals(restfulMock.getMockType())) {
+            return new RestfulResponse(404);
+        }
+
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
         return new RestfulResponse(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
     }
