@@ -427,6 +427,17 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 return;
             }
 
+            var timeout = $scope.endpoint.proxyTimeout;
+
+            if (typeof $scope.endpoint.proxyTimeout == 'string') {
+                timeout = parseInt($scope.endpoint.proxyTimeout);
+            }
+
+            if (timeout > 30000) {
+                showAlert("'Timeout' cannot exceed 30000 milliseconds (i.e 30 seconds)");
+                return;
+            }
+
         }
 
         utils.showBlockingOverlay();
