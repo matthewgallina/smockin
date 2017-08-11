@@ -87,7 +87,7 @@ public class ProxyServiceImpl implements ProxyService {
                     */
                     continue;
                 }
-                
+
                 return restfulResponse;
             }
 
