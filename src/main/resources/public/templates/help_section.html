@@ -1,0 +1,38 @@
+<link rel="stylesheet" href="../css/help_section.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <!-- Table of contents -->
+        <h3>{{ helpHeading }} - {{ contentsHeading }}</h3>
+        <br />
+        <p><a href="#!/help#mockTypesSection" target="_self">{{ mockTypesSectionTitle }}</a></p>
+        <p><a href="#!/help#inboundParamsInResponseSection" target="_self">{{ inboundParamsInResponseTitle }}</a></p>
+
+        <!-- End of table of contents -->
+
+        <br />
+        <hr />
+
+        <!-- Add all help section below -->
+
+        <div id="mockTypesSection" name="mockTypesSection">
+            <div ng-include="'help/mock_types.html'"></div>
+        </div>
+
+        <hr />
+
+        <div id="inboundParamsInResponseSection" name="inboundParamsInResponseSection">
+            <div ng-include="'help/inbound_params_in_response.html'"></div>
+        </div>
+
+        <!-- End of help sections -->
+
+        <br />
+        <hr />
+        <br />
+
+    </div>
+
+</div>

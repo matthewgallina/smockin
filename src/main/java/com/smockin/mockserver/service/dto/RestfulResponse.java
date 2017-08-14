@@ -14,6 +14,12 @@ public class RestfulResponse {
     private final String responseBody;
     private final Map<String, String> headers = new HashMap<String, String>();
 
+    public RestfulResponse(final int httpStatusCode) {
+        this.httpStatusCode = httpStatusCode;
+        this.responseContentType = null;
+        this.responseBody = null;
+    }
+
     public RestfulResponse(final int httpStatusCode, final String responseContentType, final String responseBody, final Set<Map.Entry<String, String>> headers) {
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;

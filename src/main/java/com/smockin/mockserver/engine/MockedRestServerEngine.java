@@ -3,12 +3,13 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
-import com.smockin.mockserver.service.MockOrderingCounterService;
-import com.smockin.mockserver.service.RuleEngine;
+import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private RuleEngine ruleEngine;
 
     @Autowired
+    private ProxyService proxyService;
+
+    @Autowired
     private MockOrderingCounterService mockOrderingCounterService;
+
+    @Autowired
+    private InboundParamMatchService inboundParamMatchService;
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
@@ -206,6 +213,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             case RULE:
                 outcome = ruleEngine.process(req, mock.getRules());
                 break;
+            case PROXY:
+                outcome = proxyService.waitForResponse(req.pathInfo(), mock);
+                break;
             case SEQ:
             default:
                 outcome = mockOrderingCounterService.getNextInSequence(mock);
@@ -225,10 +235,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             res.header(e.getKey(), e.getValue());
         }
 
-        return (outcome.getResponseBody() != null)?outcome.getResponseBody():"";
+        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
+
+        return StringUtils.defaultIfBlank(response,"");
     }
 
     RestfulResponse getDefault(final RestfulMock restfulMock) {
+
+        if (MockTypeEnum.PROXY.equals(restfulMock.getMockType())) {
+            return new RestfulResponse(404);
+        }
+
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
         return new RestfulResponse(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
     }

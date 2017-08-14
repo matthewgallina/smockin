@@ -5,5 +5,6 @@ package com.smockin.admin.persistence.enums;
  */
 public enum MockTypeEnum {
     SEQ,
-    RULE;
+    RULE,
+    PROXY;
 }

@@ -11,6 +11,9 @@
         <link rel="stylesheet" href="../css/main.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/overlay.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/http_client.css" crossorigin="anonymous" />
+        <!--
+            <link rel="stylesheet" href="../css/tooltip.css" crossorigin="anonymous" />
+        -->
     </head>
 
     <body ng-app="smockinApp" ng-controller="mainController" class="ng-cloak">
@@ -36,6 +39,10 @@
                             <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
                                 <li>
                                     <a href="" ng-click="doOpenHttpClient()">{{ testClientLink }}</a>
+                                </li>
+                                <li role="separator" class="divider"></li>
+                                <li>
+                                    <a href="" ng-click="doOpenHelp()">{{ helpLink }}</a>
                                 </li>
                             </ul>
                         </li>
@@ -63,10 +70,10 @@
         <!-- JQuery UI -->
         <script src="http://code.jquery.com/ui/jquery-ui-git.js"></script>
 
-
         <!-- Controllers -->
         <script src="../js/controller/main.js"></script>
         <script src="../js/controller/http_client.js"></script>
+        <script src="../js/controller/help_section.js"></script>
         <script src="../js/controller/dashboard.js"></script>
         <script src="../js/controller/server_config.js"></script>
         <script src="../js/controller/endpoint_info.js"></script>

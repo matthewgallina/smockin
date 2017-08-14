@@ -14,7 +14,7 @@
 }
 
 .mock-type-radio-button {
-    width: 50%;
+    width: 33%;
 }
 
 .add-button-div {
@@ -42,7 +42,7 @@
 }
 
 #response-body {
-    height: 220px;
+    height: 170px;
 }
 
 .default-label-color {
@@ -108,4 +108,8 @@
 
 .newEndpointHeading {
     margin-top: 4px;
+}
+
+.proxy-timeout-group {
+    margin-top: 15px;
 }

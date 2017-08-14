@@ -15,6 +15,10 @@ app.config(function($routeProvider) {
         .when("/endpoint", {
             templateUrl : "endpoint_info.html",
             controller : "endpointInfoController"
+        })
+        .when("/help", {
+            templateUrl : "help_section.html",
+            controller : "helpSectionController"
         });
 });
 
@@ -26,17 +30,22 @@ app.controller('mainController', function($scope, $location, $http, $timeout, gl
     //
     // Labels
     $scope.toolsLabel = "Tools";
+    $scope.helpLink = "Help"
 
 
     //
     // Buttons / Links
     $scope.testClientLink = "Open Http Client";
-
+    $scope.helpLink = "Help";
 
     //
     // Functions
     $scope.doOpenHttpClient = function() {
         angular.element( document.getElementById("http-client") ).css('display', 'block');
+    };
+
+    $scope.doOpenHelp = function() {
+        $location.path("/help");
     };
 
 });

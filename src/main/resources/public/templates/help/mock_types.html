@@ -1,0 +1,120 @@
+
+<div class="section-heading">{{ mockTypesSectionTitle }}</div>
+
+<div class="section-body">
+    Simulated endpoints can return content in 3 different ways:
+
+    <br /><br />
+
+    <b class="highlight-color">
+
+        In Sequence
+        <br />
+        Using Rules
+        <br />
+        Via Proxy
+    </b>
+
+    <br />
+    <br />
+    <br/>
+
+    <h4>In Sequence</h4>
+    <br/>
+
+    <p>
+        An endpoint using Sequenced Responses, stores a list of multiple responses.
+        The first call to the endpoint results with the first response in the list being returned back to the call.
+        Subsequent calls sequentially pick up responses from the list, until the end of the list is reached and returns to the beginning again.
+    </p>
+
+    <p>
+        To give an example, you could have the endpoint <b>http://localhost:8001/weather</b> set up to return 3 sequential responses:
+    </p>
+
+    <br/>
+
+    <p>
+        <b>
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "cloudy", "celsius" : 25 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "rainy", "celsius" : 22 }
+            <br />
+        </b>
+    </p>
+
+    <br />
+    <br/>
+
+    <p>
+        To take make things interesting, you could then add 1 more response so as mimic the weather service failing ungracefully with an error 500 on the 4th call:
+    </p>
+
+    <br/>
+
+    <p>
+        <b>
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "cloudy", "celsius" : 25 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "rainy", "celsius" : 22 }
+            <br />
+            <br />
+            500 INTERNAL SERVER ERROR
+            <br/>
+            <br />
+        </b>
+    </p>
+
+    <br/>
+
+    <p>
+        As mentioned a 5th call would move back to the beginning of the list:
+    </p>
+
+    <p>
+        <b>
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+        </b>
+    </p>
+
+    <br/>
+    <br/>
+
+    <h4>Using Rules</h4>
+    <br/>
+
+    TODO
+
+    <br/>
+    <br/>
+
+    <h4>Via Proxy</h4>
+    <br/>
+
+    TODO
+
+
+</div>

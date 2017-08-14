@@ -6,17 +6,20 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     // Constants
     var MockTypeSeq = 'SEQ';
     var MockTypeRule = 'RULE';
+    var MockTypeProxy = 'PROXY';
     var isNew = ($rootScope.endpointData == null);
     var RestfulServerType = globalVars.RestfulServerType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
+    var MaxProxyTimeoutInMillis = 60000;
 
 
     //
     // Labels
     $scope.mockTypeSeq = MockTypeSeq;
     $scope.mockTypeRule = MockTypeRule;
+    $scope.mockTypeProxy = MockTypeProxy;
     $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
     $scope.pathLabel = 'Path *';
     $scope.pathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
@@ -34,11 +37,14 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.responseBodyLabel = 'Response Body';
     $scope.sequenceResponsesRadioLabel = 'Sequenced Responses';
     $scope.rulesRadioLabel = 'Rules';
+    $scope.proxyRadioLabel = 'Proxied Response';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
     $scope.serverRestartInstruction = '(Please note, the mock server will need to be restarted for changes to take effect)';
     $scope.endpointStatusLabel = 'Status:';
+    $scope.proxyTimeoutLabel = 'Timeout (in millis)';
+    $scope.proxyTimeoutPlaceholderTxt = 'Duration a call to this endpoint will wait';
 
 
     //
@@ -102,6 +108,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "httpStatusCode" : 200,
         "responseBody" : null,
         "status" : ActiveStatus,
+        "proxyTimeout" : 0,
         "mockType" : MockTypeSeq, // RULE
         "definitions" : [],
         "rules" : []
@@ -122,10 +129,11 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         $scope.endpoint = {
             "path" : endpoint.path,
             "method" : endpoint.method,
-            "contentType" : endpoint.definitions[0].responseContentType,
-            "httpStatusCode" : endpoint.definitions[0].httpStatusCode,
-            "responseBody" : endpoint.definitions[0].responseBody,
+            "contentType" : null,
+            "httpStatusCode" : null,
+            "responseBody" : null,
             "status" : endpoint.status,
+            "proxyTimeout" : endpoint.proxyTimeoutInMillis,
             "mockType" : endpoint.mockType,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules
@@ -133,9 +141,18 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         $scope.extId = endpoint.extId;
 
-        angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
-            $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
-        });
+        if (endpoint.mockType == MockTypeSeq
+                || endpoint.mockType == MockTypeRule) {
+
+            $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
+            $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
+            $scope.endpoint.responseBody = endpoint.definitions[0].responseBody;
+
+            angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
+                $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
+            });
+
+        }
 
     }
 
@@ -403,6 +420,25 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 return;
             }
 
+        } else if ($scope.endpoint.mockType == MockTypeProxy) {
+
+            if (utils.isBlank($scope.endpoint.proxyTimeout)
+                    || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
+                showAlert("'Timeout' is required and must be numeric.");
+                return;
+            }
+
+            var timeout = $scope.endpoint.proxyTimeout;
+
+            if (typeof $scope.endpoint.proxyTimeout == 'string') {
+                timeout = parseInt($scope.endpoint.proxyTimeout);
+            }
+
+            if (timeout > MaxProxyTimeoutInMillis) {
+                showAlert("'Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
+                return;
+            }
+
         }
 
         utils.showBlockingOverlay();
@@ -412,6 +448,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "method" : $scope.endpoint.method,
             "status" : $scope.endpoint.status,
             "mockType" : $scope.endpoint.mockType,
+            "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
             "definitions" : [],
             "rules" : []
         };
@@ -451,6 +488,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
                 reqData.rules.push($scope.endpoint.rules[r]);
             }
+
+        } else if ($scope.endpoint.mockType == MockTypeProxy) {
+
+            // Nothing extra todo
 
         }
 

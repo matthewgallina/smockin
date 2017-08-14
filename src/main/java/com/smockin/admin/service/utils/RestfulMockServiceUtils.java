@@ -30,7 +30,7 @@ public class RestfulMockServiceUtils {
         final List<RestfulMockResponseDTO> restMockDTOs = new ArrayList<RestfulMockResponseDTO>();
 
         for (RestfulMock rmd : restfulMockDefinitions) {
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated());
+            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis());
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {

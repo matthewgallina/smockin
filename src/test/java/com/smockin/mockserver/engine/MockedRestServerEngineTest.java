@@ -3,9 +3,12 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.service.MockOrderingCounterService;
+import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,8 +17,13 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import spark.Request;
+
+import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * Created by mgallina.
@@ -28,6 +36,9 @@ public class MockedRestServerEngineTest {
 
     @Mock
     private RuleEngine ruleEngine;
+
+    @Mock
+    private ProxyService proxyService;
 
     @Mock
     private MockOrderingCounterService mockOrderingCounterService;
@@ -100,8 +111,28 @@ public class MockedRestServerEngineTest {
     }
 
     @Test
+    public void getDefault_Proxy_Test() {
+
+        // Setup
+        restfulMock.setMockType(MockTypeEnum.PROXY);
+
+        // Test
+        final RestfulResponse result = engine.getDefault(restfulMock);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals(404, result.getHttpStatusCode());
+        Assert.assertNull(result.getResponseContentType());
+        Assert.assertNull(result.getResponseBody());
+        Assert.assertTrue(result.getHeaders().isEmpty());
+    }
+
+
+
+        @Test
     public void processRequest__Test() {
 
+        // TODO
 //        engine.processRequest();
 
     }
