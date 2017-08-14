@@ -83,8 +83,8 @@ public class ProxyServiceTest {
     @Test(expected = TimeoutException.class)
     public void proxyConcurrency_indefiniteWait_Test() throws InterruptedException, ExecutionException, TimeoutException {
 
-        // The proxy mock has a 'proxyTimeOutInMillis' set to 'zero' and so the consumer thread should block indefinitely (actually waits for Long.MAX_VALUE in millis).
-        // This test therefore deliberately times out whilst waiting on the Future and so expects a TimeoutException.
+        // The proxy mock has a 'proxyTimeOutInMillis' set to 'zero' and so the consumer thread will block until the internal service has reached the max timeout of 60 seconds (see ProxyService.MAX_TIMEOUT_MILLIS).
+        // This test therefore deliberately times the Future out after only 3 seconds and so expects a TimeoutException.
 
         // Test
         final Future future = executor.submit(consumer1);
@@ -105,15 +105,14 @@ public class ProxyServiceTest {
 
     }
 
-
     @Test
     public void proxyConcurrency_timeoutWait_Test() throws InterruptedException, ExecutionException, TimeoutException {
 
-        // The proxy mock is now set with a 'proxyTimeOutInMillis' of 5000 milliseconds which means the consumer thread should only block for 5 seconds.
-        // This test does not time out whilst waiting on the Future, in order to prove that.
+        // The proxy mock is now set with a 'proxyTimeOutInMillis' of 3000 milliseconds which means the consumer thread should only have to wait for 3 seconds until this times out internally.
+        // This test does not time out on the Future, in order to prove that.
 
         // Setup
-        mockReq.setProxyTimeOutInMillis(5000);
+        mockReq.setProxyTimeOutInMillis(3000);
 
         consumer1 = new Callable() {
             @Override

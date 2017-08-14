@@ -9,6 +9,8 @@ import com.smockin.mockserver.service.dto.RestfulResponse;
  */
 public interface ProxyService {
 
+    int MAX_TIMEOUT_MILLIS = 60000; // 1 min max
+
     RestfulResponse waitForResponse(final RestfulMock mock);
     void addResponse(final ProxiedDTO dto);
 
