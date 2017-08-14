@@ -31,22 +31,22 @@ public class ProxyServiceImpl implements ProxyService {
     @Override
     public RestfulResponse waitForResponse(final RestfulMock mock) {
 
-        final long timeOut = (mock.getProxyTimeOutInMillis() > 0)?mock.getProxyTimeOutInMillis():MAX_TIMEOUT_MILLIS;
-
         try {
 
-            // Acquire lock before checking queue
             lock.lock();
 
             final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(mock.getPath(), mock.getMethod()));
 
             if (responses == null || responses.isEmpty()) {
 
-                boolean foundOne = condition.await(timeOut, TimeUnit.MILLISECONDS);
+                // No matching response was found, so wait until one is added to the synchronizedProxyResponsesMap.
 
-                if (!foundOne) {
+                final long timeOut = (mock.getProxyTimeOutInMillis() > 0)?mock.getProxyTimeOutInMillis():MAX_TIMEOUT_MILLIS;
+
+                if (!condition.await(timeOut, TimeUnit.MILLISECONDS)) {
 
                     // The wait has timed out
+
                     if (logger.isDebugEnabled()) {
                         logger.debug("The wait for '" + mock.getMethod() + " " + mock.getPath() + "' has timed out");
                     }
@@ -54,10 +54,13 @@ public class ProxyServiceImpl implements ProxyService {
                     return null;
                 }
 
+                // Signal received i.e something has been added to the synchronizedProxyResponsesMap, so let's check if it's what this request wants.
                 return waitForResponse(mock);
 
             } else {
-                // A matching path was found, so consume/remove the element from the queue, release the lock and return response.
+
+                // A matching path was found, so consume/remove the element from the synchronizedProxyResponsesMap, release the lock and return response.
+
                 final ProxiedDTO proxiedResponse = responses.remove(0);
                 return new RestfulResponse(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<Map.Entry<String, String>>());
             }
@@ -81,48 +84,19 @@ public class ProxyServiceImpl implements ProxyService {
             final ProxiedKey key = new ProxiedKey(dto.getPath(), dto.getMethod());
             final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.getOrDefault(key, new ArrayList<ProxiedDTO>());
             responses.add(dto);
-            synchronizedProxyResponsesMap.put(key, responses); // not sure we need this line...
+
+            synchronizedProxyResponsesMap.put(key, responses);
 
             if (logger.isDebugEnabled())
                 logger.debug("Added dto " + dto.getPath() + ". Responses size is " + responses.size());
 
+            // Signal ALL threads waiting on a proxied response to check synchronizedProxyResponsesMap.
             condition.signalAll();
 
-        } catch (Throwable ex) {
-            logger.error("Error whilst adding proxied response to queue", ex);
         } finally {
             lock.unlock();
         }
 
     }
 
-    /*
-    RestfulResponse lookUpResponse(final RestfulMock mock) throws InterruptedException {
-
-        try {
-            // Acquire lock before checking queue
-            lock.lock();
-
-            final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(mock.getPath(), mock.getMethod()));
-
-            if (responses == null || responses.isEmpty()) {
-
-                // no matching path was found, so release lock and continue waiting
-//                lock.unlock();
-
-                return null;
-            }
-
-            // A matching path was found, so consume/remove the element from the queue, release the lock and return response.
-            final ProxiedDTO proxiedResponse = responses.remove(0);
-
-            final RestfulResponse restfulResponse = new RestfulResponse(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<Map.Entry<String, String>>());
-
-            return restfulResponse;
-        } finally {
-            lock.unlock();
-        }
-
-    }
-*/
 }
