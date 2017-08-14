@@ -29,13 +29,13 @@ public class ProxyServiceImpl implements ProxyService {
 
 
     @Override
-    public RestfulResponse waitForResponse(final RestfulMock mock) {
+    public RestfulResponse waitForResponse(final String requestPath, final RestfulMock mock) {
 
         try {
 
             lock.lock();
 
-            final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(mock.getPath(), mock.getMethod()));
+            final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(requestPath, mock.getMethod()));
 
             if (responses == null || responses.isEmpty()) {
 
@@ -48,14 +48,14 @@ public class ProxyServiceImpl implements ProxyService {
                     // The wait has timed out
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("The wait for '" + mock.getMethod() + " " + mock.getPath() + "' has timed out");
+                        logger.debug("The wait for '" + mock.getMethod() + " " + requestPath + "' has timed out");
                     }
 
                     return null;
                 }
 
                 // Signal received i.e something has been added to the synchronizedProxyResponsesMap, so let's check if it's what this request wants.
-                return waitForResponse(mock);
+                return waitForResponse(requestPath, mock);
 
             } else {
 

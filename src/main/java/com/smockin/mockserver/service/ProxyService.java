@@ -11,7 +11,7 @@ public interface ProxyService {
 
     int MAX_TIMEOUT_MILLIS = 60000; // 1 min max
 
-    RestfulResponse waitForResponse(final RestfulMock mock);
+    RestfulResponse waitForResponse(final String requestPath, final RestfulMock mock);
     void addResponse(final ProxiedDTO dto);
 
 }

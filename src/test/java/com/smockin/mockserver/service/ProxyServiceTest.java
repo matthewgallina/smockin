@@ -50,7 +50,7 @@ public class ProxyServiceTest {
         consumer1 = new Callable() {
             @Override
             public Object call() {
-                return proxyService.waitForResponse(mockReq);
+                return proxyService.waitForResponse(mockReq.getPath(), mockReq);
             }
         };
 
@@ -117,7 +117,7 @@ public class ProxyServiceTest {
         consumer1 = new Callable() {
             @Override
             public Object call() {
-                return proxyService.waitForResponse(mockReq);
+                return proxyService.waitForResponse(mockReq.getPath(), mockReq);
             }
         };
 

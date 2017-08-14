@@ -12,6 +12,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
+    var MaxProxyTimeoutInMillis = 60000;
 
 
     //
@@ -433,8 +434,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 timeout = parseInt($scope.endpoint.proxyTimeout);
             }
 
-            if (timeout > 30000) {
-                showAlert("'Timeout' cannot exceed 30000 milliseconds (i.e 30 seconds)");
+            if (timeout > MaxProxyTimeoutInMillis) {
+                showAlert("'Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
                 return;
             }
 

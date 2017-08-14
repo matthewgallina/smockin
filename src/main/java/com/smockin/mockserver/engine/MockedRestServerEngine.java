@@ -214,7 +214,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 outcome = ruleEngine.process(req, mock.getRules());
                 break;
             case PROXY:
-                outcome = proxyService.waitForResponse(mock);
+                outcome = proxyService.waitForResponse(req.pathInfo(), mock);
                 break;
             case SEQ:
             default:
