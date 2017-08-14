@@ -1,5 +1,7 @@
 package com.smockin.admin.service.utils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 
 import java.util.Date;
@@ -12,6 +14,8 @@ import java.util.regex.Pattern;
  * Created by mgallina.
  */
 public final class GeneralUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(GeneralUtils.class);
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
@@ -103,6 +107,17 @@ public final class GeneralUtils {
         }
 
         return null;
+    }
+
+    public static void checkForAndHandleSleep(final long sleepInMillis) {
+
+        if (sleepInMillis > 0) {
+            try {
+                Thread.sleep(sleepInMillis);
+            } catch (InterruptedException ex) {
+                logger.error("Error pausing response for the specified period of " + sleepInMillis, ex);
+            }
+        }
     }
 
 }

@@ -64,6 +64,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         "responseContentType" : null,
         "httpStatusCode" : 200,
         "responseBody" : null,
+        "sleepInMillis" : 0,
         "responseHeaders" : {}
     };
 

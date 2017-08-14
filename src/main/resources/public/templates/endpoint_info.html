@@ -149,6 +149,9 @@
                                 <a href="" ng-click="doMoveSeqDown(x, $index)" class="condition-arg-down-button">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
                                 </a>
+                                <a href="" ng-click="doRemoveSeq($index)" class="condition-arg-down-button">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                                </a>
                                 <button type="button" class="btn btn-primary view-seq-button" ng-click="doOpenViewSequence(x)">{{ viewButtonLabel }}</button>
 
                             </td>
@@ -187,6 +190,9 @@
                                 </a>
                                 <a href="" ng-click="doMoveRuleDown(x, $index)" class="condition-arg-down-button">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doRemoveRule($index)" class="condition-arg-remove-button">
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                                 </a>
                                 <button type="button" class="btn btn-primary view-rule-button" ng-click="doOpenViewRule(x)">{{ viewButtonLabel }}</button>
 

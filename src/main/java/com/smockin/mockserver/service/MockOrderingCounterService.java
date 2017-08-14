@@ -8,6 +8,6 @@ import com.smockin.mockserver.service.dto.RestfulResponse;
  */
 public interface MockOrderingCounterService {
 
-    RestfulResponse getNextInSequence(final RestfulMock restfulMockDefinition);
+    RestfulResponse process(final RestfulMock restfulMockDefinition);
 
 }

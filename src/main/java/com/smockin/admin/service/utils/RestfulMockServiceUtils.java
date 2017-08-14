@@ -30,11 +30,11 @@ public class RestfulMockServiceUtils {
         final List<RestfulMockResponseDTO> restMockDTOs = new ArrayList<RestfulMockResponseDTO>();
 
         for (RestfulMock rmd : restfulMockDefinitions) {
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis());
+            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis(), rmd.isRandomiseDefinitions());
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
-                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody());
+                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis());
 
                 for (Map.Entry<String, String> responseHeader : order.getResponseHeaders().entrySet()) {
                     restfulMockDefinitionDTO.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
@@ -46,7 +46,7 @@ public class RestfulMockServiceUtils {
             // Rules
             for (RestfulMockDefinitionRule rule : rmd.getRules()) {
 
-                final RuleDTO ruleDto = new RuleDTO(rule.getExtId(), rule.getOrderNo(), rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody());
+                final RuleDTO ruleDto = new RuleDTO(rule.getExtId(), rule.getOrderNo(), rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getSleepInMillis());
 
                 for (Map.Entry<String, String> responseHeader : rule.getResponseHeaders().entrySet()) {
                     ruleDto.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
@@ -93,7 +93,7 @@ public class RestfulMockServiceUtils {
         for (RestfulMockDefinitionDTO restMockOrderDto : dtoSource.getDefinitions()) {
 
             final RestfulMockDefinitionOrder restfulMockDefinitionOrder =
-                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo());
+                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo(), restMockOrderDto.getSleepInMillis());
 
             if (restMockOrderDto.getResponseHeaders() != null) {
                 for (Map.Entry<String, String> responseHeader : restMockOrderDto.getResponseHeaders().entrySet()) {
@@ -107,7 +107,7 @@ public class RestfulMockServiceUtils {
         // Endpoint Rules
         for (RuleDTO ruleDto : dtoSource.getRules()) {
 
-            final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(mockDest, ruleDto.getOrderNo(), ruleDto.getHttpStatusCode(), ruleDto.getResponseContentType(), ruleDto.getResponseBody());
+            final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(mockDest, ruleDto.getOrderNo(), ruleDto.getHttpStatusCode(), ruleDto.getResponseContentType(), ruleDto.getResponseBody(), ruleDto.getSleepInMillis());
 
             for (Map.Entry<String, String> responseHeader : ruleDto.getResponseHeaders().entrySet()) {
                 rule.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());

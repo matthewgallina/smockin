@@ -24,6 +24,9 @@ public class RestfulMockDefinitionOrder extends Identifier {
     @Column(name = "RESPONSE_BODY", nullable = true, length = 5000)
     private String responseBody;
 
+    @Column(name = "SLEEP_IN_MILLIS", nullable = false)
+    private long sleepInMillis;
+
     @Column(name = "ORDER_NO", nullable = false)
     private int orderNo;
 
@@ -34,12 +37,13 @@ public class RestfulMockDefinitionOrder extends Identifier {
     public RestfulMockDefinitionOrder() {
     }
 
-    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo) {
+    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo, long sleepInMillis) {
         this.restfulMock = restfulMock;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
         this.orderNo = orderNo;
+        this.sleepInMillis = sleepInMillis;
     }
 
     public RestfulMock getRestfulMock() {
@@ -68,6 +72,13 @@ public class RestfulMockDefinitionOrder extends Identifier {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
     }
 
     public int getOrderNo() {

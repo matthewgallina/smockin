@@ -68,7 +68,7 @@ public class ProxyServiceVolumeTest {
 
                 @Override
                 public Object call() {
-                    return proxyService.waitForResponse(pk.getPath(), new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, MockTypeEnum.PROXY, 3000));
+                    return proxyService.waitForResponse(pk.getPath(), new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, MockTypeEnum.PROXY, 3000, false));
                 }
             };
 

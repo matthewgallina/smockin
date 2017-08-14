@@ -205,6 +205,13 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
+    $scope.doRemoveRule = function(index) {
+        $scope.endpoint.rules.splice(index, 1);
+
+        // Update all orderNo fields in rule array
+        updateRuleOrderNumbers();
+    };
+
     function updateRuleOrderNumbers() {
         for (var r=0; r < $scope.endpoint.rules.length; r++) {
             $scope.endpoint.rules[r].orderNo = (r + 1);
@@ -239,6 +246,13 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         // Update all orderNo fields in seq array
         updateSeqOrderNumbers();
 
+    };
+
+    $scope.doRemoveSeq = function(index) {
+        $scope.endpoint.definitions.splice(index, 1);
+
+        // Update all orderNo fields in seq array
+        updateSeqOrderNumbers();
     };
 
     function updateSeqOrderNumbers() {
@@ -470,6 +484,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 "responseContentType" : $scope.endpoint.contentType,
                 "httpStatusCode" : $scope.endpoint.httpStatusCode,
                 "responseBody" : $scope.endpoint.responseBody,
+                "sleepInMillis" : 0,
                 "responseHeaders" : {}
             });
 

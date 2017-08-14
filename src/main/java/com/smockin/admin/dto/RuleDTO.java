@@ -15,6 +15,7 @@ public class RuleDTO {
     private int httpStatusCode;
     private String responseContentType;
     private String responseBody;
+    private long sleepInMillis;
     private Map<String, String> responseHeaders = new HashMap<String, String>();
     private List<RuleGroupDTO> groups = new ArrayList<RuleGroupDTO>();
 
@@ -26,12 +27,13 @@ public class RuleDTO {
         this.responseBody = responseBody;
     }
 
-    public RuleDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody) {
+    public RuleDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis) {
         this.extId = extId;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
+        this.sleepInMillis = sleepInMillis;
     }
 
     public String getExtId() {
@@ -67,6 +69,13 @@ public class RuleDTO {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
     }
 
     public List<RuleGroupDTO> getGroups() {

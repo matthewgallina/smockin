@@ -38,6 +38,9 @@ public class RestfulMock extends Identifier {
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
 
+    @Column(name = "RANDOM_DEF", nullable = false)
+    private boolean randomiseDefinitions;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
     @OrderBy("orderNo ASC")
     private List<RestfulMockDefinitionRule> rules = new ArrayList<RestfulMockDefinitionRule>();
@@ -49,12 +52,13 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public String getPath() {
@@ -97,6 +101,13 @@ public class RestfulMock extends Identifier {
     }
     public void setInitializationOrder(int initializationOrder) {
         this.initializationOrder = initializationOrder;
+    }
+
+    public boolean isRandomiseDefinitions() {
+        return randomiseDefinitions;
+    }
+    public void setRandomiseDefinitions(boolean randomiseDefinitions) {
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public List<RestfulMockDefinitionRule> getRules() {

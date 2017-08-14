@@ -29,6 +29,9 @@ public class RestfulMockDefinitionRule extends Identifier {
     @Column(name = "RESPONSE_BODY", nullable = false, length = 5000)
     private String responseBody;
 
+    @Column(name = "SLEEP_IN_MILLIS", nullable = false)
+    private long sleepInMillis;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="REST_MOCK_RULE_RES_HDR")
     private Map<String, String> responseHeaders = new HashMap<String, String>();
@@ -41,12 +44,13 @@ public class RestfulMockDefinitionRule extends Identifier {
     public RestfulMockDefinitionRule() {
     }
 
-    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode, final String responseContentType, final String responseBody) {
+    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode, final String responseContentType, final String responseBody, long sleepInMillis) {
         this.restfulMock = mock;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
+        this.sleepInMillis = sleepInMillis;
     }
 
     public RestfulMock getRestfulMock() {
@@ -82,6 +86,13 @@ public class RestfulMockDefinitionRule extends Identifier {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
     }
 
     public List<RestfulMockDefinitionRuleGroup> getConditionGroups() {
