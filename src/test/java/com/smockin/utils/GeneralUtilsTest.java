@@ -1,5 +1,6 @@
-package com.smockin.admin.service.utils;
+package com.smockin.utils;
 
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

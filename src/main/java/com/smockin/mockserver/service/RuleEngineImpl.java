@@ -4,7 +4,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;

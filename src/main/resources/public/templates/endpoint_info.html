@@ -159,6 +159,11 @@
                         </tbody>
                     </table>
 
+                    <div class="form-group" class="shuffle-seq-group" ng-show="endpoint.definitions.length > 1">
+                        <input id="shuffleSequence" ng-model="endpoint.randomiseDefinitions" type="checkbox" />
+                        <label for="shuffleSequence" class="ng-binding">{{ shuffleSequenceLabel }}</label>
+                    </div>
+
                 </div>
 
                 <div ng-show="endpoint.mockType == mockTypeRule">

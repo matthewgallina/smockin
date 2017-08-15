@@ -117,3 +117,7 @@
 .proxy-timeout-group {
     margin-top: 15px;
 }
+
+.shuffle-seq-group {
+    text-align: right;
+}

@@ -32,12 +32,12 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.defaultResponseBodyLabel = 'Default Response Body';
     $scope.noRulesFound = 'No Rules Found';
     $scope.noSeqFound = 'No Sequenced Responses Found';
-    $scope.orderNoLabel = 'Sequence Order';
+    $scope.orderNoLabel = 'Sequence';
     $scope.ruleLabel = 'Rule Order';
     $scope.responseBodyLabel = 'Response Body';
-    $scope.sequenceResponsesRadioLabel = 'Sequenced Responses';
+    $scope.sequenceResponsesRadioLabel = 'Sequenced';
     $scope.rulesRadioLabel = 'Rules';
-    $scope.proxyRadioLabel = 'Proxied Response';
+    $scope.proxyRadioLabel = 'Proxied';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
@@ -45,6 +45,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.endpointStatusLabel = 'Status:';
     $scope.proxyTimeoutLabel = 'Timeout (in millis)';
     $scope.proxyTimeoutPlaceholderTxt = 'Duration a call to this endpoint will wait';
+    $scope.shuffleSequenceLabel = "Shuffle Responses";
 
 
     //
@@ -110,6 +111,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "status" : ActiveStatus,
         "proxyTimeout" : 0,
         "mockType" : MockTypeSeq, // RULE
+        "randomiseDefinitions" : false,
         "definitions" : [],
         "rules" : []
     };
@@ -135,6 +137,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "status" : endpoint.status,
             "proxyTimeout" : endpoint.proxyTimeoutInMillis,
             "mockType" : endpoint.mockType,
+            "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules
         };
@@ -253,6 +256,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         // Update all orderNo fields in seq array
         updateSeqOrderNumbers();
+
+        if ($scope.endpoint.definitions.length < 2) {
+            $scope.endpoint.randomiseDefinitions = false;
+        }
     };
 
     function updateSeqOrderNumbers() {
@@ -463,6 +470,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "status" : $scope.endpoint.status,
             "mockType" : $scope.endpoint.mockType,
             "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
+            "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "definitions" : [],
             "rules" : []
         };
@@ -472,6 +480,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
             for (var d=0; d < $scope.endpoint.definitions.length; d++) {
                 reqData.definitions.push($scope.endpoint.definitions[d]);
+            }
+
+            if (reqData.definitions.length < 2) {
+                reqData.randomiseDefinitions = false;
             }
 
         // Handle Rule specifics

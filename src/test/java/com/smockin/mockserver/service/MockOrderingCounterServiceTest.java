@@ -2,7 +2,7 @@ package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.junit.Assert;
 import org.junit.Before;

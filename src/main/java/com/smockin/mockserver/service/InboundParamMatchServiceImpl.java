@@ -1,6 +1,6 @@
 package com.smockin.mockserver.service;
 
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
