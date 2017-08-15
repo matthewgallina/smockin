@@ -2,13 +2,15 @@
 <div class="section-heading">{{ mockTypesSectionTitle }}</div>
 
 <div class="section-body">
-    Simulated endpoints can return content in 3 different ways:
+    Simulated endpoints can return content in 4 different ways:
 
     <br /><br />
 
     <b class="highlight-color">
 
-        In Sequence
+        Sequentially
+        <br />
+        Randomly
         <br />
         Using Rules
         <br />
@@ -19,38 +21,37 @@
     <br />
     <br/>
 
-    <h4>In Sequence</h4>
+
+    <h4 class="section-sub-heading">Sequential Responses</h4>
     <br/>
 
     <p>
-        An endpoint using Sequenced Responses, stores a list of multiple responses.
+        An endpoint using sequential responses, stores a list of multiple responses.
         The first call to the endpoint results with the first response in the list being returned back to the call.
         Subsequent calls sequentially pick up responses from the list, until the end of the list is reached and returns to the beginning again.
     </p>
 
     <p>
-        To give an example, you could have the endpoint <b>http://localhost:8001/weather</b> set up to return 3 sequential responses:
+        To give an example, you could have the endpoint <b>/weather</b> set up to return 3 sequential responses:
     </p>
 
     <br/>
 
-    <p>
-        <b>
-            200 OK
-            <br/>
-            { "weather" : "sunny", "celsius" : 32 }
-            <br />
-            <br/>
-            200 OK
-            <br/>
-            { "weather" : "cloudy", "celsius" : 25 }
-            <br />
-            <br/>
-            200 OK
-            <br/>
-            { "weather" : "rainy", "celsius" : 22 }
-            <br />
-        </b>
+    <p class="highlight-color">
+        200 OK
+        <br/>
+        { "weather" : "sunny", "celsius" : 32 }
+        <br />
+        <br/>
+        200 OK
+        <br/>
+        { "weather" : "cloudy", "celsius" : 25 }
+        <br />
+        <br/>
+        200 OK
+        <br/>
+        { "weather" : "rainy", "celsius" : 22 }
+        <br />
     </p>
 
     <br />
@@ -62,27 +63,25 @@
 
     <br/>
 
-    <p>
-        <b>
-            200 OK
-            <br/>
-            { "weather" : "sunny", "celsius" : 32 }
-            <br />
-            <br/>
-            200 OK
-            <br/>
-            { "weather" : "cloudy", "celsius" : 25 }
-            <br />
-            <br/>
-            200 OK
-            <br/>
-            { "weather" : "rainy", "celsius" : 22 }
-            <br />
-            <br />
-            500 INTERNAL SERVER ERROR
-            <br/>
-            <br />
-        </b>
+    <p class="highlight-color">
+        200 OK
+        <br/>
+        { "weather" : "sunny", "celsius" : 32 }
+        <br />
+        <br/>
+        200 OK
+        <br/>
+        { "weather" : "cloudy", "celsius" : 25 }
+        <br />
+        <br/>
+        200 OK
+        <br/>
+        { "weather" : "rainy", "celsius" : 22 }
+        <br />
+        <br />
+        500 INTERNAL SERVER ERROR
+        <br/>
+        <br />
     </p>
 
     <br/>
@@ -91,30 +90,161 @@
         As mentioned a 5th call would move back to the beginning of the list:
     </p>
 
-    <p>
-        <b>
-            200 OK
-            <br/>
-            { "weather" : "sunny", "celsius" : 32 }
-            <br />
-        </b>
+    <p class="highlight-color">
+        200 OK
+        <br/>
+        { "weather" : "sunny", "celsius" : 32 }
+        <br />
     </p>
 
     <br/>
     <br/>
 
-    <h4>Using Rules</h4>
+
+    <h4 class="section-sub-heading">Random Responses</h4>
     <br/>
 
-    TODO
+    <p>
+        To simulate less predictable behaviour, responses can also be returned back randomly from a given list of responses.
+    </p>
+
+    <br />
+
+    <p>
+        This mode can be enabled via <b>Shuffle</b> option under Sequential responses, where 2 or more responses are available.
+    </p>
 
     <br/>
     <br/>
 
-    <h4>Via Proxy</h4>
+
+    <h4 class="section-sub-heading">Using Rules</h4>
     <br/>
 
-    TODO
+    <p>
+        A powerful feature of Smockin, is the ability to use rules to control the response sent back to the caller.
+        <br />
+        <br />
+        This can be useful when trying to simulate business logic during development, such as where you have a <b>/login</b> endpoint which
+        needs to return say <b>true</b> or <b>false</b> based on particular input.
+    </p>
 
+    <br />
+
+    <p>
+        A single endpoint can have multiple rules, where each rule consists of multiple conditions.
+        <br />
+        <br />
+        Each rule defines a particular response status, content type and body all of which are returned whenever all of the conditions of the rule are met.
+        <br />
+        <br />
+        All rules and and conditions have a defined (and modifiable) order, so should for example the conditions of 2 rules conflict by both being met, the highest ordered rule would take precedence.
+        <br />
+        <br />
+        Conditions are simple 'if arguments' between a given value and a request inbound type:
+
+        <br />
+        <br />
+
+        <p class="highlight-color">
+            Path Variable
+            <br />
+            Request Parameter
+            <br />
+            Request Header
+            <br />
+            Request Body
+            <br />
+        </p>
+    </p>
+
+    <br />
+
+    <p>
+        Using the aforementioned <b>/login</b> endpoint, we could therefore create a rule to look like so:
+    </p>
+
+    <br />
+
+    <p class="highlight-color">
+        &nbsp;<b>IF</b><br/>
+        &nbsp;&nbsp;&nbsp;(<br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>username</b> equalsIgnoreCase ( <b>'admin'</b> )<br/>
+        &nbsp;&nbsp;&nbsp;<b>AND</b><br/>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>password</b> equalsIgnoreCase ( <b>'letmein'</b> )<br/>
+        &nbsp;)<br/>
+    </p>
+
+    <p>
+        This would return a <b>200</b> status code and token in the response body <b>{ "token" : "aa2d68f5-cd5f-498c-b13c-b967283e852d" }</b>,
+        when both conditions were met.
+        <br />
+        <br />
+        To round things off the endpoint would then be configured to return <b>403</b> status code (and empty body) as the default response.
+    </p>
+
+    <br/>
+    <br/>
+
+    <p>
+        The below screenshots demonstrate what the <b>/login</b> endpoint rule looks like once defined in the dashboard.
+    </p>
+
+    <br />
+
+    <a href="" ng-click="openImageViewer('../../image/help/add_condition.png')">
+        <img src="../../image/help/add_condition.png" style="max-height: 200px; margin: 10px;" />
+    </a>
+    <a href="" ng-click="openImageViewer('../../image/help/rule_conditons.png')">
+        <img src="../../image/help/rule_conditons.png" style="max-height: 200px; margin: 10px;" />
+    </a>
+    <a href="" ng-click="openImageViewer('../../image/help/view_rule.png')">
+        <img src="../../image/help/view_rule.png" style="max-height: 200px; margin: 10px;" />
+    </a>
+
+    <br />
+    <br />
+
+    <center>
+        <p>
+            <b>Click the above images to enlarge</b>
+        </p>
+    </center>
+
+
+    <br/>
+    <br/>
+    <br/>
+
+
+    <h4 class="section-sub-heading">Proxied Responses</h4>
+    <br/>
+
+    <p>
+        Proxied responses allow an endpoint's response to be injected via a separate call.
+        <br />
+        <br />
+        For example, say you create the proxied response endpoint <b>/wait</b>.
+        <br />
+        Were <b>Caller A</b> to call this, they will have to wait until a response made available.
+        <br />
+        To inject a response, <b>Caller B</b> will call into a reserved endpoint called <b>http://localhost:8000/proxy</b> and set the status code, content type and response body.
+        <br />
+        As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should now receive that exact status code, content type and response body.
+        <br />
+    </p>
+
+    <br />
+
+    <p>
+        As such Proxied responses can be useful where you need to:
+
+        <ul>
+            <li>Control the response being sent back to a caller from a completely separate process</li>
+            <li>Have a process which long polls, until response is provided</li>
+            <li>Need functionality similar to the classic consumer/producer model</li>
+        </ul>
+
+    </p>
 
 </div>
