@@ -2,12 +2,14 @@ package com.smockin.mockserver.service;
 
 import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import spark.Request;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -77,15 +79,24 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
             final String pathVariableValue = GeneralUtils.findPathVarIgnoreCase(req, pathVariableName);
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", (pathVariableValue != null)?pathVariableValue:"", 1);
-        } else if (matchResult.startsWith(ParamMatchTypeEnum.ISO_DATETIME.name())) {
+        } else if (matchResult.equals(ParamMatchTypeEnum.ISO_DATETIME.name())) {
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", new SimpleDateFormat(GeneralUtils.ISO_DATETIME_FORMAT).format(GeneralUtils.getCurrentDate()), 1);
-        } else if (matchResult.startsWith(ParamMatchTypeEnum.ISO_DATE.name())) {
+        } else if (matchResult.equals(ParamMatchTypeEnum.ISO_DATE.name())) {
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", new SimpleDateFormat(GeneralUtils.ISO_DATE_FORMAT).format(GeneralUtils.getCurrentDate()), 1);
-        } else if (matchResult.startsWith(ParamMatchTypeEnum.UUID.name())) {
+        } else if (matchResult.equals(ParamMatchTypeEnum.UUID.name())) {
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", GeneralUtils.generateUUID(), 1);
+        } else if (matchResult.startsWith(ParamMatchTypeEnum.RANDOM_NUMBER.name())) {
+
+            if (matchResult.equals(ParamMatchTypeEnum.RANDOM_NUMBER.name())) {
+                return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(RandomUtils.nextInt()), 1);
+            }
+
+            final String range = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.RANDOM_NUMBER.name() + "="));
+
+            return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(RandomUtils.nextInt()), 1);
         } else {
 
             throw new IllegalArgumentException("Unsupported token : " + matchResult);

@@ -9,5 +9,6 @@ public enum ParamMatchTypeEnum {
     PATH_VAR,
     ISO_DATE,
     ISO_DATETIME,
-    UUID;
+    UUID,
+    RANDOM_NUMBER;
 }
