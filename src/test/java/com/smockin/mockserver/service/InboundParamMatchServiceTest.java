@@ -1,29 +1,19 @@
 package com.smockin.mockserver.service;
 
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
-import com.smockin.mockserver.service.InboundParamMatchService;
-import com.smockin.mockserver.service.InboundParamMatchServiceImpl;
-import com.smockin.mockserver.service.MockOrderingCounterService;
-import com.smockin.mockserver.service.RuleEngine;
-import com.smockin.mockserver.service.dto.RestfulResponse;
-import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
+import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
 import spark.Request;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TimeZone;
 
 /**
  * Created by mgallina.
@@ -65,7 +55,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_header_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}";
 
         Mockito.when(request.headers("name")).thenReturn("Roger");
         Mockito.when(request.headers()).thenReturn(new HashSet<String>() {
@@ -85,7 +75,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_headerCase_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=NAME}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=NAME}";
 
         Mockito.when(request.headers("name")).thenReturn("Roger");
         Mockito.when(request.headers()).thenReturn(new HashSet<String>() {
@@ -105,7 +95,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_headerNoMatch_Test() {
 
         // Test
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}";
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
@@ -116,7 +106,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_reqParam_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_PARAM.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_PARAM.name() +"=name}";
 
         Mockito.when(request.queryParams("name")).thenReturn("Roger");
         Mockito.when(request.queryParams()).thenReturn(new HashSet<String>() {
@@ -136,7 +126,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_reqParamCase_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_PARAM.name() +"=NAME}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_PARAM.name() +"=NAME}";
 
         Mockito.when(request.queryParams("name")).thenReturn("Roger");
         Mockito.when(request.queryParams()).thenReturn(new HashSet<String>() {
@@ -156,7 +146,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_reqParamNoMatch_Test() {
 
         // Test
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_PARAM.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_PARAM.name() +"=name}";
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
@@ -167,7 +157,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_pathVar_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.PATH_VAR.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=name}";
 
         Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
             {
@@ -186,7 +176,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_pathVarCase_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.PATH_VAR.name() +"=NAME}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=NAME}";
 
         Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
             {
@@ -205,7 +195,7 @@ public class InboundParamMatchServiceTest {
     public void processParamMatch_pathVarNoMatch_Test() {
 
         // Test
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.PATH_VAR.name() +"=name}";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=name}";
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
@@ -216,7 +206,7 @@ public class InboundParamMatchServiceTest {
     public void enrichWithInboundParamMatches_multiMatchesAndSpaces_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=name}, you are ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"= gender  } and are ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=age} years old";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}, you are ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"= gender  } and are ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=age} years old";
 
         Mockito.when(request.headers("name")).thenReturn("Roger");
         Mockito.when(request.headers("age")).thenReturn("21");
@@ -240,7 +230,7 @@ public class InboundParamMatchServiceTest {
     public void enrichWithInboundParamMatches_partialMatch_Test() {
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=name}, you are ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=age} years old";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}, you are ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=age} years old";
 
         Mockito.when(request.headers("name")).thenReturn("Roger");
         Mockito.when(request.headers()).thenReturn(new HashSet<String>() {
@@ -264,7 +254,7 @@ public class InboundParamMatchServiceTest {
         thrown.expectMessage("Unsupported token : FOO");
 
         // Setup
-        final String responseBody = "Hello ${"+ InboundParamTypeEnum.REQ_HEAD.name() +"=name}, you are ${FOO=age} years old";
+        final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}, you are ${FOO=age} years old";
 
         Mockito.when(request.headers("name")).thenReturn("Roger");
         Mockito.when(request.headers()).thenReturn(new HashSet<String>() {
@@ -274,6 +264,47 @@ public class InboundParamMatchServiceTest {
         });
 
         inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_isoDate_Test() {
+
+        // Setup
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        final String responseBody = "The date is ${"+ ParamMatchTypeEnum.ISO_DATE.name() + "}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        Assert.assertEquals("The date is " + new SimpleDateFormat(GeneralUtils.ISO_DATE_FORMAT).format(GeneralUtils.getCurrentDate()), result);
+    }
+
+    @Test
+    public void processParamMatch_isoDateTime_Test() {
+
+        // Setup
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        final String responseBody = "The time is ${"+ ParamMatchTypeEnum.ISO_DATETIME.name() + "}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        Assert.assertEquals("The time is yyyy/MM/ddTHH:mm:ss+0000".length(), result.length());
+    }
+
+    @Test
+    public void processParamMatch_uuid_Test() {
+
+        // Setup
+        final String responseBody = "Your ID is ${"+ ParamMatchTypeEnum.UUID.name() + "}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        Assert.assertTrue("The ID is ".length() < ( result.length() + 25) );
     }
 
 }

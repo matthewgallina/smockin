@@ -8,7 +8,6 @@ import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponse;
-import com.smockin.mockserver.service.enums.InboundParamTypeEnum;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,13 +16,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import spark.Request;
-
-import java.util.HashMap;
-import java.util.HashSet;
 
 /**
  * Created by mgallina.

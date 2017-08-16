@@ -3,8 +3,11 @@ package com.smockin.mockserver.service.enums;
 /**
  * Created by mgallina
  */
-public enum InboundParamTypeEnum {
+public enum ParamMatchTypeEnum {
     REQ_HEAD,
     REQ_PARAM,
-    PATH_VAR;
+    PATH_VAR,
+    ISO_DATE,
+    ISO_DATETIME,
+    UUID;
 }
