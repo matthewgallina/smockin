@@ -6,219 +6,244 @@
 
     <br /><br />
 
-    <b class="highlight-color">
-
-        Sequentially
-        <br />
-        Randomly
-        <br />
-        Using Rules
-        <br />
-        Via Proxy
-    </b>
+    <div class="section-body-indent">
+        <b class="highlight-color">
+            Sequentially
+            <br />
+            Randomly
+            <br />
+            Using Rules
+            <br />
+            Via Proxy
+        </b>
+    </div>
 
     <br />
-    <br />
-    <br/>
-
-
-    <h4 class="section-sub-heading">Sequential Responses</h4>
-    <br/>
-
-    <p>
-        An endpoint using sequential responses, stores a list of multiple responses.
-        The first call to the endpoint results with the first response in the list being returned back to the call.
-        Subsequent calls sequentially pick up responses from the list, until the end of the list is reached and returns to the beginning again.
-    </p>
-
-    <p>
-        To give an example, you could have the endpoint <b>/weather</b> set up to return 3 sequential responses:
-    </p>
-
-    <br/>
-
-    <p class="highlight-color">
-        200 OK
-        <br/>
-        { "weather" : "sunny", "celsius" : 32 }
-        <br />
-        <br/>
-        200 OK
-        <br/>
-        { "weather" : "cloudy", "celsius" : 25 }
-        <br />
-        <br/>
-        200 OK
-        <br/>
-        { "weather" : "rainy", "celsius" : 22 }
-        <br />
-    </p>
-
     <br />
     <br/>
 
-    <p>
-        To take make things interesting, you could then add 1 more response so as mimic the weather service failing ungracefully with an error 500 on the 4th call:
-    </p>
 
+    <p class="section-sub-heading">Sequential Responses</p>
     <br/>
 
-    <p class="highlight-color">
-        200 OK
+    <div class="section-body-indent">
+
+        <p>
+            An endpoint using sequential responses, stores a list of multiple responses.
+            The first call to the endpoint results with the first response in the list being returned back to the call.
+            Subsequent calls sequentially pick up responses from the list, until the end of the list is reached and returns to the beginning again.
+        </p>
+
+        <p>
+            To give an example, you could have the endpoint <b>/weather</b> set up to return 3 sequential responses:
+        </p>
+
         <br/>
-        { "weather" : "sunny", "celsius" : 32 }
+
+        <p class="highlight-color">
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "cloudy", "celsius" : 25 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "rainy", "celsius" : 22 }
+            <br />
+        </p>
+
         <br />
         <br/>
-        200 OK
+
+        <p>
+            To take make things interesting, you could then add 1 more response so as mimic the weather service failing ungracefully with an error 500 on the 4th call:
+        </p>
+
         <br/>
-        { "weather" : "cloudy", "celsius" : 25 }
-        <br />
+
+        <p class="highlight-color">
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "cloudy", "celsius" : 25 }
+            <br />
+            <br/>
+            200 OK
+            <br/>
+            { "weather" : "rainy", "celsius" : 22 }
+            <br />
+            <br />
+            500 INTERNAL SERVER ERROR
+            <br/>
+            <br />
+        </p>
+
         <br/>
-        200 OK
+
+        <p>
+            As mentioned a 5th call would move back to the beginning of the list:
+        </p>
+
+        <p class="highlight-color">
+            200 OK
+            <br/>
+            { "weather" : "sunny", "celsius" : 32 }
+            <br />
+        </p>
+
+        <br />
+
+        <p>
+            <a href="" class="help-slides-link" ng-click="openImageViewer('seq_response')">Click here</a> for a full example of how to create the <b>/weather</b> endpoint in the dashboard.
+        </p>
+
         <br/>
-        { "weather" : "rainy", "celsius" : 22 }
-        <br />
-        <br />
-        500 INTERNAL SERVER ERROR
         <br/>
-        <br />
-    </p>
 
+    </div>
+
+    <p class="section-sub-heading">Random Responses</p>
     <br/>
 
-    <p>
-        As mentioned a 5th call would move back to the beginning of the list:
-    </p>
+    <div class="section-body-indent">
 
-    <p class="highlight-color">
-        200 OK
+        <p>
+            To simulate less predictable behaviour, responses can also be returned back randomly from a given list of responses.
+        </p>
+
+        <br />
+
+        <p>
+            This mode can be enabled via <b>Shuffle</b> option under Sequential responses, where 2 or more responses are available.
+        </p>
+
         <br/>
-        { "weather" : "sunny", "celsius" : 32 }
-        <br />
-    </p>
+        <br/>
 
-    <br/>
-    <br/>
+    </div>
 
-
-    <h4 class="section-sub-heading">Random Responses</h4>
+    <p class="section-sub-heading">Using Rules</p>
     <br/>
 
-    <p>
-        To simulate less predictable behaviour, responses can also be returned back randomly from a given list of responses.
-    </p>
+    <div class="section-body-indent">
 
-    <br />
-
-    <p>
-        This mode can be enabled via <b>Shuffle</b> option under Sequential responses, where 2 or more responses are available.
-    </p>
-
-    <br/>
-    <br/>
-
-
-    <h4 class="section-sub-heading">Using Rules</h4>
-    <br/>
-
-    <p>
-        A powerful feature of Smockin, is the ability to use rules to control the response sent back to the caller.
-        <br />
-        <br />
-        This can be useful when trying to simulate business logic during development, such as where you have a <b>/login</b> endpoint which
-        needs to return say <b>true</b> or <b>false</b> based on particular input.
-    </p>
-
-    <br />
-
-    <p>
-        A single endpoint can have multiple rules, where each rule consists of multiple conditions.
-        <br />
-        <br />
-        Each rule defines a particular response status, content type and body all of which are returned whenever all of the conditions of the rule are met.
-        <br />
-        <br />
-        All rules and and conditions have a defined (and modifiable) order, so should for example the conditions of 2 rules conflict by both being met, the highest ordered rule would take precedence.
-        <br />
-        <br />
-        Conditions are simple 'if arguments' between a given value and a request inbound type:
+        <p>
+            A powerful feature of Smockin, is the ability to use rules to control the response sent back to the caller.
+            <br />
+            <br />
+            This can be useful when trying to simulate business logic during development, such as where you have a <b>/login</b> endpoint which
+            needs to return say <b>true</b> or <b>false</b> based on particular input.
+        </p>
 
         <br />
+
+        <p>
+            A single endpoint can have multiple rules, where each rule consists of multiple conditions.
+            <br />
+            <br />
+            Each rule defines a particular response status, content type and body all of which are returned whenever all of the conditions of the rule are met.
+            <br />
+            <br />
+            All rules and and conditions have a defined (and modifiable) order, so should for example the conditions of 2 rules conflict by both being met, the highest ordered rule would take precedence.
+            <br />
+            <br />
+            Conditions are simple 'if arguments' between a given value and a request inbound type:
+
+            <br />
+            <br />
+
+            <p class="highlight-color">
+                Path Variable
+                <br />
+                Request Parameter
+                <br />
+                Request Header
+                <br />
+                Request Body
+                <br />
+            </p>
+        </p>
+
+        <br />
+
+        <p>
+            To implement the <b>/login</b> example, we could therefore create the endpoint to return a <b>403</b> status code (and empty body) by default and then add the following rule:
+        </p>
+
         <br />
 
         <p class="highlight-color">
-            Path Variable
+            &nbsp;<b>IF</b><br/>
+            &nbsp;&nbsp;&nbsp;(<br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>username</b> equalsIgnoreCase ( <b>'admin'</b> )<br/>
+            &nbsp;&nbsp;&nbsp;<b>AND</b><br/>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>password</b> equalsIgnoreCase ( <b>'letmein'</b> )<br/>
+            &nbsp;)<br/>
+        </p>
+
+        <br />
+
+        <p>
+            where both of these conditions were met, this would return a <b>200</b> status code and the response body <b>{ "token" : "aa2d68f5-cd5f-498c-b13c-b967283e852d" }</b>, resulting with a fully simulated login web service.
+        </p>
+
+        <br />
+
+        <p>
+            <a href="" class="help-slides-link" ng-click="openImageViewer('rule_response')">Click here</a> for a full example of how to create the <b>/login</b> endpoint in the dashboard.
+        </p>
+
+        <br/>
+        <br/>
+
+    </div>
+
+    <p class="section-sub-heading">Proxied Responses</p>
+    <br/>
+
+    <div class="section-body-indent">
+
+        <p>
+            Proxied responses allow an endpoint's response to be injected via a separate call.
             <br />
-            Request Parameter
             <br />
-            Request Header
+            For example, say you create the proxied response endpoint <b>/wait</b>.
             <br />
-            Request Body
+            Were <b>Caller A</b> to call this, they will have to wait until a response made available.
+            <br />
+            To inject a response, <b>Caller B</b> would call into the admin endpoint <b>http://localhost:8000/proxy</b> and set the status code, content type and response body like so <b>{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}</b>.
+            <br />
+            As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should receive a <b>200</b> response with the json message <b>{"name":"The wait is over"}</b>.
             <br />
         </p>
-    </p>
 
-    <br />
-
-    <p>
-        To implement the <b>/login</b> example, we could therefore create the endpoint to return a <b>403</b> status code (and empty body) by default and then add the following rule:
-    </p>
-
-    <br />
-
-    <p class="highlight-color">
-        &nbsp;<b>IF</b><br/>
-        &nbsp;&nbsp;&nbsp;(<br/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>username</b> equalsIgnoreCase ( <b>'admin'</b> )<br/>
-        &nbsp;&nbsp;&nbsp;<b>AND</b><br/>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Request Parameter : <b>password</b> equalsIgnoreCase ( <b>'letmein'</b> )<br/>
-        &nbsp;)<br/>
-    </p>
-
-    <br />
-
-    <p>
-        where both of these conditions were met, this would return a <b>200</b> status code and the response body <b>{ "token" : "aa2d68f5-cd5f-498c-b13c-b967283e852d" }</b>, resulting with a fully simulated login web service.
-    </p>
-
-    <br />
-
-    <p>
-        <a href="" ng-click="openImageViewer('rules')">Click here</a> for a full example of how to create the <b>/login</b> endpoint in the dashboard.
-    </p>
-
-    <br/>
-    <br/>
-
-
-    <h4 class="section-sub-heading">Proxied Responses</h4>
-    <br/>
-
-    <p>
-        Proxied responses allow an endpoint's response to be injected via a separate call.
         <br />
-        <br />
-        For example, say you create the proxied response endpoint <b>/wait</b>.
-        <br />
-        Were <b>Caller A</b> to call this, they will have to wait until a response made available.
-        <br />
-        To inject a response, <b>Caller B</b> will call into a reserved endpoint called <b>http://localhost:8000/proxy</b> and set the status code, content type and response body.
-        <br />
-        As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should now receive that exact status code, content type and response body.
-        <br />
-    </p>
 
-    <br />
+        <p>
+            As such Proxied responses can be useful where you need to:
 
-    <p>
-        As such Proxied responses can be useful where you need to:
+            <ul>
+                <li>Control the response being sent back to a caller from a completely separate process</li>
+                <li>Have a process which long polls, until response is provided</li>
+                <li>Need functionality similar to the classic consumer/producer model</li>
+            </ul>
+        </p>
 
-        <ul>
-            <li>Control the response being sent back to a caller from a completely separate process</li>
-            <li>Have a process which long polls, until response is provided</li>
-            <li>Need functionality similar to the classic consumer/producer model</li>
-        </ul>
+        <br />
 
-    </p>
+        <p>
+            <a href="" class="help-slides-link" ng-click="openImageViewer('proxy_response')">Click here</a> for a full example of how to create and utilise the <b>/wait</b> endpoint in the dashboard.
+        </p>
+
+    </div>
 
 </div>

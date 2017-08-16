@@ -6,93 +6,112 @@
 
     <br /><br />
 
-    <b class="highlight-color">
-    ${REQ_HEAD=<i>param_name</i>}
-    <br />
-    ${REQ_PARAM=<i>param_name</i>}
-    <br />
-    ${PATH_VAR=<i>param_name</i>}
-    </b>
+    <div class="section-body-indent">
+        <b class="highlight-color">
+        ${REQ_HEAD=<i>param_name</i>}
+        <br />
+        ${REQ_PARAM=<i>param_name</i>}
+        <br />
+        ${PATH_VAR=<i>param_name</i>}
+        </b>
+    </div>
 
-    <br />
     <br />
     <br />
 
     To give an example, let's assume the url:
-    <br/>
-    <br/>
-    <b>http://localhost:8001/hello?firstname=joe</b>
 
     <br/>
     <br/>
 
-    To include the request parameter 'firstname' in your response you would do the following:
+    <div class="section-body-indent">
 
-    <br />
-    <br />
+        <b>http://localhost:8001/hello?firstname=joe</b>
 
-    <b>{ "msg" : "Hello <span class="highlight-color">${REQ_PARAM=firstname}</span>!" }</b>
+        <br/>
+        <br/>
 
-    <br />
-    <br />
+        To include the request parameter 'firstname' in your response you would do the following:
 
-    This would then return:
+        <br />
+        <br />
 
-    <br />
-    <br />
+        <b>{ "msg" : "Hello <span class="highlight-color">${REQ_PARAM=firstname}</span>!" }</b>
 
-    <b>{ "msg" : "Hello joe!" }</b>
+        <br />
+        <br />
 
-    <br />
-    <br />
+        This would then return:
 
-    In the event the request parameter <b>firstname</b> is not present in the request, a blank value will be returned instead:
+        <br />
+        <br />
 
-    <br />
-    <br />
+        <b>{ "msg" : "Hello joe!" }</b>
 
-    <b>{ "msg" : "Hello !" }</b>
+        <br />
+        <br />
 
-    <br />
-    <br />
-    <br />
+        In the event the request parameter <b>firstname</b> is not present in the request, a blank value will be returned instead:
+
+        <br />
+        <br />
+
+        <b>{ "msg" : "Hello !" }</b>
+
+        <br />
+        <br />
+        <br />
+
+    </div>
 
     Below is an example of combining all 3 input types within a response:
 
     <br />
     <br />
 
-    The simulated endpoint setup:
-    <br />
-    <br />
-    <b>
-        <div class="row">
-            <div class="col-sm-2">Method:</div>
-            <div class="col-sm-10">GET</div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2">URL:</div>
-            <div class="col-sm-10">http://localhost:8001/greeting/:lastname</div>
-        </div>
-        <div class="row">
-            <div class="col-sm-2">Response Body:</div>
-            <div class="col-sm-10">{ "msg" : "Greetings <span class="highlight-color">${REQ_PARAM=title} ${PATH_VAR=lastname}</span>. How are you on this <span class="highlight-color">${REQ_HEAD=weather}</span> day?" }</div>
-        </div>
-    </b>
+    <div class="section-body-indent">
+
+        The simulated endpoint setup:
+        <br />
+        <br />
+        <b>
+            <div class="row">
+                <div class="col-sm-2">Method:</div>
+                <div class="col-sm-10">GET</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">URL:</div>
+                <div class="col-sm-10">http://localhost:8001/greeting/:lastname</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Response Body:</div>
+                <div class="col-sm-10">{ "msg" : "Greetings <span class="highlight-color">${REQ_PARAM=title} ${PATH_VAR=lastname}</span>. How are you on this <span class="highlight-color">${REQ_HEAD=weather}</span> day?" }</div>
+            </div>
+        </b>
+
+        <br />
+
+        Calling into the endpoint:
+        <br />
+        <br />
+        <b>curl -i -H "weather: sunny" -X GET http://localhost:8001/greeting/Smith?title=Mr</b>
+
+        <br />
+        <br />
+
+        Output from call:
+        <br />
+        <br />
+        <b>{ "msg" : "Greetings Mr Smith. How are you on this sunny day?" }</b>
+
+    </div>
 
     <br />
-
-    Calling into the endpoint:
-    <br />
-    <br />
-    <b>curl -i -H "weather: sunny" -X GET http://localhost:8001/greeting/Smith?title=Mr</b>
-
     <br />
     <br />
 
-    Output from call:
-    <br />
-    <br />
-    <b>{ "msg" : "Greetings Mr Smith. How are you on this sunny day?" }</b>
+    <p>
+        <a href="" class="help-slides-link" ng-click="openImageViewer('dynamic_response_content')">Click here</a> for a full example of how to create the <b>/greeting</b> endpoint in the dashboard.
+    </p>
 
 </div>

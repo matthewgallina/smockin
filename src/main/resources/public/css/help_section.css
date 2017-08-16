@@ -11,10 +11,25 @@
     margin-bottom: 35px;
 }
 
+.section-body-indent {
+    margin-left: 20px;
+}
+
 .highlight-color {
+    color: #5c85d6;
+    font-style: italic;
+}
+
+.highlight-color-plain {
     color: #5c85d6;
 }
 
 .section-sub-heading {
-    color: #5c5c8a;
+    font-size: 18px;
+    font-style: italic;
+    color: #5c85d6;
+}
+
+.help-slides-link {
+    text-decoration: underline;
 }
