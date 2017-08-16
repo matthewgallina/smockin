@@ -107,7 +107,7 @@ app.controller('helpSlidesController', function($scope, $uibModalInstance, data)
         addSlide(proxyDir + "/endpoint.png", "Fill in the path and method, then select 'Proxied', set a timeout value and finally click 'Save'");
         addSlide(proxyDir + "/start_mock_server.png", "Stop/Start the mock server to publish the new endpoint");
         addSlide(proxyDir + "/curl1.png", "Calling the /wait endpoint, will result in the caller having to wait for a response");
-        addSlide(proxyDir + "/curl_timeout.png", "If nothing is sent to the server, then the call will internally timeout after 45 seconds resulting with a 404");
+        addSlide(proxyDir + "/curl_timeout.png", "If nothing is sent to the server, then the call will internally timeout after 30 seconds resulting with a 404");
         addSlide(proxyDir + "/curl3.png", "Call the /wait endpoint again but this time post a response from a separate client (below window)");
         addSlide(proxyDir + "/curl4.png", "The response posted from the below client, is received by the caller at the top");
 
@@ -117,7 +117,7 @@ app.controller('helpSlidesController', function($scope, $uibModalInstance, data)
 
         addSlide(drcDir + "/dashboard.png", "Click the 'Add Endpoint' button");
         addSlide(drcDir + "/endpoint.png", "Fill in the path and method, then select 'Sequenced' and click 'Add Seq Response'");
-        addSlide(drcDir + "/add_response.png", "Add the response with the 3 dynamic field references, then click 'Add'");
+        addSlide(drcDir + "/add_response.png", "Add a response with the 3 dynamic field references, then click 'Add'");
         addSlide(drcDir + "/final_endpoint.png", "Review the endpoint and then click 'Save'");
         addSlide(drcDir + "/start_mock_server.png", "Stop/Start the mock server to publish the new endpoint");
         addSlide(drcDir + "/curl1.png", "Finally call into endpoint providing all 3 fields");
