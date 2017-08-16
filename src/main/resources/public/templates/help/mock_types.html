@@ -161,7 +161,7 @@
     <br />
 
     <p>
-        Using the aforementioned <b>/login</b> endpoint, we could therefore create a rule to look like so:
+        To implement the <b>/login</b> example, we could therefore create the endpoint to return a <b>403</b> status code (and empty body) by default and then add the following rule:
     </p>
 
     <br />
@@ -175,44 +175,18 @@
         &nbsp;)<br/>
     </p>
 
-    <p>
-        This would return a <b>200</b> status code and token in the response body <b>{ "token" : "aa2d68f5-cd5f-498c-b13c-b967283e852d" }</b>,
-        when both conditions were met.
-        <br />
-        <br />
-        To round things off the endpoint would then be configured to return <b>403</b> status code (and empty body) as the default response.
-    </p>
-
-    <br/>
-    <br/>
+    <br />
 
     <p>
-        The below screenshots demonstrate what the <b>/login</b> endpoint rule looks like once defined in the dashboard.
+        where both of these conditions were met, this would return a <b>200</b> status code and the response body <b>{ "token" : "aa2d68f5-cd5f-498c-b13c-b967283e852d" }</b>, resulting with a fully simulated login web service.
     </p>
 
     <br />
 
-    <a href="" ng-click="openImageViewer('../../image/help/add_condition.png')">
-        <img src="../../image/help/add_condition.png" style="max-height: 200px; margin: 10px;" />
-    </a>
-    <a href="" ng-click="openImageViewer('../../image/help/rule_conditons.png')">
-        <img src="../../image/help/rule_conditons.png" style="max-height: 200px; margin: 10px;" />
-    </a>
-    <a href="" ng-click="openImageViewer('../../image/help/view_rule.png')">
-        <img src="../../image/help/view_rule.png" style="max-height: 200px; margin: 10px;" />
-    </a>
+    <p>
+        <a href="" ng-click="openImageViewer('rules')">Click here</a> for a full example of how to create the <b>/login</b> endpoint in the dashboard.
+    </p>
 
-    <br />
-    <br />
-
-    <center>
-        <p>
-            <b>Click the above images to enlarge</b>
-        </p>
-    </center>
-
-
-    <br/>
     <br/>
     <br/>
 
