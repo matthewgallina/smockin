@@ -94,6 +94,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                 return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(RandomUtils.nextInt()), 1);
             }
 
+            // TODO
             final String range = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.RANDOM_NUMBER.name() + "="));
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(RandomUtils.nextInt()), 1);
