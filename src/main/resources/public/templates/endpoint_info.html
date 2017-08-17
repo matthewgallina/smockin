@@ -114,7 +114,7 @@
                 <div id="mock-type-radio-group" class="btn-group" role="group">
                     <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
                     <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxy }}'">{{ proxyRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'">{{ proxyRadioLabel }}</label>
                 </div>
 
                 <br />
@@ -208,7 +208,7 @@
 
                 </div>
 
-                <div ng-show="endpoint.mockType == mockTypeProxy">
+                <div ng-show="endpoint.mockType == mockTypeProxyHttp">
 
                     <div class="form-group proxy-timeout-group">
                         <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>

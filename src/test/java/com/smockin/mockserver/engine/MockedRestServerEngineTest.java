@@ -108,7 +108,7 @@ public class MockedRestServerEngineTest {
     public void getDefault_Proxy_Test() {
 
         // Setup
-        restfulMock.setMockType(MockTypeEnum.PROXY);
+        restfulMock.setMockType(MockTypeEnum.PROXY_HTTP);
 
         // Test
         final RestfulResponse result = engine.getDefault(restfulMock);
