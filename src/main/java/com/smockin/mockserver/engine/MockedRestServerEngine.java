@@ -218,7 +218,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 break;
             case SEQ:
             default:
-                outcome = mockOrderingCounterService.getNextInSequence(mock);
+                outcome = mockOrderingCounterService.process(mock);
                 break;
         }
 

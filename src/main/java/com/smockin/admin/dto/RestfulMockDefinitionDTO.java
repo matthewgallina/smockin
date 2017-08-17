@@ -13,18 +13,20 @@ public class RestfulMockDefinitionDTO {
     private int httpStatusCode;
     private String responseContentType;
     private String responseBody;
+    private long sleepInMillis;
     private Map<String, String> responseHeaders = new HashMap<String, String>();
 
     public RestfulMockDefinitionDTO() {
 
     }
 
-    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody) {
+    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis) {
         this.extId = extId;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
+        this.sleepInMillis = sleepInMillis;
     }
 
     public String getExtId() {
@@ -60,6 +62,13 @@ public class RestfulMockDefinitionDTO {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
     }
 
     public Map<String, String> getResponseHeaders() {

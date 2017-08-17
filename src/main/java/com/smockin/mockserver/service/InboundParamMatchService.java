@@ -8,6 +8,9 @@ import spark.Request;
 
 public interface InboundParamMatchService {
 
+    String TO_ARG = "TO";
+    String UNTIL_ARG = "UNTIL";
+
     String enrichWithInboundParamMatches(final Request req, final String responseBody);
 
 }

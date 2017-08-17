@@ -67,6 +67,10 @@
     margin-left: 3px;
 }
 
+.condition-arg-remove-button {
+    margin-left: 12px;
+}
+
 .view-rule-button {
     margin-left: 15px;
 }
@@ -112,4 +116,8 @@
 
 .proxy-timeout-group {
     margin-top: 15px;
+}
+
+.shuffle-seq-group {
+    text-align: right;
 }

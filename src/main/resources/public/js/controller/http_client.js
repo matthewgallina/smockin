@@ -1,5 +1,5 @@
 
-app.controller('httpClientController', function($scope, $location, $http, $timeout, utils, globalVars, restClient) {
+app.controller('httpClientController', function($scope, $location, $http, $timeout, $uibModalInstance, utils, globalVars, restClient, data) {
 
 
     //
@@ -14,6 +14,8 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
     $scope.methodDropDownLabel = "Select...";
     $scope.requestBodyLabel = "Request Body";
     $scope.requestHeadersLabel = "Request Headers";
+    $scope.requestHeaderNameLabel = 'Name';
+    $scope.requestHeaderValueLabel = 'Value';
     $scope.removeRequestHeaderButtonLabel = 'X';
     $scope.addRequestHeaderButtonLabel = 'New Row';
     $scope.clientResponseLabel = "Response";
@@ -65,6 +67,15 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
         "body" : null,
         "headers" : []
     };
+
+    if (data.state != null) {
+        $scope.clientRequest = {
+            "url" : data.state.url,
+            "method" : data.state.method,
+            "body" : data.state.body,
+            "headers" : data.state.headers
+        };
+    }
 
     $scope.clientResponse = null;
 
@@ -188,7 +199,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
     };
 
     $scope.doClose = function() {
-        angular.element( document.getElementById("http-client") ).css('display', 'none');
+        $uibModalInstance.close($scope.clientRequest);
     };
 
     function objToString (obj) {

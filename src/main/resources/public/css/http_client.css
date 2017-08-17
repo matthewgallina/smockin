@@ -1,22 +1,21 @@
 
-#http-client {
-    display: none;
-    width: 800px;
-    position: absolute;
-    top: 80px;
-    left: 30px;
-    z-index: 200;
-    overflow-x: hidden;
-    opacity: 0.95;
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
 }
 
+.modal-dialog {
+    width: 950px;
+}
 
 #client-method-button {
     width : 100%;
 }
 
 #client-request-body {
-    height: 130px;
+    height: 155px;
 }
 
 .default-label-color {
@@ -32,7 +31,7 @@
 }
 
 #client-response-body {
-    height: 160px;
+    height: 185px;
 }
 
 .modal-footer-buttons {
@@ -41,11 +40,11 @@
 
 .request-headers-panel {
     overflow-y: scroll;
-    height: 200px;
+    height: 250px;
 }
 
 .no-request-headers {
     text-align: center;
     font-weight: bold;
-    margin-top: 80px;
+    margin-top: 100px;
 }

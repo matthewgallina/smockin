@@ -1,6 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.utils.GeneralUtils;
 
 import javax.persistence.*;
 import java.util.Date;

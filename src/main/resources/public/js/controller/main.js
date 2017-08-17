@@ -25,7 +25,7 @@ app.config(function($routeProvider) {
 
 //
 // Main Controller
-app.controller('mainController', function($scope, $location, $http, $timeout, globalVars, restClient) {
+app.controller('mainController', function($scope, $location, $http, $timeout, $uibModal, globalVars, restClient) {
 
     //
     // Labels
@@ -39,27 +39,36 @@ app.controller('mainController', function($scope, $location, $http, $timeout, gl
     $scope.helpLink = "Help";
 
     //
+    // Data Objects
+    var httpClientState = null;
+
+    //
     // Functions
     $scope.doOpenHttpClient = function() {
-        angular.element( document.getElementById("http-client") ).css('display', 'block');
+
+      var modalInstance = $uibModal.open({
+          templateUrl: 'http_client.html',
+          controller: 'httpClientController',
+          resolve: {
+            data: function () {
+              return {
+                "state" : httpClientState
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (state) {
+            httpClientState = state;
+        }, function () {
+
+        });
     };
 
     $scope.doOpenHelp = function() {
         $location.path("/help");
     };
 
-});
-
-
-//
-// Directives
-app.directive('draggable', function() {
-	return {
-		restrict: 'A',
-		link: function(scope, elem, attr, ctrl) {
-			elem.draggable();
-		}
-	};
 });
 
 

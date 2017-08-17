@@ -17,6 +17,7 @@ public class RestfulMockDTO {
     private RecordStatusEnum status;
     private MockTypeEnum mockType;
     private long proxyTimeoutInMillis;
+    private boolean randomiseDefinitions;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
@@ -24,12 +25,13 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeoutInMillis) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeoutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
         this.proxyTimeoutInMillis = proxyTimeoutInMillis;
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public String getPath() {
@@ -65,6 +67,13 @@ public class RestfulMockDTO {
     }
     public void setProxyTimeoutInMillis(long proxyTimeoutInMillis) {
         this.proxyTimeoutInMillis = proxyTimeoutInMillis;
+    }
+
+    public boolean isRandomiseDefinitions() {
+        return randomiseDefinitions;
+    }
+    public void setRandomiseDefinitions(boolean randomiseDefinitions) {
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public List<RestfulMockDefinitionDTO> getDefinitions() {

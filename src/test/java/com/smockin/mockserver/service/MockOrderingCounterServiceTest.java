@@ -2,7 +2,7 @@ package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
-import com.smockin.admin.service.utils.GeneralUtils;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,13 +29,13 @@ public class MockOrderingCounterServiceTest {
         restfulMock1 = new RestfulMock();
         restfulMock1.setExtId(GeneralUtils.generateUUID());
 
-        order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1);
+        order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1, 0);
         order1.setId(1);
-        order2 = new RestfulMockDefinitionOrder(restfulMock1, 201, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"two\" }", 2);
+        order2 = new RestfulMockDefinitionOrder(restfulMock1, 201, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"two\" }", 2, 0);
         order2.setId(2);
-        order3 = new RestfulMockDefinitionOrder(restfulMock1, 202, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"three\" }", 3);
+        order3 = new RestfulMockDefinitionOrder(restfulMock1, 202, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"three\" }", 3, 0);
         order3.setId(3);
-        order4 = new RestfulMockDefinitionOrder(restfulMock1, 204, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"four\" }", 4);
+        order4 = new RestfulMockDefinitionOrder(restfulMock1, 204, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"four\" }", 4, 0);
         order4.setId(4);
 
         restfulMock1.getDefinitions().add(order1);
@@ -48,9 +48,9 @@ public class MockOrderingCounterServiceTest {
         restfulMock2 = new RestfulMock();
         restfulMock2.setExtId(GeneralUtils.generateUUID());
 
-        order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1);
+        order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1, 0);
         order5.setId(5);
-        order6 = new RestfulMockDefinitionOrder(restfulMock2, 500, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"six\" }", 2);
+        order6 = new RestfulMockDefinitionOrder(restfulMock2, 500, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"six\" }", 2, 0);
         order6.setId(6);
 
         restfulMock2.getDefinitions().add(order5);
@@ -63,7 +63,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 1)
         // Start with calls to 'RestfulMockDefinition 1'...
-        final RestfulResponse result1 = mockOrderingCounterService.getNextInSequence(restfulMock1);
+        final RestfulResponse result1 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result1);
@@ -72,7 +72,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order1.getResponseBody(), result1.getResponseBody());
 
         // Test (run 2)
-        final RestfulResponse result2 = mockOrderingCounterService.getNextInSequence(restfulMock1);
+        final RestfulResponse result2 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result2);
@@ -81,7 +81,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order2.getResponseBody(), result2.getResponseBody());
 
         // Test (run 3)
-        final RestfulResponse result3 = mockOrderingCounterService.getNextInSequence(restfulMock1);
+        final RestfulResponse result3 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result3);
@@ -91,7 +91,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 4)
         // Call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
-        final RestfulResponse result11 = mockOrderingCounterService.getNextInSequence(restfulMock2);
+        final RestfulResponse result11 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result11);
@@ -100,7 +100,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order5.getResponseBody(), result11.getResponseBody());
 
         // Test (run 5)
-        final RestfulResponse result4 = mockOrderingCounterService.getNextInSequence(restfulMock1);
+        final RestfulResponse result4 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result4);
@@ -110,7 +110,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 6)
         // ... And again call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
-        final RestfulResponse result22 = mockOrderingCounterService.getNextInSequence(restfulMock2);
+        final RestfulResponse result22 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result22);
@@ -120,7 +120,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 7)
         // This call to 'RestfulMockDefinition 1' should now come around full circle returning the 1st response (with order no 1)
-        final RestfulResponse result5 = mockOrderingCounterService.getNextInSequence(restfulMock1);
+        final RestfulResponse result5 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result5);
@@ -130,7 +130,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 8)
         // This call to 'RestfulMockDefinition 2' should now come around full circle returning the 1st response (with order no 1)
-        final RestfulResponse result33 = mockOrderingCounterService.getNextInSequence(restfulMock2);
+        final RestfulResponse result33 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result33);
