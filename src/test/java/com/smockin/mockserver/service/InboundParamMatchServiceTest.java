@@ -2,6 +2,7 @@ package com.smockin.mockserver.service;
 
 import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -11,9 +12,7 @@ import org.mockito.Mockito;
 import spark.Request;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Created by mgallina.
@@ -46,7 +45,59 @@ public class InboundParamMatchServiceTest {
         thrown.expectMessage("Unsupported token : FOO");
 
         // Test
-        final String responseBody = "Hello ${FOO name}";
+        final String responseBody = "Hello ${FOO=name}";
+
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+    }
+
+    @Test
+    public void processParamMatch_InvalidTokenNoEqualsSymbol_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Unsupported token : FOO");
+
+        // Test
+        final String responseBody = "Hello ${FOO}";
+
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+    }
+
+    @Test
+    public void processParamMatch_InvalidTokenNonsense_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Unsupported token : xxx YYY zzz");
+
+        // Test
+        final String responseBody = "Hello ${xxx YYY zzz}";
+
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+    }
+
+    @Test
+    public void processParamMatch_Empty_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Unsupported token :   ");
+
+        // Test
+        final String responseBody = "Hello ${  }";
+
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+    }
+
+    @Test
+    public void processParamMatch_Blank_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Unsupported token : ");
+
+        // Test
+        final String responseBody = "Hello ${}";
 
         Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
     }
@@ -277,7 +328,13 @@ public class InboundParamMatchServiceTest {
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
-        Assert.assertEquals("The date is " + new SimpleDateFormat(GeneralUtils.ISO_DATE_FORMAT).format(GeneralUtils.getCurrentDate()), result);
+        final String remainder = result.replaceAll("The date is ", "");
+
+        try {
+            Assert.assertNotNull(new SimpleDateFormat(GeneralUtils.ISO_DATE_FORMAT).parse(remainder));
+        } catch (Throwable ex) {
+            Assert.fail();
+        }
     }
 
     @Test
@@ -285,13 +342,19 @@ public class InboundParamMatchServiceTest {
 
         // Setup
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-        final String responseBody = "The time is ${"+ ParamMatchTypeEnum.ISO_DATETIME.name() + "}";
+        final String responseBody = "The date and time is ${"+ ParamMatchTypeEnum.ISO_DATETIME.name() + "}";
 
         // Test
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
-        Assert.assertEquals("The time is yyyy/MM/ddTHH:mm:ss+0000".length(), result.length());
+        final String remainder = result.replaceAll("The date and time is ", "");
+
+        try {
+            Assert.assertNotNull(new SimpleDateFormat(GeneralUtils.ISO_DATETIME_FORMAT).parse(remainder));
+        } catch (Throwable ex) {
+            Assert.fail();
+        }
     }
 
     @Test
@@ -304,7 +367,156 @@ public class InboundParamMatchServiceTest {
         final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
 
         // Assertions
-        Assert.assertTrue("The ID is ".length() < ( result.length() + 25) );
+        final String remainder = result.replaceAll("Your ID is ", "");
+
+        try {
+            Assert.assertNotNull(UUID.fromString(remainder));
+        } catch (Throwable ex) {
+            Assert.fail();
+        }
+    }
+
+    @Test
+    public void processParamMatch_random_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTo_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1to3}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2) || (Integer.valueOf(remainder) == 3));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeUntil_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1until3}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue(((Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2)) && (Integer.valueOf(remainder) != 3));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeWhiteSpace_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "= 1  until  3   }";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue(((Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2)) && (Integer.valueOf(remainder) != 3));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeMissingArg_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Expected '" + inboundParamMatchServiceImpl.TO_ARG + "' or '" + inboundParamMatchServiceImpl.UNTIL_ARG + "' arg in '" + ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=' token");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_randomRangeInvalidArg_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Expected '" + inboundParamMatchServiceImpl.TO_ARG + "' or '" + inboundParamMatchServiceImpl.UNTIL_ARG + "' arg in '" + ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=' token");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1foo2}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_randomRangeMissingRangeNoNumbers_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Missing number range for '" + inboundParamMatchServiceImpl.TO_ARG + "' args. (i.e expect 1 " + inboundParamMatchServiceImpl.TO_ARG + " 5)");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=" + inboundParamMatchServiceImpl.TO_ARG + "}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_randomRangeMissingRangeStartNumberOnly_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Missing number range for '" + inboundParamMatchServiceImpl.TO_ARG + "' args. (i.e expect 1 " + inboundParamMatchServiceImpl.TO_ARG + " 5)");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=2" + inboundParamMatchServiceImpl.TO_ARG + "}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_randomRangeMissingRangeEndNumberOnly_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Range does not contain valid numbers. (i.e expect 1 to 5)");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=" + inboundParamMatchServiceImpl.TO_ARG + "5}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+    }
+
+    @Test
+    public void processParamMatch_randomRangeMissingRangeIsText_Test() {
+
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("Range does not contain valid numbers. (i.e expect 1 " + inboundParamMatchServiceImpl.TO_ARG + " 5)");
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=A" + inboundParamMatchServiceImpl.TO_ARG + "Z}";
+
+        // Test
+        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
     }
 
 }
