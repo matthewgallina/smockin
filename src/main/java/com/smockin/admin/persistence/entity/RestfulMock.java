@@ -49,6 +49,11 @@ public class RestfulMock extends Identifier {
     @OrderBy("orderNo ASC")
     private List<RestfulMockDefinitionOrder> definitions = new ArrayList<RestfulMockDefinitionOrder>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="REST_CATGY_ID", nullable = true)
+    private RestfulCategory category;
+
+
     public RestfulMock() {
     }
 
@@ -122,6 +127,13 @@ public class RestfulMock extends Identifier {
     }
     public void setDefinitions(List<RestfulMockDefinitionOrder> definitions) {
         this.definitions = definitions;
+    }
+
+    public RestfulCategory getCategory() {
+        return category;
+    }
+    public void setCategory(RestfulCategory category) {
+        this.category = category;
     }
 
 }
