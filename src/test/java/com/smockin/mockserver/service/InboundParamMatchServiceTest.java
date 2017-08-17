@@ -391,7 +391,7 @@ public class InboundParamMatchServiceTest {
     }
 
     @Test
-    public void processParamMatch_randomRangeTo_Test() {
+    public void processParamMatch_randomRangeTO_Test() {
 
         // Setup
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1to3}";
@@ -406,7 +406,37 @@ public class InboundParamMatchServiceTest {
     }
 
     @Test
-    public void processParamMatch_randomRangeUntil_Test() {
+    public void processParamMatch_randomRangeTOCase_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1 tO 3}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2) || (Integer.valueOf(remainder) == 3));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeStartFrom5_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=5 to 6}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == 5) || (Integer.valueOf(remainder) == 6));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeUNTIL_Test() {
 
         // Setup
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1until3}";
@@ -496,7 +526,7 @@ public class InboundParamMatchServiceTest {
 
         // Assertions
         thrown.expect(IllegalArgumentException.class);
-        thrown.expectMessage("Range does not contain valid numbers. (i.e expect 1 to 5)");
+        thrown.expectMessage("Range does not contain valid numbers. (i.e expect 1 " + inboundParamMatchServiceImpl.TO_ARG + " 5)");
 
         // Setup
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=" + inboundParamMatchServiceImpl.TO_ARG + "5}";

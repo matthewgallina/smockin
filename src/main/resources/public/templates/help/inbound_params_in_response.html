@@ -2,22 +2,36 @@
 <div class="section-heading">{{ inboundParamsInResponseTitle }}</div>
 
 <div class="section-body">
-    Inbound parameters can be included in the response body of your simulated endpoints by using the following naming convention:
+    Inbound parameters and dynamic content can be included in the response body of your simulated endpoint, by using the following naming convention:
 
     <br /><br />
 
     <div class="section-body-indent">
         <b class="highlight-color">
-        ${REQ_HEAD=<i>param_name</i>}
-        <br />
-        ${REQ_PARAM=<i>param_name</i>}
-        <br />
-        ${PATH_VAR=<i>param_name</i>}
+            ${REQ_HEAD=<i>param_name</i>}
+            <br />
+            ${REQ_PARAM=<i>param_name</i>}
+            <br />
+            ${PATH_VAR=<i>param_name</i>}
+            <br />
+            ${ISO_DATE}
+            <br />
+            ${ISO_DATETIME}
+            <br />
+            ${UUID}
+            <br />
+            ${RANDOM_NUMBER}
+            <br />
         </b>
+        <b class="highlight-color">
+            ${RANDOM_NUMBER=<i>numeric_range</i>}
+        </b>
+        <span class="random-number-info">(which can be called in 2 ways <i>${RANDOM_NUMBER=2 TO 5}</i> or <i>${RANDOM_NUMBER=2 UNTIL 5}</i>)</span>
     </div>
 
     <br />
     <br />
+
 
     To give an example, let's assume the url:
 
@@ -64,14 +78,15 @@
 
     </div>
 
-    Below is an example of combining all 3 input types within a response:
+
+    Below is an example of combining all 3 of the inbound parameter values within a response:
 
     <br />
     <br />
 
     <div class="section-body-indent">
 
-        The simulated endpoint setup:
+        The endpoint setup:
         <br />
         <br />
         <b>
@@ -104,11 +119,58 @@
         <br />
         <b>{ "msg" : "Greetings Mr Smith. How are you on this sunny day?" }</b>
 
+        <br />
+        <br />
+        <br />
+
     </div>
+
+
+    Here is an example of adding a couple of dynamic fields such as <b>ISO_DATE</b> and <b>RANDOM_NUMBER</b> to a response:
 
     <br />
     <br />
-    <br />
+
+    <div class="section-body-indent">
+
+        The endpoint setup:
+        <br />
+        <br />
+        <b>
+            <div class="row">
+                <div class="col-sm-2">Method:</div>
+                <div class="col-sm-10">GET</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">URL:</div>
+                <div class="col-sm-10">http://localhost:8001/holiday</div>
+            </div>
+            <div class="row">
+                <div class="col-sm-2">Response Body:</div>
+                <div class="col-sm-10">{ "msg" : "The date today is <span class="highlight-color">${ISO_DATE}</span>. Only <span class="highlight-color">${RANDOM_NUMBER=5 TO 15}</span> days until your holiday!" }</div>
+            </div>
+        </b>
+
+        <br />
+
+        Calling into the endpoint:
+        <br />
+        <br />
+        <b>curl -i -X GET http://localhost:8001/holiday</b>
+
+        <br />
+        <br />
+
+        Output from call (assuming the call is made on the 1st January 2017):
+        <br />
+        <br />
+        <b>{ "msg" : "The date today is 2017/01/01. Only 8 days until your holiday!" }</b>
+
+        <br />
+        <br />
+        <br />
+
+    </div>
 
     <p>
         <a href="" class="help-slides-link" ng-click="openImageViewer('dynamic_response_content')">Click here</a> for a full example of how to create the <b>/greeting</b> endpoint in the dashboard.

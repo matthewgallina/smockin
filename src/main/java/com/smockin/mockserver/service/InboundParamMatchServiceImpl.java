@@ -113,9 +113,9 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
         String arg = null;
 
-        if (range.contains(TO_ARG)) {
+        if (range.toUpperCase().contains(TO_ARG)) {
             arg = TO_ARG;
-        } else if (range.contains(UNTIL_ARG)) {
+        } else if (range.toUpperCase().contains(UNTIL_ARG)) {
             arg = UNTIL_ARG;
         }
 
@@ -123,7 +123,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
             throw new IllegalArgumentException("Expected '" + TO_ARG + "' or '" + UNTIL_ARG + "' arg in '" + ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=' token");
         }
 
-        final String[] rangeToArray = range.split(arg);
+        final String[] rangeToArray = range.toUpperCase().split(arg);
 
         if (rangeToArray.length != 2) {
             throw new IllegalArgumentException("Missing number range for '" + arg + "' args. (i.e expect 1 " + arg + " 5)");

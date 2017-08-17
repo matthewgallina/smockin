@@ -1,16 +1,16 @@
 
 .modal-dialog {
-    width: 900px;
+    width: 1000px;
 }
 
 .help-slide-img-wrp {
     height: 500px;
-    width: 850;
+    width: 970px;
 }
 
 .help-slide-img {
     max-height: 500px;
-    max-width: 850px;
+    max-width: 970px;
 }
 
 .slide-caption {
