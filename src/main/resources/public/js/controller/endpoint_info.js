@@ -6,7 +6,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     // Constants
     var MockTypeSeq = 'SEQ';
     var MockTypeRule = 'RULE';
-    var MockTypeProxy = 'PROXY';
+    var MockTypeProxyHttp = 'PROXY_HTTP';
     var isNew = ($rootScope.endpointData == null);
     var RestfulServerType = globalVars.RestfulServerType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
@@ -19,7 +19,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     // Labels
     $scope.mockTypeSeq = MockTypeSeq;
     $scope.mockTypeRule = MockTypeRule;
-    $scope.mockTypeProxy = MockTypeProxy;
+    $scope.mockTypeProxyHttp = MockTypeProxyHttp;
     $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
     $scope.pathLabel = 'Path *';
     $scope.pathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
@@ -441,7 +441,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 return;
             }
 
-        } else if ($scope.endpoint.mockType == MockTypeProxy) {
+        } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
 
             if (utils.isBlank($scope.endpoint.proxyTimeout)
                     || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
@@ -516,7 +516,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 reqData.rules.push($scope.endpoint.rules[r]);
             }
 
-        } else if ($scope.endpoint.mockType == MockTypeProxy) {
+        } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
 
             // Nothing extra todo
 

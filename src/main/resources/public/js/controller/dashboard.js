@@ -14,7 +14,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
     var translations = [];
     translations.push({"k" : "SEQ", "v" : "Sequence Based"});
     translations.push({ "k" : "RULE", "v" : "Rules Based" });
-    translations.push({ "k" : "PROXY", "v" : "Proxy Based" });
+    translations.push({ "k" : "PROXY_HTTP", "v" : "Proxy Based" });
 
 
     //

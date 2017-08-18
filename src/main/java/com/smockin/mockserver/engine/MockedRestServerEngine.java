@@ -213,7 +213,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             case RULE:
                 outcome = ruleEngine.process(req, mock.getRules());
                 break;
-            case PROXY:
+            case PROXY_HTTP:
                 outcome = proxyService.waitForResponse(req.pathInfo(), mock);
                 break;
             case SEQ:
@@ -242,7 +242,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     RestfulResponse getDefault(final RestfulMock restfulMock) {
 
-        if (MockTypeEnum.PROXY.equals(restfulMock.getMockType())) {
+        if (MockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
             return new RestfulResponse(404);
         }
 
