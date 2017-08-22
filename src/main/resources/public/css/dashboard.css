@@ -59,3 +59,15 @@
 .status-inactive {
     color: #ff8080;
 }
+
+.batched-endpoint-path {
+    font-size: 20px;
+}
+
+.batched-endpoint-blue {
+    background-color: aliceblue;
+}
+
+//.table-striped > tbody > tr:nth-of-type(2n+1) {
+// background-color: ;
+//}

@@ -119,13 +119,63 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
         restClient.doGet($http, '/restmock', function(status, data) {
 
             if (status == 200) {
-                $scope.restServices = data;
+                $scope.restServices = batchByBasePath(data);
                 return;
             }
 
             showAlert("Oops looks like something went wrong!");
         });
 
+    }
+
+    function batchByBasePath(allData) {
+
+        var batched = [];
+
+        for (var d=0; d < allData.length; d++) {
+
+            var rec = allData[d];
+            var path = rec.path;
+
+            var basePathIndex1 = path.indexOf("/", 1);
+
+            var basePath;
+
+            if (basePathIndex1 > -1 && (basePathIndex1 + 1) < path.length) {
+                basePath = path.substring(0, basePathIndex1);
+            } else {
+                basePath = path;
+            }
+
+            batchData(batched, rec, basePath);
+        }
+
+        return batched;
+    }
+
+    function batchData(batched, rec, basePath) {
+
+        var currentBatch = null;
+
+        for (var b=0; b < batched.length; b++) {
+            if (batched[b].basePath == basePath) {
+                currentBatch = batched[b];
+                break;
+            }
+        }
+
+        if (currentBatch == null) {
+
+            currentBatch = {
+                "basePath" : basePath,
+                "isOpen" : false,
+                "data" : []
+            };
+
+            batched.push(currentBatch);
+        }
+
+        currentBatch.data.push(rec);
     }
 
     function loadServerStatus() {
