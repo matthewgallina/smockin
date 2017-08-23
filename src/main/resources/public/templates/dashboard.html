@@ -48,7 +48,7 @@
         </h4>
 
         <uib-accordion close-others="false" class="table">
-            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-blue' : '' }}">
+            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
                 <uib-accordion-heading>
                     <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
                     <span class="pull-right">({{ rs.data.length }})
