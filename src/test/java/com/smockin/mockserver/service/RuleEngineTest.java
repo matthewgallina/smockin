@@ -76,7 +76,7 @@ public class RuleEngineTest {
         // Setup
         rules = new ArrayList<RestfulMockDefinitionRule>();
 
-        final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(null, 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"foobar\" }", 0);
+        final RestfulMockDefinitionRule rule = new RestfulMockDefinitionRule(null, 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"foobar\" }", 0, false);
         final RestfulMockDefinitionRuleGroup group = new RestfulMockDefinitionRuleGroup(rule, 1);
         final RestfulMockDefinitionRuleGroupCondition condition = new RestfulMockDefinitionRuleGroupCondition(group, "name", RuleDataTypeEnum.TEXT, RuleComparatorEnum.EQUALS, "joe", RuleMatchingTypeEnum.REQUEST_BODY, false);
 

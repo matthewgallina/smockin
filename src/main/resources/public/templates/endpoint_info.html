@@ -133,6 +133,7 @@
                         <thead>
                         <tr>
                             <th>{{ orderNoLabel }}</th>
+                            <th>{{ statusCodeLabel }}</th>
                             <th>{{ responseBodyLabel }}</th>
                             <th></th>
                         </tr>
@@ -140,7 +141,8 @@
                         <tbody>
                         <tr ng-repeat="x in endpoint.definitions">
                             <td>{{ x.orderNo }}</td>
-                            <td>{{ x.responseBody }}</td>
+                            <td>{{ x.httpStatusCode }}</td>
+                            <td>{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
                                 <a href="" ng-click="doMoveSeqUp(x, $index)">
@@ -180,6 +182,7 @@
                         <thead>
                         <tr>
                             <th>{{ ruleLabel }}</th>
+                            <th>{{ statusCodeLabel }}</th>
                             <th>{{ responseBodyLabel }}</th>
                             <th></th>
                         </tr>
@@ -187,7 +190,8 @@
                         <tbody>
                         <tr ng-repeat="x in endpoint.rules">
                             <td>{{ x.orderNo }}</td>
-                            <td>{{ x.responseBody }}</td>
+                            <td>{{ x.httpStatusCode }}</td>
+                            <td>{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
                                 <a href="" ng-click="doMoveRuleUp(x, $index)">

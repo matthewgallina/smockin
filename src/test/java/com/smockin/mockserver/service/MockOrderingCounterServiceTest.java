@@ -29,13 +29,13 @@ public class MockOrderingCounterServiceTest {
         restfulMock1 = new RestfulMock();
         restfulMock1.setExtId(GeneralUtils.generateUUID());
 
-        order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1, 0);
+        order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1, 0, false);
         order1.setId(1);
-        order2 = new RestfulMockDefinitionOrder(restfulMock1, 201, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"two\" }", 2, 0);
+        order2 = new RestfulMockDefinitionOrder(restfulMock1, 201, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"two\" }", 2, 0, false);
         order2.setId(2);
-        order3 = new RestfulMockDefinitionOrder(restfulMock1, 202, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"three\" }", 3, 0);
+        order3 = new RestfulMockDefinitionOrder(restfulMock1, 202, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"three\" }", 3, 0, false);
         order3.setId(3);
-        order4 = new RestfulMockDefinitionOrder(restfulMock1, 204, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"four\" }", 4, 0);
+        order4 = new RestfulMockDefinitionOrder(restfulMock1, 204, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"four\" }", 4, 0, false);
         order4.setId(4);
 
         restfulMock1.getDefinitions().add(order1);
@@ -48,9 +48,9 @@ public class MockOrderingCounterServiceTest {
         restfulMock2 = new RestfulMock();
         restfulMock2.setExtId(GeneralUtils.generateUUID());
 
-        order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1, 0);
+        order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1, 0, false);
         order5.setId(5);
-        order6 = new RestfulMockDefinitionOrder(restfulMock2, 500, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"six\" }", 2, 0);
+        order6 = new RestfulMockDefinitionOrder(restfulMock2, 500, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"six\" }", 2, 0, false);
         order6.setId(6);
 
         restfulMock2.getDefinitions().add(order5);

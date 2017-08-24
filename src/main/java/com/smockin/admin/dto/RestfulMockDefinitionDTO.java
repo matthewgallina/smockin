@@ -14,19 +14,21 @@ public class RestfulMockDefinitionDTO {
     private String responseContentType;
     private String responseBody;
     private long sleepInMillis;
+    private boolean suspend;
     private Map<String, String> responseHeaders = new HashMap<String, String>();
 
     public RestfulMockDefinitionDTO() {
 
     }
 
-    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis) {
+    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis, boolean suspend) {
         this.extId = extId;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
         this.sleepInMillis = sleepInMillis;
+        this.suspend = suspend;
     }
 
     public String getExtId() {
@@ -69,6 +71,13 @@ public class RestfulMockDefinitionDTO {
     }
     public void setSleepInMillis(long sleepInMillis) {
         this.sleepInMillis = sleepInMillis;
+    }
+
+    public boolean isSuspend() {
+        return suspend;
+    }
+    public void setSuspend(boolean suspend) {
+        this.suspend = suspend;
     }
 
     public Map<String, String> getResponseHeaders() {

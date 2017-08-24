@@ -1,5 +1,23 @@
 #!/bin/sh
 
+# Check Java 8 is installed
+SMOCKIN_JAVA_VERSION=$(java -version 2>&1 | grep -i version | sed 's/.*version ".*\.\(.*\)\..*"/\1/; 1q')
+
+if [ "${SMOCKIN_JAVA_VERSION}" != 8 ]
+then
+  echo ""
+  echo "Smockin requires Java 8 or later to run"
+  echo ""
+  echo "Please visit 'http://www.java.com/en/download' to install the latest Java Runtime Environment (JRE)"
+  echo ""
+  echo "If you have installed Java and are still seeing this message, then please ensure this is present in your PATH"
+  echo ""
+
+  exit
+fi
+
+
+
 APP_NAME="SMOCKIN"
 APP_VERSION="1.0"
 DEBUG_PORT=8008
@@ -137,8 +155,6 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 # -INMEM            Uses an in-memory DB
 #
 #
-
-
 
 if ( $USE_DEBUG ); then
   mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT $VM_ARGS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"

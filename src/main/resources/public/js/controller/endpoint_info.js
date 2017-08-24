@@ -32,8 +32,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.defaultResponseBodyLabel = 'Default Response Body';
     $scope.noRulesFound = 'No Rules Found';
     $scope.noSeqFound = 'No Sequenced Responses Found';
-    $scope.orderNoLabel = 'Sequence';
-    $scope.ruleLabel = 'Rule Order';
+    $scope.orderNoLabel = 'Seq';
+    $scope.ruleLabel = 'Order';
+    $scope.statusCodeLabel = 'Code';
     $scope.responseBodyLabel = 'Response Body';
     $scope.sequenceResponsesRadioLabel = 'Sequenced';
     $scope.rulesRadioLabel = 'Rules';
