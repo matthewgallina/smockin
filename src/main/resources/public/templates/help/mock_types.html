@@ -213,17 +213,40 @@
     <div class="section-body-indent">
 
         <p>
-            Proxied responses allow an endpoint's response to be injected via a separate call.
+            Proxied responses allow the response of a call to an endpoint, to be injected via an external process.
             <br />
             <br />
-            For example, say you create the proxied response endpoint <b>/wait</b>.
+            To give an example:
             <br />
-            Were <b>Caller A</b> to call this, they will have to wait until a response made available.
+            <ul>
+                <li>Say you were to create the proxied response endpoint <b>/wait</b>.</li>
+                <li>Were <b>Caller A</b> to call this, they will have to wait until a response is available (i.e provided by another party).</li>
+                <li>To inject this response, <b>Caller B</b> now POSTS into the admin endpoint <b>http://localhost:8000/proxy</b> and sets the status code, content type and response body like so <b>{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}</b>.</li>
+                <li>As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should receive a <b>200</b> response with the json message <b>{"name":"The wait is over"}</b>.</li>
+            </ul>
+        </p>
+
+        <br />
+        A cURL example of POSTING a response to <b>/wait</b> to the admin endpoint:
+        <div class="section-body-indent">
             <br />
-            To inject a response, <b>Caller B</b> would call into the admin endpoint <b>http://localhost:8000/proxy</b> and set the status code, content type and response body like so <b>{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}</b>.
-            <br />
-            As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should receive a <b>200</b> response with the json message <b>{"name":"The wait is over"}</b>.
-            <br />
+            <b>curl -H "Content-Type: application/json" -X POST -d '{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}' http://localhost:8000/proxy</b>
+        </div>
+
+        <br />
+        <br />
+
+        <p>
+        It is worth noting that the underlying design of 'Proxied responses' is actually based on the consumer / producer concurrency model.
+        <br />
+        <br />
+        This means that all POSTS to the admin endpoint are internally queued and all calls to the consuming endpoint (i.e <b>/wait</b>) will pick up whatever they find from the queue.
+        <br />
+        <br />
+        Therefore were you to reverse the above example where <b>Caller B</b> POSTS to the queue first, the subsequent call by <b>Caller A</b> would result in an immediate response, given a response is already present in the queue.
+        <br />
+        <br />
+        For clarity the queue is designed to differentiate and batch endpoint paths, meaning a POST aimed at the path <b>/waitformetoo</b> will not be picked up from the queue by a consumer call to the proxied path <b>/wait</b>.
         </p>
 
         <br />
@@ -233,7 +256,7 @@
 
             <ul>
                 <li>Control the response being sent back to a caller from a completely separate process</li>
-                <li>Have a process which long polls, until response is provided</li>
+                <li>Have a process which long polls, until a response is provided</li>
                 <li>Need functionality similar to the classic consumer/producer model</li>
             </ul>
         </p>
