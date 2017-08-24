@@ -3,7 +3,7 @@
 # Check Java 8 is installed
 SMOCKIN_JAVA_VERSION=$(java -version 2>&1 | grep -i version | sed 's/.*version ".*\.\(.*\)\..*"/\1/; 1q')
 
-if [ "${SMOCKIN_JAVA_VERSION}" != 8 ]
+if [ "${SMOCKIN_JAVA_VERSION}" \< 8 ]
 then
   echo ""
   echo "Smockin requires Java 8 or later to run"
