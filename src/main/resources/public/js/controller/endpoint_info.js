@@ -287,7 +287,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 // Update all orderNo fields in seq array
                 updateSeqOrderNumbers();
 
-                if ($scope.endpoint.definitions.length < 2) {
+                if (countActiveDefinitions($scope.endpoint.definitions) < 2) {
                     $scope.endpoint.randomiseDefinitions = false;
                 }
 
@@ -304,7 +304,13 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     }
 
     $scope.doToggleSuspendSeq = function (index) {
+
         $scope.endpoint.definitions[index].suspend = !$scope.endpoint.definitions[index].suspend;
+
+        if (countActiveDefinitions($scope.endpoint.definitions) < 2) {
+            $scope.endpoint.randomiseDefinitions = false;
+        }
+
     };
 
     $scope.doOpenViewRule = function(rule) {
@@ -475,15 +481,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         } else if ($scope.endpoint.mockType == MockTypeSeq) {
 
-            var activeDefinitions = 0;
-
-            for (var d=0; d < $scope.endpoint.definitions.length; d++) {
-                if (!$scope.endpoint.definitions[d].suspend) {
-                    activeDefinitions++;
-                }
-            }
-
-            if (activeDefinitions == 0) {
+            if (countActiveDefinitions($scope.endpoint.definitions) == 0) {
                 showAlert("At least one active 'Sequenced Response' is required");
                 return;
             }
@@ -529,7 +527,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 reqData.definitions.push($scope.endpoint.definitions[d]);
             }
 
-            if (reqData.definitions.length < 2) {
+            if (countActiveDefinitions(reqData.definitions) < 2) {
                 reqData.randomiseDefinitions = false;
             }
 
@@ -623,6 +621,19 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             callback();
         });
 
+    }
+
+    function countActiveDefinitions(definitions) {
+
+        var activeDefinitions = 0;
+
+        for (var d=0; d < definitions.length; d++) {
+            if (!definitions[d].suspend) {
+                activeDefinitions++;
+            }
+        }
+
+        return activeDefinitions;
     }
 
 });
