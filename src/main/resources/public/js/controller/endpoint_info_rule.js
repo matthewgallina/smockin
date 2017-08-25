@@ -64,6 +64,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
         "responseContentType" : null,
         "httpStatusCode" : 200,
         "responseBody" : null,
+        "sleepInMillis" : 0,
         "responseHeaders" : {},
         "groups" : []
     };

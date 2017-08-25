@@ -4,6 +4,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -45,6 +46,9 @@ public class RuleEngineImpl implements RuleEngine {
 
                 // If a group of conditions is met then return straight out of this iteration.
                 if (groupMatchCount == group.getConditions().size()) {
+
+                    GeneralUtils.checkForAndHandleSleep(rule.getSleepInMillis());
+
                     return new RestfulResponse(rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getResponseHeaders().entrySet());
                 }
 

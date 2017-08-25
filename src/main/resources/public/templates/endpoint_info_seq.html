@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
 
 <div class="modal-header">
-    <h3 class="modal-title" id="modal-title">{{ newEndpointSeqHeading }}</h3>
+    <h4 class="modal-title" id="modal-title">{{ newEndpointSeqHeading }}</h4>
 </div>
 
 <div class="modal-body" id="modal-body">
@@ -20,7 +20,9 @@
     </div>
 
     <div class="form-group">
-        <label for="response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+        <label for="response-body" class="ng-binding">
+            {{ responseBodyLabel }}
+        </label>
         <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="seqResponse.responseBody"></textarea>
     </div>
 

@@ -36,43 +36,57 @@
             <div class="col-sm-10">
                 <h3>{{ endpointsHeading }}</h3>
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-2 add-endpoint-button-div">
                 <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointLabel }}</button>
             </div>
         </div>
 
         <br />
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>{{ pathTableLabel }}</th>
-                    <th>{{ methodTableLabel }}</th>
-                    <th>{{ dateCreatedTableLabel }}</th>
-                    <th>{{ mockTypeTableLabel }}</th>
-                    <th>{{ statusTableLabel }}</th>
-                    <th>{{ actionTableLabel }}</th>
-                </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="x in restServices">
-                <td>{{ x.path }}</td>
-                <td>{{ x.method }}</td>
-                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' }}</th>
-                <td>{{ translate(x.mockType) }}</td>
-                <td class="status-{{x.status | lowercase}}">
-                    {{ x.status }}
-                </td>
-                <td>
-                    <button type="button" class="btn btn-primary" ng-click="doOpenEndpointInfo(x)">{{ viewEndpointLabel }}</button>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
         <h4 id="no-data-label" ng-if="restServices.length == 0">
             {{ noDataFoundMsg }}
         </h4>
+
+        <uib-accordion close-others="false" class="table">
+            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
+                <uib-accordion-heading>
+                    <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
+                    <span class="pull-right">({{ rs.data.length }})
+                        <i class="glyphicon" ng-click="rs.isOpen = !rs.isOpen" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
+                    </span>
+                </uib-accordion-heading>
+                <div>
+
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>{{ pathTableLabel }}</th>
+                            <th>{{ methodTableLabel }}</th>
+                            <th>{{ dateCreatedTableLabel }}</th>
+                            <th>{{ mockTypeTableLabel }}</th>
+                            <th>{{ statusTableLabel }}</th>
+                            <th>{{ actionTableLabel }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="x in rs.data">
+                                <td>{{ x.path }}</td>
+                                <td>{{ x.method }}</td>
+                                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' }}</th>
+                                <td>{{ translate(x.mockType) }}</td>
+                                <td class="status-{{x.status | lowercase}}">
+                                    {{ x.status }}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-primary" ng-click="doOpenEndpointInfo(x)">{{ viewEndpointLabel }}</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </uib-accordion>
 
     </div>
 

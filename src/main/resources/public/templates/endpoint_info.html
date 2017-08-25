@@ -112,8 +112,9 @@
             <div class="col-sm-6">
 
                 <div id="mock-type-radio-group" class="btn-group" role="group">
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'SEQ'">{{ sequenceResponsesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'RULE'">{{ rulesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'">{{ proxyRadioLabel }}</label>
                 </div>
 
                 <br />
@@ -125,35 +126,56 @@
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.definitions.length == 0">
-                        {{noSeqFound}}
+                        {{ noSeqFound }}
                     </div>
 
                     <table class="table table-striped seq-table" ng-if="endpoint.definitions.length > 0">
                         <thead>
                         <tr>
                             <th>{{ orderNoLabel }}</th>
+                            <th>{{ statusCodeLabel }}</th>
                             <th>{{ responseBodyLabel }}</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="x in endpoint.definitions">
-                            <td>{{ x.orderNo }}</td>
-                            <td>{{ x.responseBody }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.orderNo }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.httpStatusCode }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
-                                <a href="" ng-click="doMoveSeqUp(x, $index)">
+                                <a href="" ng-click="doMoveSeqUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
                                     <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                                 </a>
-                                <a href="" ng-click="doMoveSeqDown(x, $index)" class="condition-arg-down-button">
+                                <a href="" ng-click="doMoveSeqDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
                                 </a>
-                                <button type="button" class="btn btn-primary view-seq-button" ng-click="doOpenViewSequence(x)">{{ viewButtonLabel }}</button>
+
+                                <br />
+
+                                <a href="" ng-click="doToggleSuspendSeq($index)">
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend"></span>
+                                </a>
+                                <a href="" ng-click="doRemoveSeq($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                    <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
+                                </a>
+
+                                <br />
+                                <br />
+
+                                <button type="button" class="btn btn-primary view-seq-button" ng-class="(x.suspend) ? 'suspend-button' : ''" ng-click="doOpenViewSequence(x)" ng-disabled="x.suspend">{{ viewButtonLabel }}</button>
 
                             </td>
                         </tr>
                         </tbody>
                     </table>
+
+                    <div class="form-group" class="shuffle-seq-group" ng-show="endpoint.definitions.length > 1">
+                        <input id="shuffleSequence" ng-model="endpoint.randomiseDefinitions" type="checkbox" />
+                        <label for="shuffleSequence" class="ng-binding">{{ shuffleSequenceLabel }}</label>
+                    </div>
 
                 </div>
 
@@ -171,28 +193,53 @@
                         <thead>
                         <tr>
                             <th>{{ ruleLabel }}</th>
+                            <th>{{ statusCodeLabel }}</th>
                             <th>{{ responseBodyLabel }}</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="x in endpoint.rules">
-                            <td>{{ x.orderNo }}</td>
-                            <td>{{ x.responseBody }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.orderNo }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.httpStatusCode }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
-                                <a href="" ng-click="doMoveRuleUp(x, $index)">
+                                <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
                                     <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                                 </a>
-                                <a href="" ng-click="doMoveRuleDown(x, $index)" class="condition-arg-down-button">
+                                <a href="" ng-click="doMoveRuleDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
                                 </a>
-                                <button type="button" class="btn btn-primary view-rule-button" ng-click="doOpenViewRule(x)">{{ viewButtonLabel }}</button>
+
+                                <br />
+
+                                <a href="" ng-click="doToggleSuspendRule($index)">
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend"></span>
+                                </a>
+                                <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                    <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
+                                </a>
+
+                                <br />
+                                <br />
+
+                                <button type="button" class="btn btn-primary view-rule-button" ng-class="(x.suspend) ? 'suspend-button' : ''" ng-click="doOpenViewRule(x)" ng-disabled="x.suspend">{{ viewButtonLabel }}</button>
 
                             </td>
                         </tr>
                         </tbody>
                     </table>
+
+                </div>
+
+                <div ng-show="endpoint.mockType == mockTypeProxyHttp">
+
+                    <div class="form-group proxy-timeout-group">
+                        <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
+                        <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
 
                 </div>
 

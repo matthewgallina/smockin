@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +26,13 @@ public class RestfulMockDefinitionOrder extends Identifier {
     @Column(name = "RESPONSE_BODY", nullable = true, length = 5000)
     private String responseBody;
 
+    @Column(name = "SLEEP_IN_MILLIS", nullable = false)
+    private long sleepInMillis;
+
+    @ColumnDefault("false")
+    @Column(name = "SUSPEND", nullable = false)
+    private boolean suspend;
+
     @Column(name = "ORDER_NO", nullable = false)
     private int orderNo;
 
@@ -34,12 +43,14 @@ public class RestfulMockDefinitionOrder extends Identifier {
     public RestfulMockDefinitionOrder() {
     }
 
-    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo) {
+    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo, long sleepInMillis, boolean suspend) {
         this.restfulMock = restfulMock;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
         this.orderNo = orderNo;
+        this.sleepInMillis = sleepInMillis;
+        this.suspend = suspend;
     }
 
     public RestfulMock getRestfulMock() {
@@ -68,6 +79,20 @@ public class RestfulMockDefinitionOrder extends Identifier {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
+    }
+
+    public boolean isSuspend() {
+        return suspend;
+    }
+    public void setSuspend(boolean suspend) {
+        this.suspend = suspend;
     }
 
     public int getOrderNo() {

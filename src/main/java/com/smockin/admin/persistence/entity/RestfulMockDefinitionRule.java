@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +31,13 @@ public class RestfulMockDefinitionRule extends Identifier {
     @Column(name = "RESPONSE_BODY", nullable = false, length = 5000)
     private String responseBody;
 
+    @Column(name = "SLEEP_IN_MILLIS", nullable = false)
+    private long sleepInMillis;
+
+    @ColumnDefault("false")
+    @Column(name = "SUSPEND", nullable = false)
+    private boolean suspend;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="REST_MOCK_RULE_RES_HDR")
     private Map<String, String> responseHeaders = new HashMap<String, String>();
@@ -41,12 +50,14 @@ public class RestfulMockDefinitionRule extends Identifier {
     public RestfulMockDefinitionRule() {
     }
 
-    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode, final String responseContentType, final String responseBody) {
+    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode, final String responseContentType, final String responseBody, long sleepInMillis, boolean suspend) {
         this.restfulMock = mock;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
+        this.sleepInMillis = sleepInMillis;
+        this.suspend = suspend;
     }
 
     public RestfulMock getRestfulMock() {
@@ -82,6 +93,20 @@ public class RestfulMockDefinitionRule extends Identifier {
     }
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public long getSleepInMillis() {
+        return sleepInMillis;
+    }
+    public void setSleepInMillis(long sleepInMillis) {
+        this.sleepInMillis = sleepInMillis;
+    }
+
+    public boolean isSuspend() {
+        return suspend;
+    }
+    public void setSuspend(boolean suspend) {
+        this.suspend = suspend;
     }
 
     public List<RestfulMockDefinitionRuleGroup> getConditionGroups() {

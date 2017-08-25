@@ -3,7 +3,9 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.service.MockOrderingCounterService;
+import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponse;
 import org.junit.Assert;
@@ -30,6 +32,9 @@ public class MockedRestServerEngineTest {
     private RuleEngine ruleEngine;
 
     @Mock
+    private ProxyService proxyService;
+
+    @Mock
     private MockOrderingCounterService mockOrderingCounterService;
 
     @Spy
@@ -46,9 +51,9 @@ public class MockedRestServerEngineTest {
     public void setUp() {
 
         restfulMock = new RestfulMock();
-        restfulMock.getDefinitions().add(order1 = new RestfulMockDefinitionOrder(restfulMock, 200, "text/html", "HelloWorld 1", 1));
-        restfulMock.getDefinitions().add(order2 = new RestfulMockDefinitionOrder(restfulMock, 201, "text/html", "HelloWorld 2", 2));
-        restfulMock.getDefinitions().add(order3 = new RestfulMockDefinitionOrder(restfulMock, 204, "text/html", "HelloWorld 3", 3));
+        restfulMock.getDefinitions().add(order1 = new RestfulMockDefinitionOrder(restfulMock, 200, "text/html", "HelloWorld 1", 1, 0, false));
+        restfulMock.getDefinitions().add(order2 = new RestfulMockDefinitionOrder(restfulMock, 201, "text/html", "HelloWorld 2", 2, 0, false));
+        restfulMock.getDefinitions().add(order3 = new RestfulMockDefinitionOrder(restfulMock, 204, "text/html", "HelloWorld 3", 3, 0, false));
     }
 
     @Test
@@ -100,8 +105,28 @@ public class MockedRestServerEngineTest {
     }
 
     @Test
+    public void getDefault_Proxy_Test() {
+
+        // Setup
+        restfulMock.setMockType(MockTypeEnum.PROXY_HTTP);
+
+        // Test
+        final RestfulResponse result = engine.getDefault(restfulMock);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals(404, result.getHttpStatusCode());
+        Assert.assertNull(result.getResponseContentType());
+        Assert.assertNull(result.getResponseBody());
+        Assert.assertTrue(result.getHeaders().isEmpty());
+    }
+
+
+
+        @Test
     public void processRequest__Test() {
 
+        // TODO
 //        engine.processRequest();
 
     }

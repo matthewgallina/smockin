@@ -29,11 +29,17 @@ public class RestfulMock extends Identifier {
     private RecordStatusEnum status;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "MOCK_TYPE", nullable = false, length = 4)
+    @Column(name = "MOCK_TYPE", nullable = false, length = 10)
     private MockTypeEnum mockType;
+
+    @Column(name = "PROXY_TIME_OUT_MILLIS", nullable = false)
+    private long proxyTimeOutInMillis;
 
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
+
+    @Column(name = "RANDOM_DEF", nullable = false)
+    private boolean randomiseDefinitions;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
     @OrderBy("orderNo ASC")
@@ -43,14 +49,21 @@ public class RestfulMock extends Identifier {
     @OrderBy("orderNo ASC")
     private List<RestfulMockDefinitionOrder> definitions = new ArrayList<RestfulMockDefinitionOrder>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="REST_CATGY_ID", nullable = true)
+    private RestfulCategory category;
+
+
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
+        this.proxyTimeOutInMillis = proxyTimeOutInMillis;
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public String getPath() {
@@ -81,11 +94,25 @@ public class RestfulMock extends Identifier {
         this.mockType = mockType;
     }
 
+    public long getProxyTimeOutInMillis() {
+        return proxyTimeOutInMillis;
+    }
+    public void setProxyTimeOutInMillis(long proxyTimeOutInMillis) {
+        this.proxyTimeOutInMillis = proxyTimeOutInMillis;
+    }
+
     public int getInitializationOrder() {
         return initializationOrder;
     }
     public void setInitializationOrder(int initializationOrder) {
         this.initializationOrder = initializationOrder;
+    }
+
+    public boolean isRandomiseDefinitions() {
+        return randomiseDefinitions;
+    }
+    public void setRandomiseDefinitions(boolean randomiseDefinitions) {
+        this.randomiseDefinitions = randomiseDefinitions;
     }
 
     public List<RestfulMockDefinitionRule> getRules() {
@@ -100,6 +127,13 @@ public class RestfulMock extends Identifier {
     }
     public void setDefinitions(List<RestfulMockDefinitionOrder> definitions) {
         this.definitions = definitions;
+    }
+
+    public RestfulCategory getCategory() {
+        return category;
+    }
+    public void setCategory(RestfulCategory category) {
+        this.category = category;
     }
 
 }

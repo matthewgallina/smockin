@@ -43,6 +43,4 @@ public class SmockinApp {
         SpringApplication.run(SmockinConfig.class, args);
     }
 
-
-
 }

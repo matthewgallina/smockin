@@ -15,42 +15,60 @@ app.config(function($routeProvider) {
         .when("/endpoint", {
             templateUrl : "endpoint_info.html",
             controller : "endpointInfoController"
+        })
+        .when("/help", {
+            templateUrl : "help_section.html",
+            controller : "helpSectionController"
         });
 });
 
 
 //
 // Main Controller
-app.controller('mainController', function($scope, $location, $http, $timeout, globalVars, restClient) {
+app.controller('mainController', function($scope, $location, $http, $timeout, $uibModal, globalVars, restClient) {
 
     //
     // Labels
     $scope.toolsLabel = "Tools";
+    $scope.helpLink = "Help"
 
 
     //
     // Buttons / Links
     $scope.testClientLink = "Open Http Client";
+    $scope.helpLink = "Help";
 
+    //
+    // Data Objects
+    var httpClientState = null;
 
     //
     // Functions
     $scope.doOpenHttpClient = function() {
-        angular.element( document.getElementById("http-client") ).css('display', 'block');
+
+      var modalInstance = $uibModal.open({
+          templateUrl: 'http_client.html',
+          controller: 'httpClientController',
+          resolve: {
+            data: function () {
+              return {
+                "state" : httpClientState
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (state) {
+            httpClientState = state;
+        }, function () {
+
+        });
     };
 
-});
+    $scope.doOpenHelp = function() {
+        $location.path("/help");
+    };
 
-
-//
-// Directives
-app.directive('draggable', function() {
-	return {
-		restrict: 'A',
-		link: function(scope, elem, attr, ctrl) {
-			elem.draggable();
-		}
-	};
 });
 
 

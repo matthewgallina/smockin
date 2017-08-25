@@ -6,17 +6,20 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     // Constants
     var MockTypeSeq = 'SEQ';
     var MockTypeRule = 'RULE';
+    var MockTypeProxyHttp = 'PROXY_HTTP';
     var isNew = ($rootScope.endpointData == null);
     var RestfulServerType = globalVars.RestfulServerType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
+    var MaxProxyTimeoutInMillis = 60000;
 
 
     //
     // Labels
     $scope.mockTypeSeq = MockTypeSeq;
     $scope.mockTypeRule = MockTypeRule;
+    $scope.mockTypeProxyHttp = MockTypeProxyHttp;
     $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
     $scope.pathLabel = 'Path *';
     $scope.pathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
@@ -29,16 +32,21 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.defaultResponseBodyLabel = 'Default Response Body';
     $scope.noRulesFound = 'No Rules Found';
     $scope.noSeqFound = 'No Sequenced Responses Found';
-    $scope.orderNoLabel = 'Sequence Order';
-    $scope.ruleLabel = 'Rule Order';
+    $scope.orderNoLabel = 'Seq';
+    $scope.ruleLabel = 'Order';
+    $scope.statusCodeLabel = 'Code';
     $scope.responseBodyLabel = 'Response Body';
-    $scope.sequenceResponsesRadioLabel = 'Sequenced Responses';
+    $scope.sequenceResponsesRadioLabel = 'Sequenced';
     $scope.rulesRadioLabel = 'Rules';
+    $scope.proxyRadioLabel = 'Proxied';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
     $scope.serverRestartInstruction = '(Please note, the mock server will need to be restarted for changes to take effect)';
     $scope.endpointStatusLabel = 'Status:';
+    $scope.proxyTimeoutLabel = 'Timeout (in millis)';
+    $scope.proxyTimeoutPlaceholderTxt = 'Duration a call to this endpoint will wait';
+    $scope.shuffleSequenceLabel = "Shuffle Responses";
 
 
     //
@@ -102,7 +110,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "httpStatusCode" : 200,
         "responseBody" : null,
         "status" : ActiveStatus,
+        "proxyTimeout" : 0,
         "mockType" : MockTypeSeq, // RULE
+        "randomiseDefinitions" : false,
         "definitions" : [],
         "rules" : []
     };
@@ -122,20 +132,31 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         $scope.endpoint = {
             "path" : endpoint.path,
             "method" : endpoint.method,
-            "contentType" : endpoint.definitions[0].responseContentType,
-            "httpStatusCode" : endpoint.definitions[0].httpStatusCode,
-            "responseBody" : endpoint.definitions[0].responseBody,
+            "contentType" : null,
+            "httpStatusCode" : null,
+            "responseBody" : null,
             "status" : endpoint.status,
+            "proxyTimeout" : endpoint.proxyTimeoutInMillis,
             "mockType" : endpoint.mockType,
+            "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules
         };
 
         $scope.extId = endpoint.extId;
 
-        angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
-            $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
-        });
+        if (endpoint.mockType == MockTypeSeq
+                || endpoint.mockType == MockTypeRule) {
+
+            $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
+            $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
+            $scope.endpoint.responseBody = endpoint.definitions[0].responseBody;
+
+            angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
+                $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
+            });
+
+        }
 
     }
 
@@ -160,7 +181,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveRuleUp = function(rule, index) {
 
-        if (index == 0) {
+        if (index == 0
+            || $scope.endpoint.rules[index].suspend) {
             return;
         }
 
@@ -175,7 +197,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveRuleDown = function(rule, index) {
 
-        if ( (index + 1) == $scope.endpoint.rules.length) {
+        if ( (index + 1) == $scope.endpoint.rules.length
+            || $scope.endpoint.rules[index].suspend) {
             return;
         }
 
@@ -188,15 +211,39 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
+    $scope.doRemoveRule = function(index) {
+
+        if ($scope.endpoint.rules[index].suspend) {
+            return;
+        }
+
+        utils.openWarningConfirmation("Remove this rule? (You will need to save for this to take effect)", function (alertResponse) {
+
+            if (alertResponse) {
+                $scope.endpoint.rules.splice(index, 1);
+
+                // Update all orderNo fields in rule array
+                updateRuleOrderNumbers();
+            }
+
+        });
+
+    };
+
     function updateRuleOrderNumbers() {
         for (var r=0; r < $scope.endpoint.rules.length; r++) {
             $scope.endpoint.rules[r].orderNo = (r + 1);
         }
     }
 
+    $scope.doToggleSuspendRule = function (index) {
+        $scope.endpoint.rules[index].suspend = !$scope.endpoint.rules[index].suspend;
+    };
+
     $scope.doMoveSeqUp = function (seq, index) {
 
-        if (index == 0) {
+        if (index == 0
+            || $scope.endpoint.definitions[index].suspend) {
             return;
         }
 
@@ -211,7 +258,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveSeqDown = function (seq, index) {
 
-        if ( (index + 1) == $scope.endpoint.definitions.length) {
+        if ( (index + 1) == $scope.endpoint.definitions.length
+            || $scope.endpoint.definitions[index].suspend) {
             return;
         }
 
@@ -224,11 +272,46 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
+    $scope.doRemoveSeq = function(index) {
+
+        if ($scope.endpoint.definitions[index].suspend) {
+            return;
+        }
+
+        utils.openWarningConfirmation("Remove this sequenced response? (You will need to save for this to take effect)", function (alertResponse) {
+
+            if (alertResponse) {
+
+                $scope.endpoint.definitions.splice(index, 1);
+
+                // Update all orderNo fields in seq array
+                updateSeqOrderNumbers();
+
+                if (countActiveDefinitions($scope.endpoint.definitions) < 2) {
+                    $scope.endpoint.randomiseDefinitions = false;
+                }
+
+            }
+
+       });
+
+    };
+
     function updateSeqOrderNumbers() {
         for (var s=0; s < $scope.endpoint.definitions.length; s++) {
             $scope.endpoint.definitions[s].orderNo = (s + 1);
         }
     }
+
+    $scope.doToggleSuspendSeq = function (index) {
+
+        $scope.endpoint.definitions[index].suspend = !$scope.endpoint.definitions[index].suspend;
+
+        if (countActiveDefinitions($scope.endpoint.definitions) < 2) {
+            $scope.endpoint.randomiseDefinitions = false;
+        }
+
+    };
 
     $scope.doOpenViewRule = function(rule) {
 
@@ -398,8 +481,27 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         } else if ($scope.endpoint.mockType == MockTypeSeq) {
 
-            if ($scope.endpoint.definitions.length == 0) {
-                showAlert("At least one 'Sequenced Response' is required");
+            if (countActiveDefinitions($scope.endpoint.definitions) == 0) {
+                showAlert("At least one active 'Sequenced Response' is required");
+                return;
+            }
+
+        } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
+
+            if (utils.isBlank($scope.endpoint.proxyTimeout)
+                    || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
+                showAlert("'Timeout' is required and must be numeric.");
+                return;
+            }
+
+            var timeout = $scope.endpoint.proxyTimeout;
+
+            if (typeof $scope.endpoint.proxyTimeout == 'string') {
+                timeout = parseInt($scope.endpoint.proxyTimeout);
+            }
+
+            if (timeout > MaxProxyTimeoutInMillis) {
+                showAlert("'Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
                 return;
             }
 
@@ -412,6 +514,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "method" : $scope.endpoint.method,
             "status" : $scope.endpoint.status,
             "mockType" : $scope.endpoint.mockType,
+            "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
+            "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "definitions" : [],
             "rules" : []
         };
@@ -421,6 +525,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
             for (var d=0; d < $scope.endpoint.definitions.length; d++) {
                 reqData.definitions.push($scope.endpoint.definitions[d]);
+            }
+
+            if (countActiveDefinitions(reqData.definitions) < 2) {
+                reqData.randomiseDefinitions = false;
             }
 
         // Handle Rule specifics
@@ -433,6 +541,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 "responseContentType" : $scope.endpoint.contentType,
                 "httpStatusCode" : $scope.endpoint.httpStatusCode,
                 "responseBody" : $scope.endpoint.responseBody,
+                "sleepInMillis" : 0,
+                "suspend" : false,
                 "responseHeaders" : {}
             });
 
@@ -451,6 +561,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
                 reqData.rules.push($scope.endpoint.rules[r]);
             }
+
+        } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
+
+            // Do nothing
 
         }
 
@@ -507,6 +621,19 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             callback();
         });
 
+    }
+
+    function countActiveDefinitions(definitions) {
+
+        var activeDefinitions = 0;
+
+        for (var d=0; d < definitions.length; d++) {
+            if (!definitions[d].suspend) {
+                activeDefinitions++;
+            }
+        }
+
+        return activeDefinitions;
     }
 
 });

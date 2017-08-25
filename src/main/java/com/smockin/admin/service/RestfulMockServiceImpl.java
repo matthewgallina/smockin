@@ -38,7 +38,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         restfulMockServiceUtils.amendPath(dto);
 
-        RestfulMock mock = new RestfulMock(dto.getPath(), dto.getMethod(), dto.getStatus(), dto.getMockType());
+        RestfulMock mock = new RestfulMock(dto.getPath(), dto.getMethod(), dto.getStatus(), dto.getMockType(), dto.getProxyTimeoutInMillis(), dto.isRandomiseDefinitions());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
@@ -69,6 +69,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setPath(dto.getPath());
         mock.setMethod(dto.getMethod());
         mock.setStatus(dto.getStatus());
+        mock.setProxyTimeOutInMillis(dto.getProxyTimeoutInMillis());
+        mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 

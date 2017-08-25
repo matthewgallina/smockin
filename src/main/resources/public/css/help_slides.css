@@ -1,0 +1,31 @@
+
+.modal-dialog {
+    width: 1000px;
+}
+
+.help-slide-img-wrp {
+    height: 500px;
+    width: 970px;
+}
+
+.help-slide-img {
+    max-height: 500px;
+    max-width: 970px;
+}
+
+.slide-caption {
+    font-size: 18px;
+    text-align: center;
+}
+
+.carousel-control.left {
+    background-image: linear-gradient(to right,rgba(0,0,0,.2) 0, rgba(0,0,0,.0001) 100%);
+}
+
+.carousel-control.right {
+    background-image: linear-gradient(to right,rgba(0,0,0,.0001) 0, rgba(0,0,0,.2) 100%);
+}
+
+.carousel-indicators li {
+    visibility: hidden;
+}

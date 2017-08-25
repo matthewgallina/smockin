@@ -1,0 +1,40 @@
+
+.section-heading {
+    font-size: 24px;
+    margin-top: 25px;
+    margin-bottom: 35px;
+    text
+}
+
+.section-body {
+    margin-top: 15px;
+    margin-bottom: 80px;
+}
+
+.section-body-indent {
+    margin-left: 20px;
+}
+
+.highlight-color {
+    color: #5c85d6;
+    font-style: italic;
+}
+
+.highlight-color-plain {
+    color: #5c85d6;
+}
+
+.section-sub-heading {
+    font-size: 18px;
+    font-style: italic;
+    color: #5c85d6;
+}
+
+.help-slides-link {
+    text-decoration: underline;
+}
+
+.random-number-info {
+    margin-left: 15px;
+    font-size: 12px;
+}
