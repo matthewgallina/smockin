@@ -83,7 +83,7 @@ UPDATING SMOCKIN TO LATER VERSIONS
 
     Moving from an older version of SMOCKIN to a later version is simple.
 
-    All config and DB data is stored under the settings dir ''.smockin' located under your user home.
+    All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
     Therefore as long as this settings dir is preserved then updating SMOCKIN is simply a case of deleting the
     current application and replacing this with a later version.
