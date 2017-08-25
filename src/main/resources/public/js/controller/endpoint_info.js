@@ -181,7 +181,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveRuleUp = function(rule, index) {
 
-        if (index == 0) {
+        if (index == 0
+            || $scope.endpoint.rules[index].suspend) {
             return;
         }
 
@@ -196,7 +197,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveRuleDown = function(rule, index) {
 
-        if ( (index + 1) == $scope.endpoint.rules.length) {
+        if ( (index + 1) == $scope.endpoint.rules.length
+            || $scope.endpoint.rules[index].suspend) {
             return;
         }
 
@@ -210,10 +212,22 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     };
 
     $scope.doRemoveRule = function(index) {
-        $scope.endpoint.rules.splice(index, 1);
 
-        // Update all orderNo fields in rule array
-        updateRuleOrderNumbers();
+        if ($scope.endpoint.rules[index].suspend) {
+            return;
+        }
+
+        utils.openWarningConfirmation("Remove this rule? (You will need to save for this to take effect)", function (alertResponse) {
+
+            if (alertResponse) {
+                $scope.endpoint.rules.splice(index, 1);
+
+                // Update all orderNo fields in rule array
+                updateRuleOrderNumbers();
+            }
+
+        });
+
     };
 
     function updateRuleOrderNumbers() {
@@ -222,9 +236,14 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         }
     }
 
+    $scope.doToggleSuspendRule = function (index) {
+        $scope.endpoint.rules[index].suspend = !$scope.endpoint.rules[index].suspend;
+    };
+
     $scope.doMoveSeqUp = function (seq, index) {
 
-        if (index == 0) {
+        if (index == 0
+            || $scope.endpoint.definitions[index].suspend) {
             return;
         }
 
@@ -239,7 +258,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doMoveSeqDown = function (seq, index) {
 
-        if ( (index + 1) == $scope.endpoint.definitions.length) {
+        if ( (index + 1) == $scope.endpoint.definitions.length
+            || $scope.endpoint.definitions[index].suspend) {
             return;
         }
 
@@ -253,14 +273,28 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     };
 
     $scope.doRemoveSeq = function(index) {
-        $scope.endpoint.definitions.splice(index, 1);
 
-        // Update all orderNo fields in seq array
-        updateSeqOrderNumbers();
-
-        if ($scope.endpoint.definitions.length < 2) {
-            $scope.endpoint.randomiseDefinitions = false;
+        if ($scope.endpoint.definitions[index].suspend) {
+            return;
         }
+
+        utils.openWarningConfirmation("Remove this sequenced response? (You will need to save for this to take effect)", function (alertResponse) {
+
+            if (alertResponse) {
+
+                $scope.endpoint.definitions.splice(index, 1);
+
+                // Update all orderNo fields in seq array
+                updateSeqOrderNumbers();
+
+                if ($scope.endpoint.definitions.length < 2) {
+                    $scope.endpoint.randomiseDefinitions = false;
+                }
+
+            }
+
+       });
+
     };
 
     function updateSeqOrderNumbers() {
@@ -268,6 +302,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             $scope.endpoint.definitions[s].orderNo = (s + 1);
         }
     }
+
+    $scope.doToggleSuspendSeq = function (index) {
+        $scope.endpoint.definitions[index].suspend = !$scope.endpoint.definitions[index].suspend;
+    };
 
     $scope.doOpenViewRule = function(rule) {
 
@@ -437,8 +475,16 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         } else if ($scope.endpoint.mockType == MockTypeSeq) {
 
-            if ($scope.endpoint.definitions.length == 0) {
-                showAlert("At least one 'Sequenced Response' is required");
+            var activeDefinitions = 0;
+
+            for (var d=0; d < $scope.endpoint.definitions.length; d++) {
+                if (!$scope.endpoint.definitions[d].suspend) {
+                    activeDefinitions++;
+                }
+            }
+
+            if (activeDefinitions == 0) {
+                showAlert("At least one active 'Sequenced Response' is required");
                 return;
             }
 
@@ -498,6 +544,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                 "httpStatusCode" : $scope.endpoint.httpStatusCode,
                 "responseBody" : $scope.endpoint.responseBody,
                 "sleepInMillis" : 0,
+                "suspend" : false,
                 "responseHeaders" : {}
             });
 
@@ -519,7 +566,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
 
-            // Nothing extra todo
+            // Do nothing
 
         }
 

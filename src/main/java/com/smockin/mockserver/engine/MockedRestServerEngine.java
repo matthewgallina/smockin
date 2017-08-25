@@ -3,6 +3,7 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
@@ -19,6 +20,7 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -160,6 +162,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             // within each request to the mocked REST endpoint.
             restfulMockDAO.detach(mock);
 
+            // Remove any suspended rule or sequence responses
+            removeSuspendedResponses(mock);
+
             switch (mock.getMethod()) {
                 case GET:
 
@@ -248,6 +253,30 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
         return new RestfulResponse(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
+    }
+
+    void removeSuspendedResponses(final RestfulMock mock) {
+
+        final Iterator<RestfulMockDefinitionOrder> definitionsIter =  mock.getDefinitions().iterator();
+
+        while (definitionsIter.hasNext()) {
+            final RestfulMockDefinitionOrder d = definitionsIter.next();
+
+            if (d.isSuspend()) {
+                definitionsIter.remove();
+            }
+        }
+
+        final Iterator<RestfulMockDefinitionRule> rulesIter =  mock.getRules().iterator();
+
+        while (rulesIter.hasNext()) {
+            final RestfulMockDefinitionRule r = rulesIter.next();
+
+            if (r.isSuspend()) {
+                rulesIter.remove();
+            }
+        }
+
     }
 
 }

@@ -67,3 +67,7 @@
 .batched-endpoint-alt-color {
     background-color: #eee;
 }
+
+.add-endpoint-button-div {
+    text-align: right;
+}

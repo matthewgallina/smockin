@@ -63,12 +63,13 @@
     margin-top: 8px;
 }
 
-.condition-arg-down-button {
-    margin-left: 3px;
+.condition-arg-button-side-offset {
+    margin-left: 8px;
+    margin-right: 6px;
 }
 
-.condition-arg-remove-button {
-    margin-left: 12px;
+.condition-arg-button-top-offset {
+    margin-top: 9px;
 }
 
 .view-rule-button {
@@ -105,9 +106,9 @@
 #endpoint-status {
     margin-left: 20px;
 }
-
+action-button-table-cell
 #endpoint-status-button {
-    width: 120px;
+    width: 90px;
 }
 
 .newEndpointHeading {
@@ -120,4 +121,25 @@
 
 .shuffle-seq-group {
     text-align: right;
+}
+
+.suspend-seq-rule {
+    text-decoration: line-through;
+    color: #d7dbdd;
+}
+
+.suspend-icon-left {
+    cursor: default;
+    opacity: .2;
+}
+
+.suspend-icon-right {
+    margin-left: 8px;
+    margin-right: 6px;
+    cursor: default;
+    opacity: .2;
+}
+
+.suspend-button {
+    opacity: .2 !important;
 }

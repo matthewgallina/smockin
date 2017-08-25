@@ -17,6 +17,18 @@ then
 fi
 
 
+echo ""
+echo "Remove all SMOCKIN related DB and configuration files from this machine? (Y/N)"
+echo ""
+
+read USER_DECISION
+
+if [ "${USER_DECISION}" != "Y" ]
+then
+    exit 0
+fi
+
+
 
 APP_DIR_PATH="${HOME}/.smockin"
 

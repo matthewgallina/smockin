@@ -2,7 +2,7 @@
 
 REM   You can use more major version by removing %k and %l and %m.This command prompt version.
 REM   for /f tokens^=2-5^ delims^=.-_^" %j in ('java -fullversion 2^>^&1') do @set "jver=%j%k%l%m"
-
+REM   echo %jver%
 
 set APP_NAME=SMOCKIN
 set APP_VERSION=1.0.0-SNAPSHOT
