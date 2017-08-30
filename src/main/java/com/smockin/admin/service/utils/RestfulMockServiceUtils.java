@@ -34,7 +34,7 @@ public class RestfulMockServiceUtils {
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
-                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend());
+                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend(), order.getFrequencyCount(), order.getFrequencyPercentage());
 
                 for (Map.Entry<String, String> responseHeader : order.getResponseHeaders().entrySet()) {
                     restfulMockDefinitionDTO.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
@@ -93,7 +93,7 @@ public class RestfulMockServiceUtils {
         for (RestfulMockDefinitionDTO restMockOrderDto : dtoSource.getDefinitions()) {
 
             final RestfulMockDefinitionOrder restfulMockDefinitionOrder =
-                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo(), restMockOrderDto.getSleepInMillis(), restMockOrderDto.isSuspend());
+                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo(), restMockOrderDto.getSleepInMillis(), restMockOrderDto.isSuspend(), restMockOrderDto.getFrequencyCount(), restMockOrderDto.getFrequencyPercentage());
 
             if (restMockOrderDto.getResponseHeaders() != null) {
                 for (Map.Entry<String, String> responseHeader : restMockOrderDto.getResponseHeaders().entrySet()) {

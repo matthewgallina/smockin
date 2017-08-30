@@ -1,5 +1,6 @@
 package com.smockin.admin.dto;
 
+import javax.persistence.Column;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,13 +16,15 @@ public class RestfulMockDefinitionDTO {
     private String responseBody;
     private long sleepInMillis;
     private boolean suspend;
+    private int frequencyCount;
+    private int frequencyPercentage;
     private Map<String, String> responseHeaders = new HashMap<String, String>();
 
     public RestfulMockDefinitionDTO() {
 
     }
 
-    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis, boolean suspend) {
+    public RestfulMockDefinitionDTO(String extId, int orderNo, int httpStatusCode, String responseContentType, String responseBody, long sleepInMillis, boolean suspend, int frequencyCount, int frequencyPercentage) {
         this.extId = extId;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;
@@ -29,6 +32,8 @@ public class RestfulMockDefinitionDTO {
         this.responseBody = responseBody;
         this.sleepInMillis = sleepInMillis;
         this.suspend = suspend;
+        this.frequencyCount = frequencyCount;
+        this.frequencyPercentage = frequencyPercentage;
     }
 
     public String getExtId() {
@@ -78,6 +83,20 @@ public class RestfulMockDefinitionDTO {
     }
     public void setSuspend(boolean suspend) {
         this.suspend = suspend;
+    }
+
+    public int getFrequencyCount() {
+        return frequencyCount;
+    }
+    public void setFrequencyCount(int frequencyCount) {
+        this.frequencyCount = frequencyCount;
+    }
+
+    public int getFrequencyPercentage() {
+        return frequencyPercentage;
+    }
+    public void setFrequencyPercentage(int frequencyPercentage) {
+        this.frequencyPercentage = frequencyPercentage;
     }
 
     public Map<String, String> getResponseHeaders() {
