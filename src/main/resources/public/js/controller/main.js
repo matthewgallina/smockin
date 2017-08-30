@@ -211,6 +211,20 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
         return uuid;
     };
 
+    this.prettyPrintJSON = function(input) {
+
+        if (input == null) {
+            return null;
+        }
+
+        try {
+            JSON.parse( input );
+            return vkbeautify.json(input, 4).trim();
+        } catch (err) {}
+
+        return null;
+    };
+
 
     //
     // Confirmation Modal

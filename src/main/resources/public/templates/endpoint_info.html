@@ -69,8 +69,9 @@
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
-                    <label for="response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                    <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
+                    <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+                    <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="endpoint.responseBody != '' && endpoint.contentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
+                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">

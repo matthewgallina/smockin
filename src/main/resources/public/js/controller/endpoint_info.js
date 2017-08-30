@@ -21,7 +21,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.mockTypeRule = MockTypeRule;
     $scope.mockTypeProxyHttp = MockTypeProxyHttp;
     $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
-    $scope.pathLabel = 'Path *';
+    $scope.pathLabel = 'Path';
     $scope.pathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
     $scope.methodLabel = 'Method';
     $scope.methodDropDownLabel = 'Select...';
@@ -59,6 +59,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
+    $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
 
 
     //
@@ -424,6 +425,21 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
        });
 
+    };
+
+    $scope.doPrettyPrintResponse = function() {
+
+        if ($scope.endpoint.contentType == "application/json") {
+
+            var formattedResponseBody = utils.prettyPrintJSON($scope.endpoint.responseBody);
+
+            if (formattedResponseBody == null) {
+                showAlert("Unable to pretty print. Please check your JSON syntax", "warning");
+                return;
+            }
+
+            $scope.endpoint.responseBody = formattedResponseBody;
+        }
     };
 
     $scope.doSaveEndpoint = function() {

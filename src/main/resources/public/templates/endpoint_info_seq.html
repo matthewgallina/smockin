@@ -20,10 +20,9 @@
     </div>
 
     <div class="form-group">
-        <label for="response-body" class="ng-binding">
-            {{ responseBodyLabel }}
-        </label>
-        <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="seqResponse.responseBody"></textarea>
+        <label for="seq-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+        <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="seqResponse.responseBody != '' && seqResponse.responseContentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
+        <textarea id="seq-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="seqResponse.responseBody"></textarea>
     </div>
 
     <div class="form-group">

@@ -41,8 +41,8 @@
     width: 100%;
 }
 
-#response-body {
-    height: 170px;
+#default-response-body {
+    min-height: 200px;
 }
 
 .default-label-color {
@@ -106,7 +106,11 @@
 #endpoint-status {
     margin-left: 20px;
 }
-action-button-table-cell
+
+.action-button-table-cell {
+    width: 90px;
+}
+
 #endpoint-status-button {
     width: 90px;
 }
