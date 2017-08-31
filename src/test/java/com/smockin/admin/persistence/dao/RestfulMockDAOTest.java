@@ -1,6 +1,7 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.SmockinTestConfig;
+import com.smockin.SmockinTestUtils;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
@@ -36,11 +37,11 @@ public class RestfulMockDAOTest {
     @Before
     public void setUp() {
 
-        a = buildRestfulMock("/a", MockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        b = buildRestfulMock("/b", MockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        c = buildRestfulMock("/c", MockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        d = buildRestfulMock("/d", MockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE);
-        e = buildRestfulMock("/e", MockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        a = SmockinTestUtils.buildRestfulMock("/a", MockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        b = SmockinTestUtils.buildRestfulMock("/b", MockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        c = SmockinTestUtils.buildRestfulMock("/c", MockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        d = SmockinTestUtils.buildRestfulMock("/d", MockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE);
+        e = SmockinTestUtils.buildRestfulMock("/e", MockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
 
         a = restfulMockDAO.saveAndFlush(a);
         b = restfulMockDAO.saveAndFlush(b);
@@ -89,18 +90,6 @@ public class RestfulMockDAOTest {
             Assert.assertEquals(expectedLoadOrder[index++], m.getInitializationOrder());
         }
 
-    }
-
-    private RestfulMock buildRestfulMock(final String path, final MockTypeEnum mockType, final int initOrder, final RestMethodEnum restMethod, final RecordStatusEnum status) {
-
-        final RestfulMock mock = new RestfulMock();
-        mock.setPath(path);
-        mock.setMockType(mockType);
-        mock.setInitializationOrder(initOrder);
-        mock.setMethod(restMethod);
-        mock.setStatus(status);
-
-        return mock;
     }
 
 }
