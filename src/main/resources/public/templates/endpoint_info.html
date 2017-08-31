@@ -45,7 +45,7 @@
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType == mockTypeWebSocket">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ methodDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -116,6 +116,7 @@
                     <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
                     <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
                     <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'">{{ proxyRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeWebSocket }}'" ng-click="doAdjustWSMethod()">{{ webSocketRadioLabel }}</label>
                 </div>
 
                 <br />
@@ -240,6 +241,15 @@
                     <div class="form-group proxy-timeout-group">
                         <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
                         <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
+
+                </div>
+
+                <div ng-show="endpoint.mockType == mockTypeWebSocket">
+
+                    <div class="form-group proxy-timeout-group">
+                        <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
+                        <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" />
                     </div>
 
                 </div>

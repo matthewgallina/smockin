@@ -55,9 +55,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
-        buildIndex(mocks);
-
         buildEndpoints(mocks);
+
+        buildIndex(mocks);
 
         initServer(config.getPort());
 
@@ -132,6 +132,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         // NOTE JPA entity beans are still attached at this stage (See buildEndpoints() below).
         for (RestfulMock m : mocks) {
+
+            if (MockTypeEnum.PROXY_WS.equals(m.getMockType())) {
+                continue;
+            }
+
             sb.append(m.getMethod());
             sb.append(" ");
             sb.append(m.getPath());
@@ -161,6 +166,26 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             // continually accessed again here as a simple data bean
             // within each request to the mocked REST endpoint.
             restfulMockDAO.detach(mock);
+        }
+
+        //
+        // Define all web socket routes first as the Spark framework requires this
+        for (RestfulMock mock : mocks) {
+
+            if (!MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+                continue;
+            }
+
+            Spark.webSocket(mock.getPath(), WebSocketEchoService.class);
+        }
+
+        //
+        // Next handle all HTTP web service routes
+        for (RestfulMock mock : mocks) {
+
+            if (MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+                continue;
+            }
 
             // Remove any suspended rule or sequence responses
             removeSuspendedResponses(mock);

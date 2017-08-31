@@ -7,12 +7,14 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var MockTypeSeq = 'SEQ';
     var MockTypeRule = 'RULE';
     var MockTypeProxyHttp = 'PROXY_HTTP';
+    var MockTypeWebSocket = 'PROXY_WS';
     var isNew = ($rootScope.endpointData == null);
     var RestfulServerType = globalVars.RestfulServerType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
     var MaxProxyTimeoutInMillis = 60000;
+    var MaxWebSocketTimeoutInMillis = 216000000;
 
 
     //
@@ -20,6 +22,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.mockTypeSeq = MockTypeSeq;
     $scope.mockTypeRule = MockTypeRule;
     $scope.mockTypeProxyHttp = MockTypeProxyHttp;
+    $scope.mockTypeWebSocket = MockTypeWebSocket;
     $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
     $scope.pathLabel = 'Path';
     $scope.pathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
@@ -39,13 +42,16 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.sequenceResponsesRadioLabel = 'Sequenced';
     $scope.rulesRadioLabel = 'Rules';
     $scope.proxyRadioLabel = 'Proxied';
+    $scope.webSocketRadioLabel = 'WebSocket';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
     $scope.serverRestartInstruction = '(Please note, the mock server will need to be restarted for changes to take effect)';
     $scope.endpointStatusLabel = 'Status:';
-    $scope.proxyTimeoutLabel = 'Timeout (in millis)';
-    $scope.proxyTimeoutPlaceholderTxt = 'Duration a call to this endpoint will wait';
+    $scope.proxyTimeoutLabel = 'Long Polling Timeout (in millis)';
+    $scope.webSocketTimeoutLabel = 'Idle Timeout (in millis)';
+    $scope.proxyTimeoutPlaceholderTxt = 'Duration the server will hold the request open with no activity (zero for no timeout)';
+    $scope.webSocketTimeoutPlaceholderTxt = 'Duration the server will keep the socket open whilst idle (zero for no timeout)';
     $scope.shuffleSequenceLabel = "Shuffle Responses";
 
 
@@ -112,6 +118,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "responseBody" : null,
         "status" : ActiveStatus,
         "proxyTimeout" : 0,
+        "webSocketTimeout" : 0,
         "mockType" : MockTypeSeq, // RULE
         "randomiseDefinitions" : false,
         "definitions" : [],
@@ -138,6 +145,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "responseBody" : null,
             "status" : endpoint.status,
             "proxyTimeout" : endpoint.proxyTimeoutInMillis,
+            "webSocketTimeout" : endpoint.webSocketTimeoutInMillis,
             "mockType" : endpoint.mockType,
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
@@ -442,87 +450,29 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         }
     };
 
+    $scope.doAdjustWSMethod = function() {
+        $scope.endpoint.method = 'GET';
+    };
+
     $scope.doSaveEndpoint = function() {
 
+        // Validation
         if (utils.isBlank($scope.endpoint.path)) {
             showAlert("'Path' is required");
             return;
         }
 
-        if (utils.isBlank($scope.endpoint.method)) {
-            showAlert("'Method' is required");
+        if ($scope.endpoint.mockType == MockTypeRule && !validateRule()) {
+            return;
+        } else if ($scope.endpoint.mockType == MockTypeSeq && !validateSeq()) {
+            return;
+        } else if ($scope.endpoint.mockType == MockTypeProxyHttp && !validateProxy()) {
+            return;
+        } else if ($scope.endpoint.mockType == MockTypeWebSocket && !validateWebSocket()) {
             return;
         }
 
-        if ($scope.endpoint.mockType == MockTypeRule) {
-
-            if (utils.isBlank($scope.endpoint.contentType)) {
-                showAlert("'Default Content Type' is required");
-                return;
-            }
-
-            if (utils.isBlank($scope.endpoint.httpStatusCode)
-                    || !utils.isNumeric($scope.endpoint.httpStatusCode)) {
-                showAlert("'Default HTTP Status Code' is required and must be numeric");
-                return;
-            }
-
-            // Validate there are not unpopulated response headers
-            for (var r=0; r < $scope.responseHeaderList.length; r++) {
-
-                var rhName = $scope.responseHeaderList[r].name;
-                var rhValue = $scope.responseHeaderList[r].value;
-
-                if (utils.isBlank(rhName) || utils.isBlank(rhValue)) {
-                    showAlert("You have blank 'Default Response Header' fields. Please amend or remove these.");
-                    return;
-                }
-
-                // Validate there are not duplicated response header keys
-                var occurrences = 0;
-
-                for (var cr=0; cr < $scope.responseHeaderList.length; cr++) {
-                    if (rhName == $scope.responseHeaderList[cr].name) {
-                        occurrences = (occurrences + 1);
-                    }
-                }
-
-                // Assert only 1 occurrence of the header to be present.
-                if (occurrences > 1) {
-                    showAlert("The 'Default Response Header' field '" + rhName + "' is defined more then once.");
-                    return;
-                }
-
-            }
-
-        } else if ($scope.endpoint.mockType == MockTypeSeq) {
-
-            if (countActiveDefinitions($scope.endpoint.definitions) == 0) {
-                showAlert("At least one active 'Sequenced Response' is required");
-                return;
-            }
-
-        } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
-
-            if (utils.isBlank($scope.endpoint.proxyTimeout)
-                    || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
-                showAlert("'Timeout' is required and must be numeric.");
-                return;
-            }
-
-            var timeout = $scope.endpoint.proxyTimeout;
-
-            if (typeof $scope.endpoint.proxyTimeout == 'string') {
-                timeout = parseInt($scope.endpoint.proxyTimeout);
-            }
-
-            if (timeout > MaxProxyTimeoutInMillis) {
-                showAlert("'Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
-                return;
-            }
-
-        }
-
+        // Send to Server
         utils.showBlockingOverlay();
 
         var reqData = {
@@ -531,6 +481,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "status" : $scope.endpoint.status,
             "mockType" : $scope.endpoint.mockType,
             "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
+            "webSocketTimeoutInMillis" : $scope.endpoint.webSocketTimeout,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "definitions" : [],
             "rules" : []
@@ -579,9 +530,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             }
 
         } else if ($scope.endpoint.mockType == MockTypeProxyHttp) {
-
-            // Do nothing
-
+            // Nothing extra to do
+         } else if ($scope.endpoint.mockType == MockTypeWebSocket) {
+            // Nothing extra to do
         }
 
         if ($scope.extId != null) {
@@ -591,6 +542,119 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         }
 
     };
+
+    function validateRule() {
+
+        if (utils.isBlank($scope.endpoint.method)) {
+            showAlert("'Method' is required");
+            return false;
+        }
+
+        if (utils.isBlank($scope.endpoint.contentType)) {
+            showAlert("'Default Content Type' is required");
+            return false;
+        }
+
+        if (utils.isBlank($scope.endpoint.httpStatusCode)
+                || !utils.isNumeric($scope.endpoint.httpStatusCode)) {
+            showAlert("'Default HTTP Status Code' is required and must be numeric");
+            return false;
+        }
+
+        // Validate there are not unpopulated response headers
+        for (var r=0; r < $scope.responseHeaderList.length; r++) {
+
+            var rhName = $scope.responseHeaderList[r].name;
+            var rhValue = $scope.responseHeaderList[r].value;
+
+            if (utils.isBlank(rhName) || utils.isBlank(rhValue)) {
+                showAlert("You have blank 'Default Response Header' fields. Please amend or remove these.");
+                return false;
+            }
+
+            // Validate there are not duplicated response header keys
+            var occurrences = 0;
+
+            for (var cr=0; cr < $scope.responseHeaderList.length; cr++) {
+                if (rhName == $scope.responseHeaderList[cr].name) {
+                    occurrences = (occurrences + 1);
+                }
+            }
+
+            // Assert only 1 occurrence of the header to be present.
+            if (occurrences > 1) {
+                showAlert("The 'Default Response Header' field '" + rhName + "' is defined more then once.");
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+
+    function validateSeq() {
+
+      if (utils.isBlank($scope.endpoint.method)) {
+            showAlert("'Method' is required");
+            return false;
+        }
+
+        if (countActiveDefinitions($scope.endpoint.definitions) == 0) {
+            showAlert("At least one active 'Sequenced Response' is required");
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateProxy() {
+
+       if (utils.isBlank($scope.endpoint.method)) {
+            showAlert("'Method' is required");
+            return false;
+        }
+
+        if (utils.isBlank($scope.endpoint.proxyTimeout)
+                || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
+            showAlert("'Proxy Timeout' is required and must be numeric.");
+            return false;
+        }
+
+        var timeout = $scope.endpoint.proxyTimeout;
+
+        if (typeof $scope.endpoint.proxyTimeout == 'string') {
+            timeout = parseInt($scope.endpoint.proxyTimeout);
+        }
+
+        if (timeout > MaxProxyTimeoutInMillis) {
+            showAlert("'Proxy Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateWebSocket() {
+
+      if (utils.isBlank($scope.endpoint.webSocketTimeout)
+                || !utils.isNumeric($scope.endpoint.webSocketTimeout)) {
+            showAlert("'WebSocket Timeout' is required and must be numeric.");
+            return false;
+        }
+
+        var timeout = $scope.endpoint.webSocketTimeout;
+
+        if (typeof $scope.endpoint.webSocketTimeout == 'string') {
+            timeout = parseInt($scope.endpoint.webSocketTimeout);
+        }
+
+        if (timeout > MaxWebSocketTimeoutInMillis) {
+            showAlert("'WebSocket Timeout' cannot exceed " + MaxWebSocketTimeoutInMillis + " milliseconds (i.e " + (MaxWebSocketTimeoutInMillis / 1000) + " seconds)");
+            return false;
+        }
+
+        return true;
+    }
 
     var serverCallbackFunc = function (status, data) {
 
