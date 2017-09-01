@@ -77,6 +77,8 @@ public class ProxyServiceImpl implements ProxyService {
     @Override
     public void addResponse(final ProxiedDTO dto) {
 
+        // TODO need to add a guard to ensure only legitimate paths are added to the 'synchronizedProxyResponsesMap', to prevent this building up with duff/inaccessible data.
+
         try {
 
             lock.lock();

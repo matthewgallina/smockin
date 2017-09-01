@@ -10,6 +10,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
@@ -17,29 +19,32 @@ import java.io.IOException;
  * Created by mgallina.
  */
 @WebSocket
-public class WebSocketEchoService {
+public class SparkWebSocketEchoService {
 
-    private final Logger logger = LoggerFactory.getLogger(WebSocketEchoService.class);
+    private final Logger logger = LoggerFactory.getLogger(SparkWebSocketEchoService.class);
 
-    // Store sessions if you want to, for example, broadcast a message to all users
-//    private static final Queue<Session> sessions = new ConcurrentLinkedQueue<>();
+    private String path;
+    private WebSocketService webSocketService;
 
-    public WebSocketEchoService() {
+    public SparkWebSocketEchoService(final String path, final WebSocketService webSocketService) {
+        this.path = path;
+        this.webSocketService = webSocketService;
     }
 
     @OnWebSocketConnect
     public void connected(Session session) {
-//        sessions.add(session);
+
+        webSocketService.registerSession(path, session);
     }
 
     @OnWebSocketClose
     public void closed(Session session, int statusCode, String reason) {
-//        sessions.remove(session);
+
+        webSocketService.removeSession(session);
     }
 
     @OnWebSocketMessage
     public void message(Session session, String message) throws IOException {
-        session.getRemote().sendString(message);
     }
 
 }

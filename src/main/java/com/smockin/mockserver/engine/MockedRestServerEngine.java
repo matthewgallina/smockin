@@ -47,6 +47,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private InboundParamMatchService inboundParamMatchService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
@@ -154,6 +157,22 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     void buildEndpoints(final List<RestfulMock> mocks) throws MockServerException {
         logger.debug("buildEndpoints called");
 
+        //
+        // Invoke all lazily loaded data and detach entity.
+        invokeAndDetachData(mocks);
+
+        //
+        // Define all web socket routes first as the Spark framework requires this
+        buildWebSocketEndpoints(mocks);
+
+        //
+        // Next handle all HTTP web service routes
+        buildHttpEndpoints(mocks);
+
+    }
+
+    void invokeAndDetachData(final List<RestfulMock> mocks) {
+
         for (RestfulMock mock : mocks) {
 
             // Invoke lazily Loaded rules and definitions whilst in this active transaction before
@@ -168,6 +187,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             restfulMockDAO.detach(mock);
         }
 
+    }
+
+    // Expects RestfulMock to be detached
+    void buildWebSocketEndpoints(final List<RestfulMock> mocks) {
+
         //
         // Define all web socket routes first as the Spark framework requires this
         for (RestfulMock mock : mocks) {
@@ -176,11 +200,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 continue;
             }
 
-            Spark.webSocket(mock.getPath(), WebSocketEchoService.class);
+            // Create an echo service instance per web socket route, as we need to hold the path as state within this.
+            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getPath(), webSocketService));
         }
 
-        //
-        // Next handle all HTTP web service routes
+    }
+
+    // Expects RestfulMock to be detached
+    void buildHttpEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+
         for (RestfulMock mock : mocks) {
 
             if (MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
@@ -218,7 +246,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         return processRequest(mock, req, res);
                     });
 
-                   break;
+                    break;
 
                 case PATCH:
 

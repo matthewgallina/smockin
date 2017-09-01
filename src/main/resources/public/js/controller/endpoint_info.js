@@ -13,8 +13,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
-    var MaxProxyTimeoutInMillis = 60000;
-    var MaxWebSocketTimeoutInMillis = 216000000;
+    var MaxProxyTimeoutInMillis = 60000; // 1 min
+    var MaxWebSocketTimeoutInMillis = 3600000; // 1 hour
 
 
     //
