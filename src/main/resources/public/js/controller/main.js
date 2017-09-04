@@ -146,6 +146,8 @@ app.service('globalVars', function($uibModal) {
 
     this.AlertTimeoutMillis = 5000;
 
+    this.GeneralErrorMessage = "Oops looks like something went wrong!";
+
     this.RestfulServerType = "RESTFUL";
 
     this.TextDataType = 'TEXT';

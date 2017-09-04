@@ -124,7 +124,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }
@@ -184,7 +184,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
         utils.checkServerStatus(function(running) {
 
             if (running == null) {
-                showAlert("Oops looks like something went wrong!");
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
@@ -199,7 +199,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                         return;
                     }
 
-                    showAlert("Oops looks like something went wrong!");
+                    showAlert(globalVars.GeneralErrorMessage);
                 });
 
                 return;
@@ -225,7 +225,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }
@@ -244,7 +244,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }

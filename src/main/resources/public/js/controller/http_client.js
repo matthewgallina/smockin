@@ -178,7 +178,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         };
 
         // Send Request

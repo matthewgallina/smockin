@@ -251,7 +251,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         restClient.doGet($http, '/ws/' + $scope.endpoint.path + '/client', function(status, data) {
 
             if (status != 200) {
-                showAlert("Oops looks like something went wrong!");
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
@@ -701,7 +701,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         }
 
         utils.hideBlockingOverlay();
-        showAlert("Oops looks like something went wrong!");
+        showAlert(globalVars.GeneralErrorMessage);
     };
 
     $scope.doCancel = function() {

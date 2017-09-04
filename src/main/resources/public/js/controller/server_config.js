@@ -106,7 +106,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     };
@@ -135,7 +135,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }
