@@ -1,9 +1,11 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.mockserver.service.dto.WebSocketClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import org.eclipse.jetty.websocket.api.Session;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by mgallina.
@@ -15,5 +17,6 @@ public interface WebSocketService {
     void registerSession(final String path, final Session session);
     void removeSession(final Session session);
     void pushMessage(final WebSocketDTO dto) throws IOException;
+    List<WebSocketClientDTO> getClientConnections(final String path);
 
 }

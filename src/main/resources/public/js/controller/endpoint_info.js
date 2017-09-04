@@ -53,6 +53,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.proxyTimeoutPlaceholderTxt = 'Duration the server will hold the request open with no activity (zero for no timeout)';
     $scope.webSocketTimeoutPlaceholderTxt = 'Duration the server will keep the socket open whilst idle (zero for no timeout)';
     $scope.shuffleSequenceLabel = "Shuffle Responses";
+    $scope.wsClientConnectionLabel = 'Active Client Connections';
+    $scope.activeWsClientsFound = 'No Websocket Clients Found';
 
 
     //
@@ -66,6 +68,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
     $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
+    $scope.refreshWsClientsLinkLabel = 'refresh';
 
 
     //
@@ -109,6 +112,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.extId = null;
 
     $scope.responseHeaderList = [];
+
+    $scope.activeWsClients = [];
 
     $scope.endpoint = {
         "path" : null,
@@ -233,6 +238,25 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
                 // Update all orderNo fields in rule array
                 updateRuleOrderNumbers();
+            }
+
+        });
+
+    };
+
+    $scope.doRefreshActiveClients = function() {
+
+        $scope.activeWsClients = [];
+
+        restClient.doGet($http, '/ws/' + $scope.endpoint.path + '/client', function(status, data) {
+
+            if (status != 200) {
+                showAlert("Oops looks like something went wrong!");
+                return;
+            }
+
+            for (var d=0; d < data.length; d++) {
+                $scope.activeWsClients.push(data[d]);
             }
 
         });

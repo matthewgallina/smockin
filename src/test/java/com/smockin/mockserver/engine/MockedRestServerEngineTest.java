@@ -7,7 +7,7 @@ import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.RuleEngine;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,7 +84,7 @@ public class MockedRestServerEngineTest {
 
         // Test (run 1)
         // Should always be response with 'order No 1'
-        final RestfulResponse result1 = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result1 = engine.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result1);
@@ -94,7 +94,7 @@ public class MockedRestServerEngineTest {
 
         // Test (run 2)
         // ... and just to double check...
-        final RestfulResponse result2 = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result2 = engine.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result2);
@@ -111,7 +111,7 @@ public class MockedRestServerEngineTest {
         restfulMock.setMockType(MockTypeEnum.PROXY_HTTP);
 
         // Test
-        final RestfulResponse result = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result = engine.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result);

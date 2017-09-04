@@ -1,13 +1,17 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.mockserver.service.dto.WebSocketClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
+import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -99,6 +103,22 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         }
 
+    }
+
+    public List<WebSocketClientDTO> getClientConnections(final String path) {
+
+        final String prefixedPath = GeneralUtils.prefixPath(path);
+        final List<WebSocketClientDTO> sessionHandshakeIds = new ArrayList<WebSocketClientDTO>();
+
+        if (!sessionMap.containsKey(prefixedPath)) {
+            return sessionHandshakeIds;
+        }
+
+        sessionMap.get(prefixedPath).forEach( s -> {
+            sessionHandshakeIds.add(new WebSocketClientDTO(s.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)));
+        });
+
+        return sessionHandshakeIds;
     }
 
 }

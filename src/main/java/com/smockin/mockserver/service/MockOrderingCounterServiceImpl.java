@@ -3,7 +3,7 @@ package com.smockin.mockserver.service;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +21,7 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
     private final Object monitor = new Object();
     private final Map<String, Integer> synchronizedCounter = new HashMap<String, Integer>();
 
-    public RestfulResponse process(final RestfulMock restfulMock) {
+    public RestfulResponseDTO process(final RestfulMock restfulMock) {
 
         final RestfulMockDefinitionOrder mockDef;
 
@@ -33,7 +33,7 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
 
         GeneralUtils.checkForAndHandleSleep(mockDef.getSleepInMillis());
 
-        return new RestfulResponse(mockDef.getHttpStatusCode(), mockDef.getResponseContentType(), mockDef.getResponseBody(), mockDef.getResponseHeaders().entrySet());
+        return new RestfulResponseDTO(mockDef.getHttpStatusCode(), mockDef.getResponseContentType(), mockDef.getResponseBody(), mockDef.getResponseHeaders().entrySet());
     }
 
     RestfulMockDefinitionOrder getNextInSequence(final RestfulMock restfulMock) {

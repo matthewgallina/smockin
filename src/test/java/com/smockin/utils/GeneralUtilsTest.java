@@ -152,4 +152,29 @@ public class GeneralUtilsTest {
         Assert.assertEquals("21", ageResult);
     }
 
+    @Test
+    public void prefixPath_AddPrefix_Test() {
+        Assert.assertEquals("/xxx", GeneralUtils.prefixPath("xxx"));
+    }
+
+    @Test
+    public void prefixPath_PrefixAlreadyExists_Test() {
+        Assert.assertEquals("/xxx", GeneralUtils.prefixPath("/xxx"));
+    }
+
+    @Test
+    public void prefixPath_Null_Test() {
+        Assert.assertNull(GeneralUtils.prefixPath(null));
+    }
+
+    @Test
+    public void prefixPath_Blank_Test() {
+        Assert.assertNull(GeneralUtils.prefixPath(""));
+    }
+
+    @Test
+    public void prefixPath_Empty_Test() {
+        Assert.assertNull(GeneralUtils.prefixPath("   "));
+    }
+
 }

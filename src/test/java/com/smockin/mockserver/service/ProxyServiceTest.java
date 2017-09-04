@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.ProxiedDTO;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,8 +69,8 @@ public class ProxyServiceTest {
             final Object response = future.get(Long.valueOf(3), TimeUnit.SECONDS);
 
             // Assertions
-            Assert.assertTrue(response instanceof RestfulResponse);
-            final RestfulResponse restfulResponse = (RestfulResponse)response;
+            Assert.assertTrue(response instanceof RestfulResponseDTO);
+            final RestfulResponseDTO restfulResponse = (RestfulResponseDTO)response;
 
             Assert.assertEquals(pxDto.getHttpStatusCode(), restfulResponse.getHttpStatusCode());
             Assert.assertEquals(pxDto.getResponseContentType(), restfulResponse.getResponseContentType());
@@ -94,8 +94,8 @@ public class ProxyServiceTest {
             final Object response = future.get(Long.valueOf(3), TimeUnit.SECONDS);
 
             // Assertions
-            Assert.assertTrue(response instanceof RestfulResponse);
-            final RestfulResponse restfulResponse = (RestfulResponse)response;
+            Assert.assertTrue(response instanceof RestfulResponseDTO);
+            final RestfulResponseDTO restfulResponse = (RestfulResponseDTO)response;
 
             Assert.assertEquals(pxDto.getHttpStatusCode(), restfulResponse.getHttpStatusCode());
             Assert.assertEquals(pxDto.getResponseContentType(), restfulResponse.getResponseContentType());

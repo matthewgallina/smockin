@@ -9,7 +9,7 @@ import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -265,7 +265,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {
 
-        RestfulResponse outcome;
+        RestfulResponseDTO outcome;
 
         switch (mock.getMockType()) {
             case RULE:
@@ -298,14 +298,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return StringUtils.defaultIfBlank(response,"");
     }
 
-    RestfulResponse getDefault(final RestfulMock restfulMock) {
+    RestfulResponseDTO getDefault(final RestfulMock restfulMock) {
 
         if (MockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
-            return new RestfulResponse(404);
+            return new RestfulResponseDTO(404);
         }
 
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
-        return new RestfulResponse(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
+        return new RestfulResponseDTO(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
     }
 
     void removeSuspendedResponses(final RestfulMock mock) {

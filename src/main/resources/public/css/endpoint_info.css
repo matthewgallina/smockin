@@ -147,3 +147,15 @@
 .suspend-button {
     opacity: .2 !important;
 }
+
+#clients-table-div {
+    min-height: 150px;
+}
+
+.refresh-clients-heading {
+    font-weight: 700;
+}
+
+.refresh-clients-link {
+    text-align: right;
+}

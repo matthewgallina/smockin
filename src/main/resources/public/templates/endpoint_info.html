@@ -188,7 +188,7 @@
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.rules.length == 0">
-                        {{noRulesFound}}
+                        {{ noRulesFound }}
                     </div>
 
                     <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
@@ -250,6 +250,36 @@
                     <div class="form-group proxy-timeout-group">
                         <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
                         <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
+
+                    <br />
+
+                    <div class="row">
+                        <div class="col-sm-9 refresh-clients-heading">
+                            {{ wsClientConnectionLabel }}
+                        </div>
+                        <div class="col-sm-3 refresh-clients-link">
+                            <a href="" ng-click="doRefreshActiveClients()">
+                                {{ refreshWsClientsLinkLabel }}
+                                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <div class="no-results-found" ng-if="activeWsClients.length == 0">
+                        {{ activeWsClientsFound }}
+                    </div>
+
+                    <div id="clients-table-div">
+                        <table class="table table-striped rule-table" ng-if="activeWsClients.length > 0">
+                            <tbody>
+                                <tr ng-repeat="ws in activeWsClients">
+                                    <td>{{ ws.id }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
                 </div>

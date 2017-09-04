@@ -3,7 +3,7 @@ package com.smockin.mockserver.service;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 1)
         // Start with calls to 'RestfulMockDefinition 1'...
-        final RestfulResponse result1 = mockOrderingCounterService.process(restfulMock1);
+        final RestfulResponseDTO result1 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result1);
@@ -72,7 +72,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order1.getResponseBody(), result1.getResponseBody());
 
         // Test (run 2)
-        final RestfulResponse result2 = mockOrderingCounterService.process(restfulMock1);
+        final RestfulResponseDTO result2 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result2);
@@ -81,7 +81,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order2.getResponseBody(), result2.getResponseBody());
 
         // Test (run 3)
-        final RestfulResponse result3 = mockOrderingCounterService.process(restfulMock1);
+        final RestfulResponseDTO result3 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result3);
@@ -91,7 +91,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 4)
         // Call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
-        final RestfulResponse result11 = mockOrderingCounterService.process(restfulMock2);
+        final RestfulResponseDTO result11 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result11);
@@ -100,7 +100,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order5.getResponseBody(), result11.getResponseBody());
 
         // Test (run 5)
-        final RestfulResponse result4 = mockOrderingCounterService.process(restfulMock1);
+        final RestfulResponseDTO result4 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result4);
@@ -110,7 +110,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 6)
         // ... And again call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
-        final RestfulResponse result22 = mockOrderingCounterService.process(restfulMock2);
+        final RestfulResponseDTO result22 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result22);
@@ -120,7 +120,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 7)
         // This call to 'RestfulMockDefinition 1' should now come around full circle returning the 1st response (with order no 1)
-        final RestfulResponse result5 = mockOrderingCounterService.process(restfulMock1);
+        final RestfulResponseDTO result5 = mockOrderingCounterService.process(restfulMock1);
 
         // Assertions
         Assert.assertNotNull(result5);
@@ -130,7 +130,7 @@ public class MockOrderingCounterServiceTest {
 
         // Test (run 8)
         // This call to 'RestfulMockDefinition 2' should now come around full circle returning the 1st response (with order no 1)
-        final RestfulResponse result33 = mockOrderingCounterService.process(restfulMock2);
+        final RestfulResponseDTO result33 = mockOrderingCounterService.process(restfulMock2);
 
         // Assertions
         Assert.assertNotNull(result33);

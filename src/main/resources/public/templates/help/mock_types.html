@@ -2,7 +2,7 @@
 <div class="section-heading">{{ mockTypesSectionTitle }}</div>
 
 <div class="section-body">
-    Simulated endpoints can return content in 4 different ways:
+    Simulated endpoints can return content in 5 different ways:
 
     <br /><br />
 
@@ -14,7 +14,9 @@
             <br />
             Using Rules
             <br />
-            Via Proxy
+            Via Proxy (long polling request)
+            <br />
+            Via Proxy (webSocket)
         </b>
     </div>
 
@@ -111,6 +113,7 @@
 
     </div>
 
+
     <p class="section-sub-heading">Random Responses</p>
     <br/>
 
@@ -130,6 +133,7 @@
         <br/>
 
     </div>
+
 
     <p class="section-sub-heading">Using Rules</p>
     <br/>
@@ -207,27 +211,28 @@
 
     </div>
 
-    <p class="section-sub-heading">Proxied Responses</p>
+
+    <p class="section-sub-heading">Long Polling Proxied Response</p>
     <br/>
 
     <div class="section-body-indent">
 
         <p>
-            Proxied responses allow the response of a call to an endpoint, to be injected via an external process.
+            Proxied responses allow the response returned to a client call, to be injected via an external process.
             <br />
             <br />
             To give an example:
             <br />
             <ul>
-                <li>Say you were to create the proxied response endpoint <b>/wait</b>.</li>
+                <li>Say you were to create the endpoint <b>/wait</b>.</li>
                 <li>Were <b>Caller A</b> to call this, they will have to wait until a response is available (i.e provided by another party).</li>
-                <li>To inject this response, <b>Caller B</b> now POSTS into the admin endpoint <b>http://localhost:8000/proxy</b> and sets the status code, content type and response body like so <b>{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}</b>.</li>
-                <li>As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> should receive a <b>200</b> response with the json message <b>{"name":"The wait is over"}</b>.</li>
+                <li>To inject this response, <b>Caller B</b> POSTS to the admin endpoint <b>http://localhost:8000/proxy</b> and sets the status code, content type and response body like so <b>{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}</b>.</li>
+                <li>As soon as <b>Caller B's</b> request is sent, <b>Caller A</b> receives a <b>200</b> response with the json message <b>{"name":"The wait is over"}</b>.</li>
             </ul>
         </p>
 
         <br />
-        A cURL example of POSTING a response to <b>/wait</b> to the admin endpoint:
+        A cURL example of posting a response to <b>/wait</b> via the admin endpoint <b>/proxy</b>:
         <div class="section-body-indent">
             <br />
             <b>curl -H "Content-Type: application/json" -X POST -d '{"path":"/wait", "method":"POST", "httpStatusCode":200, "responseContentType":"application/json", "body":"{\"name\":\"The wait is over\"}"}' http://localhost:8000/proxy</b>
@@ -237,10 +242,10 @@
         <br />
 
         <p>
-        It is worth noting that the underlying design of 'Proxied responses' is actually based on the consumer / producer concurrency model.
+        It is worth noting that the underlying design of 'long polling proxied responses' is actually based on the consumer / producer concurrency model.
         <br />
         <br />
-        This means that all POSTS to the admin endpoint are internally queued and all calls to the consuming endpoint (i.e <b>/wait</b>) will pick up whatever they find from the queue.
+            This means that all POSTS to the admin endpoint (i.e <b>/proxy</b>) are internally queued and all calls to the consuming endpoint (i.e <b>/wait</b>) will pick up whatever they find from the queue.
         <br />
         <br />
         Therefore were you to reverse the above example where <b>Caller B</b> POSTS to the queue first, the subsequent call by <b>Caller A</b> would result in an immediate response, given a response is already present in the queue.
@@ -252,7 +257,7 @@
         <br />
 
         <p>
-            As such Proxied responses can be useful where you need to:
+            Proxied responses can be useful where you need to:
 
             <ul>
                 <li>Control the response being sent back to a caller from a completely separate process</li>
@@ -265,6 +270,59 @@
 
         <p>
             <a href="" class="help-slides-link" ng-click="openImageViewer('proxy_response')">Click here</a> for a full example of how to create and utilise the <b>/wait</b> endpoint in the dashboard.
+        </p>
+
+        <br/>
+        <br/>
+
+    </div>
+
+
+    <p class="section-sub-heading">WebSocket Proxied Response</p>
+    <br/>
+
+    <div class="section-body-indent">
+
+        <p>
+            <i>WebSocket based proxied responses</i> follow the same principle as <i>Long Polling Proxied Responses</i>, the only difference being this is achieved through websockets instead.
+            <br />
+            <br />
+            To give an example:
+            <br />
+            <ul>
+                <li>Assume the endpoint <b>/chat</b>.</li>
+                <li><b>Caller A</b> calls this establishing a websocket connection. They maintain an open connection listening out for any messages pushed back down from the server.</li>
+                <li>To provide a message to <b>Caller A</b>, <b>Caller B</b> POSTS the message <b>'{"path":"/chat", "body":"Hello!"}'</b> to the admin endpoint <b>http://localhost:8000/ws</b>.</li>
+                <li><b>Caller A</b> receives the message <b>Hello!</b> and continues listening for further messages sent to <b>/chat</b>.</li>
+            </ul>
+        </p>
+
+        <br />
+        A cURL example of posting a message to <b>/chat</b> via the admin endpoint <b>/ws</b>:
+
+        <div class="section-body-indent">
+            <br />
+            <b>curl -i -H "Content-Type: application/json" -X POST -d '{"path":"/chat", "body":"Hello!"}' http://localhost:8000/ws</b>
+        </div>
+
+        <br />
+        <br />
+
+        <p>
+            <i>WebSocket Proxied Response</i> can either be set up for 'one to one' communication to a specific client or be used to 'broadcast' to multiple clients.
+            <br />
+            <br />
+            Broadcasting is the default behavior; where 3 clients are listening to the endpoint <b>/chat</b>, the posted message <b>{"path":"/chat", "body":"Hello!"}</b> would be received by all 3.
+            <br />
+            <br />
+            An individual client can be messaged by specifying the unique websocket handshake ID (i.e "Sec-WebSocket-Accept") in the posted message like so: <b>{"id" : "+FKgWwIuCH5qqaxgICx4DZEcbKM=", "path":"/chat", "body":"Hello!"}</b>
+            <br />
+        </p>
+
+        <br />
+
+        <p>
+            <a href="" class="help-slides-link" ng-click="openImageViewer('proxy_ws_response')">Click here</a> for a full example of how to create and utilise the <b>/chat</b> endpoint in the dashboard.
         </p>
 
     </div>

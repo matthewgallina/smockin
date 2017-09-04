@@ -4,6 +4,7 @@ import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,13 +135,7 @@ public class RestfulMockServiceUtils {
     }
 
     public void amendPath(final RestfulMockDTO dto) {
-
-        final String prefix = "/";
-
-        if (!dto.getPath().startsWith(prefix)) {
-            dto.setPath(prefix + dto.getPath());
-        }
-
+        dto.setPath(GeneralUtils.prefixPath(dto.getPath()));
     }
 
 }
