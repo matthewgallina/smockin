@@ -272,8 +272,8 @@
                         {{ activeWsClientsFound }}
                     </div>
 
-                    <div id="clients-table-div">
-                        <table class="table table-striped rule-table" ng-if="activeWsClients.length > 0">
+                    <div id="clients-table-div" ng-if="activeWsClients.length > 0">
+                        <table class="table table-striped rule-table">
                             <tbody>
                                 <tr ng-repeat="ws in activeWsClients">
                                     <td>{{ ws.id }}</td>
