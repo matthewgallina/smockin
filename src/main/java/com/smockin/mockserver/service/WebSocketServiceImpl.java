@@ -26,13 +26,14 @@ public class WebSocketServiceImpl implements WebSocketService {
     private final String WS_HAND_SHAKE_KEY = "Sec-WebSocket-Accept";
 
     // A map of web socket client sessions per simulated web socket path
-    private final ConcurrentHashMap<String, Set<Session>> sessionMap = new ConcurrentHashMap<String, Set<Session>>();
+    private final ConcurrentHashMap<String, Set<SessionIdWrapper>> sessionMap = new ConcurrentHashMap<String, Set<SessionIdWrapper>>();
 
     /**
      *
      * Stores all websocket client sessions in the internal map 'sessionMap'.
      *
-     * Note sessions are identified using the encrypted handshake 'Sec-WebSocket-Accept' value.
+     * Note sessions are 'internally' identified using the encrypted handshake 'Sec-WebSocket-Accept' value and
+     * 'externally' identified using an allocated UUID.
      *
      * @param path
      * @param session
@@ -40,16 +41,16 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void registerSession(final String path, final Session session) {
         logger.debug("registerSession called");
 
-        final Set<Session> sessions = sessionMap.getOrDefault(path, new HashSet<Session>());
+        final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<SessionIdWrapper>());
 
-        sessions.add(session);
+        sessions.add(new SessionIdWrapper(GeneralUtils.generateUUID(), session));
 
         sessionMap.put(path, sessions);
     }
 
     /**
      *
-     * Removes the closing client's session from 'sessionMap'.
+     * Removes the closing client's session from 'sessionMap' (using the handshake identifier).
      *
      * @param session
      */
@@ -62,7 +63,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
             sessionSet.forEach( s -> {
 
-                if (s.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
+                if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
                     return;
                 }
@@ -73,22 +74,28 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     }
 
-    public void pushMessage(final WebSocketDTO dto) throws IOException {
-        logger.debug("pushMessage called");
+    public void broadcastMessage(final WebSocketDTO dto) throws IOException {
+        logger.debug("broadcastMessage called");
 
-        final Set<Session> sessions = sessionMap.get(dto.getPath());
+        sendMessage(null, dto);
+    }
+
+    public void sendMessage(final String id, final WebSocketDTO dto) throws IOException {
+        logger.debug("sendMessage called");
+
+        final Set<SessionIdWrapper> sessions = sessionMap.get(dto.getPath());
 
         if (sessions == null) {
             return;
         }
 
-        if (dto.getId() != null) {
+        if (id != null) {
 
             // Push to specific client session for the given handshake id
-            for (Session s : sessions) {
+            for (SessionIdWrapper s : sessions) {
 
-                if (s.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(dto.getId())) {
-                    s.getRemote().sendString(dto.getBody());
+                if (s.getId().equals(id)) {
+                    s.getSession().getRemote().sendString(dto.getBody());
                     return;
                 }
 
@@ -97,8 +104,8 @@ public class WebSocketServiceImpl implements WebSocketService {
         } else {
 
             // Broadcast to all session on this path if not id is specified
-            for (Session s : sessions) {
-                s.getRemote().sendString(dto.getBody());
+            for (SessionIdWrapper s : sessions) {
+                s.getSession().getRemote().sendString(dto.getBody());
             }
 
         }
@@ -115,10 +122,35 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         sessionMap.get(prefixedPath).forEach( s -> {
-            sessionHandshakeIds.add(new WebSocketClientDTO(s.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)));
+            sessionHandshakeIds.add(new WebSocketClientDTO(s.getId()));
         });
 
         return sessionHandshakeIds;
+    }
+
+    /**
+     * Private class used to associate each WebSocket session against an allocated UUID.
+     *
+     * The UUID is used as an external identifier.
+     *
+     */
+    class SessionIdWrapper {
+
+        private final String id;
+        private final Session session;
+
+        public SessionIdWrapper(final String id, final Session session) {
+            this.id = id;
+            this.session = session;
+        }
+
+        public String getId() {
+            return id;
+        }
+        public Session getSession() {
+            return session;
+        }
+
     }
 
 }

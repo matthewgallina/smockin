@@ -32,9 +32,17 @@ public class WebSocketController {
     }
 
     @RequestMapping(path="/ws", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> create(@RequestBody final WebSocketDTO dto) throws IOException {
+    public @ResponseBody ResponseEntity<?> broadcastMessage(@RequestBody final WebSocketDTO dto) throws IOException {
 
-        webSocketService.pushMessage(dto);
+        webSocketService.broadcastMessage(dto);
+
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/ws/{id}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> sendMessage(@PathVariable("id") final String id, @RequestBody final WebSocketDTO dto) throws IOException {
+
+        webSocketService.sendMessage(id, dto);
 
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }

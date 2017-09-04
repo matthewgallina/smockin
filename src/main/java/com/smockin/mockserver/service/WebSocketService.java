@@ -16,7 +16,8 @@ public interface WebSocketService {
 
     void registerSession(final String path, final Session session);
     void removeSession(final Session session);
-    void pushMessage(final WebSocketDTO dto) throws IOException;
+    void broadcastMessage(final WebSocketDTO dto) throws IOException;
+    void sendMessage(final String id, final WebSocketDTO dto) throws IOException;
     List<WebSocketClientDTO> getClientConnections(final String path);
 
 }

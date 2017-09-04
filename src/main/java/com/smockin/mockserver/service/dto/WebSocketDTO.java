@@ -5,7 +5,6 @@ package com.smockin.mockserver.service.dto;
  */
 public class WebSocketDTO {
 
-    private String id;
     private String path;
     private String body;
 
@@ -18,16 +17,8 @@ public class WebSocketDTO {
     }
 
     public WebSocketDTO(String id, String path, String body) {
-        this.id = id;
         this.path = path;
         this.body = body;
-    }
-
-    public String getId() {
-        return id;
-    }
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getPath() {

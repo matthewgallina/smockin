@@ -244,7 +244,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
-    $scope.doRefreshActiveClients = function() {
+    var doRefreshActiveClientsFunc = function() {
 
         $scope.activeWsClients = [];
 
@@ -262,6 +262,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         });
 
     };
+
+    $scope.doRefreshActiveClients = doRefreshActiveClientsFunc;
 
     function updateRuleOrderNumbers() {
         for (var r=0; r < $scope.endpoint.rules.length; r++) {
@@ -738,6 +740,14 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         }
 
         return activeDefinitions;
+    }
+
+
+    //
+    // Init Page
+    if (!isNew
+            && $scope.endpoint.mockType == MockTypeWebSocket) {
+        doRefreshActiveClientsFunc();
     }
 
 });
