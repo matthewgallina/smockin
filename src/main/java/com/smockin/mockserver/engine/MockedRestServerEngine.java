@@ -10,6 +10,7 @@ import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +202,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             // Create an echo service instance per web socket route, as we need to hold the path as state within this.
-            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getPath(), webSocketService));
+            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getPath(), mock.getWebSocketTimeoutInMillis(), webSocketService));
         }
 
     }

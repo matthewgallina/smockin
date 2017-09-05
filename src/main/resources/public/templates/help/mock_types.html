@@ -312,10 +312,26 @@
             <i>WebSocket Proxied Response</i> can either be set up for 'one to one' communication to a specific client or be used to 'broadcast' to multiple clients.
             <br />
             <br />
-            Broadcasting is the default behavior; where 3 clients are listening to the endpoint <b>/chat</b>, the posted message <b>{"path":"/chat", "body":"Hello!"}</b> would be received by all 3.
+            Broadcasting is the default behavior, meaning were 3 clients listening to the endpoint <b>/chat</b>, a posted message to <b>/ws</b> endpoint would be received by all 3.
             <br />
             <br />
-            An individual client can be messaged by specifying the unique websocket handshake ID (i.e "Sec-WebSocket-Accept") in the posted message like so: <b>{"id" : "+FKgWwIuCH5qqaxgICx4DZEcbKM=", "path":"/chat", "body":"Hello!"}</b>
+            Individual clients can be messaged by specifying their ID in the <b>/ws</b> endpoint.
+            <br />
+            <br />
+            Assuming a client has an ID of 12345 this would look like so:
+
+            <div class="section-body-indent">
+                <br />
+                <b>curl -i -H "Content-Type: application/json" -X POST -d '{"path":"/chat", "body":"Hello!"}' http://localhost:8000/ws/12345</b>
+            </div>
+
+            <br />
+            <br />
+            A list of connected client IDs can be from the dashboard under the endpoint view.
+            <br />
+            <br />
+            The client itself can also obtain it's own ID by sending the message <b>SMOCKIN_ID</b> to the server.
+
             <br />
         </p>
 

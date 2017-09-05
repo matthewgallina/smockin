@@ -10,7 +10,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
     // Labels
     $scope.clientHeading = "HTTP Client";
     $scope.urlLabel = "Request Path";
-    $scope.urlPlaceholderTxt = "Endpoint URL to call (e.g /hello)";
+    $scope.urlPlaceholderTxt = "HTTP endpoint URL to call (e.g /hello)";
     $scope.methodDropDownLabel = "Select...";
     $scope.requestBodyLabel = "Request Body";
     $scope.requestHeadersLabel = "Request Headers";

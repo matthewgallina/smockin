@@ -13,6 +13,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var ActiveStatus = "ACTIVE";
     var InActiveStatus = "INACTIVE";
+    var MinTimeoutInMillis = 10000; // 10 secs
     var MaxProxyTimeoutInMillis = 60000; // 1 min
     var MaxWebSocketTimeoutInMillis = 3600000; // 1 hour
 
@@ -55,6 +56,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.shuffleSequenceLabel = "Shuffle Responses";
     $scope.wsClientConnectionLabel = 'Active Client Connections';
     $scope.activeWsClientsFound = 'No Websocket Clients Found';
+    $scope.wsClientIdHeading = "Session Id";
+    $scope.wsClientJoinDateHeading = "Joining Date";
 
 
     //
@@ -652,6 +655,12 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             timeout = parseInt($scope.endpoint.proxyTimeout);
         }
 
+        if (timeout > 0
+                && timeout < MinTimeoutInMillis) {
+            showAlert("'Proxy Timeout' must be at least " + MinTimeoutInMillis + " milliseconds (i.e " + (MinTimeoutInMillis / 1000) + " seconds)");
+            return false;
+        }
+
         if (timeout > MaxProxyTimeoutInMillis) {
             showAlert("'Proxy Timeout' cannot exceed " + MaxProxyTimeoutInMillis + " milliseconds (i.e " + (MaxProxyTimeoutInMillis / 1000) + " seconds)");
             return false;
@@ -672,6 +681,12 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         if (typeof $scope.endpoint.webSocketTimeout == 'string') {
             timeout = parseInt($scope.endpoint.webSocketTimeout);
+        }
+
+        if (timeout > 0
+                && timeout < MinTimeoutInMillis) {
+            showAlert("'WebSocket Timeout' must be at least " + MinTimeoutInMillis + " milliseconds (i.e " + (MinTimeoutInMillis / 1000) + " seconds)");
+            return false;
         }
 
         if (timeout > MaxWebSocketTimeoutInMillis) {

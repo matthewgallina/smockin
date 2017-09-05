@@ -35,8 +35,10 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
 
     //
     // Buttons / Links
-    $scope.testClientLink = "Open Http Client";
+    $scope.httpClientLink = "Open HTTP Client";
+    $scope.wsClientLink = "Open WebSocket Client";
     $scope.helpLink = "Help";
+
 
     //
     // Data Objects
@@ -61,8 +63,29 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
         modalInstance.result.then(function (state) {
             httpClientState = state;
         }, function () {
-
         });
+
+    };
+
+    $scope.doOpenWebSocketClient = function() {
+
+      var modalInstance = $uibModal.open({
+          templateUrl: 'ws_client.html',
+          controller: 'wsClientController',
+          resolve: {
+            data: function () {
+              return {
+                "state" : httpClientState
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (state) {
+            httpClientState = state;
+        }, function () {
+        });
+
     };
 
     $scope.doOpenHelp = function() {
@@ -344,7 +367,7 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
         restClient.doGet($http, '/mockedserver/rest/status', function(status, data) {
 
             if (status == 200) {
-                callback(data.running);
+                callback(data.running, data.port);
                 return;
             }
 

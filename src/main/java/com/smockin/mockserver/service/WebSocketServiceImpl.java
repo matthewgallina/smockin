@@ -9,10 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,12 +35,14 @@ public class WebSocketServiceImpl implements WebSocketService {
      * @param path
      * @param session
      */
-    public void registerSession(final String path, final Session session) {
+    public void registerSession(final String path, final long idleTimeoutMillis, final Session session) {
         logger.debug("registerSession called");
+
+        session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
 
         final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<SessionIdWrapper>());
 
-        sessions.add(new SessionIdWrapper(GeneralUtils.generateUUID(), session));
+        sessions.add(new SessionIdWrapper(GeneralUtils.generateUUID(), session, GeneralUtils.getCurrentDate()));
 
         sessionMap.put(path, sessions);
     }
@@ -122,10 +121,23 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         sessionMap.get(prefixedPath).forEach( s -> {
-            sessionHandshakeIds.add(new WebSocketClientDTO(s.getId()));
+            sessionHandshakeIds.add(new WebSocketClientDTO(s.getId(), s.getDateJoined()));
         });
 
         return sessionHandshakeIds;
+    }
+
+    public String getExternalId(final String path, final Session session) {
+
+        final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
+
+        for (SessionIdWrapper sw : sessionMap.get(path)) {
+            if (sw.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
+                return sw.getId();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -134,14 +146,16 @@ public class WebSocketServiceImpl implements WebSocketService {
      * The UUID is used as an external identifier.
      *
      */
-    class SessionIdWrapper {
+    private final class SessionIdWrapper {
 
         private final String id;
         private final Session session;
+        private final Date dateJoined;
 
-        public SessionIdWrapper(final String id, final Session session) {
+        public SessionIdWrapper(final String id, final Session session, final Date dateJoined) {
             this.id = id;
             this.session = session;
+            this.dateJoined = dateJoined;
         }
 
         public String getId() {
@@ -150,7 +164,9 @@ public class WebSocketServiceImpl implements WebSocketService {
         public Session getSession() {
             return session;
         }
-
+        public Date getDateJoined() {
+            return dateJoined;
+        }
     }
 
 }

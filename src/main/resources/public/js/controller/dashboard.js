@@ -181,7 +181,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
 
     function loadServerStatus() {
 
-        utils.checkServerStatus(function(running) {
+        utils.checkServerStatus(function(running, port) {
 
             if (running == null) {
                 showAlert(globalVars.GeneralErrorMessage);

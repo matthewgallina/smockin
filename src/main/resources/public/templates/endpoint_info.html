@@ -254,7 +254,7 @@
 
                     <br />
 
-                    <div class="row">
+                    <div class="row" ng-if="extId != null">
                         <div class="col-sm-9 refresh-clients-heading">
                             {{ wsClientConnectionLabel }}
                         </div>
@@ -268,15 +268,22 @@
 
                     <br />
 
-                    <div class="no-results-found" ng-if="activeWsClients.length == 0">
+                    <div class="no-results-found" ng-if="extId != null && activeWsClients.length == 0">
                         {{ activeWsClientsFound }}
                     </div>
 
-                    <div id="clients-table-div" ng-if="activeWsClients.length > 0">
+                    <div id="clients-table-div" ng-if="extId != null && activeWsClients.length > 0">
                         <table class="table table-striped rule-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ wsClientIdHeading }}</th>
+                                    <th>{{ wsClientJoinDateHeading }}</th>
+                                </tr>
+                            </thead>
                             <tbody>
                                 <tr ng-repeat="ws in activeWsClients">
                                     <td>{{ ws.id }}</td>
+                                    <td>{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
                                 </tr>
                             </tbody>
                         </table>
