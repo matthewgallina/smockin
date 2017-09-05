@@ -36,7 +36,7 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
     //
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
-    $scope.wsClientLink = "Open WebSocket Client";
+    $scope.wsClientLink = "Open WS Client";
     $scope.helpLink = "Help";
 
 
