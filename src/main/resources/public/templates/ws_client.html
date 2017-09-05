@@ -16,6 +16,10 @@
                 <input id="url" class="form-control" ng-model="clientRequest.url" placeholder="{{ urlPlaceholderTxt }}" type="text" />
             </div>
 
+            <div class="ws-button-div">
+                <button class="btn btn-primary" type="button" ng-click="doConnect()">{{ connectButtonLabel }}</button>
+            </div>
+
             <div class="form-group">
                 <label for="client-request-body" class="ng-binding default-label-color">{{ requestBodyLabel }}</label>
                 <textarea id="client-request-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.body"></textarea>
@@ -45,5 +49,4 @@
 
 <div class="modal-footer">
     <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
-    <button class="btn btn-primary" type="button" ng-click="doConnect()">{{ connectButtonLabel }}</button>
 </div>
