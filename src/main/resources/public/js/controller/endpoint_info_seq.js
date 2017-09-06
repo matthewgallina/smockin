@@ -16,7 +16,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.httpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.responseBodyLabel = 'Response Body';
     $scope.frequencyLabel = 'Occurrences';
-    $scope.frequencyPlaceholderTxt = 'Times this response will be returned, before moving to the next';
+    $scope.frequencyPlaceholderTxt = 'No of times this response will be returned, before moving onto the next response';
     $scope.responseHeadersLabel = 'Response Headers';
     $scope.orderNoLabel = 'Order';
     $scope.responseHeaderNameLabel = 'Name';
