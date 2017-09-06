@@ -597,7 +597,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             var rhValue = $scope.responseHeaderList[r].value;
 
             if (utils.isBlank(rhName) || utils.isBlank(rhValue)) {
-                showAlert("You have blank 'Default Response Header' fields. Please amend or remove these.");
+                showAlert("You have blank 'Default Response Header' fields. Please amend or remove these");
                 return false;
             }
 
@@ -612,7 +612,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
             // Assert only 1 occurrence of the header to be present.
             if (occurrences > 1) {
-                showAlert("The 'Default Response Header' field '" + rhName + "' is defined more then once.");
+                showAlert("The 'Default Response Header' field '" + rhName + "' is defined more then once");
                 return false;
             }
 
@@ -645,7 +645,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         if (utils.isBlank($scope.endpoint.proxyTimeout)
                 || !utils.isNumeric($scope.endpoint.proxyTimeout)) {
-            showAlert("'Proxy Timeout' is required and must be numeric.");
+            showAlert("'Proxy Timeout' is required and must be numeric");
             return false;
         }
 
