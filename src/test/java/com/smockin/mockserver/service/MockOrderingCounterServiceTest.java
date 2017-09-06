@@ -27,7 +27,7 @@ public class MockOrderingCounterServiceTest {
         //
         // Mock Definition 1
         restfulMock1 = new RestfulMock();
-        restfulMock1.setExtId(GeneralUtils.generateUUID());
+        restfulMock1.setId(1);
 
         order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1, 0, false, 0 ,0);
         order1.setId(1);
@@ -46,7 +46,7 @@ public class MockOrderingCounterServiceTest {
         //
         // Mock Definition 2
         restfulMock2 = new RestfulMock();
-        restfulMock2.setExtId(GeneralUtils.generateUUID());
+        restfulMock2.setId(2);
 
         order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1, 0, false, 0 ,0);
         order5.setId(5);
@@ -59,7 +59,7 @@ public class MockOrderingCounterServiceTest {
     }
 
     @Test
-    public void getNextInSequenceTest() {
+    public void getNextInSequence_singleOccurence_Test() {
 
         // Test (run 1)
         // Start with calls to 'RestfulMockDefinition 1'...
@@ -71,6 +71,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order1.getResponseContentType(), result1.getResponseContentType());
         Assert.assertEquals(order1.getResponseBody(), result1.getResponseBody());
 
+
         // Test (run 2)
         final RestfulResponseDTO result2 = mockOrderingCounterService.process(restfulMock1);
 
@@ -80,6 +81,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order2.getResponseContentType(), result2.getResponseContentType());
         Assert.assertEquals(order2.getResponseBody(), result2.getResponseBody());
 
+
         // Test (run 3)
         final RestfulResponseDTO result3 = mockOrderingCounterService.process(restfulMock1);
 
@@ -88,6 +90,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order3.getHttpStatusCode(), result3.getHttpStatusCode());
         Assert.assertEquals(order3.getResponseContentType(), result3.getResponseContentType());
         Assert.assertEquals(order3.getResponseBody(), result3.getResponseBody());
+
 
         // Test (run 4)
         // Call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
@@ -99,6 +102,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order5.getResponseContentType(), result11.getResponseContentType());
         Assert.assertEquals(order5.getResponseBody(), result11.getResponseBody());
 
+
         // Test (run 5)
         final RestfulResponseDTO result4 = mockOrderingCounterService.process(restfulMock1);
 
@@ -107,6 +111,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order4.getHttpStatusCode(), result4.getHttpStatusCode());
         Assert.assertEquals(order4.getResponseContentType(), result4.getResponseContentType());
         Assert.assertEquals(order4.getResponseBody(), result4.getResponseBody());
+
 
         // Test (run 6)
         // ... And again call 'RestfulMockDefinition 2' in-between calls to 'RestfulMockDefinition 1'
@@ -118,6 +123,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order6.getResponseContentType(), result22.getResponseContentType());
         Assert.assertEquals(order6.getResponseBody(), result22.getResponseBody());
 
+
         // Test (run 7)
         // This call to 'RestfulMockDefinition 1' should now come around full circle returning the 1st response (with order no 1)
         final RestfulResponseDTO result5 = mockOrderingCounterService.process(restfulMock1);
@@ -128,6 +134,7 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order1.getResponseContentType(), result5.getResponseContentType());
         Assert.assertEquals(order1.getResponseBody(), result5.getResponseBody());
 
+
         // Test (run 8)
         // This call to 'RestfulMockDefinition 2' should now come around full circle returning the 1st response (with order no 1)
         final RestfulResponseDTO result33 = mockOrderingCounterService.process(restfulMock2);
@@ -137,6 +144,83 @@ public class MockOrderingCounterServiceTest {
         Assert.assertEquals(order5.getHttpStatusCode(), result33.getHttpStatusCode());
         Assert.assertEquals(order5.getResponseContentType(), result33.getResponseContentType());
         Assert.assertEquals(order5.getResponseBody(), result33.getResponseBody());
+
+    }
+
+    @Test
+    public void getNextInSequence_multiOccurence_Test() {
+
+        // Local Setup
+        order1.setFrequencyCount(1);
+        order2.setFrequencyCount(2);
+        order3.setFrequencyCount(0);
+        order4.setFrequencyCount(0);
+
+
+        // Test (run 1)
+        // Expect order 1 to be returned once
+        final RestfulResponseDTO result1 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result1);
+        Assert.assertEquals(order1.getHttpStatusCode(), result1.getHttpStatusCode());
+        Assert.assertEquals(order1.getResponseContentType(), result1.getResponseContentType());
+        Assert.assertEquals(order1.getResponseBody(), result1.getResponseBody());
+
+
+        // Test (run 2)
+        // Expect order 2 to be returned twice, once here...
+        final RestfulResponseDTO result2 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result2);
+        Assert.assertEquals(order2.getHttpStatusCode(), result2.getHttpStatusCode());
+        Assert.assertEquals(order2.getResponseContentType(), result2.getResponseContentType());
+        Assert.assertEquals(order2.getResponseBody(), result2.getResponseBody());
+
+
+        // Test (run 3)
+        // ... and again here
+        final RestfulResponseDTO result3 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result3);
+        Assert.assertEquals(order2.getHttpStatusCode(), result3.getHttpStatusCode());
+        Assert.assertEquals(order2.getResponseContentType(), result3.getResponseContentType());
+        Assert.assertEquals(order2.getResponseBody(), result3.getResponseBody());
+
+
+        // Test (run 4)
+        // Now expecting order 3
+        final RestfulResponseDTO result4 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result4);
+        Assert.assertEquals(order3.getHttpStatusCode(), result4.getHttpStatusCode());
+        Assert.assertEquals(order3.getResponseContentType(), result4.getResponseContentType());
+        Assert.assertEquals(order3.getResponseBody(), result4.getResponseBody());
+
+
+        // Test (run 5)
+        // Then order 4
+        final RestfulResponseDTO result5 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result5);
+        Assert.assertEquals(order4.getHttpStatusCode(), result5.getHttpStatusCode());
+        Assert.assertEquals(order4.getResponseContentType(), result5.getResponseContentType());
+        Assert.assertEquals(order4.getResponseBody(), result5.getResponseBody());
+
+
+        // Test (run 6)
+        // Finally back round to order 1
+        final RestfulResponseDTO result6 = mockOrderingCounterService.process(restfulMock1);
+
+        // Assertions
+        Assert.assertNotNull(result6);
+        Assert.assertEquals(order1.getHttpStatusCode(), result6.getHttpStatusCode());
+        Assert.assertEquals(order1.getResponseContentType(), result6.getResponseContentType());
+        Assert.assertEquals(order1.getResponseBody(), result6.getResponseBody());
 
     }
 

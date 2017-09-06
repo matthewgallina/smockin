@@ -159,3 +159,7 @@
 .refresh-clients-link {
     text-align: right;
 }
+
+.resp-col-width-10 {
+    width: 10%;
+}

@@ -15,6 +15,8 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.httpStatusCodeLabel = 'HTTP Status Code';
     $scope.httpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.responseBodyLabel = 'Response Body';
+    $scope.frequencyLabel = 'Occurrences';
+    $scope.frequencyPlaceholderTxt = 'Times this response will be returned, before moving to the next';
     $scope.responseHeadersLabel = 'Response Headers';
     $scope.orderNoLabel = 'Order';
     $scope.responseHeaderNameLabel = 'Name';
@@ -66,6 +68,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         "httpStatusCode" : 200,
         "responseBody" : null,
         "sleepInMillis" : 0,
+        "frequencyCount" : 1,
         "responseHeaders" : {}
     };
 
@@ -117,6 +120,13 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         if (utils.isBlank($scope.seqResponse.httpStatusCode)
                 || !utils.isNumeric($scope.seqResponse.httpStatusCode)) {
             showAlert("'Http Status Code' is required and must be numeric");
+            return;
+        }
+
+        if (utils.isBlank($scope.seqResponse.frequencyCount)
+                || !utils.isNumeric($scope.seqResponse.frequencyCount)
+                || $scope.seqResponse.frequencyCount < 1) {
+            showAlert("'Frequency Count' is required, must be numeric and be at least 1");
             return;
         }
 

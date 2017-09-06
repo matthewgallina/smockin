@@ -16,6 +16,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var MinTimeoutInMillis = 10000; // 10 secs
     var MaxProxyTimeoutInMillis = 1800000; // 30 mins
     var MaxWebSocketTimeoutInMillis = 3600000; // 1 hour
+    $scope.responseBodyLimit = 100;
 
 
     //
@@ -39,6 +40,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.orderNoLabel = 'Seq';
     $scope.ruleLabel = 'Order';
     $scope.statusCodeLabel = 'Code';
+    $scope.frequencyLabel = 'Freq';
     $scope.responseBodyLabel = 'Response Body';
     $scope.sequenceResponsesRadioLabel = 'Sequenced';
     $scope.rulesRadioLabel = 'Rules';
