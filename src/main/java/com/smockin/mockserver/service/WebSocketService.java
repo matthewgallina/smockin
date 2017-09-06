@@ -20,6 +20,6 @@ public interface WebSocketService {
     void sendMessage(final String id, final WebSocketDTO dto) throws IOException;
     List<WebSocketClientDTO> getClientConnections(final String path);
     String getExternalId(final String path, final Session session);
-
+    void clearSession();
 
 }

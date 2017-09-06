@@ -90,6 +90,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 serverState.setRunning(false);
             }
 
+            clearState();
+
         } catch (Throwable ex) {
             throw new MockServerException(ex);
         }
@@ -100,6 +102,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         logger.debug("initServer called");
 
         try {
+
+            clearState();
 
             Spark.init();
 
@@ -330,6 +334,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 rulesIter.remove();
             }
         }
+
+    }
+
+    void clearState() {
+
+        // Proxy related state
+        webSocketService.clearSession();
+        proxyService.clearSession();
 
     }
 

@@ -12,34 +12,34 @@
         <div class="col-lg-6">
 
             <div class="form-group">
-                <label for="url" class="ng-binding default-label-color">{{ urlLabel }}</label>
-                <input id="url" class="form-control" ng-model="clientRequest.url" placeholder="{{ urlPlaceholderTxt }}" type="text" />
+                <label for="url" class="ng-binding">{{ urlLabel }}</label>
+                <input id="url" class="form-control" ng-model="clientRequest.url" placeholder="{{ urlPlaceholderTxt }}" type="text" ng-disabled="isConnected()" />
             </div>
 
             <div class="ws-button-div">
-                <button class="btn btn-primary" type="button" ng-click="doConnect()">{{ connectButtonLabel }}</button>
+                <button class="btn btn-primary" type="button" ng-click="doConnect()" ng-disabled="isConnected()">{{ connectButtonLabel }}</button>
             </div>
 
             <div class="form-group">
-                <label for="client-request-body" class="ng-binding default-label-color">{{ requestBodyLabel }}</label>
+                <label for="client-request-body" class="ng-binding">{{ requestBodyLabel }}</label>
                 <textarea id="client-request-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.body"></textarea>
             </div>
 
             <div class="ws-button-div">
-                <button class="btn btn-success" type="button" ng-click="doSend()">{{ sendButtonLabel }}</button>
+                <button class="btn btn-success" type="button" ng-click="doSend()" ng-disabled="!isConnected()">{{ sendButtonLabel }}</button>
             </div>
 
         </div>
         <div class="col-lg-6">
 
             <div class="form-group">
-                <label for="remote-response-body" class="ng-binding default-label-color">{{ remoteResponseLabel }}</label>
+                <label for="remote-response-body" class="ng-binding">{{ remoteResponseLabel }}</label>
                 <textarea id="remote-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="remoteResponse" ng-readonly="true"></textarea>
             </div>
 
             <div class="ws-button-div">
                 <button class="btn btn-default" type="button" ng-click="doClearResponse()">{{ clearButtonLabel }}</button>
-                <button class="btn btn-danger" type="button" ng-click="doTerminate()">{{ terminateButtonLabel }}</button>
+                <button class="btn btn-danger" type="button" ng-click="doTerminate()" ng-disabled="!isConnected()">{{ terminateButtonLabel }}</button>
             </div>
 
         </div>

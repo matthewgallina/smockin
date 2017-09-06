@@ -22,6 +22,7 @@ public class ProxyServiceImpl implements ProxyService {
 
     private final Logger logger = LoggerFactory.getLogger(ProxyServiceImpl.class);
 
+    // TODO Should add TTL and scheduled sweeper to stop the synchronizedProxyResponsesMap from building up.
     private Map<ProxiedKey, List<ProxiedDTO>> synchronizedProxyResponsesMap = new HashMap<ProxiedKey, List<ProxiedDTO>>();
 
     private final ReentrantLock lock = new ReentrantLock();
@@ -77,7 +78,8 @@ public class ProxyServiceImpl implements ProxyService {
     @Override
     public void addResponse(final ProxiedDTO dto) {
 
-        // TODO need to add a guard to ensure only legitimate paths are added to the 'synchronizedProxyResponsesMap', to prevent this building up with duff/inaccessible data.
+        // TODO
+        // Need to add a guard to ensure only legitimate paths are added to the 'synchronizedProxyResponsesMap', to prevent this building up with duff/inaccessible data.
 
         try {
 
@@ -95,6 +97,17 @@ public class ProxyServiceImpl implements ProxyService {
             // Signal ALL threads waiting on a proxied response to check synchronizedProxyResponsesMap.
             condition.signalAll();
 
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    public void clearSession() {
+
+        try {
+            lock.lock();
+            synchronizedProxyResponsesMap.clear();
         } finally {
             lock.unlock();
         }

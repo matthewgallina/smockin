@@ -43,21 +43,25 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
     //
     // Data Objects
     var httpClientState = null;
+    var wsClientState = null;
+
 
     //
     // Functions
     $scope.doOpenHttpClient = function() {
 
-      var modalInstance = $uibModal.open({
-          templateUrl: 'http_client.html',
-          controller: 'httpClientController',
-          resolve: {
-            data: function () {
-              return {
-                "state" : httpClientState
-              };
-            }
-          }
+        var modalInstance = $uibModal.open({
+            templateUrl: 'http_client.html',
+            controller: 'httpClientController',
+            resolve: {
+                data: function () {
+                    return {
+                        "state" : httpClientState
+                    };
+                }
+            },
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (state) {
@@ -69,20 +73,22 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
 
     $scope.doOpenWebSocketClient = function() {
 
-      var modalInstance = $uibModal.open({
-          templateUrl: 'ws_client.html',
-          controller: 'wsClientController',
-          resolve: {
-            data: function () {
-              return {
-                "state" : httpClientState
-              };
-            }
-          }
+        var modalInstance = $uibModal.open({
+            templateUrl: 'ws_client.html',
+            controller: 'wsClientController',
+            resolve: {
+                data: function () {
+                    return {
+                        "state" : wsClientState
+                    };
+                }
+            },
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (state) {
-            httpClientState = state;
+            wsClientState = state;
         }, function () {
         });
 

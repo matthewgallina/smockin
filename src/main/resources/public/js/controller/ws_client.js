@@ -49,21 +49,27 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
 
     //
     // Data Objects
+    var wsSocket = null;
+
+    $scope.remoteResponse = null;
+
     $scope.clientRequest = {
         "url" : null,
         "body" : null
     };
 
     if (data.state != null) {
-        $scope.clientRequest = {
-            "url" : data.state.url,
-            "body" : data.state.body
-        };
+
+        $scope.clientRequest = data.state.clientRequest;
+        $scope.remoteResponse = data.state.remoteResponse;
+
+        wsSocket = data.state.wsSocket;
+
+        if (wsSocket != null) {
+            applyWSListeners();
+        }
+
     }
-
-    $scope.remoteResponse = null;
-
-    var wsSocket = null;
 
 
     //
@@ -99,6 +105,8 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
                 // Establish connection to WS endpoint
                 wsSocket = new WebSocket("ws://localhost:" + port + $scope.clientRequest.url);
 
+                applyWSListeners();
+
             } catch (err) {
 
                 appendResponseMsg("Unable to establish connection to " + $scope.clientRequest.url);
@@ -106,33 +114,6 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
 
                 return;
             }
-
-
-            // WebSocket event listeners
-            wsSocket.onopen = function (event) {
-                clearResponseFunc();
-                appendResponseMsg("Connection established", 'dd/MM/yy HH:mm:ss');
-            };
-
-            wsSocket.onmessage = function (event) {
-                appendResponseMsg(event.data);
-            };
-
-            wsSocket.onerror = function (event) {
-
-                appendResponseMsg("Unable to establish connection to " + $scope.clientRequest.url);
-                wsSocket = null;
-
-                return;
-            };
-
-            wsSocket.onclose = function (event) {
-
-console.log(event.code);
-
-                appendResponseMsg("Connection closed");
-                wsSocket = null;
-            };
 
         });
 
@@ -142,6 +123,7 @@ console.log(event.code);
 
         if (wsSocket != null) {
             wsSocket.close();
+            wsSocket = null;
         }
 
     };
@@ -171,6 +153,42 @@ console.log(event.code);
 
     $scope.doClearResponse = clearResponseFunc;
 
+    $scope.doClose = function() {
+        $uibModalInstance.close({
+            clientRequest: $scope.clientRequest,
+            remoteResponse : $scope.remoteResponse,
+            wsSocket : wsSocket
+        });
+    };
+
+    $scope.isConnected = function() {
+        return (wsSocket != null);
+    };
+
+    function applyWSListeners() {
+
+       wsSocket.onopen = function (event) {
+            clearResponseFunc();
+            appendResponseMsg("Connection established", 'dd/MM/yy HH:mm:ss');
+        };
+
+        wsSocket.onmessage = function (event) {
+            appendResponseMsg(event.data);
+        };
+
+        wsSocket.onerror = function (event) {
+            clearResponseFunc();
+            appendResponseMsg("Unable to establish connection to " + $scope.clientRequest.url);
+            wsSocket = null;
+        };
+
+        wsSocket.onclose = function (event) {
+            appendResponseMsg("Connection closed");
+            wsSocket = null;
+        };
+
+    }
+
     function appendResponseMsg(msg, dateFormat) {
 
         var res = $scope.remoteResponse;
@@ -187,9 +205,5 @@ console.log(event.code);
         $scope.remoteResponse = res;
         $scope.$digest()
     }
-
-    $scope.doClose = function() {
-        $uibModalInstance.close($scope.clientRequest);
-    };
 
 });

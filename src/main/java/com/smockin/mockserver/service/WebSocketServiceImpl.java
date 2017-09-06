@@ -22,6 +22,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     private final String WS_HAND_SHAKE_KEY = "Sec-WebSocket-Accept";
 
+    // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
     private final ConcurrentHashMap<String, Set<SessionIdWrapper>> sessionMap = new ConcurrentHashMap<String, Set<SessionIdWrapper>>();
 
@@ -167,6 +168,10 @@ public class WebSocketServiceImpl implements WebSocketService {
         public Date getDateJoined() {
             return dateJoined;
         }
+    }
+
+    public void clearSession() {
+        sessionMap.clear();
     }
 
 }
