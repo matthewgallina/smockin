@@ -15,7 +15,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.httpStatusCodeLabel = 'HTTP Status Code';
     $scope.httpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.responseBodyLabel = 'Response Body';
-    $scope.frequencyLabel = 'Occurrences';
+    $scope.frequencyLabel = 'Occurrence';
     $scope.frequencyPlaceholderTxt = 'No of times this response will be returned, before moving onto the next response';
     $scope.responseHeadersLabel = 'Response Headers';
     $scope.orderNoLabel = 'Order';
@@ -126,7 +126,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         if (utils.isBlank($scope.seqResponse.frequencyCount)
                 || !utils.isNumeric($scope.seqResponse.frequencyCount)
                 || $scope.seqResponse.frequencyCount < 1) {
-            showAlert("'Frequency Count' is required, must be numeric and be at least 1");
+            showAlert("'Occurrence' is required, must be numeric and be at least 1");
             return;
         }
 
