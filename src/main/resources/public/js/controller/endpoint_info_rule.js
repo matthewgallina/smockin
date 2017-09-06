@@ -27,6 +27,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
     $scope.addConditionButtonLabel = 'Add Rule Condition';
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
+    $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
 
 
     //
@@ -87,6 +88,21 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     $scope.doRemoveResponseHeaderRow = function(index) {
         $scope.responseHeaderList.splice(index, 1);
+    };
+
+    $scope.doPrettyPrintResponse = function() {
+
+        if ($scope.ruleResponse.responseContentType == "application/json") {
+
+            var formattedResponseBody = utils.prettyPrintJSON($scope.ruleResponse.responseBody);
+
+            if (formattedResponseBody == null) {
+                showAlert("Unable to pretty print. Please check your JSON syntax", "warning");
+                return;
+            }
+
+            $scope.ruleResponse.responseBody = formattedResponseBody;
+        }
     };
 
     $scope.doSaveRule = function() {

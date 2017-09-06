@@ -5,7 +5,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class RuleEngineImpl implements RuleEngine {
     @Autowired
     private RuleResolver ruleResolver;
 
-    public RestfulResponse process(final Request req, final List<RestfulMockDefinitionRule> rules) {
+    public RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules) {
 
         for (RestfulMockDefinitionRule rule : rules) {
 
@@ -49,7 +49,7 @@ public class RuleEngineImpl implements RuleEngine {
 
                     GeneralUtils.checkForAndHandleSleep(rule.getSleepInMillis());
 
-                    return new RestfulResponse(rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getResponseHeaders().entrySet());
+                    return new RestfulResponseDTO(rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getResponseHeaders().entrySet());
                 }
 
             }

@@ -7,20 +7,20 @@ import java.util.Set;
 /**
  * Created by mgallina.
  */
-public class RestfulResponse {
+public class RestfulResponseDTO {
 
     private final int httpStatusCode;
     private final String responseContentType;
     private final String responseBody;
     private final Map<String, String> headers = new HashMap<String, String>();
 
-    public RestfulResponse(final int httpStatusCode) {
+    public RestfulResponseDTO(final int httpStatusCode) {
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = null;
         this.responseBody = null;
     }
 
-    public RestfulResponse(final int httpStatusCode, final String responseContentType, final String responseBody, final Set<Map.Entry<String, String>> headers) {
+    public RestfulResponseDTO(final int httpStatusCode, final String responseContentType, final String responseBody, final Set<Map.Entry<String, String>> headers) {
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;

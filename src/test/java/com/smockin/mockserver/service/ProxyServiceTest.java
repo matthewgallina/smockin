@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.ProxiedDTO;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +37,7 @@ public class ProxyServiceTest {
         proxyService = new ProxyServiceImpl();
 
         pxKey = new ProxiedKey("/helloworld", RestMethodEnum.GET);
-        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, MockTypeEnum.PROXY_HTTP, 0, false);
+        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, MockTypeEnum.PROXY_HTTP, 0, 0, false);
         pxDto = new ProxiedDTO(pxKey.getPath(), pxKey.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld\" }");
 
         producer1 = new Runnable() {
@@ -69,8 +69,8 @@ public class ProxyServiceTest {
             final Object response = future.get(Long.valueOf(3), TimeUnit.SECONDS);
 
             // Assertions
-            Assert.assertTrue(response instanceof RestfulResponse);
-            final RestfulResponse restfulResponse = (RestfulResponse)response;
+            Assert.assertTrue(response instanceof RestfulResponseDTO);
+            final RestfulResponseDTO restfulResponse = (RestfulResponseDTO)response;
 
             Assert.assertEquals(pxDto.getHttpStatusCode(), restfulResponse.getHttpStatusCode());
             Assert.assertEquals(pxDto.getResponseContentType(), restfulResponse.getResponseContentType());
@@ -94,8 +94,8 @@ public class ProxyServiceTest {
             final Object response = future.get(Long.valueOf(3), TimeUnit.SECONDS);
 
             // Assertions
-            Assert.assertTrue(response instanceof RestfulResponse);
-            final RestfulResponse restfulResponse = (RestfulResponse)response;
+            Assert.assertTrue(response instanceof RestfulResponseDTO);
+            final RestfulResponseDTO restfulResponse = (RestfulResponseDTO)response;
 
             Assert.assertEquals(pxDto.getHttpStatusCode(), restfulResponse.getHttpStatusCode());
             Assert.assertEquals(pxDto.getResponseContentType(), restfulResponse.getResponseContentType());

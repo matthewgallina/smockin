@@ -35,34 +35,63 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
 
     //
     // Buttons / Links
-    $scope.testClientLink = "Open Http Client";
+    $scope.httpClientLink = "Open HTTP Client";
+    $scope.wsClientLink = "Open WS Client";
     $scope.helpLink = "Help";
+
 
     //
     // Data Objects
     var httpClientState = null;
+    var wsClientState = null;
+
 
     //
     // Functions
     $scope.doOpenHttpClient = function() {
 
-      var modalInstance = $uibModal.open({
-          templateUrl: 'http_client.html',
-          controller: 'httpClientController',
-          resolve: {
-            data: function () {
-              return {
-                "state" : httpClientState
-              };
-            }
-          }
+        var modalInstance = $uibModal.open({
+            templateUrl: 'http_client.html',
+            controller: 'httpClientController',
+            resolve: {
+                data: function () {
+                    return {
+                        "state" : httpClientState
+                    };
+                }
+            },
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (state) {
             httpClientState = state;
         }, function () {
-
         });
+
+    };
+
+    $scope.doOpenWebSocketClient = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'ws_client.html',
+            controller: 'wsClientController',
+            resolve: {
+                data: function () {
+                    return {
+                        "state" : wsClientState
+                    };
+                }
+            },
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+        modalInstance.result.then(function (state) {
+            wsClientState = state;
+        }, function () {
+        });
+
     };
 
     $scope.doOpenHelp = function() {
@@ -146,6 +175,8 @@ app.service('globalVars', function($uibModal) {
 
     this.AlertTimeoutMillis = 5000;
 
+    this.GeneralErrorMessage = "Oops looks like something went wrong!";
+
     this.RestfulServerType = "RESTFUL";
 
     this.TextDataType = 'TEXT';
@@ -209,6 +240,20 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
             return (c=='x' ? r : (r&0x3|0x8)).toString(16);
         });
         return uuid;
+    };
+
+    this.prettyPrintJSON = function(input) {
+
+        if (input == null) {
+            return null;
+        }
+
+        try {
+            JSON.parse( input );
+            return vkbeautify.json(input, 4).trim();
+        } catch (err) {}
+
+        return null;
     };
 
 
@@ -328,7 +373,7 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
         restClient.doGet($http, '/mockedserver/rest/status', function(status, data) {
 
             if (status == 200) {
-                callback(data.running);
+                callback(data.running, data.port);
                 return;
             }
 

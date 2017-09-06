@@ -2,16 +2,17 @@ package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.dto.ProxiedDTO;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 
 /**
  * Created by mgallina.
  */
 public interface ProxyService {
 
-    int MAX_TIMEOUT_MILLIS = 60000; // 1 min max
+    int MAX_TIMEOUT_MILLIS = 1800000; // 30 mins
 
-    RestfulResponse waitForResponse(final String requestPath, final RestfulMock mock);
+    RestfulResponseDTO waitForResponse(final String requestPath, final RestfulMock mock);
     void addResponse(final ProxiedDTO dto);
+    void clearSession();
 
 }

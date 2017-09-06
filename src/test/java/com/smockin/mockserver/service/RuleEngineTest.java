@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondit
 import com.smockin.admin.persistence.enums.RuleComparatorEnum;
 import com.smockin.admin.persistence.enums.RuleDataTypeEnum;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -63,7 +63,7 @@ public class RuleEngineTest {
         rules = new ArrayList<RestfulMockDefinitionRule>();
 
         // Test
-        final RestfulResponse result = ruleEngine.process(req, rules);
+        final RestfulResponseDTO result = ruleEngine.process(req, rules);
 
         // Assertions
         Assert.assertNull(result);
@@ -88,7 +88,7 @@ public class RuleEngineTest {
         Mockito.when(ruleResolver.processRuleComparison(Matchers.any(RestfulMockDefinitionRuleGroupCondition.class), Matchers.anyString())).thenReturn(true);
 
         // Test
-        final RestfulResponse result = ruleEngine.process(req, rules);
+        final RestfulResponseDTO result = ruleEngine.process(req, rules);
 
         // Assertions
         Assert.assertNotNull(result);

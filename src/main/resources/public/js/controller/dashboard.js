@@ -12,9 +12,10 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
     var RestartServerRequired = $routeParams.restart;
 
     var translations = [];
-    translations.push({"k" : "SEQ", "v" : "Sequence Based"});
+    translations.push({"k" : "SEQ", "v" : "Sequenced"});
     translations.push({ "k" : "RULE", "v" : "Rules Based" });
-    translations.push({ "k" : "PROXY_HTTP", "v" : "Proxy Based" });
+    translations.push({ "k" : "PROXY_HTTP", "v" : "Proxied" });
+    translations.push({ "k" : "PROXY_WS", "v" : "WebSocket" });
 
 
     //
@@ -123,7 +124,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }
@@ -180,10 +181,10 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
 
     function loadServerStatus() {
 
-        utils.checkServerStatus(function(running) {
+        utils.checkServerStatus(function(running, port) {
 
             if (running == null) {
-                showAlert("Oops looks like something went wrong!");
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
@@ -198,7 +199,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                         return;
                     }
 
-                    showAlert("Oops looks like something went wrong!");
+                    showAlert(globalVars.GeneralErrorMessage);
                 });
 
                 return;
@@ -224,7 +225,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }
@@ -243,7 +244,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
                 return;
             }
 
-            showAlert("Oops looks like something went wrong!");
+            showAlert(globalVars.GeneralErrorMessage);
         });
 
     }

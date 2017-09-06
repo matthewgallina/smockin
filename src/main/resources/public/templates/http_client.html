@@ -12,7 +12,7 @@
         <div class="col-lg-6">
 
             <div class="form-group">
-                <label for="path" class="ng-binding default-label-color">{{ urlLabel }}</label>
+                <label for="path" class="ng-binding">{{ urlLabel }}</label>
 
                 <div id="path" class="input-group">
                     <span class="input-group-btn">
@@ -35,7 +35,7 @@
             </div>
 
             <div class="form-group">
-                <label for="request-headers" class="ng-binding default-label-color">{{ requestHeadersLabel }}</label>
+                <label for="request-headers" class="ng-binding">{{ requestHeadersLabel }}</label>
 
                 <div class="panel panel-default request-headers-panel">
                     <div class="panel-body">
@@ -47,8 +47,8 @@
                         <table id="request-headers" class="table table-striped" ng-show="clientRequest.headers.length > 0">
                             <thead>
                             <tr>
-                                <th class="default-label-color">{{ requestHeaderNameLabel }}</th>
-                                <th class="default-label-color">{{ requestHeaderValueLabel }}</th>
+                                <th>{{ requestHeaderNameLabel }}</th>
+                                <th>{{ requestHeaderValueLabel }}</th>
                                 <th></th>
                             </tr>
                             </thead>
@@ -78,12 +78,12 @@
         <div class="col-lg-6">
 
             <div class="form-group">
-                <label for="client-request-body" class="ng-binding default-label-color">{{ requestBodyLabel }}</label>
+                <label for="client-request-body" class="ng-binding">{{ requestBodyLabel }}</label>
                 <textarea id="client-request-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientRequest.body"></textarea>
             </div>
 
             <div class="form-group">
-                <label for="client-response-body" class="ng-binding default-label-color">{{ clientResponseLabel }}</label>
+                <label for="client-response-body" class="ng-binding">{{ clientResponseLabel }}</label>
                 <textarea id="client-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="clientResponse" ng-readonly="true"></textarea>
             </div>
 

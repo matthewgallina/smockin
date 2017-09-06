@@ -32,7 +32,10 @@
                             <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ toolsLabel }} <span class="caret"></span></a>
                             <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
                                 <li>
-                                    <a href="" ng-click="doOpenHttpClient()">{{ testClientLink }}</a>
+                                    <a href="" ng-click="doOpenHttpClient()">{{ httpClientLink }}</a>
+                                </li>
+                                <li>
+                                    <a href="" ng-click="doOpenWebSocketClient()">{{ wsClientLink }}</a>
                                 </li>
                                 <li role="separator" class="divider"></li>
                                 <li>
@@ -58,9 +61,13 @@
         <!-- Bootstrap -->
         <script src="../js/lib/ui-bootstrap-tpls-2.5.0.min.js"></script>
 
+        <!-- VK beautify -->
+        <script src="../js/lib/vkbeautify.js"></script>
+
         <!-- Controllers -->
         <script src="../js/controller/main.js"></script>
         <script src="../js/controller/http_client.js"></script>
+        <script src="../js/controller/ws_client.js"></script>
         <script src="../js/controller/help_section.js"></script>
         <script src="../js/controller/dashboard.js"></script>
         <script src="../js/controller/server_config.js"></script>

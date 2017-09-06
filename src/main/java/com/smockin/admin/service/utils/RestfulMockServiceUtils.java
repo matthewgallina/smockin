@@ -4,6 +4,7 @@ import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,11 +31,11 @@ public class RestfulMockServiceUtils {
         final List<RestfulMockResponseDTO> restMockDTOs = new ArrayList<RestfulMockResponseDTO>();
 
         for (RestfulMock rmd : restfulMockDefinitions) {
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis(), rmd.isRandomiseDefinitions());
+            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.isRandomiseDefinitions());
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
-                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend());
+                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend(), order.getFrequencyCount(), order.getFrequencyPercentage());
 
                 for (Map.Entry<String, String> responseHeader : order.getResponseHeaders().entrySet()) {
                     restfulMockDefinitionDTO.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
@@ -93,7 +94,7 @@ public class RestfulMockServiceUtils {
         for (RestfulMockDefinitionDTO restMockOrderDto : dtoSource.getDefinitions()) {
 
             final RestfulMockDefinitionOrder restfulMockDefinitionOrder =
-                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo(), restMockOrderDto.getSleepInMillis(), restMockOrderDto.isSuspend());
+                    new RestfulMockDefinitionOrder(mockDest, restMockOrderDto.getHttpStatusCode(), restMockOrderDto.getResponseContentType(), restMockOrderDto.getResponseBody(), restMockOrderDto.getOrderNo(), restMockOrderDto.getSleepInMillis(), restMockOrderDto.isSuspend(), restMockOrderDto.getFrequencyCount(), restMockOrderDto.getFrequencyPercentage());
 
             if (restMockOrderDto.getResponseHeaders() != null) {
                 for (Map.Entry<String, String> responseHeader : restMockOrderDto.getResponseHeaders().entrySet()) {
@@ -134,13 +135,7 @@ public class RestfulMockServiceUtils {
     }
 
     public void amendPath(final RestfulMockDTO dto) {
-
-        final String prefix = "/";
-
-        if (!dto.getPath().startsWith(prefix)) {
-            dto.setPath(prefix + dto.getPath());
-        }
-
+        dto.setPath(GeneralUtils.prefixPath(dto.getPath()));
     }
 
 }

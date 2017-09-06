@@ -45,7 +45,7 @@
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType == mockTypeWebSocket">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ methodDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -69,8 +69,9 @@
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
-                    <label for="response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                    <textarea id="response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
+                    <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+                    <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="endpoint.responseBody != '' && endpoint.contentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
+                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
@@ -112,9 +113,10 @@
             <div class="col-sm-6">
 
                 <div id="mock-type-radio-group" class="btn-group" role="group">
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'">{{ proxyRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'" ng-disabled="extId != null">{{ sequenceResponsesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'" ng-disabled="extId != null">{{ rulesRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'" ng-disabled="extId != null">{{ proxyRadioLabel }}</label>
+                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeWebSocket }}'" ng-click="doAdjustWSMethod()" ng-disabled="extId != null">{{ webSocketRadioLabel }}</label>
                 </div>
 
                 <br />
@@ -134,15 +136,17 @@
                         <tr>
                             <th>{{ orderNoLabel }}</th>
                             <th>{{ statusCodeLabel }}</th>
+                            <th>{{ frequencyLabel }}</th>
                             <th>{{ responseBodyLabel }}</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="x in endpoint.definitions">
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.orderNo }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.httpStatusCode }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.orderNo }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.httpStatusCode }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.frequencyCount }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
                                 <a href="" ng-click="doMoveSeqUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
@@ -186,7 +190,7 @@
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.rules.length == 0">
-                        {{noRulesFound}}
+                        {{ noRulesFound }}
                     </div>
 
                     <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
@@ -200,9 +204,9 @@
                         </thead>
                         <tbody>
                         <tr ng-repeat="x in endpoint.rules">
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.orderNo }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ x.httpStatusCode }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? x.responseBody : 'N/A' }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.orderNo }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.httpStatusCode }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
                                 <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
@@ -239,6 +243,52 @@
                     <div class="form-group proxy-timeout-group">
                         <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
                         <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
+
+                </div>
+
+                <div ng-show="endpoint.mockType == mockTypeWebSocket">
+
+                    <div class="form-group proxy-timeout-group">
+                        <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
+                        <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" />
+                    </div>
+
+                    <br />
+
+                    <div class="row" ng-if="extId != null">
+                        <div class="col-sm-9 refresh-clients-heading">
+                            {{ wsClientConnectionLabel }}
+                        </div>
+                        <div class="col-sm-3 refresh-clients-link">
+                            <a href="" ng-click="doRefreshActiveClients()">
+                                {{ refreshWsClientsLinkLabel }}
+                                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <br />
+
+                    <div class="no-results-found" ng-if="extId != null && activeWsClients.length == 0">
+                        {{ activeWsClientsFound }}
+                    </div>
+
+                    <div id="clients-table-div" ng-if="extId != null && activeWsClients.length > 0">
+                        <table class="table table-striped rule-table">
+                            <thead>
+                                <tr>
+                                    <th>{{ wsClientIdHeading }}</th>
+                                    <th>{{ wsClientJoinDateHeading }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="ws in activeWsClients">
+                                    <td>{{ ws.id }}</td>
+                                    <td>{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
                 </div>

@@ -14,7 +14,7 @@
 }
 
 .mock-type-radio-button {
-    width: 33%;
+    width: 25%;
 }
 
 .add-button-div {
@@ -41,8 +41,8 @@
     width: 100%;
 }
 
-#response-body {
-    height: 170px;
+#default-response-body {
+    min-height: 200px;
 }
 
 .default-label-color {
@@ -106,7 +106,11 @@
 #endpoint-status {
     margin-left: 20px;
 }
-action-button-table-cell
+
+.action-button-table-cell {
+    width: 90px;
+}
+
 #endpoint-status-button {
     width: 90px;
 }
@@ -142,4 +146,20 @@ action-button-table-cell
 
 .suspend-button {
     opacity: .2 !important;
+}
+
+#clients-table-div {
+    min-height: 250px;
+}
+
+.refresh-clients-heading {
+    font-weight: 700;
+}
+
+.refresh-clients-link {
+    text-align: right;
+}
+
+.resp-col-width-10 {
+    width: 10%;
 }

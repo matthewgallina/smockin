@@ -1,8 +1,10 @@
 package com.smockin.utils;
 
+import com.smockin.admin.dto.RestfulMockDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
+import spark.utils.StringUtils;
 
 import java.util.Date;
 import java.util.Map;
@@ -121,6 +123,21 @@ public final class GeneralUtils {
                 logger.error("Error pausing response for the specified period of " + sleepInMillis, ex);
             }
         }
+    }
+
+    public static String prefixPath(final String path) {
+
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+
+        final String prefix = "/";
+
+        if (!path.startsWith(prefix)) {
+            return prefix + path;
+        }
+
+        return path;
     }
 
 }

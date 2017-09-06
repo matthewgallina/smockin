@@ -9,7 +9,8 @@ import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
-import com.smockin.mockserver.service.dto.RestfulResponse;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private InboundParamMatchService inboundParamMatchService;
 
+    @Autowired
+    private WebSocketService webSocketService;
+
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
@@ -55,9 +59,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
-        buildIndex(mocks);
-
         buildEndpoints(mocks);
+
+        buildIndex(mocks);
 
         initServer(config.getPort());
 
@@ -86,6 +90,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 serverState.setRunning(false);
             }
 
+            clearState();
+
         } catch (Throwable ex) {
             throw new MockServerException(ex);
         }
@@ -96,6 +102,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         logger.debug("initServer called");
 
         try {
+
+            clearState();
 
             Spark.init();
 
@@ -132,6 +140,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         // NOTE JPA entity beans are still attached at this stage (See buildEndpoints() below).
         for (RestfulMock m : mocks) {
+
+            if (MockTypeEnum.PROXY_WS.equals(m.getMockType())) {
+                continue;
+            }
+
             sb.append(m.getMethod());
             sb.append(" ");
             sb.append(m.getPath());
@@ -149,6 +162,22 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     void buildEndpoints(final List<RestfulMock> mocks) throws MockServerException {
         logger.debug("buildEndpoints called");
 
+        //
+        // Invoke all lazily loaded data and detach entity.
+        invokeAndDetachData(mocks);
+
+        //
+        // Define all web socket routes first as the Spark framework requires this
+        buildWebSocketEndpoints(mocks);
+
+        //
+        // Next handle all HTTP web service routes
+        buildHttpEndpoints(mocks);
+
+    }
+
+    void invokeAndDetachData(final List<RestfulMock> mocks) {
+
         for (RestfulMock mock : mocks) {
 
             // Invoke lazily Loaded rules and definitions whilst in this active transaction before
@@ -161,6 +190,35 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             // continually accessed again here as a simple data bean
             // within each request to the mocked REST endpoint.
             restfulMockDAO.detach(mock);
+        }
+
+    }
+
+    // Expects RestfulMock to be detached
+    void buildWebSocketEndpoints(final List<RestfulMock> mocks) {
+
+        //
+        // Define all web socket routes first as the Spark framework requires this
+        for (RestfulMock mock : mocks) {
+
+            if (!MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+                continue;
+            }
+
+            // Create an echo service instance per web socket route, as we need to hold the path as state within this.
+            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getPath(), mock.getWebSocketTimeoutInMillis(), webSocketService));
+        }
+
+    }
+
+    // Expects RestfulMock to be detached
+    void buildHttpEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+
+        for (RestfulMock mock : mocks) {
+
+            if (MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+                continue;
+            }
 
             // Remove any suspended rule or sequence responses
             removeSuspendedResponses(mock);
@@ -193,7 +251,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         return processRequest(mock, req, res);
                     });
 
-                   break;
+                    break;
 
                 case PATCH:
 
@@ -212,7 +270,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {
 
-        RestfulResponse outcome;
+        RestfulResponseDTO outcome;
 
         switch (mock.getMockType()) {
             case RULE:
@@ -245,14 +303,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return StringUtils.defaultIfBlank(response,"");
     }
 
-    RestfulResponse getDefault(final RestfulMock restfulMock) {
+    RestfulResponseDTO getDefault(final RestfulMock restfulMock) {
 
         if (MockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
-            return new RestfulResponse(404);
+            return new RestfulResponseDTO(404);
         }
 
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
-        return new RestfulResponse(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
+        return new RestfulResponseDTO(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
     }
 
     void removeSuspendedResponses(final RestfulMock mock) {
@@ -276,6 +334,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 rulesIter.remove();
             }
         }
+
+    }
+
+    void clearState() {
+
+        // Proxy related state
+        webSocketService.clearSession();
+        proxyService.clearSession();
 
     }
 

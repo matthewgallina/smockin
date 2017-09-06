@@ -20,7 +20,7 @@ public class ProxiedController {
     private ProxyService proxyService;
 
     @RequestMapping(path="/proxy", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> create(@RequestBody final ProxiedDTO dto) throws RecordNotFoundException {
+    public @ResponseBody ResponseEntity<?> create(@RequestBody final ProxiedDTO dto) {
 
         proxyService.addResponse(dto);
 

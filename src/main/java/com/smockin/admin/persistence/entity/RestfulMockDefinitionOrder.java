@@ -33,6 +33,14 @@ public class RestfulMockDefinitionOrder extends Identifier {
     @Column(name = "SUSPEND", nullable = false)
     private boolean suspend;
 
+    @ColumnDefault("0")
+    @Column(name = "FREQ_COUNT", nullable = false)
+    private int frequencyCount;
+
+    @ColumnDefault("0")
+    @Column(name = "FREQ_PERCENT", nullable = false)
+    private int frequencyPercentage;
+
     @Column(name = "ORDER_NO", nullable = false)
     private int orderNo;
 
@@ -43,7 +51,7 @@ public class RestfulMockDefinitionOrder extends Identifier {
     public RestfulMockDefinitionOrder() {
     }
 
-    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo, long sleepInMillis, boolean suspend) {
+    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo, long sleepInMillis, boolean suspend, int frequencyCount, int frequencyPercentage) {
         this.restfulMock = restfulMock;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
@@ -51,6 +59,8 @@ public class RestfulMockDefinitionOrder extends Identifier {
         this.orderNo = orderNo;
         this.sleepInMillis = sleepInMillis;
         this.suspend = suspend;
+        this.frequencyCount = frequencyCount;
+        this.frequencyPercentage = frequencyPercentage;
     }
 
     public RestfulMock getRestfulMock() {
@@ -93,6 +103,20 @@ public class RestfulMockDefinitionOrder extends Identifier {
     }
     public void setSuspend(boolean suspend) {
         this.suspend = suspend;
+    }
+
+    public int getFrequencyCount() {
+        return frequencyCount;
+    }
+    public void setFrequencyCount(int frequencyCount) {
+        this.frequencyCount = frequencyCount;
+    }
+
+    public int getFrequencyPercentage() {
+        return frequencyPercentage;
+    }
+    public void setFrequencyPercentage(int frequencyPercentage) {
+        this.frequencyPercentage = frequencyPercentage;
     }
 
     public int getOrderNo() {

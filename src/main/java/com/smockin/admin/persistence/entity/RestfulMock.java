@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.entity;
 import com.smockin.admin.persistence.enums.MockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -35,6 +36,10 @@ public class RestfulMock extends Identifier {
     @Column(name = "PROXY_TIME_OUT_MILLIS", nullable = false)
     private long proxyTimeOutInMillis;
 
+    @ColumnDefault("0")
+    @Column(name = "WS_TIME_OUT_MILLIS", nullable = false)
+    private long webSocketTimeoutInMillis;
+
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
 
@@ -57,12 +62,13 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis, boolean randomiseDefinitions) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
+        this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
@@ -99,6 +105,13 @@ public class RestfulMock extends Identifier {
     }
     public void setProxyTimeOutInMillis(long proxyTimeOutInMillis) {
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
+    }
+
+    public long getWebSocketTimeoutInMillis() {
+        return webSocketTimeoutInMillis;
+    }
+    public void setWebSocketTimeoutInMillis(long webSocketTimeoutInMillis) {
+        this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
     }
 
     public int getInitializationOrder() {

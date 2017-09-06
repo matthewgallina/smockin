@@ -15,10 +15,13 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.httpStatusCodeLabel = 'HTTP Status Code';
     $scope.httpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.responseBodyLabel = 'Response Body';
+    $scope.frequencyLabel = 'Occurrence';
+    $scope.frequencyPlaceholderTxt = 'No of times this response will be returned, before moving onto the next response';
     $scope.responseHeadersLabel = 'Response Headers';
     $scope.orderNoLabel = 'Order';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
+    $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
 
 
     //
@@ -65,6 +68,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         "httpStatusCode" : 200,
         "responseBody" : null,
         "sleepInMillis" : 0,
+        "frequencyCount" : 1,
         "responseHeaders" : {}
     };
 
@@ -89,6 +93,21 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         $scope.responseHeaderList.splice(index, 1);
     };
 
+    $scope.doPrettyPrintResponse = function() {
+
+        if ($scope.seqResponse.responseContentType == "application/json") {
+
+            var formattedResponseBody = utils.prettyPrintJSON($scope.seqResponse.responseBody);
+
+            if (formattedResponseBody == null) {
+                showAlert("Unable to pretty print. Please check your JSON syntax", "warning");
+                return;
+            }
+
+            $scope.seqResponse.responseBody = formattedResponseBody;
+        }
+    };
+
     $scope.doSaveSeq = function() {
 
         $scope.seqResponse.responseHeaders = {};
@@ -101,6 +120,13 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         if (utils.isBlank($scope.seqResponse.httpStatusCode)
                 || !utils.isNumeric($scope.seqResponse.httpStatusCode)) {
             showAlert("'Http Status Code' is required and must be numeric");
+            return;
+        }
+
+        if (utils.isBlank($scope.seqResponse.frequencyCount)
+                || !utils.isNumeric($scope.seqResponse.frequencyCount)
+                || $scope.seqResponse.frequencyCount < 1) {
+            showAlert("'Occurrence' is required, must be numeric and be at least 1");
             return;
         }
 
