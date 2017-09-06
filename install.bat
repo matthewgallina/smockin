@@ -31,6 +31,6 @@ IF EXIST %DB_DIR_PATH% (
 
   echo The default H2 DB has been installed
 
-  echo   Please run start.sh to launch the Smockin Application
+  echo   Please run start.bat to launch the Smockin Application
 
 )
