@@ -21,7 +21,7 @@ import java.util.Map;
 public class MockOrderingCounterServiceImpl implements MockOrderingCounterService {
 
     private final Object monitor = new Object();
-    private final Map<Long, List<DefinitionCounter>> synchronizedCounter = new HashMap<Long, List<DefinitionCounter>>();
+    private final Map<String, List<DefinitionCounter>> synchronizedCounter = new HashMap<String, List<DefinitionCounter>>();
 
     public RestfulResponseDTO process(final RestfulMock restfulMock) {
 
@@ -40,18 +40,18 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
 
     RestfulMockDefinitionOrder getNextInSequence(final RestfulMock restfulMock) {
 
-        final long mockId = restfulMock.getId();
+        final String mockExtId = restfulMock.getExtId();
 
-        Long mockDefinitionId = null;
+        String mockDefinitionId = null;
 
         synchronized (monitor) {
 
             // Load definition counters for mock endpoint
-            final List<DefinitionCounter> definitionCounterList = synchronizedCounter.getOrDefault(mockId, new ArrayList<DefinitionCounter>() {
+            final List<DefinitionCounter> definitionCounterList = synchronizedCounter.getOrDefault(mockExtId, new ArrayList<DefinitionCounter>() {
                 {
                     // Create definition counters for mock endpoint if not present
                     restfulMock.getDefinitions().forEach(d ->
-                        add(new DefinitionCounter(d.getId(), (d.getFrequencyCount() > 0)?d.getFrequencyCount():1))
+                        add(new DefinitionCounter(d.getExtId(), (d.getFrequencyCount() > 0)?d.getFrequencyCount():1))
                     );
                 }
             });
@@ -59,7 +59,7 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
             // Look up the next definition
             for (DefinitionCounter d : definitionCounterList) {
                 if (d.getFrequencyCount() > d.getCurrentTally()) {
-                    mockDefinitionId = d.getDefinitionId();
+                    mockDefinitionId = d.getDefinitionExtId();
                     d.setCurrentTally(d.getCurrentTally()+1);
                     break;
                 }
@@ -70,7 +70,7 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
 
                 for (DefinitionCounter d : definitionCounterList) {
                     if (mockDefinitionId == null) {
-                        mockDefinitionId = d.getDefinitionId();
+                        mockDefinitionId = d.getDefinitionExtId();
                         d.setCurrentTally(1);
                     } else {
                         d.setCurrentTally(0);
@@ -79,12 +79,12 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
 
             }
 
-            synchronizedCounter.put(mockId, definitionCounterList);
+            synchronizedCounter.put(mockExtId, definitionCounterList);
         }
 
         // Finally load the definition for the given mockDefinitionId
         for (RestfulMockDefinitionOrder d : restfulMock.getDefinitions()) {
-            if (d.getId() == mockDefinitionId) {
+            if (d.getExtId().equals(mockDefinitionId)) {
                 return d;
             }
         }
@@ -99,20 +99,26 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
         return restfulMock.getDefinitions().get(randomIndex);
     }
 
+    public void clearState() {
+
+        synchronized (monitor) {
+            synchronizedCounter.clear();
+        }
+    }
 
     private class DefinitionCounter {
 
-        private final long definitionId;
+        private final String definitionExtId;
         private final int frequencyCount;
         private int currentTally;
 
-        DefinitionCounter(long definitionId, int frequencyCount) {
-            this.definitionId = definitionId;
+        DefinitionCounter(String definitionExtId, int frequencyCount) {
+            this.definitionExtId = definitionExtId;
             this.frequencyCount = frequencyCount;
         }
 
-        public long getDefinitionId() {
-            return definitionId;
+        public String getDefinitionExtId() {
+            return definitionExtId;
         }
         public int getFrequencyCount() {
             return frequencyCount;

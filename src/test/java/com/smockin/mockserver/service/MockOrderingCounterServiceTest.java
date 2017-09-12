@@ -27,16 +27,16 @@ public class MockOrderingCounterServiceTest {
         //
         // Mock Definition 1
         restfulMock1 = new RestfulMock();
-        restfulMock1.setId(1);
+        restfulMock1.setExtId(GeneralUtils.generateUUID());
 
         order1 = new RestfulMockDefinitionOrder(restfulMock1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"one\" }", 1, 0, false, 0 ,0);
-        order1.setId(1);
+        order1.setExtId(GeneralUtils.generateUUID());
         order2 = new RestfulMockDefinitionOrder(restfulMock1, 201, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"two\" }", 2, 0, false, 0 ,0);
-        order2.setId(2);
+        order2.setExtId(GeneralUtils.generateUUID());
         order3 = new RestfulMockDefinitionOrder(restfulMock1, 202, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"three\" }", 3, 0, false, 0 ,0);
-        order3.setId(3);
+        order3.setExtId(GeneralUtils.generateUUID());
         order4 = new RestfulMockDefinitionOrder(restfulMock1, 204, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"four\" }", 4, 0, false, 0 ,0);
-        order4.setId(4);
+        order4.setExtId(GeneralUtils.generateUUID());
 
         restfulMock1.getDefinitions().add(order1);
         restfulMock1.getDefinitions().add(order2);
@@ -46,12 +46,12 @@ public class MockOrderingCounterServiceTest {
         //
         // Mock Definition 2
         restfulMock2 = new RestfulMock();
-        restfulMock2.setId(2);
+        restfulMock2.setExtId(GeneralUtils.generateUUID());
 
         order5 = new RestfulMockDefinitionOrder(restfulMock2, 400, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"five\" }", 1, 0, false, 0 ,0);
-        order5.setId(5);
+        order5.setExtId(GeneralUtils.generateUUID());
         order6 = new RestfulMockDefinitionOrder(restfulMock2, 500, MediaType.APPLICATION_JSON_VALUE, "{ \"number\" : \"six\" }", 2, 0, false, 0 ,0);
-        order6.setId(6);
+        order6.setExtId(GeneralUtils.generateUUID());
 
         restfulMock2.getDefinitions().add(order5);
         restfulMock2.getDefinitions().add(order6);
