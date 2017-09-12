@@ -17,6 +17,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     $scope.timeOutMillisLabel = 'Idle Time out';
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
+    $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
@@ -64,6 +65,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
         "timeOutMillis" : 0,
         "autoStart" : false,
         "autoRefresh" : false,
+        "enableCors" : false,
         "nativeProperties" : {}
     };
 
@@ -129,6 +131,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
                     "autoRefresh" : data.autoRefresh,
+                    "enableCors" : data.enableCors,
                     "nativeProperties" : data.nativeProperties
                 };
 

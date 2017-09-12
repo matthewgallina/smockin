@@ -34,9 +34,9 @@ public class CoreDataSet {
             return;
         }
 
-        logger.debug("Server Config DB Defaults being executed...");
+        logger.info("Server Config DB Defaults being executed...");
 
-        ServerConfig restServerConfig = new ServerConfig();
+        final ServerConfig restServerConfig = new ServerConfig();
         restServerConfig.setServerType(ServerTypeEnum.RESTFUL);
         restServerConfig.setPort(8001);
         restServerConfig.setMaxThreads(100);
@@ -44,10 +44,11 @@ public class CoreDataSet {
         restServerConfig.setTimeOutMillis(30000);
         restServerConfig.setAutoStart(false);
         restServerConfig.setAutoRefresh(false);
+        restServerConfig.setEnableCors(false);
 
         serverConfigDAO.save(restServerConfig);
 
-        logger.debug("Server Config DB Defaults    DONE");
+        logger.info("Server Config DB Defaults    DONE");
     }
 
 }

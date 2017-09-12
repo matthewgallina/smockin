@@ -14,18 +14,20 @@ public class MockedServerConfigDTO {
     private Integer timeOutMillis;
     private boolean autoStart;
     private boolean autoRefresh;
+    private boolean enableCors;
     private Map<String, String> nativeProperties = new HashMap<String, String>();
 
     public MockedServerConfigDTO() {
     }
 
-    public MockedServerConfigDTO(Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, boolean autoRefresh, Map<String, String> nativeProperties) {
+    public MockedServerConfigDTO(Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, boolean autoRefresh, boolean enableCors, Map<String, String> nativeProperties) {
         this.port = port;
         this.maxThreads = maxThreads;
         this.minThreads = minThreads;
         this.timeOutMillis = timeOutMillis;
         this.autoStart = autoStart;
         this.autoRefresh = autoRefresh;
+        this.enableCors = enableCors;
         this.nativeProperties = nativeProperties;
     }
 
@@ -71,6 +73,13 @@ public class MockedServerConfigDTO {
         this.autoRefresh = autoRefresh;
     }
 
+    public boolean isEnableCors() {
+        return enableCors;
+    }
+    public void setEnableCors(boolean enableCors) {
+        this.enableCors = enableCors;
+    }
+
     public Map<String, String> getNativeProperties() {
         return nativeProperties;
     }
@@ -86,6 +95,7 @@ public class MockedServerConfigDTO {
                 + ", MinThreads : " + minThreads
                 + ", TimeOutMillis : " + timeOutMillis
                 + ", AutoStart : " + autoStart
+                + ", EnableCors : " + enableCors
                 + ", AutoRefresh : " + autoRefresh;
     }
 }

@@ -39,6 +39,11 @@
         <label for="autoRefresh" class="ng-binding">{{ autoRefreshLabel }}</label>
     </div>
 
+    <div class="form-group">
+        <input id="enableCors"  ng-model="serverConfig.enableCors" type="checkbox" />
+        <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
+    </div>
+
     <br />
     <div class="restart-message">{{ restartServerMessage }}</div>
 </div>

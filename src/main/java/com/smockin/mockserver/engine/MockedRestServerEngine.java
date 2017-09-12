@@ -59,7 +59,19 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
-        buildEndpoints(mocks);
+        // Invoke all lazily loaded data and detach entity.
+        invokeAndDetachData(mocks);
+
+        // Define all web socket routes first as the Spark framework requires this
+        buildWebSocketEndpoints(mocks);
+
+        // Handle Cross-Origin Resource Sharing (CORS) support
+        handleCORS(config);
+
+        //
+        // Next handle all HTTP web service routes
+        buildHttpEndpoints(mocks);
+
 
         buildIndex(mocks);
 
@@ -159,25 +171,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     @Transactional
-    void buildEndpoints(final List<RestfulMock> mocks) throws MockServerException {
-        logger.debug("buildEndpoints called");
-
-        //
-        // Invoke all lazily loaded data and detach entity.
-        invokeAndDetachData(mocks);
-
-        //
-        // Define all web socket routes first as the Spark framework requires this
-        buildWebSocketEndpoints(mocks);
-
-        enableCORS("*", "GET,PUT,POST,DELETE,OPTIONS", "*");
-
-        //
-        // Next handle all HTTP web service routes
-        buildHttpEndpoints(mocks);
-
-    }
-
     void invokeAndDetachData(final List<RestfulMock> mocks) {
 
         for (RestfulMock mock : mocks) {
@@ -348,7 +341,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    void enableCORS(final String origin, final String methods, final String headers) {
+    void handleCORS(final MockedServerConfigDTO config) {
+
+        if (!config.isEnableCors()) {
+            return;
+        }
 
         Spark.options("/*", (request, response) -> {
 
@@ -366,13 +363,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         });
 
         Spark.before((request, response) -> {
-            response.header("Access-Control-Allow-Origin", origin);
-            response.header("Access-Control-Request-Method", methods);
-            response.header("Access-Control-Allow-Headers", headers);
+            response.header("Access-Control-Allow-Origin", "*");
+            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
+            response.header("Access-Control-Allow-Headers", "*");
             response.header("Access-Control-Allow-Credentials", "true");
-            // Note: this may or may not be necessary in your particular application
-            response.type("application/json");
+            // Note: this may or may not be necessary...
+//            response.type("application/json");
         });
+
     }
 
 }

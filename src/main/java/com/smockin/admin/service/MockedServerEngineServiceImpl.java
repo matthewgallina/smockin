@@ -93,6 +93,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
                 serverConfig.isAutoRefresh(),
+                serverConfig.isEnableCors(),
                 serverConfig.getNativeProperties()
         );
 
@@ -114,6 +115,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
         serverConfig.setAutoRefresh(config.isAutoRefresh());
+        serverConfig.setEnableCors(config.isEnableCors());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());
