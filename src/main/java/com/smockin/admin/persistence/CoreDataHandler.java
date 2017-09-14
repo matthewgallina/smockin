@@ -1,29 +1,39 @@
 package com.smockin.admin.persistence;
 
+import com.smockin.admin.persistence.dao.AppConfigDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.entity.AppConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Created by mgallina.
  */
 @Component
-public class CoreDataSet {
+public class CoreDataHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(CoreDataSet.class);
+    private final Logger logger = LoggerFactory.getLogger(CoreDataHandler.class);
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
+
+    @Autowired
+    private AppConfigDAO appConfigDAO;
 
     @Transactional
     public void exec() {
 
         applyServerConfigDefaults();
+
+        applyAppVersioning();
 
     }
 
@@ -49,6 +59,27 @@ public class CoreDataSet {
         serverConfigDAO.save(restServerConfig);
 
         logger.info("Server Config DB Defaults    DONE");
+    }
+
+    void applyAppVersioning() {
+
+        final String appVersionArg = System.getProperty("app.version");
+
+        if (appVersionArg == null) {
+            logger.error("Invalid application version arg (-Dapp.version): " + appVersionArg);
+            return;
+        }
+
+        final List<AppConfig> allAppConfig = appConfigDAO.findAll();
+
+        final AppConfig appConfig = ( !allAppConfig.isEmpty() ) ? allAppConfig.get(0) : new AppConfig(appVersionArg);
+
+        // Save if new install or version has changed
+        if (!appVersionArg.equals(appConfig.getAppCurrentVersion())) {
+            appConfig.setAppCurrentVersion(appVersionArg);
+            appConfigDAO.save(appConfig);
+        }
+
     }
 
 }

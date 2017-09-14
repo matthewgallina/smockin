@@ -5,7 +5,7 @@ REM   for /f tokens^=2-5^ delims^=.-_^" %j in ('java -fullversion 2^>^&1') do @s
 REM   echo %jver%
 
 set APP_NAME=SMOCKIN
-set APP_VERSION=1.2.0-SNAPSHOT
+set APP_VERSION=1.2.1-SNAPSHOT
 
 set APP_DIR_PATH=%userprofile%\.smockin
 set DB_DIR_PATH=%APP_DIR_PATH%\db
@@ -77,7 +77,7 @@ echo #
 
 REM   Prepare runtime args
 
-set VM_ARGS=-Dspring.datasource.url=%JDBC_URL% -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -Dspring.datasource.maximumPoolSize=%MAX_POOL_SIZE% -Dspring.datasource.minimumIdle=%MIN_POOL_SIZE% -Duser.timezone=UTC
+set VM_ARGS=-Dspring.datasource.url=%JDBC_URL% -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -Dspring.datasource.maximumPoolSize=%MAX_POOL_SIZE% -Dspring.datasource.minimumIdle=%MIN_POOL_SIZE% -Duser.timezone=UTC -Dapp.version=%APP_VERSION%
 set APP_PROFILE=production
 
 

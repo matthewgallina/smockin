@@ -1,6 +1,6 @@
 package com.smockin;
 
-import com.smockin.admin.persistence.CoreDataSet;
+import com.smockin.admin.persistence.CoreDataHandler;
 import com.smockin.admin.service.MockedServerEngineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -21,7 +21,7 @@ import javax.annotation.PostConstruct;
 class SmockinConfig {
 
     @Autowired
-    private CoreDataSet coreDataSet;
+    private CoreDataHandler coreDataHandler;
 
     @Autowired
     private MockedServerEngineService mockedServerEngineService;
@@ -29,7 +29,7 @@ class SmockinConfig {
     @PostConstruct
     public void after() {
 
-        coreDataSet.exec();
+        coreDataHandler.exec();
 
         mockedServerEngineService.handleServerAutoStart();
 
