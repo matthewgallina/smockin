@@ -5,6 +5,7 @@ import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.AppConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.migration.DataMigrationService;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,9 @@ public class CoreDataHandler {
 
     @Autowired
     private AppConfigDAO appConfigDAO;
+
+    @Autowired
+    private DataMigrationService dataMigrationService;
 
     @Transactional
     public void exec() {
@@ -74,10 +78,15 @@ public class CoreDataHandler {
 
         final AppConfig appConfig = ( !allAppConfig.isEmpty() ) ? allAppConfig.get(0) : new AppConfig(appVersionArg);
 
+        final String currentVersion = appConfig.getAppCurrentVersion();
+
         // Save if new install or version has changed
-        if (!appVersionArg.equals(appConfig.getAppCurrentVersion())) {
+        if (!appVersionArg.equals(currentVersion)) {
+
             appConfig.setAppCurrentVersion(appVersionArg);
             appConfigDAO.save(appConfig);
+
+            dataMigrationService.applyVersionChanges(currentVersion, appVersionArg);
         }
 
     }

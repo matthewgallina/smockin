@@ -2,7 +2,9 @@ package com.smockin.utils;
 
 import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import spark.Request;
 
@@ -13,6 +15,9 @@ import java.util.HashSet;
  * Created by mgallina on 08/08/17.
  */
 public class GeneralUtilsTest {
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void generateUUID_Populated_Test() {
@@ -175,6 +180,39 @@ public class GeneralUtilsTest {
     @Test
     public void prefixPath_Empty_Test() {
         Assert.assertNull(GeneralUtils.prefixPath("   "));
+    }
+
+    @Test
+    public void exactVersionNo_FullInfoTest() {
+        Assert.assertEquals(121, GeneralUtils.exactVersionNo("1.2.1-SNAPSHOT"));
+    }
+
+    @Test
+    public void exactVersionNo_FullInfoCaseTest() {
+        Assert.assertEquals(124, GeneralUtils.exactVersionNo("1.2.4-SnapShot"));
+    }
+
+    @Test
+    public void exactVersionNo_PartialInfoTest() {
+        Assert.assertEquals(152, GeneralUtils.exactVersionNo("1.5.2"));
+    }
+
+    @Test
+    public void exactVersionNo_NullTest() {
+
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("versionNo is not defined");
+
+        GeneralUtils.exactVersionNo(null);
+    }
+
+    @Test
+    public void exactVersionNo_InvalidFormatTest() {
+
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage("extracted versionNo is not a valid number: Mambo no 5!");
+
+        GeneralUtils.exactVersionNo("Mambo no 5!");
     }
 
 }

@@ -1,6 +1,6 @@
 package com.smockin.utils;
 
-import com.smockin.admin.dto.RestfulMockDTO;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -138,6 +138,20 @@ public final class GeneralUtils {
         }
 
         return path;
+    }
+
+    public static int exactVersionNo(String versionNo) {
+
+        if (versionNo == null)
+            throw new IllegalArgumentException("versionNo is not defined");
+
+        versionNo = org.apache.commons.lang3.StringUtils.removeIgnoreCase(versionNo, "-SNAPSHOT");
+        versionNo = org.apache.commons.lang3.StringUtils.remove(versionNo, ".");
+
+        if (!NumberUtils.isDigits(versionNo))
+            throw new IllegalArgumentException("extracted versionNo is not a valid number: " + versionNo);
+
+        return Integer.valueOf(versionNo);
     }
 
 }
