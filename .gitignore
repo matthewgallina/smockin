@@ -22,3 +22,4 @@ src/main/main.iml
 binary
 TODO
 standalone
+build_all_distributions.sh
