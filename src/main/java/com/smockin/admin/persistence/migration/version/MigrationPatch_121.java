@@ -20,9 +20,8 @@ public class MigrationPatch_121 implements MigrationPatch {
     public void execute(final MigrationDAO migrationDAO) {
         logger.info("Running data migration patch for app version " + versionNo());
 
-        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK_RULE ALTER COLUMN RESPONSE_BODY VARCHAR2(2147483647);").executeUpdate();
-        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK_DEF ALTER COLUMN RESPONSE_BODY VARCHAR2(2147483647);").executeUpdate();
-
+        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK_RULE ALTER COLUMN RESPONSE_BODY VARCHAR2(2147483647) NULL;").executeUpdate();
+        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK_DEF ALTER COLUMN RESPONSE_BODY VARCHAR2(2147483647) NULL;").executeUpdate();
     }
 
 }
