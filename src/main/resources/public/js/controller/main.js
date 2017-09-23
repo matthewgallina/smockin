@@ -15,17 +15,13 @@ app.config(function($routeProvider) {
         .when("/endpoint", {
             templateUrl : "endpoint_info.html",
             controller : "endpointInfoController"
-        })
-        .when("/help", {
-            templateUrl : "help_section.html",
-            controller : "helpSectionController"
         });
 });
 
 
 //
 // Main Controller
-app.controller('mainController', function($scope, $location, $http, $timeout, $uibModal, globalVars, restClient) {
+app.controller('mainController', function($scope, $window, $location, $http, $timeout, $uibModal, globalVars, restClient) {
 
     //
     // Labels
@@ -95,7 +91,7 @@ app.controller('mainController', function($scope, $location, $http, $timeout, $u
     };
 
     $scope.doOpenHelp = function() {
-        $location.path("/help");
+        $window.open('http://help.smockin.com', '_blank');
     };
 
 });
