@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import spark.Request;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by gallina.
@@ -80,6 +81,11 @@ public class RuleEngineImpl implements RuleEngine {
                 }
 
                 return req.splat()[(argPosition - 1)];
+            case REQUEST_BODY_JSON_ANY:
+
+                final Map<String, ?> json = GeneralUtils.deserialiseJSON(req.body());
+
+                return (json != null)?(String)json.get(fieldName):null;
             default:
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }

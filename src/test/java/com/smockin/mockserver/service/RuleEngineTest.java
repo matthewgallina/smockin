@@ -175,4 +175,66 @@ public class RuleEngineTest {
 
     }
 
+    @Test
+    public void extractInboundValue_jsonReqBody_Test() {
+
+        // Setup
+        final String fieldName = "username";
+        final String fieldValue = "admin";
+        Mockito.when(req.body()).thenReturn("{\"username\":\"" + fieldValue + "\"}");
+
+        // Test
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals(fieldValue, result);
+
+    }
+
+    @Test
+    public void extractInboundValue_jsonReqBody_NotFound_Test() {
+
+        // Setup
+        final String fieldName = "username";
+        Mockito.when(req.body()).thenReturn("{\"foo\":\"bar\"}");
+
+        // Test
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req);
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
+    @Test
+    public void extractInboundValue_jsonReqBody_invalidJson_Test() {
+
+        // Setup
+        final String fieldName = "username";
+        Mockito.when(req.body()).thenReturn("username = admin");
+
+        // Test
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req);
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
+    @Test
+    public void extractInboundValue_jsonReqBody_null_Test() {
+
+        // Setup
+        final String fieldName = "username";
+        Mockito.when(req.body()).thenReturn(null);
+
+        // Test
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req);
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
 }

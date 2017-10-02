@@ -10,6 +10,7 @@ import spark.Request;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created by mgallina on 08/08/17.
@@ -213,6 +214,32 @@ public class GeneralUtilsTest {
         thrown.expectMessage("extracted versionNo is not a valid number: Mambo no 5!");
 
         GeneralUtils.exactVersionNo("Mambo no 5!");
+    }
+
+    @Test
+    public void deserialiseJSON_SimpleParse_Test() {
+
+        // Test
+        final Map<String, ?> jsonObj = GeneralUtils.deserialiseJSON("{ \"name\" : \"bob\", \"age\" : 21 }");
+
+        // Assertions
+        Assert.assertNotNull(jsonObj);
+        Assert.assertTrue(jsonObj.containsKey("name"));
+        Assert.assertTrue(jsonObj.containsKey("age"));
+        Assert.assertEquals("bob", jsonObj.get("name"));
+        Assert.assertEquals(21, jsonObj.get("age"));
+    }
+
+    @Test
+    public void deserialiseJSON_InvalidJson_Test() {
+
+        Assert.assertNull(GeneralUtils.deserialiseJSON("{ \"name\" :, \"age\" : 21 }"));
+    }
+
+    @Test
+    public void deserialiseJSON_Null_Test() {
+
+        Assert.assertNull(GeneralUtils.deserialiseJSON(null));
     }
 
 }

@@ -8,5 +8,6 @@ public enum RuleMatchingTypeEnum {
     PATH_VARIABLE_WILD,
     REQUEST_HEADER,
     REQUEST_PARAM,
-    REQUEST_BODY;
+    REQUEST_BODY,
+    REQUEST_BODY_JSON_ANY;
 }

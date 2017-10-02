@@ -191,7 +191,8 @@ app.controller('endpointInfoRuleConditionController', function($scope, $location
         if (matchValue == RequestBodyText) {
 
             $scope.comparators = [
-                { dropDownName : 'Equals ( TEXT )', tableName : 'equals', value : EqualsText, dataType: TextDataType }
+                { dropDownName : 'Equals ( TEXT )', tableName : 'equals', value : EqualsText, dataType: TextDataType },
+                { dropDownName : 'Contains ( TEXT )', tableName : 'contains', value : ContainsText, dataType: TextDataType }
             ];
 
             $scope.condition.comparator = null;

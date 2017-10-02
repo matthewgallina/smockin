@@ -182,6 +182,7 @@ app.service('globalVars', function($uibModal) {
     this.RequestHeaderText = 'REQUEST_HEADER';
     this.RequestParamText = 'REQUEST_PARAM';
     this.RequestBodyText = 'REQUEST_BODY';
+    this.RequestBodyJsonAnyFieldText = 'REQUEST_BODY_JSON_ANY';
     this.EqualsText = 'EQUALS';
     this.ContainsText = 'CONTAINS';
     this.IsMissingText = 'IS_MISSING';
@@ -206,7 +207,8 @@ app.service('globalVars', function($uibModal) {
         { name : 'Path Variable (Wildcard)', value : this.PathVariableWildcardText, fieldPlaceholderText : 'Position of \'Wildcard\' var (e.g for /home/*/pet/* enter 1 or 2)' },
         { name : 'Request Header', value : this.RequestHeaderText, fieldPlaceholderText : 'Enter \'Request Header\' Key Name' },
         { name : 'Request Parameter', value : this.RequestParamText, fieldPlaceholderText : 'Enter \'Request Parameter\' Key Name' },
-        { name : 'Request Body', value : this.RequestBodyText, fieldPlaceholderText : '' }
+        { name : 'Request Body', value : this.RequestBodyText, fieldPlaceholderText : '' },
+        { name : 'Request Body JSON Field', value : this.RequestBodyJsonAnyFieldText, fieldPlaceholderText : 'Enter \'JSON Parameter\' Key Name'  }
     ];
 
 });

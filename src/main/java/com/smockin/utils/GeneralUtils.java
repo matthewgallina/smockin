@@ -1,11 +1,13 @@
 package com.smockin.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.utils.StringUtils;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -24,6 +26,9 @@ public final class GeneralUtils {
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
+
+    // Thread safe class, provided all config is defined before it's use.
+    static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     public final static String generateUUID() {
         return UUID.randomUUID().toString();
@@ -152,6 +157,21 @@ public final class GeneralUtils {
             throw new IllegalArgumentException("extracted versionNo is not a valid number: " + versionNo);
 
         return Integer.valueOf(versionNo);
+    }
+
+
+
+    public static Map<String, ?> deserialiseJSON(final String jsonStr) {
+
+        if (jsonStr != null) {
+            try {
+                return JSON_MAPPER.readValue(jsonStr, Map.class);
+            } catch (IOException e) {
+                // fail silently
+            }
+        }
+
+        return null;
     }
 
 }
