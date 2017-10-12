@@ -1,7 +1,7 @@
 package com.smockin;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 
@@ -10,7 +10,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
  */
 public final class SmockinTestUtils {
 
-    public static RestfulMock buildRestfulMock(final String path, final MockTypeEnum mockType, final int initOrder, final RestMethodEnum restMethod, final RecordStatusEnum status) {
+    public static RestfulMock buildRestfulMock(final String path, final RestMockTypeEnum mockType, final int initOrder, final RestMethodEnum restMethod, final RecordStatusEnum status) {
 
         final RestfulMock mock = new RestfulMock();
         mock.setPath(path);

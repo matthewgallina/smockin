@@ -1,6 +1,6 @@
 package com.smockin.admin.dto;
 
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 
@@ -15,7 +15,7 @@ public class RestfulMockDTO {
     private String path;
     private RestMethodEnum method;
     private RecordStatusEnum status;
-    private MockTypeEnum mockType;
+    private RestMockTypeEnum mockType;
     private long proxyTimeoutInMillis;
     private long webSocketTimeoutInMillis;
     private boolean randomiseDefinitions;
@@ -26,7 +26,7 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -57,10 +57,10 @@ public class RestfulMockDTO {
         this.status = status;
     }
 
-    public MockTypeEnum getMockType() {
+    public RestMockTypeEnum getMockType() {
         return mockType;
     }
-    public void setMockType(MockTypeEnum mockType) {
+    public void setMockType(RestMockTypeEnum mockType) {
         this.mockType = mockType;
     }
 

@@ -2,7 +2,7 @@ package com.smockin.admin.dto.response;
 
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RuleDTO;
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 
@@ -19,7 +19,7 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     private Date dateCreated;
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
-    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
+    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
         super(path, method, status, mockType, proxyTimeoutInMillis, webSocketTimeoutInMillis, randomiseDefinitions);
         this.extId = extId;
         this.dateCreated = dateCreated;

@@ -21,11 +21,13 @@ import java.io.IOException;
 @WebSocket
 public class SparkWebSocketEchoService {
 
+    private final String mockExtId;
     private final String path;
     private final long idleTimeoutMillis;
     private final WebSocketService webSocketService;
 
-    public SparkWebSocketEchoService(final String path, final long idleTimeoutMillis, final WebSocketService webSocketService) {
+    public SparkWebSocketEchoService(final String mockExtId, final String path, final long idleTimeoutMillis, final WebSocketService webSocketService) {
+        this.mockExtId = mockExtId;
         this.path = path;
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.webSocketService = webSocketService;
@@ -34,7 +36,7 @@ public class SparkWebSocketEchoService {
     @OnWebSocketConnect
     public void connected(final Session session) {
 
-        webSocketService.registerSession(path, idleTimeoutMillis, session);
+        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, session);
     }
 
     @OnWebSocketClose

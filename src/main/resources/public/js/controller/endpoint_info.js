@@ -253,7 +253,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         $scope.activeWsClients = [];
 
-        restClient.doGet($http, '/ws/' + $scope.endpoint.path + '/client', function(status, data) {
+        restClient.doGet($http, '/ws/' + $scope.extId + '/client', function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);

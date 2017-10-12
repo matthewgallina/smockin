@@ -25,10 +25,10 @@ public class WebSocketController {
     @Autowired
     private WebSocketService webSocketService;
 
-    @RequestMapping(path="/ws/{wsPath}/client", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<WebSocketClientDTO>> getClients(@PathVariable("wsPath") final String wsPath) throws IOException {
+    @RequestMapping(path="/ws/{id}/client", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<List<WebSocketClientDTO>> getClients(@PathVariable("id") final String id) throws IOException, RecordNotFoundException {
 
-        return new ResponseEntity<List<WebSocketClientDTO>>(webSocketService.getClientConnections(wsPath), HttpStatus.OK);
+        return new ResponseEntity<List<WebSocketClientDTO>>(webSocketService.getClientConnections(id), HttpStatus.OK);
     }
 
     @RequestMapping(path="/ws", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

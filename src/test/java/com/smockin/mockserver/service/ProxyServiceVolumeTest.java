@@ -1,7 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
@@ -68,7 +68,7 @@ public class ProxyServiceVolumeTest {
 
                 @Override
                 public Object call() {
-                    return proxyService.waitForResponse(pk.getPath(), new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, MockTypeEnum.PROXY_HTTP, 3000, 0, false));
+                    return proxyService.waitForResponse(pk.getPath(), new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 3000, 0, false));
                 }
             };
 

@@ -1,6 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import org.hibernate.annotations.ColumnDefault;
@@ -31,7 +31,7 @@ public class RestfulMock extends Identifier {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "MOCK_TYPE", nullable = false, length = 10)
-    private MockTypeEnum mockType;
+    private RestMockTypeEnum mockType;
 
     @Column(name = "PROXY_TIME_OUT_MILLIS", nullable = false)
     private long proxyTimeOutInMillis;
@@ -62,7 +62,7 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, MockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -93,10 +93,10 @@ public class RestfulMock extends Identifier {
         this.status = status;
     }
 
-    public MockTypeEnum getMockType() {
+    public RestMockTypeEnum getMockType() {
         return mockType;
     }
-    public void setMockType(MockTypeEnum mockType) {
+    public void setMockType(RestMockTypeEnum mockType) {
         this.mockType = mockType;
     }
 

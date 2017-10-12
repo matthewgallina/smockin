@@ -4,7 +4,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -153,7 +153,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // NOTE JPA entity beans are still attached at this stage (See buildEndpoints() below).
         for (RestfulMock m : mocks) {
 
-            if (MockTypeEnum.PROXY_WS.equals(m.getMockType())) {
+            if (RestMockTypeEnum.PROXY_WS.equals(m.getMockType())) {
                 continue;
             }
 
@@ -196,12 +196,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Define all web socket routes first as the Spark framework requires this
         for (RestfulMock mock : mocks) {
 
-            if (!MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+            if (!RestMockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
                 continue;
             }
 
             // Create an echo service instance per web socket route, as we need to hold the path as state within this.
-            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getPath(), mock.getWebSocketTimeoutInMillis(), webSocketService));
+            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getExtId(), mock.getPath(), mock.getWebSocketTimeoutInMillis(), webSocketService));
         }
 
     }
@@ -211,7 +211,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         for (RestfulMock mock : mocks) {
 
-            if (MockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+            if (RestMockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
                 continue;
             }
 
@@ -300,7 +300,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     RestfulResponseDTO getDefault(final RestfulMock restfulMock) {
 
-        if (MockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
+        if (RestMockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
             return new RestfulResponseDTO(404);
         }
 

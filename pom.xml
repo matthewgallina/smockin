@@ -29,6 +29,7 @@
         <junit.version>4.12</junit.version>
         <mockito-all.version>1.10.19</mockito-all.version>
         <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+        <activemq-all.version>5.15.1</activemq-all.version>
     </properties>
 
     <dependencies>
@@ -70,6 +71,13 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
+        </dependency>
+
+        <!-- JMS MQ -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+            <version>${activemq-all.version}</version>
         </dependency>
 
         <!-- Misc -->

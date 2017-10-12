@@ -3,7 +3,7 @@ package com.smockin.admin.persistence.dao;
 import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.admin.persistence.enums.MockTypeEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import org.junit.After;
@@ -37,11 +37,11 @@ public class RestfulMockDAOTest {
     @Before
     public void setUp() {
 
-        a = SmockinTestUtils.buildRestfulMock("/a", MockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        b = SmockinTestUtils.buildRestfulMock("/b", MockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        c = SmockinTestUtils.buildRestfulMock("/c", MockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        d = SmockinTestUtils.buildRestfulMock("/d", MockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE);
-        e = SmockinTestUtils.buildRestfulMock("/e", MockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        a = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        b = SmockinTestUtils.buildRestfulMock("/b", RestMockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        c = SmockinTestUtils.buildRestfulMock("/c", RestMockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        d = SmockinTestUtils.buildRestfulMock("/d", RestMockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE);
+        e = SmockinTestUtils.buildRestfulMock("/e", RestMockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
 
         a = restfulMockDAO.saveAndFlush(a);
         b = restfulMockDAO.saveAndFlush(b);

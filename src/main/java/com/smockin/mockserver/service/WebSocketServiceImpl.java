@@ -1,11 +1,15 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.dto.WebSocketClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -22,6 +26,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     private final String WS_HAND_SHAKE_KEY = "Sec-WebSocket-Accept";
 
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
+
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
     private final ConcurrentHashMap<String, Set<SessionIdWrapper>> sessionMap = new ConcurrentHashMap<String, Set<SessionIdWrapper>>();
@@ -33,10 +40,14 @@ public class WebSocketServiceImpl implements WebSocketService {
      * Note sessions are 'internally' identified using the encrypted handshake 'Sec-WebSocket-Accept' value and
      * 'externally' identified using an allocated UUID.
      *
+     *
+     * @param mockExtId
      * @param path
+     * @param idleTimeoutMillis
      * @param session
+     *
      */
-    public void registerSession(final String path, final long idleTimeoutMillis, final Session session) {
+    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final Session session) {
         logger.debug("registerSession called");
 
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
@@ -112,9 +123,14 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     }
 
-    public List<WebSocketClientDTO> getClientConnections(final String path) {
+    public List<WebSocketClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException {
 
-        final String prefixedPath = GeneralUtils.prefixPath(path);
+        final RestfulMock mock =  restfulMockDAO.findByExtId(mockExtId);
+
+        if (mock == null)
+            throw new RecordNotFoundException();
+
+        final String prefixedPath = GeneralUtils.prefixPath(mock.getPath());
         final List<WebSocketClientDTO> sessionHandshakeIds = new ArrayList<WebSocketClientDTO>();
 
         if (!sessionMap.containsKey(prefixedPath)) {

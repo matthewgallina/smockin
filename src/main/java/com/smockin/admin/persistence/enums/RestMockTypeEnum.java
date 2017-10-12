@@ -3,7 +3,7 @@ package com.smockin.admin.persistence.enums;
 /**
  * Created by gallina.
  */
-public enum MockTypeEnum {
+public enum RestMockTypeEnum {
     SEQ,
     RULE,
     PROXY_HTTP,
