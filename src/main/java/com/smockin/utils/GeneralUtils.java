@@ -21,8 +21,8 @@ public final class GeneralUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralUtils.class);
 
-    public static final String ISO_DATE_FORMAT = "yyyy/MM/dd";
-    public static final String ISO_DATETIME_FORMAT = "yyyy/MM/dd'T'HH:mm:ssZ";
+    public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
+    public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
