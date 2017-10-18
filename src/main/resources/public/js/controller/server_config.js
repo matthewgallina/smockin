@@ -10,7 +10,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
 
     //
     // Labels
-    $scope.serverConfigHeading = ServerType + ' Server Config';
+    $scope.serverConfigHeading = 'Mock Server Config';
     $scope.portLabel = 'Port';
     $scope.maxThreadsLabel = 'Max Threads';
     $scope.minThreadsLabel = 'Min Threads';

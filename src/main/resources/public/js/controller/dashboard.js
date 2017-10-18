@@ -20,7 +20,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
 
     //
     // Labels
-    $scope.mockServerStatusLabel = 'REST Mock Server Status:';
+    $scope.mockServerStatusLabel = 'Mock Server Status:';
     $scope.serverConfigLabel = '(edit settings)';
     $scope.portLabel = 'port';
     $scope.noDataFoundMsg = 'No Data Found';
@@ -33,7 +33,7 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
     // Buttons
     $scope.addEndpointLabel = 'Add Endpoint';
     $scope.viewEndpointLabel = 'View';
-    $scope.endpointsHeading = 'Mocked RESTful Endpoints';
+    $scope.endpointsHeading = 'Simulated Endpoints';
 
 
     //
