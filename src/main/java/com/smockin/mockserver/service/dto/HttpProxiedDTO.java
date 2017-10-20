@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 /**
  * Created by gallina.
  */
-public class ProxiedDTO {
+public class HttpProxiedDTO {
 
     private String path;
     private RestMethodEnum method;
@@ -14,10 +14,10 @@ public class ProxiedDTO {
     private String responseContentType;
     private String body;
 
-    public ProxiedDTO() {
+    public HttpProxiedDTO() {
     }
 
-    public ProxiedDTO(String path, RestMethodEnum method, int httpStatusCode, String responseContentType, String body) {
+    public HttpProxiedDTO(String path, RestMethodEnum method, int httpStatusCode, String responseContentType, String body) {
         this.path = path;
         this.method = method;
         this.httpStatusCode = httpStatusCode;

@@ -10,9 +10,8 @@ import java.util.List;
  */
 public interface RestfulMockDAOCustom {
 
-    void detach(final RestfulMock restfulMockDefinition);
+    void detach(final RestfulMock restfulMock);
     List<RestfulMock> findAllByStatus(final RecordStatusEnum status);
     List<RestfulMock> findAll();
-//    void updateInitializationOrderWithMax(final long id);
 
 }

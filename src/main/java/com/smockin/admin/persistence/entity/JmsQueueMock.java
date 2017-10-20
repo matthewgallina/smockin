@@ -1,9 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
-import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.JmsMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
-import com.smockin.admin.persistence.enums.RestMethodEnum;
-import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,6 +18,10 @@ public class JmsQueueMock extends Identifier {
     private String name;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "MOCK_TYPE", nullable = false, length = 10)
+    private JmsMockTypeEnum mockType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
@@ -30,8 +32,9 @@ public class JmsQueueMock extends Identifier {
     public JmsQueueMock() {
     }
 
-    public JmsQueueMock(String name, RecordStatusEnum status) {
+    public JmsQueueMock(final String name, final JmsMockTypeEnum mockType, final RecordStatusEnum status) {
         this.name = name;
+        this.mockType = mockType;
         this.status = status;
     }
 
@@ -40,6 +43,13 @@ public class JmsQueueMock extends Identifier {
     }
     public void setName(String name) {
         this.name = name;
+    }
+
+    public JmsMockTypeEnum getMockType() {
+        return mockType;
+    }
+    public void setMockType(JmsMockTypeEnum mockType) {
+        this.mockType = mockType;
     }
 
     public RecordStatusEnum getStatus() {

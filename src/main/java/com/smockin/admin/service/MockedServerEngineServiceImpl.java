@@ -2,6 +2,7 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.JmsQueueMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ServerConfig;
@@ -9,6 +10,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import org.slf4j.Logger;
@@ -32,12 +34,20 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private MockedRestServerEngine mockedRestServerEngine;
 
     @Autowired
+    private MockedJmsServerEngine mockedJmsServerEngine;
+
+    @Autowired
     private RestfulMockDAO restfulMockDefinitionDAO;
+
+    @Autowired
+    private JmsQueueMockDAO jmsQueueMockDAO;
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
 
 
+    //
+    // Rest
     public MockedServerConfigDTO startRest() throws MockServerException {
 
         try {
@@ -46,7 +56,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             return dto;
         } catch (RecordNotFoundException ex) {
             logger.error("Starting REST Mocking Engine, due to missing mock server config", ex);
-            throw new MockServerException("Missing mock server config");
+            throw new MockServerException("Missing mock REST server config");
         } catch (MockServerException ex) {
             logger.error("Starting REST Mocking Engine", ex);
             throw ex;
@@ -78,6 +88,51 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+
+    //
+    // JMS
+    public MockedServerConfigDTO startJms() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.JMS);
+
+            if (getJMSServerState().isRunning()) {
+                logger.warn("Cannot start JMS server as it is already running");
+                return dto;
+            }
+
+            mockedJmsServerEngine.start(dto, jmsQueueMockDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
+
+            return dto;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting JMS Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock JMS server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting JMS Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    public void shutdownJms() throws MockServerException {
+
+        try {
+            mockedJmsServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping JMS Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    public MockServerState getJMSServerState() throws MockServerException {
+        return mockedJmsServerEngine.getCurrentState();
+    }
+
+
+    //
+    // Config
     public MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException {
 
         final ServerConfig serverConfig = serverConfigDAO.findByServerType(serverType);
@@ -87,13 +142,13 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         }
 
         return new MockedServerConfigDTO(
+                serverConfig.getServerType(),
                 serverConfig.getPort(),
                 serverConfig.getMaxThreads(),
                 serverConfig.getMinThreads(),
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
                 serverConfig.isAutoRefresh(),
-                serverConfig.isEnableCors(),
                 serverConfig.getNativeProperties()
         );
 
@@ -115,7 +170,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
         serverConfig.setAutoRefresh(config.isAutoRefresh());
-        serverConfig.setEnableCors(config.isEnableCors());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());

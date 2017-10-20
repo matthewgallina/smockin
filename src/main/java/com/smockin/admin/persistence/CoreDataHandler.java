@@ -44,25 +44,41 @@ public class CoreDataHandler {
     void applyServerConfigDefaults() {
 
         // Check if Server Config DB Defaults have already been installed
-        if (!serverConfigDAO.findAll().isEmpty()) {
-            return;
+
+        if (serverConfigDAO.findByServerType(ServerTypeEnum.RESTFUL) == null) {
+
+            logger.info("Installing REST Server Config DB Defaults...");
+
+            final ServerConfig restServerConfig = new ServerConfig();
+            restServerConfig.setServerType(ServerTypeEnum.RESTFUL);
+            restServerConfig.setPort(8001);
+            restServerConfig.setMaxThreads(100);
+            restServerConfig.setMinThreads(10);
+            restServerConfig.setTimeOutMillis(30000);
+            restServerConfig.setAutoStart(false);
+            restServerConfig.setAutoRefresh(false);
+            restServerConfig.getNativeProperties().put("ENABLE_CORS", "false");
+
+            serverConfigDAO.save(restServerConfig);
         }
 
-        logger.info("Server Config DB Defaults being executed...");
+        if (serverConfigDAO.findByServerType(ServerTypeEnum.JMS) == null) {
 
-        final ServerConfig restServerConfig = new ServerConfig();
-        restServerConfig.setServerType(ServerTypeEnum.RESTFUL);
-        restServerConfig.setPort(8001);
-        restServerConfig.setMaxThreads(100);
-        restServerConfig.setMinThreads(10);
-        restServerConfig.setTimeOutMillis(30000);
-        restServerConfig.setAutoStart(false);
-        restServerConfig.setAutoRefresh(false);
-        restServerConfig.setEnableCors(false);
+            logger.info("Installing JMS Server Config DB Defaults...");
 
-        serverConfigDAO.save(restServerConfig);
+            final ServerConfig jmsServerConfig = new ServerConfig();
+            jmsServerConfig.setServerType(ServerTypeEnum.JMS);
+            jmsServerConfig.setPort(61616);
+            jmsServerConfig.setMaxThreads(10);
+            jmsServerConfig.setMinThreads(0);
+            jmsServerConfig.setTimeOutMillis(0);
+            jmsServerConfig.setAutoStart(false);
+            jmsServerConfig.setAutoRefresh(false);
+            jmsServerConfig.getNativeProperties().put("BROKER_URL", "tcp://localhost:");
 
-        logger.info("Server Config DB Defaults    DONE");
+            serverConfigDAO.save(jmsServerConfig);
+        }
+
     }
 
     void applyAppVersioning() {

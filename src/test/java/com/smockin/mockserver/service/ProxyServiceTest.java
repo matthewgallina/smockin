@@ -5,7 +5,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
-import com.smockin.mockserver.service.dto.ProxiedDTO;
+import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
@@ -19,11 +19,11 @@ import java.util.concurrent.*;
  */
 public class ProxyServiceTest {
 
-    private ProxyService proxyService;
+    private HttpProxyService proxyService;
 
     private ProxiedKey pxKey;
     private RestfulMock mockReq;
-    private ProxiedDTO pxDto;
+    private HttpProxiedDTO pxDto;
 
     private ExecutorService executor;
     private Runnable producer1;
@@ -34,11 +34,11 @@ public class ProxyServiceTest {
 
         executor = Executors.newFixedThreadPool(5);
 
-        proxyService = new ProxyServiceImpl();
+        proxyService = new HttpProxyServiceImpl();
 
         pxKey = new ProxiedKey("/helloworld", RestMethodEnum.GET);
         mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, false);
-        pxDto = new ProxiedDTO(pxKey.getPath(), pxKey.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld\" }");
+        pxDto = new HttpProxiedDTO(pxKey.getPath(), pxKey.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld\" }");
 
         producer1 = new Runnable() {
             @Override

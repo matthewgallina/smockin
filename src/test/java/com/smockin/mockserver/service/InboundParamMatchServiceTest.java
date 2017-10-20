@@ -391,7 +391,7 @@ public class InboundParamMatchServiceTest {
     }
 
     @Test
-    public void processParamMatch_randomRangeTO_Test() {
+    public void processParamMatch_randomRangeTO_AllPositive_Test() {
 
         // Setup
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1to3}";
@@ -403,6 +403,111 @@ public class InboundParamMatchServiceTest {
         final String remainder = result.replaceAll("Your number is ", "");
         Assert.assertTrue(NumberUtils.isDigits(remainder));
         Assert.assertTrue((Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2) || (Integer.valueOf(remainder) == 3));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_NegativeToPositive_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-2to2}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isCreatable(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == -2) || (Integer.valueOf(remainder) == -1) || (Integer.valueOf(remainder) == 0) || (Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_NegativeToNegative_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-4to-2}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isCreatable(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == -4) || (Integer.valueOf(remainder) == -3) || (Integer.valueOf(remainder) == -2));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_NegativeToZero_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-3to0}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isCreatable(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == -3) || (Integer.valueOf(remainder) == -2) || (Integer.valueOf(remainder) == -1)  || (Integer.valueOf(remainder) == 0));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_ZeroToPositive_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=0to2}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertTrue((Integer.valueOf(remainder) == 0) || (Integer.valueOf(remainder) == 1) || (Integer.valueOf(remainder) == 2));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_Zero_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=0to0}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertEquals(Integer.valueOf(0), Integer.valueOf(remainder));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_SamePositiveValue_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=4to4}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isDigits(remainder));
+        Assert.assertEquals(Integer.valueOf(4), Integer.valueOf(remainder));
+    }
+
+    @Test
+    public void processParamMatch_randomRangeTO_SameNegativeValue_Test() {
+
+        // Setup
+        final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-3 to -3}";
+
+        // Test
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+
+        // Assertions
+        final String remainder = result.replaceAll("Your number is ", "");
+        Assert.assertTrue(NumberUtils.isCreatable(remainder));
+        Assert.assertEquals(Integer.valueOf(-3), Integer.valueOf(remainder));
     }
 
     @Test

@@ -5,7 +5,7 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.mockserver.service.MockOrderingCounterService;
-import com.smockin.mockserver.service.ProxyService;
+import com.smockin.mockserver.service.HttpProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
@@ -32,7 +32,7 @@ public class MockedRestServerEngineTest {
     private RuleEngine ruleEngine;
 
     @Mock
-    private ProxyService proxyService;
+    private HttpProxyService proxyService;
 
     @Mock
     private MockOrderingCounterService mockOrderingCounterService;

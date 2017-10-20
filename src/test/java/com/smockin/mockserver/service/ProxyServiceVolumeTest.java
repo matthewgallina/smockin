@@ -5,7 +5,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
-import com.smockin.mockserver.service.dto.ProxiedDTO;
+import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,7 +21,7 @@ import java.util.concurrent.*;
  */
 public class ProxyServiceVolumeTest {
 
-    private ProxyService proxyService;
+    private HttpProxyService proxyService;
     private final int proxiedTestCount = 1000;
 
     private ExecutorService executor;
@@ -35,7 +35,7 @@ public class ProxyServiceVolumeTest {
 
         executor = Executors.newFixedThreadPool(100);
 
-        proxyService = new ProxyServiceImpl();
+        proxyService = new HttpProxyServiceImpl();
 
         keys = generateKeys();
 
@@ -48,7 +48,7 @@ public class ProxyServiceVolumeTest {
             producers[p] = new Runnable() {
                 @Override
                 public void run() {
-                    proxyService.addResponse(new ProxiedDTO(pk.getPath(), pk.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"path\" : \"" + pk.getPath() + "\" }"));
+                    proxyService.addResponse(new HttpProxiedDTO(pk.getPath(), pk.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"path\" : \"" + pk.getPath() + "\" }"));
                 }
             };
 

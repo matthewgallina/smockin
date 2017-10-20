@@ -293,7 +293,7 @@ public class MockedServerEngineServiceTest {
 
         // Assertions
         thrown.expect(MockServerException.class);
-        thrown.expectMessage("Missing mock server config");
+        thrown.expectMessage("Missing mock REST server config");
 
         // Test
         mockedServerEngineService.startRest();

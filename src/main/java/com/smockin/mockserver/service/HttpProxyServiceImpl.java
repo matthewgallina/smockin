@@ -2,7 +2,7 @@ package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.bean.ProxiedKey;
-import com.smockin.mockserver.service.dto.ProxiedDTO;
+import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +18,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created by mgallina on 09/08/17.
  */
 @Service
-public class ProxyServiceImpl implements ProxyService {
+public class HttpProxyServiceImpl implements HttpProxyService {
 
-    private final Logger logger = LoggerFactory.getLogger(ProxyServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(HttpProxyServiceImpl.class);
 
     // TODO Should add TTL and scheduled sweeper to stop the synchronizedProxyResponsesMap from building up.
-    private Map<ProxiedKey, List<ProxiedDTO>> synchronizedProxyResponsesMap = new HashMap<ProxiedKey, List<ProxiedDTO>>();
+    private Map<ProxiedKey, List<HttpProxiedDTO>> synchronizedProxyResponsesMap = new HashMap<ProxiedKey, List<HttpProxiedDTO>>();
 
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
@@ -36,7 +36,7 @@ public class ProxyServiceImpl implements ProxyService {
 
             lock.lock();
 
-            final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(requestPath, mock.getMethod()));
+            final List<HttpProxiedDTO> responses = synchronizedProxyResponsesMap.get(new ProxiedKey(requestPath, mock.getMethod()));
 
             if (responses == null || responses.isEmpty()) {
 
@@ -62,7 +62,7 @@ public class ProxyServiceImpl implements ProxyService {
 
                 // A matching path was found, so consume/remove the element from the synchronizedProxyResponsesMap, release the lock and return response.
 
-                final ProxiedDTO proxiedResponse = responses.remove(0);
+                final HttpProxiedDTO proxiedResponse = responses.remove(0);
                 return new RestfulResponseDTO(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<Map.Entry<String, String>>());
             }
 
@@ -76,7 +76,7 @@ public class ProxyServiceImpl implements ProxyService {
     }
 
     @Override
-    public void addResponse(final ProxiedDTO dto) {
+    public void addResponse(final HttpProxiedDTO dto) {
 
         // TODO
         // Need to add a guard to ensure only legitimate paths are added to the 'synchronizedProxyResponsesMap', to prevent this building up with duff/inaccessible data.
@@ -86,7 +86,7 @@ public class ProxyServiceImpl implements ProxyService {
             lock.lock();
 
             final ProxiedKey key = new ProxiedKey(dto.getPath(), dto.getMethod());
-            final List<ProxiedDTO> responses = synchronizedProxyResponsesMap.getOrDefault(key, new ArrayList<ProxiedDTO>());
+            final List<HttpProxiedDTO> responses = synchronizedProxyResponsesMap.getOrDefault(key, new ArrayList<HttpProxiedDTO>());
             responses.add(dto);
 
             synchronizedProxyResponsesMap.put(key, responses);

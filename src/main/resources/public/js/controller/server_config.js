@@ -59,6 +59,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     //
     // Data Objects
     $scope.serverConfig = {
+        "serverType" : null,
         "port" : 0,
         "maxThreads" : 0,
         "minThreads" : 0,
@@ -98,6 +99,10 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
             return;
         }
 
+        $scope.serverConfig.nativeProperties = {
+            "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
+        };
+
         restClient.doPut($http, '/mockedserver/config/' + ServerType, $scope.serverConfig, function(status, data) {
 
             if (status == 204) {
@@ -125,13 +130,14 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
             if (status == 200) {
 
                 $scope.serverConfig = {
+                    "serverType" : data.serverType,
                     "port" : data.port,
                     "maxThreads" : data.maxThreads,
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
                     "autoRefresh" : data.autoRefresh,
-                    "enableCors" : data.enableCors,
+                    "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
                     "nativeProperties" : data.nativeProperties
                 };
 

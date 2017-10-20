@@ -40,7 +40,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private RuleEngine ruleEngine;
 
     @Autowired
-    private ProxyService proxyService;
+    private HttpProxyService proxyService;
 
     @Autowired
     private MockOrderingCounterService mockOrderingCounterService;
@@ -68,12 +68,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
-        //
         // Next handle all HTTP web service routes
         buildHttpEndpoints(mocks);
 
-
-        buildIndex(mocks);
+//        buildIndex(mocks);
 
         initServer(config.getPort());
 
@@ -143,6 +141,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.threadPool(config.getMaxThreads(), config.getMinThreads(), config.getTimeOutMillis());
     }
 
+    /*
     @Transactional
     void buildIndex(final List<RestfulMock> mocks) {
         logger.debug("buildIndex called");
@@ -169,6 +168,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         });
 
     }
+    */
 
     @Transactional
     void invokeAndDetachData(final List<RestfulMock> mocks) {
@@ -343,7 +343,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     void handleCORS(final MockedServerConfigDTO config) {
 
-        if (!config.isEnableCors()) {
+        final String enableCors = config.getNativeProperties().get("ENABLE_CORS");
+
+        if (!"TRUE".equals(enableCors)) {
             return;
         }
 

@@ -1,8 +1,7 @@
 package com.smockin.admin.controller;
 
-import com.smockin.mockserver.service.dto.ProxiedDTO;
-import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.mockserver.service.ProxyService;
+import com.smockin.mockserver.service.dto.HttpProxiedDTO;
+import com.smockin.mockserver.service.HttpProxyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -14,15 +13,15 @@ import org.springframework.web.bind.annotation.*;
  * Created by mgallina.
  */
 @Controller
-public class ProxiedController {
+public class HttpProxiedController {
 
     @Autowired
-    private ProxyService proxyService;
+    private HttpProxyService httpProxyService;
 
     @RequestMapping(path="/proxy", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> create(@RequestBody final ProxiedDTO dto) {
+    public @ResponseBody ResponseEntity<?> create(@RequestBody final HttpProxiedDTO dto) {
 
-        proxyService.addResponse(dto);
+        httpProxyService.addResponse(dto);
 
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }

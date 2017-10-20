@@ -1,5 +1,7 @@
 package com.smockin.mockserver.dto;
 
+import com.smockin.admin.persistence.enums.ServerTypeEnum;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,27 +10,34 @@ import java.util.Map;
  */
 public class MockedServerConfigDTO {
 
+    private ServerTypeEnum serverType;
     private Integer port;
     private Integer maxThreads;
     private Integer minThreads;
     private Integer timeOutMillis;
     private boolean autoStart;
     private boolean autoRefresh;
-    private boolean enableCors;
     private Map<String, String> nativeProperties = new HashMap<String, String>();
 
     public MockedServerConfigDTO() {
     }
 
-    public MockedServerConfigDTO(Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, boolean autoRefresh, boolean enableCors, Map<String, String> nativeProperties) {
+    public MockedServerConfigDTO(final ServerTypeEnum serverType, Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, boolean autoRefresh, Map<String, String> nativeProperties) {
+        this.serverType = serverType;
         this.port = port;
         this.maxThreads = maxThreads;
         this.minThreads = minThreads;
         this.timeOutMillis = timeOutMillis;
         this.autoStart = autoStart;
         this.autoRefresh = autoRefresh;
-        this.enableCors = enableCors;
         this.nativeProperties = nativeProperties;
+    }
+
+    public ServerTypeEnum getServerType() {
+        return serverType;
+    }
+    public void setServerType(ServerTypeEnum serverType) {
+        this.serverType = serverType;
     }
 
     public Integer getPort() {
@@ -73,13 +82,6 @@ public class MockedServerConfigDTO {
         this.autoRefresh = autoRefresh;
     }
 
-    public boolean isEnableCors() {
-        return enableCors;
-    }
-    public void setEnableCors(boolean enableCors) {
-        this.enableCors = enableCors;
-    }
-
     public Map<String, String> getNativeProperties() {
         return nativeProperties;
     }
@@ -90,12 +92,12 @@ public class MockedServerConfigDTO {
     @Override
     public String toString() {
         return "Mocked Server Config :- "
+                + " ServerType : " + serverType
                 + " Port : " + port
                 + ", MaxThreads : " + maxThreads
                 + ", MinThreads : " + minThreads
                 + ", TimeOutMillis : " + timeOutMillis
                 + ", AutoStart : " + autoStart
-                + ", EnableCors : " + enableCors
                 + ", AutoRefresh : " + autoRefresh;
     }
 }

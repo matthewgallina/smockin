@@ -16,6 +16,10 @@ public interface MockedServerEngineService {
     MockServerState getRestServerState() throws MockServerException;
     void shutdownRest() throws MockServerException;
     MockedServerConfigDTO restartRest() throws MockServerException;
+
+    MockedServerConfigDTO startJms() throws MockServerException;
+    void shutdownJms() throws MockServerException;
+
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config) throws ValidationException;
     void handleServerAutoStart();

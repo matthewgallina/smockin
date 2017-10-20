@@ -1,9 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.mockserver.service.ProxyService;
 import com.smockin.mockserver.service.WebSocketService;
-import com.smockin.mockserver.service.dto.ProxiedDTO;
 import com.smockin.mockserver.service.dto.WebSocketClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import org.springframework.beans.factory.annotation.Autowired;

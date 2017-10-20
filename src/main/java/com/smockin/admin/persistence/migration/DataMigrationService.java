@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.migration;
 import com.smockin.admin.persistence.dao.MigrationDAO;
 import com.smockin.admin.persistence.migration.version.MigrationPatch;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_121;
+import com.smockin.admin.persistence.migration.version.MigrationPatch_130;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class DataMigrationService {
     private final Set<MigrationPatch> patches = Collections.unmodifiableSet(new HashSet<MigrationPatch>() {
         {
             add(new MigrationPatch_121());
+            add(new MigrationPatch_130());
         }
     });
 

@@ -29,6 +29,10 @@ logging:
 spring:
   profiles:
     active: production
+  resources:
+    add-mappings: false
+  mvc:
+    throw-exception-if-no-handler-found: true
   jpa:
     show-sql: false
     hibernate:

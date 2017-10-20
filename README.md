@@ -1,4 +1,4 @@
-# SMOCKIN Version 1.2.1
+# SMOCKIN Version 1.3.0
 
 The Web Service Simulation Framework for application development and QA testing
 

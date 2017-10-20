@@ -18,8 +18,8 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
     private EntityManager entityManager;
 
     @Override
-    public void detach(final RestfulMock restfulMockDefinition) {
-        entityManager.detach(restfulMockDefinition);
+    public void detach(final RestfulMock restfulMock) {
+        entityManager.detach(restfulMock);
     }
 
     @Override
@@ -35,12 +35,4 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .getResultList();
     }
 
-    /*
-    @Override
-    public void updateInitializationOrderWithMax(final long id) {
-        entityManager.createQuery("UPDATE RestfulMock rm SET rm.initializationOrder = (SELECT MAX(rmq.initializationOrder) + 1 FROM RestfulMock rmq) WHERE rm.id = :restfulMockId")
-                .setParameter("restfulMockId", id)
-                .executeUpdate();
-    }
-*/
 }

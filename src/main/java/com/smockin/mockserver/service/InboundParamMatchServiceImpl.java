@@ -129,14 +129,29 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
             throw new IllegalArgumentException("Missing number range for '" + arg + "' args. (i.e expect 1 " + arg + " 5)");
         }
 
-        final int start = NumberUtils.toInt( StringUtils.trim(rangeToArray[0]), -1);
-        final int end = NumberUtils.toInt(StringUtils.trim(rangeToArray[1]), -1);
-
-        if (start == -1 || end == -1) {
+        if (!NumberUtils.isCreatable(StringUtils.trim(rangeToArray[0]))
+                || !NumberUtils.isCreatable(StringUtils.trim(rangeToArray[1]))) {
             throw new IllegalArgumentException("Range does not contain valid numbers. (i.e expect 1 " + arg + " 5)");
         }
 
-        return RandomUtils.nextInt(start, (arg.equals(TO_ARG))?(end+1):end);
+        final int start = NumberUtils.toInt(StringUtils.trim(rangeToArray[0]));
+        final int end = NumberUtils.toInt(StringUtils.trim(rangeToArray[1]));
+
+        if (start >= 0 && end > 0) {
+
+            return RandomUtils.nextInt(start, (arg.equals(TO_ARG))?(end+1):end);
+        } else if (start <= 0 && end >= 0) {
+
+            int s = -Math.abs(RandomUtils.nextInt(0, (arg.equals(TO_ARG))?(Math.abs(start)+1):Math.abs(start)));
+            int e = RandomUtils.nextInt(0, (arg.equals(TO_ARG))?(end+1):end);
+
+            return (e + s);
+        } else if (start < 0 && end < 0) {
+
+           return -Math.abs(RandomUtils.nextInt(Math.abs(end), (arg.equals(TO_ARG))?(Math.abs(start)+1):Math.abs(start)));
+        }
+
+        return 0;
     }
 
 }

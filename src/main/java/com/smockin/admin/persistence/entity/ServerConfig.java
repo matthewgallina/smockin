@@ -36,10 +36,6 @@ public class ServerConfig extends Identifier {
     @Column(name = "AUTO_REFRESH", nullable = false)
     private boolean autoRefresh;
 
-    @ColumnDefault("false")
-    @Column(name = "USE_CORS", nullable = false)
-    private boolean enableCors;
-
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> nativeProperties = new HashMap<String, String>();
 
@@ -98,13 +94,6 @@ public class ServerConfig extends Identifier {
     }
     public void setAutoRefresh(boolean autoRefresh) {
         this.autoRefresh = autoRefresh;
-    }
-
-    public boolean isEnableCors() {
-        return enableCors;
-    }
-    public void setEnableCors(boolean enableCors) {
-        this.enableCors = enableCors;
     }
 
     public Map<String, String> getNativeProperties() {

@@ -23,6 +23,8 @@ public class MockedServerEngineController {
     @Autowired
     private MockedServerEngineService mockedServerEngineService;
 
+    //
+    // REST Server
     @RequestMapping(path="/mockedserver/rest/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> startRest() throws ValidationException, MockServerException {
         return new ResponseEntity<MockedServerConfigDTO>(mockedServerEngineService.startRest(), HttpStatus.OK);
@@ -44,6 +46,21 @@ public class MockedServerEngineController {
         return new ResponseEntity<MockServerState>(mockedServerEngineService.getRestServerState(), HttpStatus.OK);
     }
 
+    //
+    // JMS Server
+    @RequestMapping(path="/mockedserver/jms/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> startJms() throws ValidationException, MockServerException {
+        return new ResponseEntity<MockedServerConfigDTO>(mockedServerEngineService.startJms(), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/jms/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> stopJms() throws MockServerException {
+        mockedServerEngineService.shutdownJms();
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    //
+    // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {
         final ServerTypeEnum type = convertServerType(serverType);
