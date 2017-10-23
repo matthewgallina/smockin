@@ -24,7 +24,7 @@ public class JmsProxiedController {
     private JmsProxyService jmsProxyService;
 
     @RequestMapping(path="/jms", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> postJms(@RequestBody final JmsProxiedDTO dto) throws ValidationException, MockServerException {
+    public @ResponseBody ResponseEntity<?> postJms(@RequestBody final JmsProxiedDTO dto) throws ValidationException {
         jmsProxyService.pushToQueue(dto.getQueueName(), dto.getBody());
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }

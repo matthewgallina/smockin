@@ -33,7 +33,7 @@ public class JmsProxyServiceImpl implements JmsProxyService {
     private MockedJmsServerEngine mockedJmsServerEngine;
 
     @Override
-    public void pushToQueue(final String queueName, final String body) throws ValidationException, MockServerException {
+    public void pushToQueue(final String queueName, final String body) throws ValidationException {
         logger.debug("pushToQueue called");
 
         if (StringUtils.isBlank(queueName)) {

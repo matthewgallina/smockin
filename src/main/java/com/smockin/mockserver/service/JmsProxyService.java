@@ -10,7 +10,7 @@ import javax.jms.JMSException;
  */
 public interface JmsProxyService {
 
-    void pushToQueue(final String queueName, final String body) throws ValidationException, MockServerException;
+    void pushToQueue(final String queueName, final String body) throws ValidationException;
     void clearQueue(final String queueName) throws JMSException, ValidationException;
 
 }

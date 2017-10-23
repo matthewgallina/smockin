@@ -82,11 +82,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
     }
 
-    public void sendTextMessage(final String queueName, final String textBody) throws MockServerException {
-
-        if (!getCurrentState().isRunning()) {
-            return;
-        }
+    public void sendTextMessage(final String queueName, final String textBody) {
 
         Connection connection = null;
         Session session = null;
@@ -94,13 +90,18 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
         try {
 
+            if (!getCurrentState().isRunning()) {
+                return;
+            }
+
             connection = connectionFactory.createConnection();
             session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
             producer = session.createProducer(session.createQueue(queueName));
             producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             producer.send(session.createTextMessage(textBody));
-        } catch (JMSException ex) {
+
+        } catch (MockServerException | JMSException ex) {
             logger.error("Pushing message to queue " + queueName, ex);
         } finally {
 
