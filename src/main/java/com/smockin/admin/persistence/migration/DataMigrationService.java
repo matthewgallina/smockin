@@ -5,6 +5,8 @@ import com.smockin.admin.persistence.migration.version.MigrationPatch;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_121;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_130;
 import com.smockin.utils.GeneralUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,8 @@ import java.util.*;
  */
 @Service
 public class DataMigrationService {
+
+    private final Logger logger = LoggerFactory.getLogger(DataMigrationService.class);
 
     // NOTE
     // Need to consider that some users may be using a different DB to H2 and factor that in when writing native SQL patches.
@@ -49,6 +53,7 @@ public class DataMigrationService {
         // Apply all patches for versions later then the previous version.
         for (MigrationPatch p : patches) {
             if (GeneralUtils.exactVersionNo(p.versionNo()) > currentVersionNo) {
+                logger.info("Running data migration patch for app version " + p.versionNo());
                 p.execute(migrationDAO);
             }
         }
