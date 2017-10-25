@@ -285,7 +285,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
             if (alertResponse) {
 
-                restClient.doDelete($http, '/proxy', function(status, data) {
+                restClient.doPatch($http, '/proxy', '{ "path" : null }' function(status, data) {
 
                      if (status != 204) {
                          showAlert(globalVars.GeneralErrorMessage);

@@ -107,6 +107,11 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     @Override
     public void clearSession(final String requestPath) {
 
+        if (requestPath == null) {
+            clearSession();
+            return;
+        }
+
         try {
             lock.lock();
 

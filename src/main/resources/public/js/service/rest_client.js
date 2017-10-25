@@ -51,6 +51,24 @@ app.service('restClient', function() {
 
     };
 
+    this.doPatch = function (http, url, reqData, callback) {
+
+        http({
+          method: 'PATCH',
+          url: url,
+          data: reqData,
+          headers: {
+             'Content-Type': 'application/json'
+           },
+           timeout: 8000
+        }).then(function successCallback(response) {
+            callback(response.status, response.data);
+        }, function errorCallback(response) {
+            callback(response.status, response.data);
+        });
+
+    };
+
     this.doDelete = function (http, url, callback) {
 
         http({
