@@ -28,13 +28,15 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
+    $scope.endpointsHeading = 'Simulated Endpoints';
+    $scope.tcpHeading = 'TCP';
+    $scope.jmsHeading = 'JMS';
 
 
     //
     // Buttons
-    $scope.addEndpointLabel = 'Add Endpoint';
-    $scope.viewEndpointLabel = 'View';
-    $scope.endpointsHeading = 'Simulated Endpoints';
+    $scope.addEndpointButtonLabel = 'Add Endpoint';
+    $scope.viewEndpointButtonLabel = 'View';
 
 
     //
