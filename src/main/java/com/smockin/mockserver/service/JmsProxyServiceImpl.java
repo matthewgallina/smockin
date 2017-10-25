@@ -1,22 +1,15 @@
 package com.smockin.mockserver.service;
 
-import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
-import com.smockin.admin.persistence.entity.ServerConfig;
-import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.engine.MockedJmsServerEngine;
-import com.smockin.mockserver.exception.MockServerException;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
 import javax.jms.*;
-import java.util.concurrent.ThreadPoolExecutor;
+
 
 /**
  * Created by mgallina.
@@ -33,7 +26,7 @@ public class JmsProxyServiceImpl implements JmsProxyService {
     private MockedJmsServerEngine mockedJmsServerEngine;
 
     @Override
-    public void pushToQueue(final String queueName, final String body) throws ValidationException {
+    public void pushToQueue(final String queueName, final String body, final long timeToLive) throws ValidationException {
         logger.debug("pushToQueue called");
 
         if (StringUtils.isBlank(queueName)) {
@@ -43,13 +36,14 @@ public class JmsProxyServiceImpl implements JmsProxyService {
             throw new ValidationException("body is required");
         }
 
-        mockedJmsServerEngine.sendTextMessage(queueName, body);
+        mockedJmsServerEngine.sendTextMessage(queueName, body, timeToLive);
     }
 
     @Override
-    public void clearQueue(final String queueName) throws JMSException, ValidationException {
+    public void clearQueue(final String queueName) throws ValidationException {
         logger.debug("clearQueue called");
 
+        mockedJmsServerEngine.clearQueue(queueName);
     }
 
 }

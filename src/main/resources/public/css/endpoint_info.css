@@ -8,18 +8,10 @@
     text-align: left;
 }
 
-#mock-type-radio-group {
-    width: 100%;
-    margin-top: 25px;
-}
-
-.mock-type-radio-button {
-    width: 25%;
-}
-
 .add-button-div {
     width: 100%;
-    margin-top: 20px;
+    margin-top: 40px;
+    margin-bottom: 15px;
     text-align: right;
 }
 
@@ -162,4 +154,18 @@
 
 .resp-col-width-10 {
     width: 10%;
+}
+
+#clear-proxy-button {
+    width: 100%;
+}
+
+#mock-type {
+    margin-top: 25px;
+    width: 100%;
+}
+
+#mock-type-button {
+    width: 100%;
+    text-align: left;
 }

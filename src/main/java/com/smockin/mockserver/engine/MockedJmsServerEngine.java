@@ -8,6 +8,7 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
+import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
@@ -34,7 +35,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     private JmsQueueMockDAO jmsQueueMockDAO;
 
     private BrokerService broker = null;
-    private ActiveMQConnectionFactory connectionFactory = null; // NOTE is thread safe
+    private ActiveMQConnectionFactory connectionFactory = null; // NOTE this is thread safe
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
@@ -82,7 +83,32 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
     }
 
-    public void sendTextMessage(final String queueName, final String textBody) {
+    public void clearQueue(final String queueName) {
+
+        ActiveMQConnection connection = null;
+
+        try {
+
+            connection = (ActiveMQConnection) connectionFactory.createConnection();
+            connection.destroyDestination(new ActiveMQQueue(queueName));
+
+        } catch (JMSException ex) {
+            logger.error("clearing all message on queue " + queueName, ex);
+        } finally {
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (JMSException ex) {
+                    logger.error("Closing JMS connection", ex);
+                }
+            }
+
+        }
+
+    }
+
+    public void sendTextMessage(final String queueName, final String textBody, final long timeToLive) {
 
         Connection connection = null;
         Session session = null;
@@ -100,6 +126,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
             producer = session.createProducer(session.createQueue(queueName));
             producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             producer.send(session.createTextMessage(textBody));
+            producer.setTimeToLive(timeToLive);
 
         } catch (MockServerException | JMSException ex) {
             logger.error("Pushing message to queue " + queueName, ex);
@@ -147,7 +174,6 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
             }
 
             connectionFactory = new ActiveMQConnectionFactory(config.getNativeProperties().get("BROKER_URL") + config.getPort());
-//          connectionFactory.setCloseTimeout(25000);
             connectionFactory.setMaxThreadPoolSize(config.getMaxThreads());
             connectionFactory.setRejectedTaskHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 

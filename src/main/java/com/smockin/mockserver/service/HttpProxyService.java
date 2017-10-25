@@ -13,6 +13,7 @@ public interface HttpProxyService {
 
     RestfulResponseDTO waitForResponse(final String requestPath, final RestfulMock mock);
     void addResponse(final HttpProxiedDTO dto);
+    void clearSession(final String requestPath);
     void clearSession();
 
 }

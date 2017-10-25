@@ -1,6 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -103,10 +104,28 @@ public class HttpProxyServiceImpl implements HttpProxyService {
 
     }
 
+    @Override
+    public void clearSession(final String requestPath) {
+
+        try {
+            lock.lock();
+
+            Arrays.stream(RestMethodEnum.values()).forEach( restMethod ->
+                synchronizedProxyResponsesMap.remove(new ProxiedKey(requestPath, restMethod))
+            );
+
+        } finally {
+            lock.unlock();
+        }
+
+    }
+
+    @Override
     public void clearSession() {
 
         try {
             lock.lock();
+
             synchronizedProxyResponsesMap.clear();
         } finally {
             lock.unlock();

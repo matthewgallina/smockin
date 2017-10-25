@@ -7,9 +7,11 @@
 
         <h3>
             <div class="row">
+
                 <div class="col-sm-9" class="newEndpointHeading">
                     {{ newEndpointHeading }}
                 </div>
+
                 <div class="col-sm-3 endpoint-status-row">
                     {{ endpointStatusLabel }}
                     <div id="endpoint-status" class="btn-group" uib-dropdown>
@@ -24,8 +26,8 @@
                             </li>
                         </ul>
                     </div>
-
                 </div>
+
             </div>
         </h3>
 
@@ -41,13 +43,13 @@
                     <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="true" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" ng-hide="endpoint.mockType.value == mockTypeJmsQueue">
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType == mockTypeWebSocket">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket" ng-hide="endpoint.mockType == mockTypeJmsQueue">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
-                            <span ng-if="endpoint.method == null">{{ methodDropDownLabel }}</span>
+                            <span ng-if="endpoint.method == null">{{ selectDropDownLabel }}</span>
                             <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
@@ -58,23 +60,23 @@
                     </div>
                 </div>
 
-                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
                     <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
                 </div>
 
-                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
                     <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" />
                 </div>
 
-                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
                     <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="endpoint.responseBody != '' && endpoint.contentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
                     <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
                 </div>
 
-                <div class="form-group" ng-show="endpoint.mockType == mockTypeRule">
+                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="response-headers" class="ng-binding default-label-color">{{ responseHeadersLabel }}</label>
 
                     <div class="panel panel-default">
@@ -112,16 +114,20 @@
             </div>
             <div class="col-sm-6">
 
-                <div id="mock-type-radio-group" class="btn-group" role="group">
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeSeq }}'">{{ sequenceResponsesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeRule }}'">{{ rulesRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeProxyHttp }}'">{{ proxyRadioLabel }}</label>
-                    <label class="btn btn-default mock-type-radio-button" ng-model="endpoint.mockType" uib-btn-radio="'{{ mockTypeWebSocket }}'" ng-click="doAdjustWSMethod()">{{ webSocketRadioLabel }}</label>
+                <div class="form-group">
+                    <div id="mock-type" class="btn-group" uib-dropdown>
+                        <button id="mock-type-button" type="button" class="btn btn-default" uib-dropdown-toggle>
+                            {{ endpoint.mockType.name }} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem" ng-repeat="mt in mockTypes">
+                                <a ng-click="doSelectMockType(mt)">{{ mt.name }}</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
-                <br />
-
-                <div ng-show="endpoint.mockType == mockTypeSeq">
+                <div ng-show="endpoint.mockType.value == mockTypeSeq">
 
                     <div class="add-button-div">
                         <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddSequence()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addSequenceButtonLabel }}</button>
@@ -183,7 +189,7 @@
 
                 </div>
 
-                <div ng-show="endpoint.mockType == mockTypeRule">
+                <div ng-show="endpoint.mockType.value == mockTypeRule">
 
                     <div class="add-button-div">
                         <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddRule()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRuleButtonLabel }}</button>
@@ -238,16 +244,21 @@
 
                 </div>
 
-                <div ng-show="endpoint.mockType == mockTypeProxyHttp">
+                <div ng-show="endpoint.mockType.value == mockTypeProxyHttp">
 
                     <div class="form-group proxy-timeout-group">
                         <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
                         <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
                     </div>
 
+                    <br />
+                    <hr />
+
+                    <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()">{{ clearProxyButtonLabel }}</button>
+
                 </div>
 
-                <div ng-show="endpoint.mockType == mockTypeWebSocket">
+                <div ng-show="endpoint.mockType.value == mockTypeWebSocket">
 
                     <div class="form-group proxy-timeout-group">
                         <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>

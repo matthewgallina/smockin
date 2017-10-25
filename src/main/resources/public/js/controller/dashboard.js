@@ -12,10 +12,11 @@ app.controller('dashboardController', function($scope, $window, $rootScope, $loc
     var RestartServerRequired = $routeParams.restart;
 
     var translations = [];
-    translations.push({"k" : "SEQ", "v" : "Sequenced"});
-    translations.push({ "k" : "RULE", "v" : "Rules Based" });
-    translations.push({ "k" : "PROXY_HTTP", "v" : "Proxied" });
-    translations.push({ "k" : "PROXY_WS", "v" : "WebSocket" });
+    translations.push({"k" : "SEQ", "v" : "HTTP Sequenced Based"});
+    translations.push({ "k" : "RULE", "v" : "HTTP Rules Based" });
+    translations.push({ "k" : "PROXY_HTTP", "v" : "HTTP Proxied" });
+    translations.push({ "k" : "PROXY_WS", "v" : "WebSocket Proxied" });
+    translations.push({ "k" : "JMS_QUEUE", "v" : "JMS Queue Proxied" });
 
 
     //

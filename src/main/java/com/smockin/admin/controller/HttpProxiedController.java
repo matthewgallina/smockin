@@ -1,5 +1,6 @@
 package com.smockin.admin.controller;
 
+import com.smockin.admin.dto.PathDTO;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.HttpProxyService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,14 @@ public class HttpProxiedController {
     public @ResponseBody ResponseEntity<?> create(@RequestBody final HttpProxiedDTO dto) {
 
         httpProxyService.addResponse(dto);
+
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/proxy", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> clearSession(@RequestBody final PathDTO dto) {
+
+        httpProxyService.clearSession(dto.getPath());
 
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }

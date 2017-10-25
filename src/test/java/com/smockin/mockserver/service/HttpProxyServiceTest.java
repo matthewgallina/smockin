@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 /**
  * Created by mgallina on 11/08/17.
  */
-public class ProxyServiceTest {
+public class HttpProxyServiceTest {
 
     private HttpProxyService proxyService;
 

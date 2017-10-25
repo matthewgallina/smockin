@@ -19,7 +19,7 @@ import java.util.concurrent.*;
 /**
  * Created by mgallina on 11/08/17.
  */
-public class ProxyServiceVolumeTest {
+public class HttpProxyServiceVolumeTest {
 
     private HttpProxyService proxyService;
     private final int proxiedTestCount = 1000;
