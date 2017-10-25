@@ -1,6 +1,9 @@
 
 app.controller('dashboardController', function($scope, $window, $rootScope, $location, $uibModal, $http, $timeout, restClient, globalVars, utils, $routeParams) {
 
+    //
+    // TODO split this into separate JMS and TCP controller files.
+
 
     //
     // Constants
