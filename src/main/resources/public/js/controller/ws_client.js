@@ -88,7 +88,7 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
         }
 
         // Check the mock server is running and the port no
-        utils.checkServerStatus(function(running, port) {
+        utils.checkRestServerStatus(function(running, port) {
 
             if (running == null) {
                 showAlert(globalVars.GeneralErrorMessage);

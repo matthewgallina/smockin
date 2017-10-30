@@ -19,6 +19,10 @@ app.service('globalVars', function($uibModal) {
     this.ContainsText = 'CONTAINS';
     this.IsMissingText = 'IS_MISSING';
 
+    this.MockServerRunningStatus = 'Running';
+    this.MockServerStoppedStatus = 'Stopped';
+    this.MockServerRestartStatus = 'Restarting';
+
     this.ContentMimeTypes = [
         'application/json',
         'text/html',

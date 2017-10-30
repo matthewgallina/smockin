@@ -59,6 +59,17 @@ public class MockedServerEngineController {
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
+    @RequestMapping(path="/mockedserver/jms/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> restartJms() throws MockServerException {
+        return new ResponseEntity<MockedServerConfigDTO>(mockedServerEngineService.restartJms(), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/jms/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockServerState> jmsStatus() throws MockServerException {
+        return new ResponseEntity<MockServerState>(mockedServerEngineService.getJmsServerState(), HttpStatus.OK);
+    }
+
+
     //
     // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

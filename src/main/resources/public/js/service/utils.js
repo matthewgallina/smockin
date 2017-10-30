@@ -152,7 +152,7 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
     //
     // Mock Server Actions
 
-    this.checkServerStatus = function (callback) {
+    this.checkRestServerStatus = function (callback) {
 
         restClient.doGet($http, '/mockedserver/rest/status', function(status, data) {
 

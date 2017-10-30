@@ -97,7 +97,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.JMS);
 
-            if (getJMSServerState().isRunning()) {
+            if (getJmsServerState().isRunning()) {
                 logger.warn("Cannot start JMS server as it is already running");
                 return dto;
             }
@@ -126,7 +126,17 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
-    public MockServerState getJMSServerState() throws MockServerException {
+    public MockedServerConfigDTO restartJms() throws MockServerException {
+
+        if (getJmsServerState().isRunning()) {
+            shutdownJms();
+        }
+
+        return startJms();
+
+    }
+
+    public MockServerState getJmsServerState() throws MockServerException {
         return mockedJmsServerEngine.getCurrentState();
     }
 
