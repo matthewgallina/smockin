@@ -3,9 +3,6 @@ package com.smockin.admin.dto;
 import com.smockin.admin.persistence.enums.JmsMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Created by mgallina.
  */
@@ -13,17 +10,16 @@ public class JmsMockDTO {
 
     private String name;
     private RecordStatusEnum status;
-    private JmsMockTypeEnum mockType;
-    private List<JmsMockDefinitionDTO> mockDefinitions = new ArrayList<JmsMockDefinitionDTO>();
+    private JmsMockTypeEnum jmsMockType;
 
     public JmsMockDTO() {
 
     }
 
-    public JmsMockDTO(String name, RecordStatusEnum status, JmsMockTypeEnum mockType) {
+    public JmsMockDTO(final String name, final RecordStatusEnum status, final JmsMockTypeEnum jmsMockType) {
         this.name = name;
         this.status = status;
-        this.mockType = mockType;
+        this.jmsMockType = jmsMockType;
     }
 
     public String getName() {
@@ -40,18 +36,11 @@ public class JmsMockDTO {
         this.status = status;
     }
 
-    public JmsMockTypeEnum getMockType() {
-        return mockType;
+    public JmsMockTypeEnum getJmsMockType() {
+        return jmsMockType;
     }
-    public void setMockType(JmsMockTypeEnum mockType) {
-        this.mockType = mockType;
-    }
-
-    public List<JmsMockDefinitionDTO> getMockDefinitions() {
-        return mockDefinitions;
-    }
-    public void setMockDefinitions(List<JmsMockDefinitionDTO> mockDefinitions) {
-        this.mockDefinitions = mockDefinitions;
+    public void setJmsMockType(JmsMockTypeEnum jmsMockType) {
+        this.jmsMockType = jmsMockType;
     }
 
 }

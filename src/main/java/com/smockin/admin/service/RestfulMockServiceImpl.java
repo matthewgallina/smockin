@@ -25,7 +25,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     private final Logger logger = LoggerFactory.getLogger(RestfulMockServiceImpl.class);
 
     @Autowired
-    private RestfulMockDAO restfulMockDefinitionDAO;
+    private RestfulMockDAO restfulMockDAO;
 
     @Autowired
     private RestfulMockDefinitionRuleDAO restfulMockDefinitionRuleDAO;
@@ -43,18 +43,18 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
         // Reassign entity variable, as spring data does not enrich the passed in entity instance with any generated ids.
-        mock = restfulMockDefinitionDAO.save(mock);
+        mock = restfulMockDAO.save(mock);
 
         restfulMockServiceUtils.handleEndpointOrdering();
 
         return mock.getExtId();
     }
 
-    public void updateEndpoint(final String mockDefExtId, final RestfulMockDTO dto) throws RecordNotFoundException {
+    public void updateEndpoint(final String mockExtId, final RestfulMockDTO dto) throws RecordNotFoundException {
 
         restfulMockServiceUtils.amendPath(dto);
 
-        final RestfulMock mock = restfulMockDefinitionDAO.findByExtId(mockDefExtId);
+        final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
 
         if (mock == null)
             throw new RecordNotFoundException();
@@ -63,7 +63,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         mock.getDefinitions().clear();
         mock.getRules().clear();
-        restfulMockDefinitionDAO.saveAndFlush(mock);
+        restfulMockDAO.saveAndFlush(mock);
 
         mock.setMockType(dto.getMockType());
         mock.setPath(dto.getPath());
@@ -75,7 +75,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
-        restfulMockDefinitionDAO.save(mock).getId();
+        restfulMockDAO.save(mock).getId();
 
         if (pathChanged) {
             restfulMockServiceUtils.handleEndpointOrdering();
@@ -83,18 +83,18 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
     }
 
-    public void deleteEndpoint(final String mockDefExtId) throws RecordNotFoundException {
+    public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException {
 
-        final RestfulMock mock = restfulMockDefinitionDAO.findByExtId(mockDefExtId);
+        final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
 
         if (mock == null)
             throw new RecordNotFoundException();
 
-        restfulMockDefinitionDAO.delete(mock);
+        restfulMockDAO.delete(mock);
     }
 
     public List<RestfulMockResponseDTO> loadAll() {
-        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDefinitionDAO.findAll());
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAll());
     }
 
     /*

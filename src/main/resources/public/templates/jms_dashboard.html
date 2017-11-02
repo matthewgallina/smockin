@@ -32,7 +32,50 @@
 
     <div class="container">
 
-        TODO
+        <div class="row">
+            <div class="col-sm-10">
+                <h3>{{ endpointsHeading }}</h3>
+            </div>
+            <div class="col-sm-2 add-endpoint-button-div">
+                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointButtonLabel }}</button>
+            </div>
+        </div>
+
+        <br />
+
+        <h4 id="no-data-label" ng-if="jmsServices.length == 0">
+            {{ noDataFoundMsg }}
+        </h4>
+
+        <div ng-if="jmsServices.length > 0">
+
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>{{ pathTableLabel }}</th>
+                    <th>{{ methodTableLabel }}</th>
+                    <th>{{ dateCreatedTableLabel }}</th>
+                    <th>{{ mockTypeTableLabel }}</th>
+                    <th>{{ statusTableLabel }}</th>
+                    <th>{{ actionTableLabel }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="j in jmsServices">
+                    <td>{{ j.name }}</td>
+                    <th>{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' }}</th>
+                    <td>{{ translate(j.type) }}</td>
+                    <td class="status-{{j.status | lowercase}}">
+                        {{ j.status }}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo(j)">{{ viewEndpointButtonLabel }}</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
 
     </div>
 

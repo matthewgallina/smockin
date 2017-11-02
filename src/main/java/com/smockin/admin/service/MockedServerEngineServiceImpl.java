@@ -2,7 +2,7 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.JmsQueueMockDAO;
+import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ServerConfig;
@@ -40,7 +40,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private RestfulMockDAO restfulMockDefinitionDAO;
 
     @Autowired
-    private JmsQueueMockDAO jmsQueueMockDAO;
+    private JmsMockDAO jmsQueueMockDAO;
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;

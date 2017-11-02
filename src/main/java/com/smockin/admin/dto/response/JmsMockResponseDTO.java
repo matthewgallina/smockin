@@ -14,6 +14,10 @@ public class JmsMockResponseDTO extends JmsMockDTO {
     private String extId;
     private Date dateCreated;
 
+    public JmsMockResponseDTO() {
+
+    }
+
     public JmsMockResponseDTO(String extId, String name, RecordStatusEnum status, JmsMockTypeEnum mockType, Date dateCreated) {
         super(name,  status, mockType);
         this.extId = extId;

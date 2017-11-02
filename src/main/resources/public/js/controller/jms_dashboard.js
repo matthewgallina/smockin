@@ -21,6 +21,12 @@ app.controller('jmsDashboardController', function($scope, $http, utils, globalVa
 
 
     //
+    // Buttons
+    $scope.addEndpointButtonLabel = 'New JMS Endpoint';
+    $scope.viewEndpointButtonLabel = 'View';
+
+
+    //
     // Alerts
     function showAlert(msg, type) {
         $scope.$parent.showAlert(msg, type);
@@ -29,11 +35,17 @@ app.controller('jmsDashboardController', function($scope, $http, utils, globalVa
 
     //
     // Data
+    $scope.jmsServices = [];
     $scope.mockServerStatus = null;
 
 
     //
     // Scoped Functions
+    $scope.doOpenJmsEndpointInfo = function(endpointData) {
+//        $rootScope.endpointData = endpointData;
+//        $location.path("/endpoint");
+    };
+
     $scope.startJmsMockServer = function() {
 
         utils.showLoadingOverlay('Starting JMS Server');

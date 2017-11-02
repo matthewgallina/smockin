@@ -17,6 +17,7 @@ public class MigrationPatch_130 implements MigrationPatch {
 
         migrationDAO.buildNativeQuery("INSERT INTO SERVER_CONFIG_NATIVE_PROPERTIES (SERVER_CONFIG_ID, NATIVE_PROPERTIES_KEY, NATIVE_PROPERTIES) VALUES ( (select ID from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'), 'ENABLE_CORS', (select USE_CORS from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'));").executeUpdate();
         migrationDAO.buildNativeQuery("ALTER TABLE SERVER_CONFIG DROP COLUMN USE_CORS;").executeUpdate();
+        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK_RULE_GRP_COND ALTER COLUMN MATCH_ON VARCHAR(22) NOT NULL;").executeUpdate();
 
     }
 

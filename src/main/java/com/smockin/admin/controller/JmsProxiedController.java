@@ -2,7 +2,6 @@ package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.QueueDTO;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.JmsProxyService;
 import com.smockin.mockserver.service.dto.JmsProxiedDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +28,8 @@ public class JmsProxiedController {
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(path="/jms", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> postJms(@RequestBody final QueueDTO dto) throws ValidationException {
+    @RequestMapping(path="/jms/clear", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> clearJms(@RequestBody final QueueDTO dto) throws ValidationException {
 
         jmsProxyService.clearQueue(dto.getName());
 

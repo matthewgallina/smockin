@@ -32,7 +32,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Buttons
-    $scope.addEndpointButtonLabel = 'New Endpoint';
+    $scope.addEndpointButtonLabel = 'New TCP Endpoint';
     $scope.viewEndpointButtonLabel = 'View';
 
 

@@ -1,10 +1,7 @@
 package com.smockin.mockserver.engine;
 
-import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.admin.persistence.dao.JmsQueueMockDAO;
-import com.smockin.admin.persistence.entity.JmsQueueMock;
-import com.smockin.admin.persistence.entity.ServerConfig;
-import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.dao.JmsMockDAO;
+import com.smockin.admin.persistence.entity.JmsMock;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -27,12 +24,12 @@ import java.util.concurrent.ThreadPoolExecutor;
  * Created by mgallina.
  */
 @Service
-public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfigDTO, List<JmsQueueMock>> {
+public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfigDTO, List<JmsMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(MockedJmsServerEngine.class);
 
     @Autowired
-    private JmsQueueMockDAO jmsQueueMockDAO;
+    private JmsMockDAO jmsQueueMockDAO;
 
     private BrokerService broker = null;
     private ActiveMQConnectionFactory connectionFactory = null; // NOTE this is thread safe
@@ -40,7 +37,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     private MockServerState serverState = new MockServerState(false, 0);
 
     @Override
-    public void start(final MockedServerConfigDTO config, final List<JmsQueueMock> data) throws MockServerException {
+    public void start(final MockedServerConfigDTO config, final List<JmsMock> data) throws MockServerException {
 
         // Invoke all lazily loaded data and detach entity.
         invokeAndDetachData(data);
@@ -202,13 +199,9 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     }
 
     @Transactional
-    void invokeAndDetachData(final List<JmsQueueMock> mocks) {
+    void invokeAndDetachData(final List<JmsMock> mocks) {
 
-        for (JmsQueueMock mock : mocks) {
-
-            // Invoke lazily Loaded rules and definitions whilst in this active transaction before
-            // the entity is detached below.
-            mock.getDefinitions().size();
+        for (JmsMock mock : mocks) {
 
             // Important!
             // Detach all JPA entity beans from EntityManager Context, so they can be
@@ -220,7 +213,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     }
 
     // Expects JmsQueueMock to be detached
-    void buildQueues(final List<JmsQueueMock> mocks) throws MockServerException {
+    void buildQueues(final List<JmsMock> mocks) throws MockServerException {
         logger.debug("buildQueues called");
 
         synchronized (monitor) {

@@ -12,8 +12,8 @@ import java.util.List;
 public interface RestfulMockService {
 
     String createEndpoint(final RestfulMockDTO dto);
-    void updateEndpoint(final String mockDefExtId, final RestfulMockDTO dto) throws RecordNotFoundException;
-    void deleteEndpoint(final String mockDefExtId) throws RecordNotFoundException;
+    void updateEndpoint(final String mockExtId, final RestfulMockDTO dto) throws RecordNotFoundException;
+    void deleteEndpoint(final String mockExtId) throws RecordNotFoundException;
     List<RestfulMockResponseDTO> loadAll();
 //    List<RestfulMockResponseDTO> loadAllByStatus(final RecordStatusEnum status);
 //    String createRule(final String mockDefExtId, final RuleDTO dto) throws RecordNotFoundException;
