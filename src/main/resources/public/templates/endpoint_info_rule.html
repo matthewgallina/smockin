@@ -24,7 +24,6 @@
 
             <div class="form-group">
                 <label for="rule-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
-                <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="ruleResponse.responseBody != '' && ruleResponse.responseContentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
                 <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody"></textarea>
             </div>
 

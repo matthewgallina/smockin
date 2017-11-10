@@ -29,7 +29,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.mockTypeProxyHttp = MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeWebSocket;
     $scope.mockTypeJmsQueue = MockTypeJmsQueue;
-    $scope.newEndpointHeading = (isNew)?'New Endpoint':'View Endpoint';
+    $scope.newEndpointHeading = (isNew) ? 'New TCP Endpoint' : 'View TCP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
     $scope.methodLabel = 'Method';
@@ -60,6 +60,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.activeWsClientsFound = 'No Websocket Clients Found';
     $scope.wsClientIdHeading = "Session Id";
     $scope.wsClientJoinDateHeading = "Joining Date";
+    $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue';
 
 
     //
@@ -72,9 +73,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
-    $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
     $scope.refreshWsClientsLinkLabel = 'refresh';
     $scope.clearProxyButtonLabel = 'Clear Pending Responses';
+    $scope.postProxyResponseButtonLabel = 'Post Response';
 
 
     //
@@ -276,6 +277,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             }
 
         });
+
+    };
+
+    $scope.doPostProxyResponse = function() {
 
     };
 
@@ -517,21 +522,6 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
        });
 
-    };
-
-    $scope.doPrettyPrintResponse = function() {
-
-        if ($scope.endpoint.contentType == "application/json") {
-
-            var formattedResponseBody = utils.prettyPrintJSON($scope.endpoint.responseBody);
-
-            if (formattedResponseBody == null) {
-                showAlert("Unable to pretty print. Please check your JSON syntax", "warning");
-                return;
-            }
-
-            $scope.endpoint.responseBody = formattedResponseBody;
-        }
     };
 
     $scope.doSaveEndpoint = function() {

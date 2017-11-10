@@ -1,5 +1,6 @@
 
-app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
+app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, jsonUtils, globalVars, restClient, data) {
+
 
     //
     // Constants
@@ -21,7 +22,6 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.orderNoLabel = 'Order';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
-    $scope.formatResponseBodyLinkLabel = '(pretty print JSON)';
 
 
     //
@@ -91,21 +91,6 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
 
     $scope.doRemoveResponseHeaderRow = function(index) {
         $scope.responseHeaderList.splice(index, 1);
-    };
-
-    $scope.doPrettyPrintResponse = function() {
-
-        if ($scope.seqResponse.responseContentType == "application/json") {
-
-            var formattedResponseBody = utils.prettyPrintJSON($scope.seqResponse.responseBody);
-
-            if (formattedResponseBody == null) {
-                showAlert("Unable to pretty print. Please check your JSON syntax", "warning");
-                return;
-            }
-
-            $scope.seqResponse.responseBody = formattedResponseBody;
-        }
     };
 
     $scope.doSaveSeq = function() {

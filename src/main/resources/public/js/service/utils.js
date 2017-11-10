@@ -1,6 +1,7 @@
 
 app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
+
     //
     // Validation
     this.isBlank = function (value) {
@@ -24,20 +25,6 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
             return (c=='x' ? r : (r&0x3|0x8)).toString(16);
         });
         return uuid;
-    };
-
-    this.prettyPrintJSON = function(input) {
-
-        if (input == null) {
-            return null;
-        }
-
-        try {
-            JSON.parse( input );
-            return vkbeautify.json(input, 4).trim();
-        } catch (err) {}
-
-        return null;
     };
 
 

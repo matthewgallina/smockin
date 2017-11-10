@@ -72,7 +72,6 @@
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                    <a href="" ng-click="doPrettyPrintResponse()" class="pull-right" ng-show="endpoint.responseBody != '' && endpoint.contentType == 'application/json'">{{ formatResponseBodyLinkLabel }}</a>
                     <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
                 </div>
 
@@ -127,6 +126,8 @@
                     </div>
                 </div>
 
+
+                <!-- Sequence Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeSeq">
 
                     <div class="add-button-div">
@@ -189,6 +190,8 @@
 
                 </div>
 
+
+                <!-- Rule Based Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeRule">
 
                     <div class="add-button-div">
@@ -244,6 +247,8 @@
 
                 </div>
 
+
+                <!-- HTTP Proxy Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeProxyHttp">
 
                     <div class="form-group proxy-timeout-group">
@@ -252,12 +257,36 @@
                     </div>
 
                     <br />
-                    <hr />
 
-                    <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()">{{ clearProxyButtonLabel }}</button>
+                    <uib-accordion id="manageProxy" close-others="false">
+                        <div uib-accordion-group class="panel panel-default">
+
+                            <uib-accordion-heading>
+                                <span ng-click="mp.isOpen = !mp.isOpen">
+                                    {{ manageHttpProxyQueueLabel }}
+                                </span>
+                                    <span class="pull-right">
+                                    <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
+                                </span>
+                                </uib-accordion-heading>
+
+                            <br />
+                            <hr />
+
+                            <span class="pull-right">
+	    						<button class="btn btn-primary" type="button" ng-click="doPostProxyResponse()">{{ postProxyResponseButtonLabel }}</button>
+    						</span>
+
+                            <br />
+                            <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()">{{ clearProxyButtonLabel }}</button>
+
+                        </div>
+                    </uib-accordion>
 
                 </div>
 
+
+                <!-- WebSocket Proxy Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeWebSocket">
 
                     <div class="form-group proxy-timeout-group">

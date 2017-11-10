@@ -68,8 +68,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
-        // Next handle all HTTP web service routes
-        buildHttpEndpoints(mocks);
+        // Next handle all HTTP RESTFul web service routes
+        buildRESTEndpoints(mocks);
+
+        // Next handle all HTTP SSE web service routes
+        buildSSEEndpoints(mocks);
 
 //        buildIndex(mocks);
 
@@ -207,11 +210,27 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     // Expects RestfulMock to be detached
-    void buildHttpEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+    void buildSSEEndpoints(final List<RestfulMock> mocks) throws MockServerException {
 
         for (RestfulMock mock : mocks) {
 
-            if (RestMockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
+            if (!RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
+                continue;
+            }
+
+            // TODO
+
+        }
+    }
+
+    // Expects RestfulMock to be detached
+    void buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+
+        for (RestfulMock mock : mocks) {
+
+            if (!RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
+                    && !RestMockTypeEnum.SEQ.equals(mock.getMockType())
+                    && !RestMockTypeEnum.RULE.equals(mock.getMockType())) {
                 continue;
             }
 
