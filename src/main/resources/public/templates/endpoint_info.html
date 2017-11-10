@@ -258,7 +258,7 @@
 
                     <br />
 
-                    <uib-accordion id="manageProxy" close-others="false">
+                    <uib-accordion id="manageProxy" close-others="false" ng-if="extId != null">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -268,16 +268,34 @@
                                     <span class="pull-right">
                                     <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
                                 </span>
-                                </uib-accordion-heading>
+                            </uib-accordion-heading>
 
+                            <h5>{{ sendProxiedResponseLabel }}</h5>
                             <br />
-                            <hr />
+
+                            <div class="form-group">
+                                <label for="proxyContentType" class="ng-binding">{{ proxyContentTypeLabel }}</label>
+                                <input id="proxyContentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyEndpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="proxyHttpStatusCode" class="ng-binding">{{ proxyHttpStatusCodeLabel }}</label>
+                                <input id="proxyHttpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyEndpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="proxy-default-response-body" class="ng-binding">{{ proxyResponseBodyLabel }}</label>
+                                <textarea id="proxy-default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyEndpoint.responseBody"></textarea>
+                            </div>
 
                             <span class="pull-right">
-	    						<button class="btn btn-primary" type="button" ng-click="doPostProxyResponse()">{{ postProxyResponseButtonLabel }}</button>
+	    						<button class="btn btn-success" type="button" ng-click="doPostProxyResponse()">{{ postProxyResponseButtonLabel }}</button>
     						</span>
 
                             <br />
+                            <br />
+                            <hr />
+
                             <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()">{{ clearProxyButtonLabel }}</button>
 
                         </div>

@@ -95,6 +95,8 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
 
     $scope.doSend = function() {
 
+        $scope.clientResponse = "";
+
         // Validation
         if (utils.isBlank($scope.clientRequest.url)) {
             showAlert("'Request Path' is required");
@@ -142,43 +144,45 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
         // Response Handler
         var serverCallbackFunc = function (status, data) {
 
-            if (status == 200) {
-
-                var responseBodyPart = "";
-
-                if (data.status == 404) {
-
-                    responseBodyPart =
-                        "Error communicating with url:"
-                        + "\n"
-                        + (" " + reqData.url)
-                        + "\n\n"
-                        + "- Is " + reqData.url + " a valid endpoint?"
-                        + "\n"
-                        + "- Is the mock server running?";
-
-                } else {
-
-                    var headersText = objToString(data.headers);
-
-                    responseBodyPart =
-                        "Headers:"
-                        + "\n"
-                        + headersText
-                        + "\n"
-                        + data.body;
-
-                }
-
-                $scope.clientResponse =
-                    "HTTP Status Code: " + data.status
-                    + "\n\n"
-                    + responseBodyPart;
-
+            if (status == -1) {
+                showAlert("Request time out. The server is taking too long to respond.");
+                return;
+            } else if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            showAlert(globalVars.GeneralErrorMessage);
+            var responseBodyPart = "";
+
+            if (data.status == 404) {
+
+                responseBodyPart =
+                    "Error communicating with url:"
+                    + "\n"
+                    + (" " + reqData.url)
+                    + "\n\n"
+                    + "- Is " + reqData.url + " a valid endpoint?"
+                    + "\n"
+                    + "- Is the mock server running?";
+
+            } else {
+
+                var headersText = objToString(data.headers);
+
+                responseBodyPart =
+                    "Headers:"
+                    + "\n"
+                    + headersText
+                    + "\n"
+                    + data.body;
+
+            }
+
+            $scope.clientResponse =
+                "HTTP Status Code: " + data.status
+                + "\n\n"
+                + responseBodyPart;
+
         };
 
         // Send Request

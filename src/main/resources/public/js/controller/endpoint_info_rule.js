@@ -1,5 +1,5 @@
 
-app.controller('endpointInfoRuleController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, jsonUtils, globalVars, data) {
+app.controller('endpointInfoRuleController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, data) {
 
 
     //

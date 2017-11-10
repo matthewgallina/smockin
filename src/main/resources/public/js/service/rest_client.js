@@ -1,12 +1,14 @@
 
 app.service('restClient', function() {
 
+    var HttpRequestTimeoutMillis = 30000;
+
     this.doGet = function (http, url, callback) {
 
         http({
           method: 'GET',
           url: url,
-          timeout: 8000
+          timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {
@@ -24,7 +26,7 @@ app.service('restClient', function() {
           headers: {
              'Content-Type': 'application/json'
            },
-           timeout: 8000
+           timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {
@@ -42,7 +44,7 @@ app.service('restClient', function() {
           headers: {
              'Content-Type': 'application/json'
            },
-           timeout: 8000
+           timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {
@@ -60,7 +62,7 @@ app.service('restClient', function() {
           headers: {
              'Content-Type': 'application/json'
            },
-           timeout: 8000
+           timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {
@@ -74,7 +76,7 @@ app.service('restClient', function() {
         http({
           method: 'DELETE',
           url: url,
-          timeout: 8000
+          timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {

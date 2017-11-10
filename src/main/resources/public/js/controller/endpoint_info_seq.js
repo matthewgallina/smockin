@@ -1,5 +1,5 @@
 
-app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, jsonUtils, globalVars, restClient, data) {
+app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
 
 
     //

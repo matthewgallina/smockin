@@ -39,6 +39,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.defaultHttpStatusCodeLabel = 'Default HTTP Status Code';
     $scope.defaultHttpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.defaultResponseBodyLabel = 'Default Response Body';
+    $scope.proxyContentTypeLabel = 'Content Type';
+    $scope.proxyHttpStatusCodeLabel = 'HTTP Status Code';
+    $scope.proxyResponseBodyLabel = 'Response Body';
     $scope.noRulesFound = 'No Rules Found';
     $scope.noSeqFound = 'No Sequenced Responses Found';
     $scope.orderNoLabel = 'Seq';
@@ -60,7 +63,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.activeWsClientsFound = 'No Websocket Clients Found';
     $scope.wsClientIdHeading = "Session Id";
     $scope.wsClientJoinDateHeading = "Joining Date";
-    $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue';
+    $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
+    $scope.sendProxiedResponseLabel = 'Post a proxied response';
 
 
     //
@@ -145,6 +149,12 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "randomiseDefinitions" : false,
         "definitions" : [],
         "rules" : []
+    };
+
+    $scope.proxyEndpoint = {
+        "contentType" : null,
+        "httpStatusCode" : null,
+        "responseBody" : null
     };
 
     // Populate form if viewing existing record...
@@ -281,6 +291,43 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     };
 
     $scope.doPostProxyResponse = function() {
+
+        // Validation
+        if (utils.isBlank($scope.proxyEndpoint.contentType)) {
+            showAlert("'Content Type' for proxy response is required");
+            return false;
+        }
+        if (utils.isBlank($scope.proxyEndpoint.httpStatusCode)
+                || !utils.isNumeric($scope.proxyEndpoint.httpStatusCode)) {
+            showAlert("'HTTP Status Code' for proxy response is required and must be numeric");
+            return false;
+        }
+
+        // Send proxy response
+        var reqData = {
+            "path" : $scope.endpoint.path,
+            "method" : $scope.endpoint.method,
+            "responseContentType" : $scope.proxyEndpoint.contentType,
+            "httpStatusCode" : $scope.proxyEndpoint.httpStatusCode,
+            "body" : $scope.proxyEndpoint.responseBody
+        };
+
+        restClient.doPost($http, '/proxy', reqData, function(status, data) {
+
+            if (status != 204) {
+                 showAlert(globalVars.GeneralErrorMessage);
+                 return;
+            }
+
+            showAlert("Proxy response successfully posted", "success");
+
+            $scope.proxyEndpoint = {
+                "contentType" : null,
+                "httpStatusCode" : null,
+                "responseBody" : null
+            };
+
+        });
 
     };
 
