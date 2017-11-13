@@ -37,7 +37,7 @@ public class HttpProxyServiceTest {
         proxyService = new HttpProxyServiceImpl();
 
         pxKey = new ProxiedKey("/helloworld", RestMethodEnum.GET);
-        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, false);
+        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false);
         pxDto = new HttpProxiedDTO(pxKey.getPath(), pxKey.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld\" }");
 
         producer1 = new Runnable() {

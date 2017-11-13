@@ -36,10 +36,10 @@ public class HttpProxyServiceQueueTest {
         helloKeyDelete = new ProxiedKey("/helloworld", RestMethodEnum.DELETE);
         fooKeyGet = new ProxiedKey("/foo", RestMethodEnum.GET);
 
-        mockReqHelloGet = new RestfulMock(helloKeyGet.getPath(), helloKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, false);
-        mockReqHelloPost = new RestfulMock(helloKeyPost.getPath(), helloKeyPost.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, false);
-        mockReqHelloDelete = new RestfulMock(helloKeyDelete.getPath(), helloKeyDelete.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, false);
-        mockReqFooGet = new RestfulMock(fooKeyGet.getPath(), fooKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, false);
+        mockReqHelloGet = new RestfulMock(helloKeyGet.getPath(), helloKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false);
+        mockReqHelloPost = new RestfulMock(helloKeyPost.getPath(), helloKeyPost.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false);
+        mockReqHelloDelete = new RestfulMock(helloKeyDelete.getPath(), helloKeyDelete.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false);
+        mockReqFooGet = new RestfulMock(fooKeyGet.getPath(), fooKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false);
 
         helloGetDTO = new HttpProxiedDTO(helloKeyGet.getPath(), helloKeyGet.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld 1\" }");
         helloPostDTO = new HttpProxiedDTO(helloKeyPost.getPath(), helloKeyPost.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld 2\" }");

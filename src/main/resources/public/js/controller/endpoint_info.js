@@ -8,7 +8,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var MockTypeRule = 'RULE';
     var MockTypeProxyHttp = 'PROXY_HTTP';
     var MockTypeWebSocket = 'PROXY_WS';
-    var MockTypeJmsQueue = 'JMS_QUEUE';
+    var MockTypeProxySse = 'PROXY_SSE';
     var isNew = ($rootScope.endpointData == null);
     var RestfulServerType = globalVars.RestfulServerType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
@@ -19,7 +19,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     var MaxWebSocketTimeoutInMillis = 3600000; // 1 hour
     var HttpPathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
     var WebSocketPathPlaceHolderTxt = 'e.g. (/hello/connect)';
-    var JmsPathPlaceHolderTxt = 'e.g. (helloQueue)';
+    var SsePathPlaceHolderTxt = 'e.g. (/hello)';
 
 
     //
@@ -28,7 +28,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.mockTypeRule = MockTypeRule;
     $scope.mockTypeProxyHttp = MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeWebSocket;
-    $scope.mockTypeJmsQueue = MockTypeJmsQueue;
+    $scope.mockTypeProxySse = MockTypeProxySse;
     $scope.newEndpointHeading = (isNew) ? 'New TCP Endpoint' : 'View TCP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
@@ -65,6 +65,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.wsClientJoinDateHeading = "Joining Date";
     $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
     $scope.sendProxiedResponseLabel = 'Post a proxied response';
+    $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
+    $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
 
 
     //
@@ -127,7 +129,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
        { "name" : "HTTP Rules Based", "value" : MockTypeRule },
        { "name" : "HTTP Proxied", "value" : MockTypeProxyHttp },
        { "name" : "WebSocket Proxied", "value" : MockTypeWebSocket },
-       { "name" : "JMS Queue Proxied", "value" : MockTypeJmsQueue }
+       { "name" : "SSE Proxied", "value" : MockTypeProxySse }
     ];
 
     $scope.extId = null;
@@ -145,6 +147,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "status" : ActiveStatus,
         "proxyTimeout" : 0,
         "webSocketTimeout" : 0,
+        "sseHeartbeat" : 0,
         "mockType" : lookupMockType(MockTypeSeq),
         "randomiseDefinitions" : false,
         "definitions" : [],
@@ -178,6 +181,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "status" : endpoint.status,
             "proxyTimeout" : endpoint.proxyTimeoutInMillis,
             "webSocketTimeout" : endpoint.webSocketTimeoutInMillis,
+            "sseHeartbeat" : endpoint.sseHeartBeatInMillis,
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
@@ -212,9 +216,9 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             case MockTypeWebSocket :
                 $scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
-                break;
-            case MockTypeJmsQueue :
-                $scope.pathPlaceHolderTxt = JmsPathPlaceHolderTxt;
+            case MockTypeProxySse :
+                $scope.pathPlaceHolderTxt = SsePathPlaceHolderTxt;
+                $scope.endpoint.method = 'GET';
                 break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
@@ -341,7 +345,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                     "path" : null
                 };
 
-                restClient.doPatch($http, '/proxy', reqData, function(status, data) {
+                restClient.doPatch($http, '/proxy/clear', reqData, function(status, data) {
 
                      if (status != 204) {
                          showAlert(globalVars.GeneralErrorMessage);
@@ -587,6 +591,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeWebSocket && !validateWebSocket()) {
             return;
+        } else if ($scope.endpoint.mockType.value == MockTypeProxySse && !validateSSE()) {
+            return;
         }
 
         // Send to Server
@@ -599,6 +605,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "mockType" : $scope.endpoint.mockType.value,
             "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
             "webSocketTimeoutInMillis" : $scope.endpoint.webSocketTimeout,
+            "sseHeartBeatInMillis" : $scope.endpoint.sseHeartbeat,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "definitions" : [],
             "rules" : []
@@ -649,6 +656,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         } else if ($scope.endpoint.mockType.value == MockTypeProxyHttp) {
             // Nothing extra to do
          } else if ($scope.endpoint.mockType.value == MockTypeWebSocket) {
+            // Nothing extra to do
+        } else if ($scope.endpoint.mockType.value == MockTypeProxySse) {
             // Nothing extra to do
         }
 
@@ -779,6 +788,18 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
         if (timeout > MaxWebSocketTimeoutInMillis) {
             showAlert("'WebSocket Timeout' cannot exceed " + MaxWebSocketTimeoutInMillis + " milliseconds (i.e " + (MaxWebSocketTimeoutInMillis / 1000) + " seconds)");
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateSSE() {
+
+      if (utils.isBlank($scope.endpoint.sseHeartbeat)
+                || !utils.isNumeric($scope.endpoint.sseHeartbeat)
+                || $scope.endpoint.sseHeartbeat < 1000) {
+            showAlert("'SSE Heartbeat' is required and must be numeric and at least 1 second (1000 millis)");
             return false;
         }
 

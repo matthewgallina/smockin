@@ -18,6 +18,7 @@ public class RestfulMockDTO {
     private RestMockTypeEnum mockType;
     private long proxyTimeoutInMillis;
     private long webSocketTimeoutInMillis;
+    private long sseHeartBeatInMillis;
     private boolean randomiseDefinitions;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
@@ -26,13 +27,14 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
         this.proxyTimeoutInMillis = proxyTimeoutInMillis;
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
+        this.sseHeartBeatInMillis = sseHeartBeatInMillis;
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
@@ -76,6 +78,13 @@ public class RestfulMockDTO {
     }
     public void setWebSocketTimeoutInMillis(long webSocketTimeoutInMillis) {
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
+    }
+
+    public long getSseHeartBeatInMillis() {
+        return sseHeartBeatInMillis;
+    }
+    public void setSseHeartBeatInMillis(long sseHeartBeatInMillis) {
+        this.sseHeartBeatInMillis = sseHeartBeatInMillis;
     }
 
     public boolean isRandomiseDefinitions() {

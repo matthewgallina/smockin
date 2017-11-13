@@ -40,6 +40,10 @@ public class RestfulMock extends Identifier {
     @Column(name = "WS_TIME_OUT_MILLIS", nullable = false)
     private long webSocketTimeoutInMillis;
 
+    @ColumnDefault("0")
+    @Column(name = "SSE_HEART_BEAT_MILLIS", nullable = false)
+    private long sseHeartBeatInMillis;
+
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
 
@@ -62,13 +66,14 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, boolean randomiseDefinitions) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
+        this.sseHeartBeatInMillis = sseHeartBeatInMillis;
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
@@ -112,6 +117,13 @@ public class RestfulMock extends Identifier {
     }
     public void setWebSocketTimeoutInMillis(long webSocketTimeoutInMillis) {
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
+    }
+
+    public long getSseHeartBeatInMillis() {
+        return sseHeartBeatInMillis;
+    }
+    public void setSseHeartBeatInMillis(long sseHeartBeatInMillis) {
+        this.sseHeartBeatInMillis = sseHeartBeatInMillis;
     }
 
     public int getInitializationOrder() {

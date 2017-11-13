@@ -21,6 +21,8 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Autowired
     private WebSocketService webSocketService;
+
+    @Autowired
+    private ServerSideEventService serverSideEventService;
+
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
@@ -218,7 +224,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 continue;
             }
 
-            // TODO
+            // Remove any suspended rule or sequence responses
+            removeSuspendedResponses(mock);
+
+            // NOTE, Java Spark does not currently provide support for NIO SSE. This code therefore BLOCKS the request
+            // thread until the connection is closed by either party.
+            Spark.get(mock.getPath(), (req, res) -> {
+                return processSSERequest(mock, req, res);
+            });
 
         }
     }
@@ -315,6 +328,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
 
         return StringUtils.defaultIfBlank(response,"");
+    }
+
+    String processSSERequest(final RestfulMock mock, final Request req, final Response res) throws IOException {
+
+        serverSideEventService.registerClient(mock.getPath(), mock.getSseHeartBeatInMillis(), res);
+
+        return null;
     }
 
     RestfulResponseDTO getDefault(final RestfulMock restfulMock) {

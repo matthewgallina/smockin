@@ -1,6 +1,5 @@
 package com.smockin.mockserver.service.dto;
 
-import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 
 /**
