@@ -65,8 +65,11 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.wsClientJoinDateHeading = "Joining Date";
     $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
     $scope.sendProxiedResponseLabel = 'Post a proxied response';
+    $scope.sendSseProxiedResponseLabel = 'Push a SSE message';
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
+    $scope.manageSseProxyQueueLabel = 'SSE Proxy Tools';
+    $scope.sseProxyMessageLabel = 'Message';
 
 
     //
@@ -82,6 +85,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.refreshWsClientsLinkLabel = 'refresh';
     $scope.clearProxyButtonLabel = 'Clear Pending Responses';
     $scope.postProxyResponseButtonLabel = 'Post Response';
+    $scope.pushProxySseMessageButtonLabel = 'Push Message';
 
 
     //
@@ -159,6 +163,11 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "httpStatusCode" : null,
         "responseBody" : null
     };
+
+    $scope.sseProxyEndpoint = {
+        "body" : null
+    };
+
 
     // Populate form if viewing existing record...
     if (!isNew) {
@@ -353,6 +362,37 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
                      }
                  });
             }
+
+        });
+
+    };
+
+    $scope.doPushSseProxyMessage = function() {
+
+        // Validation
+        if (utils.isBlank($scope.sseProxyEndpoint.body)) {
+            showAlert("SSE push 'Message' is required");
+            return false;
+        }
+
+        // Send proxy SSE message
+        var reqData = {
+            "path" : $scope.endpoint.path,
+            "body" : $scope.sseProxyEndpoint.body
+        };
+
+        restClient.doPost($http, '/sse', reqData, function(status, data) {
+
+            if (status != 204) {
+                 showAlert(globalVars.GeneralErrorMessage);
+                 return;
+            }
+
+            showAlert("Proxy SSE message successfully posted", "success");
+
+            $scope.sseProxyEndpoint = {
+                "body" : null
+            };
 
         });
 
