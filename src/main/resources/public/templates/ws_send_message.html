@@ -1,0 +1,31 @@
+<link rel="stylesheet" href="../css/ws_send_message.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ clientHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group">
+        <label for="ws-client-proxy-path" class="ng-binding">{{ pathLabel }}</label>
+        <input id="ws-client-proxy-path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="pushData.path" type="text" readonly="true" />
+    </div>
+
+    <div class="form-group" ng-if="pushData.sessionId != null">
+        <label for="ws-client-proxy-session" class="ng-binding">{{ sessionIdLabel }}</label>
+        <input id="ws-client-proxy-session" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="pushData.sessionId" type="text" readonly="true" />
+    </div>
+
+    <div class="form-group">
+        <label for="ws-client-proxy-body" class="ng-binding">{{ bodyLabel }}</label>
+        <textarea id="ws-client-proxy-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="pushData.body"></textarea>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doPushMessage()">{{ sendButtonLabel }}</button>
+</div>

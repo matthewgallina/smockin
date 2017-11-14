@@ -24,19 +24,21 @@ public class SparkWebSocketEchoService {
     private final String mockExtId;
     private final String path;
     private final long idleTimeoutMillis;
+    private final boolean proxyPushIdOnConnect;
     private final WebSocketService webSocketService;
 
-    public SparkWebSocketEchoService(final String mockExtId, final String path, final long idleTimeoutMillis, final WebSocketService webSocketService) {
+    public SparkWebSocketEchoService(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final WebSocketService webSocketService) {
         this.mockExtId = mockExtId;
         this.path = path;
         this.idleTimeoutMillis = idleTimeoutMillis;
+        this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.webSocketService = webSocketService;
     }
 
     @OnWebSocketConnect
     public void connected(final Session session) {
 
-        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, session);
+        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, proxyPushIdOnConnect, session);
     }
 
     @OnWebSocketClose

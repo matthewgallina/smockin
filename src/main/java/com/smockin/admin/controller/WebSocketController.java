@@ -2,7 +2,7 @@ package com.smockin.admin.controller;
 
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.mockserver.service.WebSocketService;
-import com.smockin.mockserver.service.dto.WebSocketClientDTO;
+import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,9 +24,9 @@ public class WebSocketController {
     private WebSocketService webSocketService;
 
     @RequestMapping(path="/ws/{id}/client", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<WebSocketClientDTO>> getClients(@PathVariable("id") final String id) throws IOException, RecordNotFoundException {
+    public @ResponseBody ResponseEntity<List<PushClientDTO>> getClients(@PathVariable("id") final String id) throws IOException, RecordNotFoundException {
 
-        return new ResponseEntity<List<WebSocketClientDTO>>(webSocketService.getClientConnections(id), HttpStatus.OK);
+        return new ResponseEntity<List<PushClientDTO>>(webSocketService.getClientConnections(id), HttpStatus.OK);
     }
 
     @RequestMapping(path="/ws", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

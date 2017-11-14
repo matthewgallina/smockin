@@ -5,15 +5,15 @@ import java.util.Date;
 /**
  * Created by mgallina.
  */
-public class WebSocketClientDTO {
+public class PushClientDTO {
 
     private String id;
     private Date dateJoined;
 
-    public WebSocketClientDTO() {
+    public PushClientDTO() {
     }
 
-    public WebSocketClientDTO(final String id, final Date dateJoined) {
+    public PushClientDTO(final String id, final Date dateJoined) {
         this.id = id;
         this.dateJoined = dateJoined;
     }

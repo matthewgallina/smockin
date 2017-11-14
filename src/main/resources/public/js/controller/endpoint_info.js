@@ -59,17 +59,16 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.proxyTimeoutPlaceholderTxt = 'Duration the server will hold the request open with no activity (zero for no timeout)';
     $scope.webSocketTimeoutPlaceholderTxt = 'Duration the server will keep the socket open whilst idle (zero for no timeout)';
     $scope.shuffleSequenceLabel = "Shuffle Responses";
-    $scope.wsClientConnectionLabel = 'Active Client Connections';
-    $scope.activeWsClientsFound = 'No Websocket Clients Found';
-    $scope.wsClientIdHeading = "Session Id";
-    $scope.wsClientJoinDateHeading = "Joining Date";
+    $scope.activeClientConnectionsLabel = 'Active Client Connections';
+    $scope.noActiveWsClientsFound = 'No Websocket Clients Found';
+    $scope.noActiveSseClientsFound = 'No SSE Clients Found';
+    $scope.clientIdHeading = "Session Id";
+    $scope.clientJoinDateHeading = "Joining Date";
     $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
     $scope.sendProxiedResponseLabel = 'Post a proxied response';
-    $scope.sendSseProxiedResponseLabel = 'Push a SSE message';
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
-    $scope.manageSseProxyQueueLabel = 'SSE Proxy Tools';
-    $scope.sseProxyMessageLabel = 'Message';
+    $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
 
 
     //
@@ -82,10 +81,11 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
-    $scope.refreshWsClientsLinkLabel = 'refresh';
+    $scope.refreshClientsLinkLabel = 'refresh';
     $scope.clearProxyButtonLabel = 'Clear Pending Responses';
     $scope.postProxyResponseButtonLabel = 'Post Response';
-    $scope.pushProxySseMessageButtonLabel = 'Push Message';
+    $scope.messageButtonLabel = 'Message';
+    $scope.messageAllButtonLabel = 'Message All';
 
 
     //
@@ -141,6 +141,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     $scope.responseHeaderList = [];
 
     $scope.activeWsClients = [];
+    $scope.activeSseClients = [];
 
     $scope.endpoint = {
         "path" : null,
@@ -152,6 +153,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "proxyTimeout" : 0,
         "webSocketTimeout" : 0,
         "sseHeartbeat" : 0,
+        "wsPushIdOnConnect" : false,
+        "ssePushIdOnConnect" : false,
         "mockType" : lookupMockType(MockTypeSeq),
         "randomiseDefinitions" : false,
         "definitions" : [],
@@ -162,10 +165,6 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         "contentType" : null,
         "httpStatusCode" : null,
         "responseBody" : null
-    };
-
-    $scope.sseProxyEndpoint = {
-        "body" : null
     };
 
 
@@ -191,6 +190,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "proxyTimeout" : endpoint.proxyTimeoutInMillis,
             "webSocketTimeout" : endpoint.webSocketTimeoutInMillis,
             "sseHeartbeat" : endpoint.sseHeartBeatInMillis,
+            "wsPushIdOnConnect" : endpoint.proxyPushIdOnConnect,
+            "ssePushIdOnConnect" : endpoint.proxyPushIdOnConnect,
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
@@ -305,6 +306,8 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     $scope.doPostProxyResponse = function() {
 
+        $scope.alerts = [];
+
         // Validation
         if (utils.isBlank($scope.proxyEndpoint.contentType)) {
             showAlert("'Content Type' for proxy response is required");
@@ -367,38 +370,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
-    $scope.doPushSseProxyMessage = function() {
-
-        // Validation
-        if (utils.isBlank($scope.sseProxyEndpoint.body)) {
-            showAlert("SSE push 'Message' is required");
-            return false;
-        }
-
-        // Send proxy SSE message
-        var reqData = {
-            "path" : $scope.endpoint.path,
-            "body" : $scope.sseProxyEndpoint.body
-        };
-
-        restClient.doPost($http, '/sse', reqData, function(status, data) {
-
-            if (status != 204) {
-                 showAlert(globalVars.GeneralErrorMessage);
-                 return;
-            }
-
-            showAlert("Proxy SSE message successfully posted", "success");
-
-            $scope.sseProxyEndpoint = {
-                "body" : null
-            };
-
-        });
-
-    };
-
-    var doRefreshActiveClientsFunc = function() {
+    var doRefreshActiveWsClientsFunc = function() {
 
         $scope.activeWsClients = [];
 
@@ -417,7 +389,74 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
 
     };
 
-    $scope.doRefreshActiveClients = doRefreshActiveClientsFunc;
+    $scope.doRefreshActiveWsClients = doRefreshActiveWsClientsFunc;
+
+    var doRefreshActiveSseClientsFunc = function() {
+
+        $scope.activeSseClients = [];
+
+        restClient.doGet($http, '/sse/' + $scope.extId + '/client', function(status, data) {
+
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            for (var d=0; d < data.length; d++) {
+                $scope.activeSseClients.push(data[d]);
+            }
+
+        });
+
+    };
+
+    $scope.doRefreshActiveSseClients = doRefreshActiveSseClientsFunc;
+
+    $scope.doOpenPushWSMessageView = function(path, sessionId) {
+
+        var modalInstance = $uibModal.open({
+          templateUrl: 'ws_send_message.html',
+          controller: 'wsSendMessageController',
+          resolve: {
+            data: function () {
+              return {
+                "path" : path,
+                "sessionId" : sessionId
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+            showAlert("Websocket message sent", "success");
+        }, function () {
+
+        });
+
+    };
+
+    $scope.doOpenPushSseMessageView = function(path, sessionId) {
+
+        var modalInstance = $uibModal.open({
+          templateUrl: 'sse_send_message.html',
+          controller: 'sseSendMessageController',
+          resolve: {
+            data: function () {
+              return {
+                "path" : path,
+                "sessionId" : sessionId
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function () {
+            showAlert("SSE message sent", "success");
+        }, function () {
+
+        });
+
+    };
 
     function updateRuleOrderNumbers() {
         for (var r=0; r < $scope.endpoint.rules.length; r++) {
@@ -646,6 +685,7 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
             "proxyTimeoutInMillis" : $scope.endpoint.proxyTimeout,
             "webSocketTimeoutInMillis" : $scope.endpoint.webSocketTimeout,
             "sseHeartBeatInMillis" : $scope.endpoint.sseHeartbeat,
+            "proxyPushIdOnConnect" : false,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "definitions" : [],
             "rules" : []
@@ -696,9 +736,13 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
         } else if ($scope.endpoint.mockType.value == MockTypeProxyHttp) {
             // Nothing extra to do
          } else if ($scope.endpoint.mockType.value == MockTypeWebSocket) {
-            // Nothing extra to do
+
+            reqData.proxyPushIdOnConnect = $scope.endpoint.wsPushIdOnConnect;
+
         } else if ($scope.endpoint.mockType.value == MockTypeProxySse) {
-            // Nothing extra to do
+
+            reqData.proxyPushIdOnConnect = $scope.endpoint.ssePushIdOnConnect;
+
         }
 
         if ($scope.extId != null) {
@@ -921,7 +965,10 @@ app.controller('endpointInfoController', function($scope, $rootScope, $route, $l
     // Init Page
     if (!isNew
             && $scope.endpoint.mockType.value == MockTypeWebSocket) {
-        doRefreshActiveClientsFunc();
+        doRefreshActiveWsClientsFunc();
+    } else if (!isNew
+           && $scope.endpoint.mockType.value == MockTypeProxySse) {
+        doRefreshActiveSseClientsFunc();
     }
 
 });

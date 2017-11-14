@@ -312,42 +312,65 @@
                         <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" />
                     </div>
 
-                    <br />
+                    <div class="form-group proxy-timeout-group">
+                        <input id="wsPushIdOnConnect"  ng-model="endpoint.wsPushIdOnConnect" type="checkbox" />
+                        <label for="wsPushIdOnConnect" class="ng-binding">{{ pushIdOnConnectLabel }}</label>
+                    </div>
 
-                    <div class="row" ng-if="extId != null">
-                        <div class="col-sm-9 refresh-clients-heading">
-                            {{ wsClientConnectionLabel }}
+
+                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="extId != null">
+                        <div uib-accordion-group class="panel panel-default">
+
+                            <uib-accordion-heading>
+                                <span ng-click="wsc.isOpen = !wsc.isOpen">
+                                    {{ activeClientConnectionsLabel }}
+                                </span>
+                                <span class="pull-right">
+                                    <i class="glyphicon" ng-click="wsc.isOpen = !wsc.isOpen" ng-class="{'glyphicon-chevron-down': wsc.isOpen, 'glyphicon-chevron-right': !wsc.isOpen}"></i>
+                                </span>
+                            </uib-accordion-heading>
+
+                            <div class="refresh-clients-link">
+                                <a href="" ng-click="doRefreshActiveWsClients()">
+                                    {{ refreshClientsLinkLabel }}
+                                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                                </a>
+                            </div>
+
+                            <br />
+
+                            <div class="no-results-found" ng-if="activeWsClients.length == 0">
+                                {{ noActiveWsClientsFound }}
+                            </div>
+
+                            <div class="clients-table-div" ng-if="activeWsClients.length > 0">
+                                <table class="table table-striped rule-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ clientIdHeading }}</th>
+                                            <th>{{ clientJoinDateHeading }}</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="ws in activeWsClients">
+                                            <td class="conn-client-cell">{{ ws.id }}</td>
+                                            <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
+                                            <td class="conn-client-cell">
+                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path, ws.id)">{{ messageButtonLabel }}</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <hr />
+
+                                <button id="ws-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path)">{{ messageAllButtonLabel }}</button>
+
+                            </div>
+
                         </div>
-                        <div class="col-sm-3 refresh-clients-link">
-                            <a href="" ng-click="doRefreshActiveClients()">
-                                {{ refreshWsClientsLinkLabel }}
-                                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <br />
-
-                    <div class="no-results-found" ng-if="extId != null && activeWsClients.length == 0">
-                        {{ activeWsClientsFound }}
-                    </div>
-
-                    <div id="clients-table-div" ng-if="extId != null && activeWsClients.length > 0">
-                        <table class="table table-striped rule-table">
-                            <thead>
-                                <tr>
-                                    <th>{{ wsClientIdHeading }}</th>
-                                    <th>{{ wsClientJoinDateHeading }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="ws in activeWsClients">
-                                    <td>{{ ws.id }}</td>
-                                    <td>{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    </uib-accordion>
 
                 </div>
 
@@ -360,6 +383,11 @@
                         <input id="sseHeartbeat" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.sseHeartbeat" placeholder="{{ sseHeartbeatPlaceholderTxt }}" type="text" />
                     </div>
 
+                    <div class="form-group proxy-timeout-group">
+                        <input id="ssePushIdOnConnect"  ng-model="endpoint.ssePushIdOnConnect" type="checkbox" />
+                        <label for="ssePushIdOnConnect" class="ng-binding">{{ pushIdOnConnectLabel }}</label>
+                    </div>
+
                     <br />
 
                     <uib-accordion id="manageSseProxy" close-others="false" ng-if="extId != null">
@@ -367,24 +395,51 @@
 
                             <uib-accordion-heading>
                                 <span ng-click="smp.isOpen = !smp.isOpen">
-                                    {{ manageSseProxyQueueLabel }}
+                                    {{ activeClientConnectionsLabel }}
                                 </span>
                                 <span class="pull-right">
                                     <i class="glyphicon" ng-click="smp.isOpen = !smp.isOpen" ng-class="{'glyphicon-chevron-down': smp.isOpen, 'glyphicon-chevron-right': !smp.isOpen}"></i>
                                 </span>
                             </uib-accordion-heading>
 
-                            <h5>{{ sendSseProxiedResponseLabel }}</h5>
-                            <br />
-
-                            <div class="form-group">
-                                <label for="sse-proxy-default-response-body" class="ng-binding">{{ sseProxyMessageLabel }}</label>
-                                <textarea id="sse-proxy-default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="sseProxyEndpoint.body"></textarea>
+                            <div class="refresh-clients-link">
+                                <a href="" ng-click="doRefreshActiveSseClients()">
+                                    {{ refreshClientsLinkLabel }}
+                                    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                                </a>
                             </div>
 
-                            <span class="pull-right">
-	    						<button class="btn btn-success" type="button" ng-click="doPushSseProxyMessage()">{{ pushProxySseMessageButtonLabel }}</button>
-    						</span>
+                            <br />
+
+                            <div class="no-results-found" ng-if="activeSseClients.length == 0">
+                                {{ noActiveSseClientsFound }}
+                            </div>
+
+                            <div class="clients-table-div" ng-if="activeSseClients.length > 0">
+                                <table class="table table-striped rule-table">
+                                    <thead>
+                                    <tr>
+                                        <th>{{ clientIdHeading }}</th>
+                                        <th>{{ clientJoinDateHeading }}</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr ng-repeat="as in activeSseClients">
+                                        <td class="conn-client-cell">{{ as.id }}</td>
+                                        <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
+                                        <td class="conn-client-cell">
+                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path, as.id)">{{ messageButtonLabel }}</button>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+
+                                <hr />
+
+                                <button id="sse-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path)">{{ messageAllButtonLabel }}</button>
+
+                            </div>
 
                         </div>
                     </uib-accordion>

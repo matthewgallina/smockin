@@ -44,6 +44,10 @@ public class RestfulMock extends Identifier {
     @Column(name = "SSE_HEART_BEAT_MILLIS", nullable = false)
     private long sseHeartBeatInMillis;
 
+    @ColumnDefault("false")
+    @Column(name = "PROXY_PUSH_ID_ON_CNCT", nullable = false)
+    private boolean proxyPushIdOnConnect;
+
     @Column(name = "INIT_ORDER", nullable = false)
     private int initializationOrder;
 
@@ -66,7 +70,7 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean randomiseDefinitions) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -74,6 +78,7 @@ public class RestfulMock extends Identifier {
         this.proxyTimeOutInMillis = proxyTimeOutInMillis;
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
+        this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
@@ -124,6 +129,13 @@ public class RestfulMock extends Identifier {
     }
     public void setSseHeartBeatInMillis(long sseHeartBeatInMillis) {
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
+    }
+
+    public boolean isProxyPushIdOnConnect() {
+        return proxyPushIdOnConnect;
+    }
+    public void setProxyPushIdOnConnect(boolean proxyPushIdOnConnect) {
+        this.proxyPushIdOnConnect = proxyPushIdOnConnect;
     }
 
     public int getInitializationOrder() {

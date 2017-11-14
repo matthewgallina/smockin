@@ -96,6 +96,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         try {
 
+            serverSideEventService.interruptAndClearAllHeartBeatThreads();
+
             Spark.stop();
 
             // Having dug around the source code, 'Spark.stop()' runs off a different thread when stopping the server and removing it's state such as routes, etc.
@@ -210,7 +212,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             // Create an echo service instance per web socket route, as we need to hold the path as state within this.
-            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getExtId(), mock.getPath(), mock.getWebSocketTimeoutInMillis(), webSocketService));
+            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getExtId(), mock.getPath(), mock.getWebSocketTimeoutInMillis(), mock.isProxyPushIdOnConnect(), webSocketService));
         }
 
     }
@@ -332,7 +334,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     String processSSERequest(final RestfulMock mock, final Request req, final Response res) throws IOException {
 
-        serverSideEventService.registerClient(mock.getPath(), mock.getSseHeartBeatInMillis(), res);
+        serverSideEventService.register(mock.getPath(), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), res);
 
         return null;
     }
@@ -377,6 +379,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         webSocketService.clearSession();
         proxyService.clearSession();
         mockOrderingCounterService.clearState();
+        serverSideEventService.clearState();
 
     }
 

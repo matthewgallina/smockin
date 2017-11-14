@@ -15,7 +15,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     translations.push({ "k" : "RULE", "v" : "HTTP Rules Based" });
     translations.push({ "k" : "PROXY_HTTP", "v" : "HTTP Proxied" });
     translations.push({ "k" : "PROXY_WS", "v" : "WebSocket Proxied" });
-    translations.push({ "k" : "JMS_QUEUE", "v" : "JMS Queue Proxied" });
+    translations.push({ "k" : "PROXY_SSE", "v" : "SSE Proxied" });
 
 
     //

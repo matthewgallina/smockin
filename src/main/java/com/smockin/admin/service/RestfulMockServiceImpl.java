@@ -45,6 +45,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 dto.getProxyTimeoutInMillis(),
                 dto.getWebSocketTimeoutInMillis(),
                 dto.getSseHeartBeatInMillis(),
+                dto.isProxyPushIdOnConnect(),
                 dto.isRandomiseDefinitions());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
@@ -79,6 +80,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setProxyTimeOutInMillis(dto.getProxyTimeoutInMillis());
         mock.setWebSocketTimeoutInMillis(dto.getWebSocketTimeoutInMillis());
         mock.setSseHeartBeatInMillis(dto.getSseHeartBeatInMillis());
+        mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
         mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);

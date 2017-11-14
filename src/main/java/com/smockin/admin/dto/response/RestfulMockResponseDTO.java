@@ -19,8 +19,8 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     private Date dateCreated;
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
-    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean randomiseDefinitions) {
-        super(path, method, status, mockType, proxyTimeoutInMillis, webSocketTimeoutInMillis, sseHeartBeatInMillis, randomiseDefinitions);
+    public RestfulMockResponseDTO(String extId, String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
+        super(path, method, status, mockType, proxyTimeoutInMillis, webSocketTimeoutInMillis, sseHeartBeatInMillis, proxyPushIdOnConnect, randomiseDefinitions);
         this.extId = extId;
         this.dateCreated = dateCreated;
     }

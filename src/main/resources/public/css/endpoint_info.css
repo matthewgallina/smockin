@@ -140,12 +140,8 @@
     opacity: .2 !important;
 }
 
-#clients-table-div {
+.clients-table-div {
     min-height: 250px;
-}
-
-.refresh-clients-heading {
-    font-weight: 700;
 }
 
 .refresh-clients-link {
@@ -168,4 +164,17 @@
 #mock-type-button {
     width: 100%;
     text-align: left;
+}
+
+.conn-client-cell {
+    vertical-align: middle !important;
+    font-size: 12px;
+}
+
+#ws-client-message-all-button {
+    width: 100%;
+}
+
+#sse-client-message-all-button {
+    width: 100%;
 }

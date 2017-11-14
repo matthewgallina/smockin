@@ -3,7 +3,7 @@ package com.smockin.mockserver.service;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.mockserver.service.dto.WebSocketClientDTO;
+import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.websocket.api.Session;
@@ -47,16 +47,27 @@ public class WebSocketServiceImpl implements WebSocketService {
      * @param session
      *
      */
-    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final Session session) {
+    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final Session session) {
         logger.debug("registerSession called");
 
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
 
         final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<SessionIdWrapper>());
 
-        sessions.add(new SessionIdWrapper(GeneralUtils.generateUUID(), session, GeneralUtils.getCurrentDate()));
+        final String assignedId = GeneralUtils.generateUUID();
+
+        sessions.add(new SessionIdWrapper(assignedId, session, GeneralUtils.getCurrentDate()));
 
         sessionMap.put(path, sessions);
+
+        if (proxyPushIdOnConnect) {
+            try {
+                sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
+            } catch (IOException ex) {
+                logger.error("Error pushing client id to client on 1st connect", ex);
+            }
+        }
+
     }
 
     /**
@@ -123,22 +134,22 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     }
 
-    public List<WebSocketClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException {
+    public List<PushClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException {
 
-        final RestfulMock mock =  restfulMockDAO.findByExtId(mockExtId);
+        final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
 
         if (mock == null)
             throw new RecordNotFoundException();
 
         final String prefixedPath = GeneralUtils.prefixPath(mock.getPath());
-        final List<WebSocketClientDTO> sessionHandshakeIds = new ArrayList<WebSocketClientDTO>();
+        final List<PushClientDTO> sessionHandshakeIds = new ArrayList<PushClientDTO>();
 
         if (!sessionMap.containsKey(prefixedPath)) {
             return sessionHandshakeIds;
         }
 
         sessionMap.get(prefixedPath).forEach( s -> {
-            sessionHandshakeIds.add(new WebSocketClientDTO(s.getId(), s.getDateJoined()));
+            sessionHandshakeIds.add(new PushClientDTO(s.getId(), s.getDateJoined()));
         });
 
         return sessionHandshakeIds;
