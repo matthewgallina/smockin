@@ -8,7 +8,7 @@ app.controller('sseSendMessageController', function($scope, $timeout, $http, res
 
     //
     // Labels
-    $scope.clientHeading = "Push SSE Message" + ((data.sessionId == null) ? " (All)" : "");
+    $scope.clientHeading = "Push SSE Message" + ((data.sessionId == null) ? " (All Clients)" : "");
     $scope.pathLabel = "Path";
     $scope.sessionIdLabel = "Session Id";
     $scope.bodyLabel = "Message Body";

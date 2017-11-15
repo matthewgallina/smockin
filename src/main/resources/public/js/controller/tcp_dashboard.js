@@ -94,9 +94,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         return null;
     };
 
-    $scope.doOpenEndpointInfo = function(endpointData) {
+    $scope.doOpenTcpEndpointInfo = function(endpointData) {
         $rootScope.endpointData = endpointData;
-        $location.path("/endpoint");
+        $location.path("/tcp_endpoint");
     };
 
     function loadTableData() {

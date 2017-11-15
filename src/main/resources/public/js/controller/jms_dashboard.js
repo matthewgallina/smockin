@@ -1,5 +1,5 @@
 
-app.controller('jmsDashboardController', function($scope, $http, utils, globalVars, restClient) {
+app.controller('jmsDashboardController', function($scope, $rootScope, $location, $http, utils, globalVars, restClient) {
 
 
     //
@@ -41,9 +41,9 @@ app.controller('jmsDashboardController', function($scope, $http, utils, globalVa
 
     //
     // Scoped Functions
-    $scope.doOpenJmsEndpointInfo = function(endpointData) {
-//        $rootScope.endpointData = endpointData;
-//        $location.path("/endpoint");
+    $scope.doOpenJmsEndpointInfo = function(jmsEndpointData) {
+        $rootScope.jmsEndpointData = jmsEndpointData;
+        $location.path("/jms_endpoint");
     };
 
     $scope.startJmsMockServer = function() {

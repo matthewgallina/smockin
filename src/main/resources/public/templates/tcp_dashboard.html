@@ -35,7 +35,7 @@
                 <h3>{{ endpointsHeading }}</h3>
             </div>
             <div class="col-sm-2 add-endpoint-button-div">
-                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointButtonLabel }}</button>
+                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointButtonLabel }}</button>
             </div>
         </div>
 
@@ -76,7 +76,7 @@
                                     {{ x.status }}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-primary" ng-click="doOpenEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
+                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
                                 </td>
                             </tr>
                         </tbody>

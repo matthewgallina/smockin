@@ -9,8 +9,12 @@ app.config(function($routeProvider) {
             templateUrl : "dashboard.html",
             controller : "dashboardController"
         })
-        .when("/endpoint", {
-            templateUrl : "endpoint_info.html",
-            controller : "endpointInfoController"
+        .when("/tcp_endpoint", {
+            templateUrl : "tcp_endpoint_info.html",
+            controller : "tcpEndpointInfoController"
+        })
+        .when("/jms_endpoint", {
+            templateUrl : "jms_endpoint_info.html",
+            controller : "jmsEndpointInfoController"
         });
 });

@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="../css/jms_endpoint_info.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <!-- TODO -->
+
+        <hr />
+
+        <div class="action-buttons">
+            <div class="row">
+                <div class="col-sm-9 restart-mock-server-instruction">
+                    {{ serverRestartInstruction }}
+                </div>
+                <div class="col-sm-3">
+                    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()">{{ saveButtonLabel }}</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>

@@ -8,7 +8,7 @@ app.controller('wsSendMessageController', function($scope, $timeout, $http, rest
 
     //
     // Labels
-    $scope.clientHeading = "Push WS Message" + ((data.sessionId == null) ? " (All)" : "");
+    $scope.clientHeading = "Push WS Message" + ((data.sessionId == null) ? " (All Clients)" : "");
     $scope.pathLabel = "Path";
     $scope.sessionIdLabel = "Session Id";
     $scope.bodyLabel = "Message Body";
