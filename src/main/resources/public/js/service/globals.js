@@ -6,6 +6,7 @@ app.service('globalVars', function($uibModal) {
     this.GeneralErrorMessage = "Oops looks like something went wrong!";
 
     this.RestfulServerType = "RESTFUL";
+    this.JmsServerType = "JMS";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';
@@ -18,6 +19,9 @@ app.service('globalVars', function($uibModal) {
     this.EqualsText = 'EQUALS';
     this.ContainsText = 'CONTAINS';
     this.IsMissingText = 'IS_MISSING';
+
+    this.ActiveStatus = "ACTIVE";
+    this.InActiveStatus = "INACTIVE";
 
     this.MockServerRunningStatus = 'Running';
     this.MockServerStoppedStatus = 'Stopped';

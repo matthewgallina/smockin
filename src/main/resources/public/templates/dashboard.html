@@ -6,7 +6,7 @@
 
         <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
-        <uib-tabset active="active">
+        <uib-tabset active="selectedTab">
             <uib-tab index="0" heading="{{ tcpHeading }}">
 
                 <br />

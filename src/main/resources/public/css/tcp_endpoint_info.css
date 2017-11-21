@@ -104,10 +104,10 @@
 }
 
 #endpoint-status-button {
-    width: 90px;
+    width: 100px;
 }
 
-.newEndpointHeading {
+.tcp-endpoint-heading {
     margin-top: 4px;
 }
 

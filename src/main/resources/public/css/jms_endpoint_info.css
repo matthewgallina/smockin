@@ -10,3 +10,27 @@
     text-align: right;
     margin-bottom: 25px;
 }
+
+.jms-endpoint-heading {
+    margin-top: 4px;
+}
+
+#endpoint-status {
+    margin-left: 20px;
+}
+
+#endpoint-status-button {
+    width: 100px;
+}
+
+.endpoint-status-row {
+    text-align: right;
+}
+
+.status-active {
+    color: #53c653;
+}
+
+.status-inactive {
+    color: #ff8080;
+}

@@ -1,5 +1,5 @@
 
-app.controller('jmsDashboardController', function($scope, $rootScope, $location, $http, utils, globalVars, restClient) {
+app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, utils, globalVars, restClient) {
 
 
     //
@@ -7,6 +7,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $location,
     var MockServerRunningStatus = globalVars.MockServerRunningStatus;
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
     var MockServerRestartStatus = globalVars.MockServerRestartStatus;
+    var RestartServerRequired = $routeParams.restart;
 
 
     //
@@ -18,6 +19,12 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $location,
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'Simulated JMS Queues';
+
+    $scope.nameTableLabel = 'Name';
+    $scope.dateCreatedTableLabel = 'Date Created';
+    $scope.mockTypeTableLabel = 'JMS Mock Type';
+    $scope.statusTableLabel = 'Status';
+    $scope.actionTableLabel = 'Action';
 
 
     //
@@ -117,9 +124,26 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $location,
 
     }
 
+    function loadTableData() {
+
+        $scope.jmsServices = [];
+
+        restClient.doGet($http, '/jmsmock', function(status, data) {
+
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            $scope.jmsServices = data;
+        });
+
+    }
+
 
     //
     // Init Page
+    loadTableData();
     checkJmsServerStatus();
 
 });

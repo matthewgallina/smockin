@@ -1,10 +1,13 @@
 
-app.controller('dashboardController', function($scope, $timeout, globalVars) {
+app.controller('dashboardController', function($scope, $routeParams, $timeout, globalVars) {
 
     //
     // Constants
-    var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
-
+    var SelectedTab = $routeParams.tab;
+    var tabIndexes = {
+        'TCP' : 0,
+        'JMS' : 1,
+    }
 
     //
     // Labels
@@ -29,9 +32,18 @@ app.controller('dashboardController', function($scope, $timeout, globalVars) {
         $scope.alerts = [];
         $scope.alerts.push({ "type" : type, "msg" : msg });
 
-        $timeout(closeAlertFunc, AlertTimeoutMillis);
+        $timeout(closeAlertFunc, globalVars.AlertTimeoutMillis);
     }
 
     $scope.closeAlert = closeAlertFunc;
+
+
+    //
+    // Data
+    $scope.selectedTab = tabIndexes.TCP;
+
+    if (SelectedTab != null) {
+        $scope.selectedTab = tabIndexes[SelectedTab];
+    }
 
 });

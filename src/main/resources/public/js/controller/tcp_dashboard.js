@@ -46,6 +46,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Data Objects
     $scope.mockServerStatus = '';
+    $scope.restServices = [];
 
 
     //
@@ -54,7 +55,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.methodTableLabel = 'Method';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.statusTableLabel = 'Status';
-    $scope.mockTypeTableLabel = 'Mock Type';
+    $scope.mockTypeTableLabel = 'TCP Mock Type';
     $scope.actionTableLabel = 'Action';
 
 
@@ -101,14 +102,16 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     function loadTableData() {
 
+        $scope.restServices = [];
+
         restClient.doGet($http, '/restmock', function(status, data) {
 
-            if (status == 200) {
-                $scope.restServices = batchByBasePath(data);
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            showAlert(globalVars.GeneralErrorMessage);
+            $scope.restServices = batchByBasePath(data);
         });
 
     }

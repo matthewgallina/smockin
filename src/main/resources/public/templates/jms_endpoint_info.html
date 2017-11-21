@@ -5,6 +5,50 @@
 
     <div class="container">
 
+        <h3>
+            <div class="row">
+
+                <div class="col-sm-9" class="jms-endpoint-heading">
+                    {{ endpointHeading }}
+                </div>
+
+                <div class="col-sm-3 endpoint-status-row">
+                    {{ endpointStatusLabel }}
+                    <div id="endpoint-status" class="btn-group" uib-dropdown>
+                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled">
+                            <span>{{ endpoint.status }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="endpoint-status-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem">
+                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ activeStatus }}</a>
+                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ inActiveStatus }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </h3>
+
+        <br />
+
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+        <div class="row">
+            <div class="col-sm-6">
+
+                <div class="form-group">
+                    <label for="queue-name" class="ng-binding">{{ nameLabel }}</label>
+                    <input id="queue-name" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="true" ng-model="endpoint.name" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
+                </div>
+
+            </div>
+            <div class="col-sm-6">
+
+            </div>
+        </div>
+
         <!-- TODO -->
 
         <hr />
@@ -16,7 +60,7 @@
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()">{{ saveButtonLabel }}</button>
+                    <button class="btn btn-primary" type="button" ng-click="doSaveJmsEndpoint()">{{ saveButtonLabel }}</button>
                 </div>
             </div>
         </div>
