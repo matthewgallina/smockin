@@ -12,12 +12,12 @@ OVERVIEW
     SMOCKIN is a light framework used for setting up API simulations in a bid to aid development
     and QA testing in the ever growing realm of the 'Internet of Things'.
 
-    Whether you are a mobile developer who needs to simulate a RESTFul endpoints or engineer working
-    with a complex SOA/IoT infrastructure, SMOCKIN can help by mimicking services that would be
+    Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working
+    with complex SOA/IoT infrastructure, SMOCKIN can help by mimicking any services that would be
     otherwise too difficult or time consuming to set up.
 
-    With the ability to vary content using easy to set up sequences and rules,
-    SMOCKIN can help simulate all of your use case scenarios.
+    With the ability to vary content using easy to set up sequences and rules, SMOCKIN can help
+    simulate all of your use case scenarios.
 
     Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
     locally on a developers machine or centrally on a development teams' server.
@@ -36,6 +36,7 @@ OVERVIEW
                - Web Sockets
                - SSE
                - JMS
+
 
 
 REQUIREMENTS
