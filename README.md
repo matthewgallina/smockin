@@ -9,11 +9,12 @@ Intelligent API simulation for application development and QA testing
 
 OVERVIEW
 
-    SMOCKIN is a light framework used for setting up API simulations in a bid to aid development and QA testing in the ever
-    growing realm of the 'Internet of Things'.
+    SMOCKIN is a light framework used for setting up API simulations in a bid to aid development
+    and QA testing in the ever growing realm of the 'Internet of Things'.
 
-    Whether you are a mobile developer who needs to simulate a RESTFul endpoints or engineer working with a complex SOA/IoT infrastructure,
-    SMOCKIN can help by mimicking services that would be otherwise too difficult or time consuming to set up.
+    Whether you are a mobile developer who needs to simulate a RESTFul endpoints or engineer working
+    with a complex SOA/IoT infrastructure, SMOCKIN can help by mimicking services that would be
+    otherwise too difficult or time consuming to set up.
 
     With the ability to vary content using easy to set up sequences and rules,
     SMOCKIN can help simulate all of your use case scenarios.
@@ -80,8 +81,8 @@ QUICK START
             curl -i -X GET http://localhost:8001/hello
 
 
-    Further information on running, configuring and trouble shooting SMOCKIN, can be found within the README.txt file
-    bundled within this project.
+    Further information on running, configuring and trouble shooting SMOCKIN, can be found within the
+    README.txt file bundled within this project.
 
 
 
@@ -91,13 +92,13 @@ UPDATING SMOCKIN TO LATER VERSIONS
 
     All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
-    Therefore as long as this settings dir is preserved then updating SMOCKIN is simply a case of deleting the
-    current application and replacing this with a later version.
+    Therefore as long as this settings dir is preserved then updating SMOCKIN is simply a case of deleting
+    the current application and replacing this with a later version.
 
     The bundled 'start' script will always automatically handle any data migration that may need to take place.
 
-    (Please note the above text, is only applicable to mainline releases of SMOCKIN and where neither the code base or
-    database of the previous/outgoing version have been subject to local/customised changes).
+    (Please note the above text, is only applicable to mainline 'master' releases of SMOCKIN where neither the
+    code base or database of the previous/outgoing version have been subject to personal / customised changes).
 
 
 
