@@ -1,6 +1,6 @@
 # SMOCKIN Version 1.3.0
 
-The intelligent API simulation framework for application development and QA testing
+Intelligent API simulation for application development and QA testing
 
     Visit us: http://www.smockin.com
 
@@ -9,27 +9,32 @@ The intelligent API simulation framework for application development and QA test
 
 OVERVIEW
 
-    SMOCKIN is a light framework that can be used for setting up mock RESTful web service simulations.
-    for use in either development or QA testing.
+    SMOCKIN is a light framework used for setting up API simulations in a bid to aid development and QA testing in the ever
+    growing realm of the 'Internet of Things'.
 
-    Whether you are a mobile developer who needs to simulate a remote server or working with a complex SOA, 
-    SMOCKIN can help by simulating any services that may be otherwise difficult / time consuming to set up.
+    Whether you are a mobile developer who needs to simulate a RESTFul endpoints or engineer working with a complex SOA/IoT infrastructure,
+    SMOCKIN can help by mimicking services that would be otherwise too difficult or time consuming to set up.
 
-    With the ability to vary the output of your web service by using easy to set up sequences and rules, 
-    SMOCKIN can help to simulate all of your different use cases.
+    With the ability to vary content using easy to set up sequences and rules,
+    SMOCKIN can help simulate all of your use case scenarios.
 
     Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
     locally on a developers machine or centrally on a development teams' server.
 
     Features include:
 
-        - An Internal Mocking Server which is used to serve your mocked endpoints.
+        - Internal Mocking Servers used to serve up your simulations.
 
-        - Admin UI for:
+        - An Admin UI for:
             - Creating and editing your mocked endpoints.
             - Applying 'rules' or 'sequenced responses' to your mocked endpoints.
             - Configuring, Starting and Stopping the Internal Mocking Server.
 
+        - Support for:
+               - REST
+               - Web Sockets
+               - SSE
+               - JMS
 
 
 REQUIREMENTS
