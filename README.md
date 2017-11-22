@@ -2,9 +2,9 @@
 
 The intelligent API simulation framework for application development and QA testing
 
-Visit us: http://www.smockin.com
+    Visit us: http://www.smockin.com
 
-Contact: info@smockin.com
+    Contact: info@smockin.com
 
 
 OVERVIEW
