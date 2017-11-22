@@ -1,8 +1,10 @@
 # SMOCKIN Version 1.3.0
 
-The Web Service Simulation Framework for application development and QA testing
+The intelligent API simulation framework for application development and QA testing
 
-http://www.smockin.com
+Visit us: http://www.smockin.com
+
+Contact: info@smockin.com
 
 
 OVERVIEW
