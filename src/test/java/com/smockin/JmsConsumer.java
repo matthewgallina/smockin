@@ -10,11 +10,14 @@ import javax.jms.*;
  */
 public class JmsConsumer {
 
+
     @Test
     public void start() throws Exception {
 
+        // curl -i -H "Content-Type: application/json" -X POST -d '{ "queueName" : "dogs", "body":"Hello" }' http://mgallina-desktop:8000/jms
+
         final String brokerUrl = "tcp://localhost:61616";
-        final String queueName = "SMOCKIN.QUEUE";
+        final String queueName = "dogs";
 
         final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(brokerUrl);
 

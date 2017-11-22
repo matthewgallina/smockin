@@ -258,7 +258,7 @@
 
                     <br />
 
-                    <uib-accordion id="manageProxy" close-others="false" ng-if="extId != null">
+                    <uib-accordion id="manageProxy" close-others="false" ng-if="!isNew">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -289,14 +289,14 @@
                             </div>
 
                             <span class="pull-right">
-	    						<button class="btn btn-success" type="button" ng-click="doPostProxyResponse()">{{ postProxyResponseButtonLabel }}</button>
+	    						<button class="btn btn-success" type="button" ng-click="doPostProxyResponse()" ng-disabled="endpoint.status == inActiveStatus">{{ postProxyResponseButtonLabel }}</button>
     						</span>
 
                             <br />
                             <br />
                             <hr />
 
-                            <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()">{{ clearProxyButtonLabel }}</button>
+                            <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearProxyButtonLabel }}</button>
 
                         </div>
                     </uib-accordion>
@@ -318,7 +318,7 @@
                     </div>
 
 
-                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="extId != null">
+                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="!isNew">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -330,7 +330,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
                                 <a href="" ng-click="doRefreshActiveWsClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -357,7 +357,7 @@
                                             <td class="conn-client-cell">{{ ws.id }}</td>
                                             <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
                                             <td class="conn-client-cell">
-                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path, ws.id)">{{ messageButtonLabel }}</button>
+                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path, ws.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -365,7 +365,7 @@
 
                                 <hr />
 
-                                <button id="ws-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path)">{{ messageAllButtonLabel }}</button>
+                                <button id="ws-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path)" ng-disabled="endpoint.status == inActiveStatus">{{ messageAllButtonLabel }}</button>
 
                             </div>
 
@@ -390,7 +390,7 @@
 
                     <br />
 
-                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="extId != null">
+                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="!isNew">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -402,7 +402,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
                                 <a href="" ng-click="doRefreshActiveSseClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -429,7 +429,7 @@
                                         <td class="conn-client-cell">{{ as.id }}</td>
                                         <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
                                         <td class="conn-client-cell">
-                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path, as.id)">{{ messageButtonLabel }}</button>
+                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path, as.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -437,7 +437,7 @@
 
                                 <hr />
 
-                                <button id="sse-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path)">{{ messageAllButtonLabel }}</button>
+                                <button id="sse-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path)" ng-disabled="endpoint.status == inActiveStatus">{{ messageAllButtonLabel }}</button>
 
                             </div>
 
@@ -459,7 +459,7 @@
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="extId != null">{{ deleteButtonLabel }}</button>
+                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew">{{ deleteButtonLabel }}</button>
                     <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()">{{ saveButtonLabel }}</button>
                 </div>
             </div>

@@ -90,7 +90,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
             connection.destroyDestination(new ActiveMQQueue(queueName));
 
         } catch (JMSException ex) {
-            logger.error("clearing all message on queue " + queueName, ex);
+            logger.error("clearing all messages on queue " + queueName, ex);
         } finally {
 
             if (connection != null) {

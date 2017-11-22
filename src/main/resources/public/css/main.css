@@ -1,25 +1,4 @@
+
 [ng\:cloak], [ng-cloak], .ng-cloak {
     display: none !important;
-}
-
-.navbar-background {
-    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
-}
-
-.navbar-default .navbar-brand {
-    color: #fff;
-}
-
-.tools-link {
-    color: #fff !important;
-}
-
-.default .navbar-nav > .open > a {
-    background-color: transparent;
-    background-image: none;
-}
-
-.navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:focus, .navbar-default .navbar-nav > .open > a:hover {
-    background-color: transparent;
-    background-image: none;
 }

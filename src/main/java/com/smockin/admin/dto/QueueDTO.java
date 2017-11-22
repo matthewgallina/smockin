@@ -1,7 +1,7 @@
 package com.smockin.admin.dto;
 
 /**
- * Created by mgallina on 25/10/17.
+ * Created by mgallina.
  */
 public class QueueDTO {
 

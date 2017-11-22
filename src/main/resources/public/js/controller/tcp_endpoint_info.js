@@ -20,6 +20,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     };
 
     var isNew = ($rootScope.endpointData == null);
+
     var RestfulServerType = globalVars.RestfulServerType;
     var HttpPathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
     var WebSocketPathPlaceHolderTxt = 'e.g. (/hello/connect)';
@@ -33,7 +34,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.mockTypeProxyHttp = MockTypeDefinitions.MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
-    $scope.endpointHeading = (isNew) ? 'New TCP Endpoint' : 'View TCP Endpoint';
+    $scope.endpointHeading = (isNew) ? 'New TCP Endpoint' : 'TCP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
     $scope.methodLabel = 'Method';
@@ -147,7 +148,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse }
     ];
 
-    $scope.extId = null;
+    var extId = null;
+    $scope.isNew = isNew;
 
     $scope.responseHeaderList = [];
 
@@ -184,6 +186,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         var endpoint = $rootScope.endpointData;
 
+        extId = endpoint.extId;
+
         // Convert all rule arg DTOs to local enriched arg objects
         for (var r=0; r < endpoint.rules.length; r++) {
             for (var g=0; g < endpoint.rules[r].groups.length; g++) {
@@ -208,8 +212,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules
         };
-
-        $scope.extId = endpoint.extId;
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
                 || endpoint.mockType == MockTypeDefinitions.MockTypeRule) {
@@ -385,7 +387,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         $scope.activeWsClients = [];
 
-        restClient.doGet($http, '/ws/' + $scope.extId + '/client', function(status, data) {
+        restClient.doGet($http, '/ws/' + extId + '/client', function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -406,7 +408,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         $scope.activeSseClients = [];
 
-        restClient.doGet($http, '/sse/' + $scope.extId + '/client', function(status, data) {
+        restClient.doGet($http, '/sse/' + extId + '/client', function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -648,7 +650,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.doDelete = function() {
 
-        if ($scope.extId == null) {
+        if (isNew) {
             return;
         }
 
@@ -657,7 +659,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             if (alertResponse) {
 
                 utils.showBlockingOverlay();
-                restClient.doDelete($http, '/restmock/' + $scope.extId, serverCallbackFunc);
+                restClient.doDelete($http, '/restmock/' + extId, serverCallbackFunc);
 
             }
 
@@ -756,8 +758,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         }
 
-        if ($scope.extId != null) {
-            restClient.doPut($http, '/restmock/' + $scope.extId, reqData, serverCallbackFunc);
+        if (!isNew) {
+            restClient.doPut($http, '/restmock/' + extId, reqData, serverCallbackFunc);
         } else {
             restClient.doPost($http, '/restmock', reqData, serverCallbackFunc);
         }
@@ -938,7 +940,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     function clearEndpointData() {
         $rootScope.endpointData = null;
-        $scope.extId = null;
     }
 
     function checkAutoRefreshStatus(callback) {

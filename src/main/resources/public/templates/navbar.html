@@ -1,0 +1,35 @@
+<link rel="stylesheet" href="../css/navbar.css" crossorigin="anonymous" />
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid navbar-background">
+
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">
+                <img id="smockin-logo" src="../image/smockin_logo_white.png" alt="Smockin" />
+            </a>
+        </div>
+
+        <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
+
+            <ul class="nav navbar-nav navbar-right">
+                <li uib-dropdown on-toggle="toggled(open)">
+                    <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ toolsLabel }} <span class="caret"></span></a>
+                    <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
+                        <li>
+                            <a href="" ng-click="doOpenHttpClient()">{{ httpClientLink }}</a>
+                        </li>
+                        <li>
+                            <a href="" ng-click="doOpenWebSocketClient()">{{ wsClientLink }}</a>
+                        </li>
+                        <li role="separator" class="divider"></li>
+                        <li>
+                            <a href="" ng-click="doOpenHelp()">{{ helpLink }}</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+
+    </div>
+</nav>

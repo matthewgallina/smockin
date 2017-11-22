@@ -16,39 +16,7 @@
 
         <div ng-include="'overlay.html'"></div>
 
-        <nav class="navbar navbar-default">
-            <div class="container-fluid navbar-background">
-
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="#">
-                        <img alt="Smockin" src="">
-                    </a>
-                </div>
-
-                <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
-
-                    <ul class="nav navbar-nav navbar-right">
-                        <li uib-dropdown on-toggle="toggled(open)">
-                            <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ toolsLabel }} <span class="caret"></span></a>
-                            <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
-                                <li>
-                                    <a href="" ng-click="doOpenHttpClient()">{{ httpClientLink }}</a>
-                                </li>
-                                <li>
-                                    <a href="" ng-click="doOpenWebSocketClient()">{{ wsClientLink }}</a>
-                                </li>
-                                <li role="separator" class="divider"></li>
-                                <li>
-                                    <a href="" ng-click="doOpenHelp()">{{ helpLink }}</a>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                </div>
-
-            </div>
-        </nav>
+        <div ng-include="'navbar.html'" ng-controller="navbarController"></div>
 
         <div ng-view></div>
 
@@ -63,6 +31,7 @@
 
         <!-- Controllers -->
         <script src="../js/controller/main.js"></script>
+        <script src="../js/controller/navbar.js"></script>
         <script src="../js/controller/routes.js"></script>
         <script src="../js/controller/http_client.js"></script>
         <script src="../js/controller/ws_client.js"></script>
