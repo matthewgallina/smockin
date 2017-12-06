@@ -105,6 +105,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     public void sendMessage(final String id, final WebSocketDTO dto) throws IOException {
         logger.debug("sendMessage called");
 
+        dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
+
         final Set<SessionIdWrapper> sessions = sessionMap.get(dto.getPath());
 
         if (sessions == null) {

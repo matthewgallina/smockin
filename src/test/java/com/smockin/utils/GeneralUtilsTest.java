@@ -232,14 +232,33 @@ public class GeneralUtilsTest {
 
     @Test
     public void deserialiseJSON_InvalidJson_Test() {
-
         Assert.assertNull(GeneralUtils.deserialiseJSON("{ \"name\" :, \"age\" : 21 }"));
     }
 
     @Test
     public void deserialiseJSON_Null_Test() {
-
         Assert.assertNull(GeneralUtils.deserialiseJSON(null));
+    }
+
+    @Test
+    public void removeAllLineBreaks_Test() {
+        final String lb = System.getProperty("line.separator");
+        Assert.assertEquals("{ \"name\" :\"John Smith\", \"age\":21}", GeneralUtils.removeAllLineBreaks("{"+lb+" \"name\" :\"John Smith\","+lb+" \"age\":21"+lb+"}"));
+    }
+
+    @Test
+    public void removeAllLineBreaks_NoChange_Test() {
+        Assert.assertEquals("{ \"name\" :\"Max\", \"age\" : 21 }", GeneralUtils.removeAllLineBreaks("{ \"name\" :\"Max\", \"age\" : 21 }"));
+    }
+
+    @Test
+    public void removeAllLineBreaks_Null_Test() {
+        Assert.assertNull(GeneralUtils.removeAllLineBreaks(null));
+    }
+
+    @Test
+    public void removeAllLineBreaks_Blank_Test() {
+        Assert.assertEquals("", GeneralUtils.removeAllLineBreaks(""));
     }
 
 }

@@ -1,11 +1,11 @@
 package com.smockin.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
-import spark.utils.StringUtils;
 
 import java.io.IOException;
 import java.util.Date;
@@ -159,7 +159,9 @@ public final class GeneralUtils {
         return Integer.valueOf(versionNo);
     }
 
-
+    public static String removeAllLineBreaks(final String original) {
+        return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
+    }
 
     public static Map<String, ?> deserialiseJSON(final String jsonStr) {
 

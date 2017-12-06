@@ -7,6 +7,7 @@ import com.smockin.mockserver.service.dto.SseMessageDTO;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.io.RuntimeIOException;
+import org.h2.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +98,8 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     @Override
     public void addMessage(final String id, final SseMessageDTO dto) {
         logger.debug("addMessage called");
+
+        dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
 
         // Add message to specific client.
         if (id != null) {
