@@ -44,6 +44,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.defaultHttpStatusCodeLabel = 'Default HTTP Status Code';
     $scope.defaultHttpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.defaultResponseBodyLabel = 'Default Response Body';
+    $scope.proxyPathLabel = 'Exact Path';
     $scope.proxyContentTypeLabel = 'Content Type';
     $scope.proxyHttpStatusCodeLabel = 'HTTP Status Code';
     $scope.proxyResponseBodyLabel = 'Response Body';
@@ -63,12 +64,12 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.webSocketTimeoutLabel = 'Idle Timeout (in millis)';
     $scope.proxyTimeoutPlaceholderTxt = 'Duration the server will hold the request open with no activity (zero for no timeout)';
     $scope.webSocketTimeoutPlaceholderTxt = 'Duration the server will keep the socket open whilst idle (zero for no timeout)';
-    $scope.shuffleSequenceLabel = "Shuffle Responses";
+    $scope.shuffleSequenceLabel = 'Shuffle Responses';
     $scope.activeClientConnectionsLabel = 'Active Client Connections';
     $scope.noActiveWsClientsFound = 'No Websocket Clients Found';
     $scope.noActiveSseClientsFound = 'No SSE Clients Found';
-    $scope.clientIdHeading = "Session Id";
-    $scope.clientJoinDateHeading = "Joining Date";
+    $scope.clientIdHeading = 'Session Id';
+    $scope.clientJoinDateHeading = 'Joining Date';
     $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
     $scope.sendProxiedResponseLabel = 'Post a proxied response';
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
@@ -88,6 +89,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.addResponseHeaderButtonLabel = 'New Row';
     $scope.refreshClientsLinkLabel = 'refresh';
     $scope.clearProxyButtonLabel = 'Clear Pending Responses';
+    $scope.clearProxyResponseFieldsButtonLabel = 'Clear Fields';
     $scope.postProxyResponseButtonLabel = 'Post Response';
     $scope.messageButtonLabel = 'Message';
     $scope.messageAllButtonLabel = 'Message All';
@@ -175,6 +177,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     };
 
     $scope.proxyEndpoint = {
+        "path" : null,
         "contentType" : null,
         "httpStatusCode" : null,
         "responseBody" : null
@@ -224,6 +227,10 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
                 $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
             });
 
+        }
+
+        if (endpoint.mockType == MockTypeDefinitions.MockTypeProxyHttp) {
+            $scope.proxyEndpoint.path = $scope.endpoint.path;
         }
 
     }
@@ -322,6 +329,14 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         closeAlertFunc();
 
         // Validation
+        if (utils.isBlank($scope.proxyEndpoint.path)) {
+            showAlert("'Path' for proxy response is required");
+            return false;
+        }
+        if ($scope.proxyEndpoint.path.indexOf("*") > -1) {
+            showAlert("'Path' for proxy response cannot contain any wildcard * path variables");
+            return false;
+        }
         if (utils.isBlank($scope.proxyEndpoint.contentType)) {
             showAlert("'Content Type' for proxy response is required");
             return false;
@@ -334,7 +349,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         // Send proxy response
         var reqData = {
-            "path" : $scope.endpoint.path,
+            "path" : $scope.proxyEndpoint.path,
             "method" : $scope.endpoint.method,
             "responseContentType" : $scope.proxyEndpoint.contentType,
             "httpStatusCode" : $scope.proxyEndpoint.httpStatusCode,
@@ -350,13 +365,18 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
             showAlert("Proxy response successfully posted", "success");
 
-            $scope.proxyEndpoint = {
-                "contentType" : null,
-                "httpStatusCode" : null,
-                "responseBody" : null
-            };
-
         });
+
+    };
+
+    $scope.doClearProxyFields = function() {
+
+        $scope.proxyEndpoint = {
+            "path" : $scope.endpoint.path,
+            "contentType" : null,
+            "httpStatusCode" : null,
+            "responseBody" : null
+        };
 
     };
 
