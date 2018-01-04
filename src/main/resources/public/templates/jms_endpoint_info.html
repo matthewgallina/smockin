@@ -92,7 +92,7 @@
                             <br />
                             <hr />
 
-                            <button id="clear-jms-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
+                            <button class="btn btn-info clear-jms-button" type="button" ng-click="doClearJMSQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
 
                         </div>
                     </uib-accordion>
@@ -113,42 +113,18 @@
                                     </span>
                             </uib-accordion-heading>
 
-                            <h5>{{ topicSubscribersLabel }}</h5>
+                            <h5>{{ broadcastJMSMessageLabel }}</h5>
 
                             <br />
 
-                            <div class="no-results-found" ng-if="activeSubscribers.length == 0">
-                                {{ noActiveTopicSubscribersFound }}
+                            <div class="form-group">
+                                <label for="text-jms-topic-message-body" class="ng-binding">{{ textMessageBodyLabel }}</label>
+                                <textarea id="text-jms-topic-message-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="jmsTopicMessage.body"></textarea>
                             </div>
 
-                            <div class="subscribers-table-div" ng-if="activeSubscribers.length > 0">
-                                <table class="table table-striped rule-table">
-                                    <thead>
-                                        <tr>
-                                            <th>{{ clientIdHeading }}</th>
-                                            <th>{{ clientJoinDateHeading }}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr ng-repeat="as in activeSubscribers">
-                                            <td class="conn-client-cell">{{ as.id }}</td>
-                                            <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <hr />
-
-                                <div class="form-group">
-                                    <label for="text-jms-topic-message-body" class="ng-binding">{{ textMessageBodyLabel }}</label>
-                                    <textarea id="text-jms-topic-message-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="jmsTopicMessage.body"></textarea>
-                                </div>
-
-                                <span class="pull-right">
-                                    <button class="btn btn-success" type="button" ng-click="doPostJMSTopicBroadcastMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsTopicMessageButtonLabel }}</button>
-                                </span>
-
-                            </div>
+                            <span class="pull-right">
+                                <button class="btn btn-success" type="button" ng-click="doPostJMSTopicBroadcastMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsTopicMessageButtonLabel }}</button>
+                            </span>
 
                         </div>
                     </uib-accordion>

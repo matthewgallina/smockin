@@ -35,12 +35,16 @@
     color: #ff8080;
 }
 
-#clear-jms-button {
+.clear-jms-button {
     width: 100%;
 }
 
 #text-jms-message-body {
     height: 130px;
+}
+
+#text-jms-topic-message-body {
+    height: 170px;
 }
 
 #jms-mock-type {
@@ -53,18 +57,3 @@
     text-align: left;
 }
 
-.no-results-found {
-    min-height: 150px;
-    margin-top: 100px;
-    font-weight: bold;
-    text-align: center;
-}
-
-.subscribers-table-div {
-    min-height: 250px;
-}
-
-.conn-client-cell {
-    vertical-align: middle !important;
-    font-size: 12px;
-}

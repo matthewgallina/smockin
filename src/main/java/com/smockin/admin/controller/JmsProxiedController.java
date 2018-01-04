@@ -36,8 +36,8 @@ public class JmsProxiedController {
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(path="/jms/clear", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> clearJms(@RequestBody final QueueDTO dto) throws ValidationException {
+    @RequestMapping(path="/jms/queue/clear", method = RequestMethod.PATCH, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> clearJmsQueue(@RequestBody final QueueDTO dto) throws ValidationException {
 
         jmsProxyService.clearQueue(dto.getName());
 

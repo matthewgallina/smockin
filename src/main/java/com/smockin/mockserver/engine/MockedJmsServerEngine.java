@@ -11,6 +11,7 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -270,9 +271,13 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         logger.debug("buildDestinations called");
 
         synchronized (monitor) {
-            mocks.forEach(mock ->
-                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQQueue(mock.getName()) })
-            );
+            mocks.forEach(mock -> {
+                if (JmsMockTypeEnum.QUEUE.equals(mock.getJmsType())) {
+                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQQueue(mock.getName()) });
+                } else if (JmsMockTypeEnum.TOPIC.equals(mock.getJmsType())) {
+                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQTopic(mock.getName()) });
+                }
+            });
         }
 
     }

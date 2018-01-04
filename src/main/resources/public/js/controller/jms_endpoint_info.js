@@ -21,9 +21,8 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.manageJmsQueueLabel = "Manage JMS Queue";
     $scope.manageJmsTopicLabel = "Manage JMS Topic";
     $scope.sendJMSMessageLabel = "Push Message to Queue";
-    $scope.topicSubscribersLabel = "Active Topic Subscribers";
+    $scope.broadcastJMSMessageLabel = "Broadcast Topic Message";
     $scope.textMessageBodyLabel = "Text Message Body";
-    $scope.noActiveTopicSubscribersFound = "No Subscribers Found";
     $scope.clientIdHeading = "Subscriber Id";
     $scope.clientJoinDateHeading = "Join Date";
 
@@ -33,7 +32,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Cancel';
     $scope.postJmsMessageButtonLabel = 'Push To Queue';
-    $scope.postJmsTopicMessageButtonLabel = 'Broadcast Message';
+    $scope.postJmsTopicMessageButtonLabel = 'Broadcast';
     $scope.clearJmsQueueButtonLabel = 'Clear Queue';
 
 
@@ -181,13 +180,13 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    $scope.doClearProxyQueue = function() {
+    $scope.doClearJMSQueue = function() {
 
         var req = {
             "name" : $scope.endpoint.name
         };
 
-        restClient.doPatch($http, '/jms/clear', req, function(status, data) {
+        restClient.doPatch($http, '/jms/queue/clear', req, function(status, data) {
 
             if (status != 204) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -197,12 +196,32 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             showAlert("JMS queue: " + $scope.endpoint.name + " has been cleared", "success");
         });
 
-
     };
 
     $scope.doPostJMSTopicBroadcastMessage = function() {
 
+        // Validation
+        if (utils.isBlank($scope.jmsTopicMessage.body)) {
+            showAlert("'Text Message Body' is required");
+            return false;
+        }
 
+        // Post Message to JMS Queue
+        var req = {
+            "name" : $scope.endpoint.name,
+            "body" : $scope.jmsTopicMessage.body,
+            "mimeType" : "text/plain"
+        };
+
+        restClient.doPost($http, '/jms/topic', req, function(status, data) {
+
+            if (status != 204) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            showAlert("Message posted to JMS topic: " + $scope.endpoint.name, "success");
+        });
 
     };
 
