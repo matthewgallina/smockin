@@ -361,7 +361,7 @@
                                     <tbody>
                                         <tr ng-repeat="ws in activeWsClients">
                                             <td class="conn-client-cell">{{ ws.id }}</td>
-                                            <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
+                                            <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                             <td class="conn-client-cell">
                                                 <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path, ws.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
                                             </td>
@@ -433,7 +433,7 @@
                                     <tbody>
                                     <tr ng-repeat="as in activeSseClients">
                                         <td class="conn-client-cell">{{ as.id }}</td>
-                                        <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" }}</td>
+                                        <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                         <td class="conn-client-cell">
                                             <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path, as.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
                                         </td>

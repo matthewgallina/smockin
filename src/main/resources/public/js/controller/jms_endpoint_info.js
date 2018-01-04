@@ -3,7 +3,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
 
     //
-    // Constant
+    // Constants
     var MockTypeDefinitions = {
         MockTypeQueue : 'QUEUE',
         MockTypeTopic : 'TOPIC'
@@ -19,8 +19,13 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.endpointStatusLabel = 'Status:';
     $scope.nameLabel = 'Name:';
     $scope.manageJmsQueueLabel = "Manage JMS Queue";
+    $scope.manageJmsTopicLabel = "Manage JMS Topic";
     $scope.sendJMSMessageLabel = "Push Message to Queue";
+    $scope.topicSubscribersLabel = "Active Topic Subscribers";
     $scope.textMessageBodyLabel = "Text Message Body";
+    $scope.noActiveTopicSubscribersFound = "No Subscribers Found";
+    $scope.clientIdHeading = "Subscriber Id";
+    $scope.clientJoinDateHeading = "Join Date";
 
 
     //
@@ -28,6 +33,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Cancel';
     $scope.postJmsMessageButtonLabel = 'Push To Queue';
+    $scope.postJmsTopicMessageButtonLabel = 'Broadcast Message';
     $scope.clearJmsQueueButtonLabel = 'Clear Queue';
 
 
@@ -63,10 +69,17 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     //
     // Data Objects
+    $scope.mockTypeDefinitions = MockTypeDefinitions;
+
+    $scope.jmsMockTypes = [
+       { "name" : "JMS Queue", "value" : MockTypeDefinitions.MockTypeQueue },
+       { "name" : "JMS Topic", "value" : MockTypeDefinitions.MockTypeTopic }
+    ];
+
     $scope.endpoint = {
         "name" : null,
         "status" : globalVars.ActiveStatus,
-        "jmsMockType" : MockTypeDefinitions.MockTypeQueue
+        "jmsMockType" : lookupJmsMockType(MockTypeDefinitions.MockTypeQueue)
     };
 
     var extId = null;
@@ -79,12 +92,18 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
         "body" : null
     };
 
+    $scope.jmsTopicMessage = {
+        "body" : null
+    };
+
+    $scope.activeSubscribers = [];
+
     if (!isNew) {
 
         $scope.endpoint = {
             "name" : $rootScope.jmsEndpointData.name,
             "status" : $rootScope.jmsEndpointData.status,
-            "jmsMockType" : $rootScope.jmsEndpointData.jmsMockType
+            "jmsMockType" : lookupJmsMockType($rootScope.jmsEndpointData.jmsMockType)
         };
 
         extId = $rootScope.jmsEndpointData.extId;
@@ -102,6 +121,10 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
         clearEndpointData();
     };
 
+    $scope.doSelectJmsMockType = function(mt) {
+        $scope.endpoint.jmsMockType = mt;
+    };
+
     $scope.doSaveJmsEndpoint = function() {
 
         closeAlertFunc();
@@ -112,11 +135,17 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             return false;
         }
 
+        var req = {
+            "name" : $scope.endpoint.name,
+            "status" : $scope.endpoint.status,
+            "jmsMockType" : $scope.endpoint.jmsMockType.value
+        };
+
         // Save JMS endpoint
         if (!isNew) {
-            restClient.doPut($http, '/jmsmock/' + extId, $scope.endpoint, serverCallbackFunc);
+            restClient.doPut($http, '/jmsmock/' + extId, req, serverCallbackFunc);
         } else {
-            restClient.doPost($http, '/jmsmock', $scope.endpoint, serverCallbackFunc);
+            restClient.doPost($http, '/jmsmock', req, serverCallbackFunc);
         }
 
     };
@@ -140,7 +169,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             "mimeType" : "text/plain"
         };
 
-        restClient.doPost($http, '/jms', req, function(status, data) {
+        restClient.doPost($http, '/jms/queue', req, function(status, data) {
 
             if (status != 204) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -171,11 +200,27 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
+    $scope.doPostJMSTopicBroadcastMessage = function() {
+
+
+
+    };
+
 
     //
     // Internal Functions
     function clearEndpointData() {
         $rootScope.jmsEndpointData = null;
+    }
+
+    function lookupJmsMockType(mockType) {
+        for (var i=0; i < $scope.jmsMockTypes.length; i++) {
+            if (mockType == $scope.jmsMockTypes[i].value) {
+                return $scope.jmsMockTypes[i];
+            }
+        }
+
+        return null;
     }
 
     function checkAutoRefreshStatus(callback) {

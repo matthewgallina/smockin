@@ -46,40 +46,114 @@
             </div>
             <div class="col-sm-6">
 
+                <div class="form-group">
+                    <div id="jms-mock-type" class="btn-group" uib-dropdown>
+                        <button id="jms-mock-type-button" type="button" class="btn btn-default" uib-dropdown-toggle>
+                            {{ endpoint.jmsMockType.name }} <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem" ng-repeat="mt in jmsMockTypes">
+                                <a ng-click="doSelectJmsMockType(mt)">{{ mt.name }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <br />
                 <br />
 
-                <uib-accordion id="manage-jms-queue" close-others="false" ng-if="!isNew">
-                    <div uib-accordion-group class="panel panel-default">
+                <div ng-show="endpoint.jmsMockType.value == mockTypeDefinitions.MockTypeQueue">
 
-                        <uib-accordion-heading>
-                                <span ng-click="mp.isOpen = !mp.isOpen">
-                                    {{ manageJmsQueueLabel }}
-                                </span>
+                    <uib-accordion id="manage-jms-queue" close-others="false" ng-if="!isNew">
+                        <div uib-accordion-group class="panel panel-default">
+
+                            <uib-accordion-heading>
+                                    <span ng-click="mp.isOpen = !mp.isOpen">
+                                        {{ manageJmsQueueLabel }}
+                                    </span>
+                                <span class="pull-right">
+                                        <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
+                                    </span>
+                            </uib-accordion-heading>
+
+                            <h5>{{ sendJMSMessageLabel }}</h5>
+                            <br />
+
+                            <div class="form-group">
+                                <label for="text-jms-message-body" class="ng-binding">{{ textMessageBodyLabel }}</label>
+                                <textarea id="text-jms-message-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="jmsMessage.body"></textarea>
+                            </div>
+
                             <span class="pull-right">
-                                    <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
-                                </span>
-                        </uib-accordion-heading>
+                                <button class="btn btn-success" type="button" ng-click="doPostJMSMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsMessageButtonLabel }}</button>
+                            </span>
 
-                        <h5>{{ sendJMSMessageLabel }}</h5>
-                        <br />
+                            <br />
+                            <br />
+                            <hr />
 
-                        <div class="form-group">
-                            <label for="text-jms-message-body" class="ng-binding">{{ textMessageBodyLabel }}</label>
-                            <textarea id="text-jms-message-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="jmsMessage.body"></textarea>
+                            <button id="clear-jms-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
+
                         </div>
+                    </uib-accordion>
 
-                        <span class="pull-right">
-                            <button class="btn btn-success" type="button" ng-click="doPostJMSMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsMessageButtonLabel }}</button>
-                        </span>
+                </div>
 
-                        <br />
-                        <br />
-                        <hr />
+                <div ng-show="endpoint.jmsMockType.value == mockTypeDefinitions.MockTypeTopic">
 
-                        <button id="clear-jms-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
+                    <uib-accordion id="manage-jms-topic" close-others="false" ng-if="!isNew">
+                        <div uib-accordion-group class="panel panel-default">
 
-                    </div>
-                </uib-accordion>
+                            <uib-accordion-heading>
+                                    <span ng-click="mp.isOpen = !mp.isOpen">
+                                        {{ manageJmsTopicLabel }}
+                                    </span>
+                                <span class="pull-right">
+                                        <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
+                                    </span>
+                            </uib-accordion-heading>
+
+                            <h5>{{ topicSubscribersLabel }}</h5>
+
+                            <br />
+
+                            <div class="no-results-found" ng-if="activeSubscribers.length == 0">
+                                {{ noActiveTopicSubscribersFound }}
+                            </div>
+
+                            <div class="subscribers-table-div" ng-if="activeSubscribers.length > 0">
+                                <table class="table table-striped rule-table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ clientIdHeading }}</th>
+                                            <th>{{ clientJoinDateHeading }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="as in activeSubscribers">
+                                            <td class="conn-client-cell">{{ as.id }}</td>
+                                            <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <hr />
+
+                                <div class="form-group">
+                                    <label for="text-jms-topic-message-body" class="ng-binding">{{ textMessageBodyLabel }}</label>
+                                    <textarea id="text-jms-topic-message-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="jmsTopicMessage.body"></textarea>
+                                </div>
+
+                                <span class="pull-right">
+                                    <button class="btn btn-success" type="button" ng-click="doPostJMSTopicBroadcastMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsTopicMessageButtonLabel }}</button>
+                                </span>
+
+                            </div>
+
+                        </div>
+                    </uib-accordion>
+
+                </div>
 
             </div>
         </div>

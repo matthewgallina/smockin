@@ -42,3 +42,29 @@
 #text-jms-message-body {
     height: 130px;
 }
+
+#jms-mock-type {
+    margin-top: 25px;
+    width: 100%;
+}
+
+#jms-mock-type-button {
+    width: 100%;
+    text-align: left;
+}
+
+.no-results-found {
+    min-height: 150px;
+    margin-top: 100px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.subscribers-table-div {
+    min-height: 250px;
+}
+
+.conn-client-cell {
+    vertical-align: middle !important;
+    font-size: 12px;
+}

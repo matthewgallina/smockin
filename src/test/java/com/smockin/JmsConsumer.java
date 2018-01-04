@@ -1,20 +1,21 @@
 package com.smockin;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.jms.*;
 
 /**
- * Created by mgallina on 20/10/17.
+ * Created by mgallina.
  */
+@Ignore
 public class JmsConsumer {
-
 
     @Test
     public void start() throws Exception {
 
-        // curl -i -H "Content-Type: application/json" -X POST -d '{ "queueName" : "dogs", "body":"Hello" }' http://mgallina-desktop:8000/jms
+        // curl -i -H "Content-Type: application/json" -X POST -d '{ "name" : "dogs", "body" : "Hello", "mimeType" : "text/plain" }' http://mgallina-desktop:8000/jms/queue
 
         final String brokerUrl = "tcp://localhost:61616";
         final String queueName = "dogs";
@@ -27,7 +28,7 @@ public class JmsConsumer {
 
         final Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
         final MessageConsumer consumer = session.createConsumer(session.createQueue(queueName));
-        final Message message = consumer.receive(20000);
+        final Message message = consumer.receive(30000); // 30 secs
 
         if (message instanceof TextMessage) {
 

@@ -70,7 +70,7 @@
                             <tr ng-repeat="x in rs.data">
                                 <td>{{ x.path }}</td>
                                 <td>{{ x.method }}</td>
-                                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' }}</th>
+                                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.status | lowercase}}">
                                     {{ x.status }}

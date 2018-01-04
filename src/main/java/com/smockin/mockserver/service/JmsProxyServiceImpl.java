@@ -44,7 +44,29 @@ public class JmsProxyServiceImpl implements JmsProxyService {
         }
 
         if (MediaType.TEXT_PLAIN_VALUE.equals(mimeType)) {
-            mockedJmsServerEngine.sendTextMessage(name, body, timeToLive);
+            mockedJmsServerEngine.sendTextMessageToQueue(name, body, timeToLive);
+        } else {
+            throw new ValidationException("Unsupported mimeType: " + mimeType);
+        }
+
+    }
+
+    @Override
+    public void pushToTopic(final String name, final String body, final String mimeType) throws ValidationException {
+        logger.debug("pushToTopic called");
+
+        if (StringUtils.isBlank(name)) {
+            throw new ValidationException("name is required");
+        }
+        if (StringUtils.isBlank(body)) {
+            throw new ValidationException("body is required");
+        }
+        if (StringUtils.isBlank(mimeType)) {
+            throw new ValidationException("mimeType is required");
+        }
+
+        if (MediaType.TEXT_PLAIN_VALUE.equals(mimeType)) {
+            mockedJmsServerEngine.broadcastTextMessageToTopic(name, body);
         } else {
             throw new ValidationException("Unsupported mimeType: " + mimeType);
         }

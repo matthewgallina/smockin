@@ -20,10 +20,18 @@ public class JmsProxiedController {
     @Autowired
     private JmsProxyService jmsProxyService;
 
-    @RequestMapping(path="/jms", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> postJms(@RequestBody final JmsProxiedDTO dto) throws ValidationException {
+    @RequestMapping(path="/jms/queue", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> postToQueue(@RequestBody final JmsProxiedDTO dto) throws ValidationException {
 
         jmsProxyService.pushToQueue(dto.getName(), dto.getBody(), dto.getMimeType(), 0);
+
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/jms/topic", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> postToTopic(@RequestBody final JmsProxiedDTO dto) throws ValidationException {
+
+        jmsProxyService.pushToTopic(dto.getName(), dto.getBody(), dto.getMimeType());
 
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }

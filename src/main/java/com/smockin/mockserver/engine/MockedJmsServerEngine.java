@@ -2,6 +2,7 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.entity.JmsMock;
+import com.smockin.admin.persistence.enums.JmsMockTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -45,8 +46,8 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         // Build JMS broker
         initServerConfig(config);
 
-        // Define JMS queues
-        buildQueues(data);
+        // Define JMS queue and topic destinations
+        buildDestinations(data);
 
         // Start JMS Broker
         initServer(config.getPort());
@@ -105,7 +106,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
     }
 
-    public void sendTextMessage(final String queueName, final String textBody, final long timeToLive) {
+    public void sendTextMessageToQueue(final String queueName, final String textBody, final long timeToLive) {
 
         Connection connection = null;
         Session session = null;
@@ -156,6 +157,58 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         }
 
     }
+
+    public void broadcastTextMessageToTopic(final String topicName, final String textBody) {
+
+        Connection connection = null;
+        Session session = null;
+        MessageProducer producer = null;
+
+        try {
+
+            if (!getCurrentState().isRunning()) {
+                return;
+            }
+
+            connection = connectionFactory.createConnection();
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            producer = session.createProducer(session.createTopic(topicName));
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+            producer.send(session.createTextMessage(textBody));
+
+        } catch (MockServerException | JMSException ex) {
+            logger.error("Pushing message to topic " + topicName, ex);
+        } finally {
+
+            if (producer != null) {
+                try {
+                    producer.close();
+                } catch (JMSException ex) {
+                    logger.error("Closing JMS topic producer", ex);
+                }
+            }
+
+            if (session != null) {
+                try {
+                    session.close();
+                } catch (JMSException ex) {
+                    logger.error("Closing JMS topic session", ex);
+                }
+            }
+
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (JMSException ex) {
+                    logger.error("Closing JMS topic connection", ex);
+                }
+            }
+
+        }
+
+    }
+
 
     void initServerConfig(final MockedServerConfigDTO config) throws MockServerException {
         logger.debug("initServerConfig called");
@@ -213,8 +266,8 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     }
 
     // Expects JmsQueueMock to be detached
-    void buildQueues(final List<JmsMock> mocks) throws MockServerException {
-        logger.debug("buildQueues called");
+    void buildDestinations(final List<JmsMock> mocks) throws MockServerException {
+        logger.debug("buildDestinations called");
 
         synchronized (monitor) {
             mocks.forEach(mock ->
