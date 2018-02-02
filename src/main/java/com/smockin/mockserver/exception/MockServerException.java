@@ -13,4 +13,8 @@ public class MockServerException extends Exception {
         super(ex);
     }
 
+    public MockServerException(String msg, Throwable ex) {
+        super(msg, ex);
+    }
+
 }
