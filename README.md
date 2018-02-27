@@ -87,7 +87,7 @@ QUICK START
 
 
 
-TROUBLE SHOOTING
+TROUBLESHOOTING
 
     sMockin's log files are located within your user home directory here: .smockin/log/smockin.log
 
