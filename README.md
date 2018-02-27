@@ -87,6 +87,21 @@ QUICK START
 
 
 
+TROUBLE SHOOTING
+
+    sMockin's log files are located within your user home directory here: .smockin/log/smockin.log
+
+    If you are still struggling to get sMockin to run, then we recommend cloning this from githib and
+    running it from source instead.
+
+    e.g.
+
+    1. git clone https://github.com/mgtechsoftware/smockin.git
+    2. ./install.sh
+    3. ./start.sh -DEBUG
+
+
+
 UPDATING SMOCKIN TO LATER VERSIONS
 
     Moving from an older version of SMOCKIN to a later version is simple.
