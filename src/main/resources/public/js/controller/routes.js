@@ -16,5 +16,10 @@ app.config(function($routeProvider) {
         .when("/jms_endpoint", {
             templateUrl : "jms_endpoint_info.html",
             controller : "jmsEndpointInfoController"
+        })
+        .when("/ftp_endpoint", {
+            templateUrl : "ftp_endpoint_info.html",
+            controller : "ftpEndpointInfoController"
         });
+
 });

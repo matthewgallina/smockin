@@ -18,6 +18,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.endpointHeading = (isNew) ? 'New JMS Endpoint' : 'JMS Endpoint';
     $scope.endpointStatusLabel = 'Status:';
     $scope.nameLabel = 'Name:';
+    $scope.jmsNamePlaceHolderTxt = 'Enter a name for this Queue or Topic';
     $scope.manageJmsQueueLabel = "Manage JMS Queue";
     $scope.manageJmsTopicLabel = "Manage JMS Topic";
     $scope.sendJMSMessageLabel = "Push Message to Queue";

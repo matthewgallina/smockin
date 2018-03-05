@@ -2,6 +2,7 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
@@ -10,6 +11,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.engine.MockedFtpServerEngine;
 import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
@@ -37,10 +39,16 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private MockedJmsServerEngine mockedJmsServerEngine;
 
     @Autowired
+    private MockedFtpServerEngine mockedFtpServerEngine;
+
+    @Autowired
     private RestfulMockDAO restfulMockDefinitionDAO;
 
     @Autowired
     private JmsMockDAO jmsQueueMockDAO;
+
+    @Autowired
+    private FtpMockDAO ftpMockDAO;
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
@@ -138,6 +146,58 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     public MockServerState getJmsServerState() throws MockServerException {
         return mockedJmsServerEngine.getCurrentState();
+    }
+
+
+    //
+    // FTP
+    public MockedServerConfigDTO startFtp() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.FTP);
+
+            if (getFtpServerState().isRunning()) {
+                logger.warn("Cannot start FTP server as it is already running");
+                return dto;
+            }
+
+            mockedFtpServerEngine.start(dto, ftpMockDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
+
+            return dto;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting FTP Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock FTP server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting FTP Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    public void shutdownFtp() throws MockServerException {
+
+        try {
+            mockedFtpServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping FTP Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    public MockedServerConfigDTO restartFtp() throws MockServerException {
+
+        if (getFtpServerState().isRunning()) {
+            shutdownFtp();
+        }
+
+        return startFtp();
+
+    }
+
+    public MockServerState getFtpServerState() throws MockServerException {
+        return mockedFtpServerEngine.getCurrentState();
     }
 
 

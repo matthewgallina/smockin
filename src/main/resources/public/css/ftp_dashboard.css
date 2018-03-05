@@ -1,0 +1,34 @@
+[ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+}
+
+.start-button {
+    margin-top: 13px;
+    width: 150px;
+    height: 40px;
+}
+
+.stop-button {
+    margin-top: 25px;
+    width: 150px;
+    height: 40px;
+}
+
+#server-status-running {
+    margin-left: 20px;
+    color: #53c653;
+}
+
+#server-status-stopped {
+    margin-left: 20px;
+    color: #ff8080;
+}
+
+#server-status-restarting {
+    margin-left: 20px;
+    color: orange;
+}
+
+#add-endpoint-button {
+    margin-top: 15px;
+}

@@ -77,6 +77,23 @@ public class CoreDataHandler {
             jmsServerConfig.getNativeProperties().put("BROKER_URL", "tcp://localhost:");
 
             serverConfigDAO.save(jmsServerConfig);
+
+        }
+
+        if (serverConfigDAO.findByServerType(ServerTypeEnum.FTP) == null) {
+
+            logger.info("Installing FTP Server Config DB Defaults...");
+
+            final ServerConfig ftpServerConfig = new ServerConfig();
+            ftpServerConfig.setServerType(ServerTypeEnum.FTP);
+            ftpServerConfig.setPort(8002);
+            ftpServerConfig.setMaxThreads(0);
+            ftpServerConfig.setMinThreads(0);
+            ftpServerConfig.setTimeOutMillis(0);
+            ftpServerConfig.setAutoStart(false);
+            ftpServerConfig.setAutoRefresh(false);
+
+            serverConfigDAO.save(ftpServerConfig);
         }
 
     }

@@ -1,5 +1,5 @@
 
-app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, utils, globalVars, restClient) {
+app.controller('ftpDashboardController', function($scope, $rootScope, $location, $http, utils, globalVars, restClient) {
 
 
     //
@@ -7,29 +7,27 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     var MockServerRunningStatus = globalVars.MockServerRunningStatus;
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
     var MockServerRestartStatus = globalVars.MockServerRestartStatus;
-    var RestartServerRequired = $routeParams.restart;
 
 
     //
     // Labels
-    $scope.mockServerStatusLabel = 'JMS Mock Server Status:';
-    $scope.serverConfigLabel = '(edit settings)';
+    $scope.mockServerStatusLabel = 'FTP Mock Server Status:';
+//  $scope.serverConfigLabel = '(edit settings)';
     $scope.noDataFoundMsg = 'No Data Found';
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated JMS Queues';
+    $scope.endpointsHeading = 'Simulated FTP Repositories';
 
-    $scope.nameTableLabel = 'Name';
+    $scope.nameTableLabel = 'Username';
     $scope.dateCreatedTableLabel = 'Date Created';
-    $scope.mockTypeTableLabel = 'JMS Mock Type';
     $scope.statusTableLabel = 'Status';
     $scope.actionTableLabel = 'Action';
 
 
     //
     // Buttons
-    $scope.addEndpointButtonLabel = 'New JMS Endpoint';
+    $scope.addEndpointButtonLabel = 'New FTP Repository';
     $scope.viewEndpointButtonLabel = 'View';
 
 
@@ -42,28 +40,29 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     //
     // Data
-    $scope.jmsServices = [];
+    $scope.ftpServices = [];
     $scope.mockServerStatus = null;
 
 
     //
     // Scoped Functions
-    $scope.doOpenJmsEndpointInfo = function(jmsEndpointData) {
-        $rootScope.jmsEndpointData = jmsEndpointData;
-        $location.path("/jms_endpoint");
+    $scope.doOpenFtpInfo = function(ftpData) {
+        $rootScope.ftpEndpointData = ftpData;
+        $location.path("/ftp_endpoint");
     };
 
-    $scope.startJmsMockServer = function() {
 
-        utils.showLoadingOverlay('Starting JMS Server');
+    $scope.startFtpMockServer = function() {
 
-        restClient.doPost($http, '/mockedserver/jms/start', {}, function(status, data) {
+        utils.showLoadingOverlay('Starting FTP Server');
+
+        restClient.doPost($http, '/mockedserver/ftp/start', {}, function(status, data) {
 
             utils.hideLoadingOverlay();
 
             if (status == 200) {
                 $scope.mockServerStatus = MockServerRunningStatus;
-                showAlert("JMS Server Started (on port " + String(data.port) + ")", "success");
+                showAlert("FTP Server Started (on port " + String(data.port) + ")", "success");
                 return;
             }
 
@@ -72,17 +71,17 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     }
 
-    $scope.stopJmsMockServer = function () {
+    $scope.stopFtpMockServer = function () {
 
-        utils.showLoadingOverlay('Stopping JMS Server');
+        utils.showLoadingOverlay('Stopping FTP Server');
 
-        restClient.doPost($http, '/mockedserver/jms/stop', {}, function(status, data) {
+        restClient.doPost($http, '/mockedserver/ftp/stop', {}, function(status, data) {
 
             utils.hideLoadingOverlay();
 
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
-                showAlert("JMS Server Stopped", "success");
+                showAlert("FTP Server Stopped", "success");
                 return;
             }
 
@@ -94,9 +93,9 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     //
     // Internal Functions
-    function checkJmsServerStatus() {
+    function checkFtpServerStatus() {
 
-        restClient.doGet($http, '/mockedserver/jms/status', function(status, data) {
+        restClient.doGet($http, '/mockedserver/ftp/status', function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -109,11 +108,11 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     };
 
     /*
-    function restartJmsMockServer(callback) {
+    function restartFtpMockServer(callback) {
 
-        utils.showLoadingOverlay('Updating JMS Server');
+        utils.showLoadingOverlay('Updating FTP Server');
 
-        restClient.doPost($http, '/mockedserver/jms/restart', {}, function(status, data) {
+        restClient.doPost($http, '/mockedserver/ftp/restart', {}, function(status, data) {
 
             if (status == 200) {
                 callback(data.port);
@@ -128,16 +127,16 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     function loadTableData() {
 
-        $scope.jmsServices = [];
+        $scope.ftpServices = [];
 
-        restClient.doGet($http, '/jmsmock', function(status, data) {
+        restClient.doGet($http, '/ftpmock', function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            $scope.jmsServices = data;
+            $scope.ftpServices = data;
         });
 
     }
@@ -146,6 +145,6 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     //
     // Init Page
     loadTableData();
-    checkJmsServerStatus();
+    checkFtpServerStatus();
 
 });

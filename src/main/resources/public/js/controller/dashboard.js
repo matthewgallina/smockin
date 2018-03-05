@@ -7,12 +7,14 @@ app.controller('dashboardController', function($scope, $routeParams, $timeout, g
     var tabIndexes = {
         'TCP' : 0,
         'JMS' : 1,
+        'FTP' : 2
     }
 
     //
     // Labels
     $scope.tcpHeading = 'TCP';
     $scope.jmsHeading = 'JMS';
+    $scope.ftpHeading = 'FTP';
 
 
     //

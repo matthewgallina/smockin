@@ -71,6 +71,30 @@ public class MockedServerEngineController {
 
 
     //
+    // FTP Server
+    @RequestMapping(path="/mockedserver/ftp/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> startFtp() throws ValidationException, MockServerException {
+        return new ResponseEntity<MockedServerConfigDTO>(mockedServerEngineService.startFtp(), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/ftp/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> stopFtp() throws MockServerException {
+        mockedServerEngineService.shutdownFtp();
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/mockedserver/ftp/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> restartFtp() throws MockServerException {
+        return new ResponseEntity<MockedServerConfigDTO>(mockedServerEngineService.restartFtp(), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/ftp/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockServerState> ftpStatus() throws MockServerException {
+        return new ResponseEntity<MockServerState>(mockedServerEngineService.getFtpServerState(), HttpStatus.OK);
+    }
+
+
+    //
     // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {

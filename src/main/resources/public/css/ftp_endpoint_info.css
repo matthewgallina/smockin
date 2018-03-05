@@ -1,0 +1,28 @@
+
+.restart-mock-server-instruction {
+    text-align: left;
+    font-size: 12px;
+    margin-top: 8px;
+}
+
+.action-buttons {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.ftp-endpoint-heading {
+    margin-top: 4px;
+}
+
+#endpoint-status {
+    margin-left: 20px;
+}
+
+#endpoint-status-button {
+    width: 100px;
+}
+
+.endpoint-status-row {
+    text-align: right;
+}
