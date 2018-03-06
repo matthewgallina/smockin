@@ -1,4 +1,4 @@
-# SMOCKIN Version 1.3.1
+# sMockin Version 1.4.0
 
 Intelligent API simulation for application development and QA testing
 
@@ -9,14 +9,14 @@ Intelligent API simulation for application development and QA testing
 
 OVERVIEW
 
-    SMOCKIN is a light framework used for setting up API simulations in a bid to aid development
+    sMockin is a light framework used for setting up API simulations in a bid to aid development
     and QA testing in the ever growing realm of the 'Internet of Things'.
 
     Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working
-    with complex SOA/IoT infrastructure, SMOCKIN can help by mimicking any services that would be
+    with complex SOA/IoT infrastructure, sMockin can help by mimicking any services that would be
     otherwise too difficult or time consuming to set up.
 
-    With the ability to vary content using easy to set up sequences and rules, SMOCKIN can help
+    With the ability to vary content using easy to set up sequences and rules, sMockin can help
     simulate all of your use case scenarios.
 
     Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
@@ -82,7 +82,7 @@ QUICK START
             curl -i -X GET http://localhost:8001/hello
 
 
-    Further information on running, configuring and trouble shooting SMOCKIN, can be found within the
+    Further information on running, configuring and trouble shooting sMockin, can be found within the
     README.txt file bundled within this project.
 
 
@@ -95,24 +95,32 @@ TROUBLESHOOTING
 
     e.g
 
-    git clone https://github.com/mgtechsoftware/smockin.git
-    ./install.sh
-    ./start.sh -DEBUG
+        git clone https://github.com/mgtechsoftware/smockin.git
+
+        mvn3 clean install
+
+        ./install.sh
+
+        Then to start sMockin using the in-mem DB:
+            mvn3 spring-boot:run
+
+        Or to run sMockin with remote debugging (port 8008):
+            ./start.sh -DEBUG
 
 
 
-UPDATING SMOCKIN TO LATER VERSIONS
+UPDATING TO LATER VERSIONS
 
-    Moving from an older version of SMOCKIN to a later version is simple.
+    Moving from an older version of sMockin to a later version is simple.
 
     All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
-    Therefore as long as this settings dir is preserved then updating SMOCKIN is simply a case of deleting
+    Therefore as long as this settings dir is preserved then updating sMockin is simply a case of deleting
     the current application and replacing this with a later version.
 
     The bundled 'start' script will always automatically handle any data migration that may need to take place.
 
-    (Please note the above text, is only applicable to mainline 'master' releases of SMOCKIN where neither the
+    (Please note the above text, is only applicable to mainline 'master' releases of sMockin where neither the
     code base or database of the previous/outgoing version have been subject to personal / customised changes).
 
 
@@ -120,7 +128,7 @@ UPDATING SMOCKIN TO LATER VERSIONS
 LICENCE
 
 
-    Smockin is licensed according to the terms of the Apache License, Version 2.0.
+    sMockin is licensed according to the terms of the Apache License, Version 2.0.
 
     The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 
@@ -128,7 +136,7 @@ LICENCE
 
 ACKNOWLEDGEMENTS / THIRD PARTIES
 
-    SMOCKIN is built upon the following open source frameworks:
+    sMockin is built upon the following open source frameworks:
 
         Spring Boot                 -       https://projects.spring.io/spring-boot
         Hibernate                   -       http://hibernate.org
@@ -149,9 +157,9 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
 
 ABOUT
 
-    SMOCKIN is designed and actively maintained by MG Tech Software Ltd.
+    sMockin is designed and actively maintained by MG Tech Software Ltd.
 
-    Why the name SMOCKIN? Whilst it may sound like an old english middle ages embroidery technique, the name
+    Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name
     actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra
     letter to play on the concept of software mocking and there you have it. 
     

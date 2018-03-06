@@ -46,6 +46,42 @@
             </div>
             <div class="col-sm-6">
 
+                <uib-accordion id="manage-ftp-repo" close-others="false" ng-if="!isNew">
+                    <div uib-accordion-group class="panel panel-default manage-ftp-repo-panel">
+
+                        <uib-accordion-heading>
+                            <span ng-click="mp.isOpen = !mp.isOpen">
+                                {{ manageFtpLabel }}
+                            </span>
+                            <span class="pull-right">
+                                        <i class="glyphicon" ng-click="mp.isOpen = !mp.isOpen" ng-class="{'glyphicon-chevron-down': mp.isOpen, 'glyphicon-chevron-right': !mp.isOpen}"></i>
+                                    </span>
+                        </uib-accordion-heading>
+
+                        <h5>{{ uploadFTPMessageLabel }}</h5>
+
+                        <br />
+
+                        <form>
+
+                            <label for="ftpFile" class="upload-select-file-button btn btn-default">
+                                <span ng-if="ftpFile.data == null">{{ selectFileLabel }}</span>
+                                <span ng-if="ftpFile.data != null">{{ ftpFile.data.name }}</span>
+                            </label>
+                            <input id="ftpFile" type="file" form-file-model="ftpFile.data" />
+
+                            <br />
+                            <br />
+
+                            <button class="btn btn-success upload-button" type="button" ng-click="doUploadFileToFTP()" ng-disabled="endpoint.status == inActiveStatus" ng-disabled="disableForm">
+                                <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ uploadFTPButtonLabel }}
+                            </button>
+
+                        </form>
+
+                    </div>
+                </uib-accordion>
+
             </div>
         </div>
 

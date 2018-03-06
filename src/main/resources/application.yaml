@@ -18,9 +18,12 @@ logging:
     file: "%d %-5level [%thread] %logger : %msg%n"
   level:
     org.springframework: WARN
-    com.smockin: INFO
+    com.smockin: WARN
     org.hibernate: WARN
     ROOT: WARN
+
+smockin:
+  ftp.root.dir: "${user.home}/.smockin/ftp/"
 
 ---
 # NOTE

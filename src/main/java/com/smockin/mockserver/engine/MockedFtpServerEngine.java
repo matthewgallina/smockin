@@ -20,6 +20,7 @@ import org.apache.ftpserver.usermanager.impl.WritePermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +36,6 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
     private final Logger logger = LoggerFactory.getLogger(MockedFtpServerEngine.class);
 
-    private final String ftpHomeDir = System.getProperty("user.home") + File.separator + ".smockin/ftp" + File.separator;
-
     private UserManager userManager = null; // not sure this is thread safe, so handling in synchronised block
     private FtpServer server = null;        // not sure this is thread safe, so handling in synchronised block
 
@@ -45,6 +44,9 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
     @Autowired
     private FtpMockDAO ftpMockDAO;
+
+    @Value("${smockin.ftp.root.dir}")
+    private String ftpHomeDir;
 
     /*
     public static void main(String[] args) {

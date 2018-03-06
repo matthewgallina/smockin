@@ -26,3 +26,23 @@
 .endpoint-status-row {
     text-align: right;
 }
+
+.manage-ftp-repo-panel {
+    margin-top: 24px;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-select-file-button {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.upload-button {
+    width: 100%;
+}

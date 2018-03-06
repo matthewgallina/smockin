@@ -3,7 +3,10 @@ package com.smockin.admin.service;
 import com.smockin.admin.dto.FtpMockDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -15,5 +18,6 @@ public interface FtpMockService {
     void updateEndpoint(final String mockExtId, final FtpMockDTO dto) throws RecordNotFoundException;
     void deleteEndpoint(final String mockExtId) throws RecordNotFoundException;
     List<FtpMockResponseDTO> loadAll();
+    void uploadFile(final String mockExtId, final MultipartFile file) throws RecordNotFoundException, ValidationException, IOException;
 
 }

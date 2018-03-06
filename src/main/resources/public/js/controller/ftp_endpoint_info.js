@@ -1,5 +1,5 @@
 
-app.controller('ftpEndpointInfoController', function($scope, $rootScope, $location, $http, $timeout, utils, globalVars, restClient) {
+app.controller('ftpEndpointInfoController', function($scope, $rootScope, $location, $http, $timeout, utils, globalVars, restClient, uploadClient) {
 
 
     //
@@ -14,10 +14,14 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.nameLabel = 'Username:';
     $scope.usernamePlaceHolderTxt = 'Enter a username for the FTP repository';
     $scope.endpointStatusLabel = 'Status:';
+    $scope.manageFtpLabel = 'Manage FTP Repository';
+    $scope.uploadFTPMessageLabel = 'Upload to Repository';
+    $scope.selectFileLabel = 'Select File...';
 
 
     //
     // Buttons
+    $scope.uploadFTPButtonLabel = 'Upload to Repository';
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Cancel';
 
@@ -64,6 +68,7 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.activeStatus = globalVars.ActiveStatus;
     $scope.inActiveStatus = globalVars.InActiveStatus;
+    $scope.disableForm = false;
 
     if (!isNew) {
 
@@ -74,6 +79,10 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
 
         extId = $rootScope.ftpEndpointData.extId;
     }
+
+    $scope.ftpFile = {
+        data : null
+    };
 
 
     //
@@ -94,7 +103,7 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
         // Validation
         if (utils.isBlank($scope.endpoint.name)) {
             showAlert("'username' is required");
-            return false;
+            return;
         }
 
         var req = {
@@ -113,6 +122,42 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.doSetEndpointStatus = function(s) {
         $scope.endpoint.status = s;
+    };
+
+    $scope.doUploadFileToFTP = function() {
+
+        closeAlertFunc();
+
+        if (isNew) {
+            return;
+        }
+
+        if ($scope.ftpFile.data == null) {
+            showAlert("Please select a file to upload");
+            return;
+        }
+
+        $scope.disableForm = true;
+
+        var fd = new FormData();
+        fd.append('file', $scope.ftpFile.data);
+
+        uploadClient.doPost($http, '/ftpmock/' + extId + '/upload', fd, function(status, data) {
+
+            if (status != 201) {
+                showAlert(globalVars.GeneralErrorMessage);
+                $scope.disableForm = false;
+                return;
+            }
+
+            $scope.ftpFile = {
+                data : null
+            }
+
+            showAlert("File uploaded", "success");
+            $scope.disableForm = false;
+        });
+
     };
 
 

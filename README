@@ -1,4 +1,4 @@
-SMOCKIN Version 1.3.1
+sMockin Version 1.4.0
 
 Intelligent API simulation for application development and QA testing
 
@@ -57,18 +57,18 @@ GETTING STARTED
                 chmod +x start.sh
                 chmod +x shutdown.sh
 
-            - Run the script 'start.sh' to build and run SMOCKIN like so (this also launches the default H2 database in TCP mode.):
+            - Run the script 'start.sh' to build and run sMockin like so (this also launches the default H2 database in TCP mode.):
 
         Windows
 
-            - Run the script 'start.bat' to build and run SMOCKIN like so (this also launches the default H2 database in TCP mode.):
+            - Run the script 'start.bat' to build and run sMockin like so (this also launches the default H2 database in TCP mode.):
 
 
-        SMOCKIN runs off port 8000 by default and accessible from this address:
+        sMockin runs off port 8000 by default and accessible from this address:
 
             http://localhost:8000/index.html
 
-        For those who simply want to see SMOCKIN in action, there is a script available which will add a small
+        For those who simply want to see sMockin in action, there is a script available which will add a small
         data set of predefined mocked endpoints and rules to the DB. To install this, please see the section
         'DEVELOPMENT SCRIPTS > Sample Data' below.
 
@@ -77,16 +77,16 @@ GETTING STARTED
 
         Linux / OSX
 
-            - Both SMOCKIN and the H2 database can be easily shutdown by launching the 'shutdown.sh' script:
+            - Both sMockin and the H2 database can be easily shutdown by launching the 'shutdown.sh' script:
 
         Windows
 
-            - Simply close the respective command shells for both the H2 database and Smockin.
+            - Simply close the respective command shells for both the H2 database and sMockin.
 
 
     Uninstalling:
 
-        - To uninstall Smockin, firstly shutdown both the Smockin application and then H2 database (See 'Stopping' above).
+        - To uninstall sMockin, firstly shutdown both the sMockin application and then H2 database (See 'Stopping' above).
 
         - Then run the following script:
 
@@ -98,16 +98,16 @@ GETTING STARTED
 
                 Run the script 'uninstall.bat'
 
-        (This will remove any config and db files relating to Smockin from your system.)
+        (This will remove any config and db files relating to sMockin from your system.)
 
-        - Finally you can simply erase the main Smockin application directory from wherever you copied it on your system.
+        - Finally you can simply erase the main sMockin application directory from wherever you copied it on your system.
 
 
     Development Modes (Linux & OSX & running from source only):
 
-        By default 'start.sh' starts the SMOCKIN asynchronously (in the background) using a H2 DB (in TCP mode).
+        By default 'start.sh' starts sMockin asynchronously (in the background) using a H2 DB (in TCP mode).
 
-        To aid development, SMOCKIN can also be started in the following modes:
+        To aid development, sMockin can also be started in the following modes:
 
             DEBUG        Allows remote debugging on port 8008.
                 e.g:     ./start.sh -DEBUG
@@ -128,12 +128,12 @@ DEVELOPMENT SCRIPTS (Linux & OSX only)
 
     A few utility scripts can be found under the 'client_scripts' dir.
 
-    (these scripts all assume SMOCKIN, is running locally from port 8000.)
+    (these scripts all assume sMockin, is running locally from port 8000.)
 
 
     Sample Data:
 
-        To install the sample data set to the SMOCKIN DB:
+        To install the sample data set to the sMockin DB:
 
             -  Navigate to the 'client_scripts' dir.
 
@@ -141,7 +141,7 @@ DEVELOPMENT SCRIPTS (Linux & OSX only)
 
                 chmod +x apply_sample_data.sh
 
-            - Assuming both SMOCKIN (and the H2 DB if applicable) are running, execute the script:
+            - Assuming both sMockin (and the H2 DB if applicable) are running, execute the script:
 
                 ./apply_sample_data.sh
 
@@ -153,24 +153,24 @@ DEVELOPMENT SCRIPTS (Linux & OSX only)
 
 
 
-UPDATING SMOCKIN TO LATER VERSIONS
+UPDATING TO LATER VERSIONS
 
-    Moving from an older version of SMOCKIN to a later version is simple.
+    Moving from an older version of sMockin to a later version is simple.
 
     All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
-    Therefore as long as this settings dir is preserved then updating SMOCKIN is simply a case of deleting the
+    Therefore as long as this settings dir is preserved then updating sMockin is simply a case of deleting the
     current application and replacing this with a later version.
 
     The bundled 'start' script will always automatically handle any data migration that may need to take place.
 
-    (Please note the above text, is only applicable to mainline releases of SMOCKIN and where neither the code base or
+    (Please note the above text, is only applicable to mainline releases of sMockin and where neither the code base or
     database of the previous/outgoing version have been subject to local/customised changes).
 
 
 
 LICENCE
 
-    Smockin is licensed according to the terms of the Apache License, Version 2.0.
+    sMockin is licensed according to the terms of the Apache License, Version 2.0.
 
     The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
