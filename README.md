@@ -67,17 +67,22 @@ QUICK START
 
     - Open the Admin UI: http://localhost:8000/index.html
 
-    - Create a new mock endpoint:
-        - Path     =    /hello
-        - Method   =    GET
-        - Add a sequenced response type:
-            - Content Type       =    application/json
-            - HTTP Status Code   =    200
-            - Response Body      =    { "message" : "hello world" }
+    - Select the 'TCP' tab.
 
-    - Start / Restart the mock server
-    
-    - Send a request to http://localhost:8001/hello
+    - Click 'New TCP Endpoint' and enter the following details:
+        Path:    /hello
+        Method:  GET
+
+    - Next select the 'HTTP sequenced Based' response type, click 'Add Seq Response' and add the following:
+        Content Type:       application/json
+        HTTP Status Code:   200
+        Response Body:      { "message" : "hello world" }
+
+    - Click 'Add' and then 'Save'.
+
+    - From the main TCP dashboard click on the 'Play' symbol to start the mock server.
+
+    - Finally to test the service, send a request to http://localhost:8001/hello
         e.g. 
             curl -i -X GET http://localhost:8001/hello
 
@@ -89,9 +94,10 @@ QUICK START
 
 TROUBLESHOOTING
 
-    sMockin's log files are located within your user home directory here: .smockin/log/smockin.log
+    sMockin's log files can be found here within your user home directory: .smockin/log/smockin.log
 
-    If you are still struggling to get sMockin to run, then we recommend running it from source instead.
+    If you are struggling to get sMockin to run using the provided scripts, then we recommend running it
+    from source instead.
 
     e.g
 
@@ -101,7 +107,7 @@ TROUBLESHOOTING
 
         ./install.sh
 
-        Then to start sMockin using the in-mem DB:
+        To start sMockin using the in-mem DB:
             mvn3 spring-boot:run
 
         Or to run sMockin with remote debugging (port 8008):
