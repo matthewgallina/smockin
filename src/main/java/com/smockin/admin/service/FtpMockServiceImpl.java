@@ -52,10 +52,18 @@ public class FtpMockServiceImpl implements FtpMockService {
 
         final FtpMock mock = loadFtpMock(mockExtId);
 
+        final String originalName = mock.getName();
+
         mock.setName(dto.getName());
         mock.setStatus(dto.getStatus());
 
         ftpMockDAO.save(mock);
+
+        // Rename user's ftp dir.
+        // Any runtime exception will cause transaction (rename above) to rollback.
+        new File(ftpHomeDir + originalName)
+                .renameTo(new File(ftpHomeDir + dto.getName()));
+
     }
 
     @Override
