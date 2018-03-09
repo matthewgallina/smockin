@@ -43,6 +43,10 @@ input[type="file"] {
     cursor: pointer;
 }
 
+#no-files-found {
+    text-align: center;
+}
+
 .upload-button {
     width: 100%;
 }

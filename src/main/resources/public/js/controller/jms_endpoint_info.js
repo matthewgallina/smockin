@@ -279,6 +279,12 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         utils.hideBlockingOverlay();
+
+        if (status == 409) {
+            showAlert("'" + $scope.endpoint.name + "' is already in use");
+            return;
+        }
+
         showAlert(globalVars.GeneralErrorMessage);
     };
 

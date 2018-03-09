@@ -6,9 +6,7 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.entity.FtpMock;
-import com.smockin.mockserver.engine.MockedFtpServerEngine;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,8 +42,12 @@ public class FtpMockServiceImpl implements FtpMockService {
     public String createEndpoint(final FtpMockDTO dto) {
         logger.debug("createEndpoint called");
 
-        return ftpMockDAO.save(new FtpMock(dto.getName(), dto.getStatus()))
-                .getExtId();
+        final FtpMock mock = ftpMockDAO.save(new FtpMock(dto.getName(), dto.getStatus()));
+
+        new File(ftpHomeDir + dto.getName())
+                .mkdir();
+
+        return mock.getExtId();
     }
 
     @Override
@@ -67,10 +71,15 @@ public class FtpMockServiceImpl implements FtpMockService {
     }
 
     @Override
-    public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException {
+    public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException, IOException {
         logger.debug("deleteEndpoint called");
 
-        ftpMockDAO.detach(loadFtpMock(mockExtId));
+        final FtpMock mock = loadFtpMock(mockExtId);
+        final String ftpName = mock.getName();
+
+        ftpMockDAO.delete(mock);
+
+        FileUtils.deleteDirectory(new File(ftpHomeDir + ftpName));
     }
 
     @Override
@@ -99,6 +108,52 @@ public class FtpMockServiceImpl implements FtpMockService {
         }
 
         FileUtils.copyInputStreamToFile(inboundFile.getInputStream(), new File(destFileURI));
+    }
+
+    @Override
+    public List<String> loadUploadFiles(final String mockExtId) throws RecordNotFoundException, IOException {
+        logger.debug("loadUploadFiles called");
+
+        final FtpMock mock = loadFtpMock(mockExtId);
+
+        final String ftpUserHomeURI = ftpHomeDir + mock.getName();
+
+        return Files.walk(Paths.get(ftpUserHomeURI))
+            .filter( e -> !ftpUserHomeURI.equals(e.toString()) )
+            .map( e ->
+                    (e.toString().replaceFirst(ftpUserHomeURI + File.separator, "")
+                            + ((Files.isDirectory(e)) ? "/" : ""))
+            )
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteUploadedFile(final String mockExtId, final String uri) throws RecordNotFoundException, ValidationException, IOException {
+        logger.debug("deleteUploadedFile called");
+
+        if (uri == null) {
+            throw new ValidationException("file uri is required");
+        }
+
+        final FtpMock mock = loadFtpMock(mockExtId);
+
+        final String ftpUserHomeURI = ftpHomeDir
+                + mock.getName()
+                + File.separator + uri;
+
+        final File file = new File(ftpUserHomeURI);
+
+        if (!file.exists()) {
+            logger.error("Unable to locate file on system: " + ftpUserHomeURI);
+            throw new RecordNotFoundException();
+        }
+
+        if (file.isDirectory()) {
+            FileUtils.deleteDirectory(file);
+        } else {
+            file.delete();
+        }
+
     }
 
     FtpMock loadFtpMock(final String mockExtId) throws RecordNotFoundException {

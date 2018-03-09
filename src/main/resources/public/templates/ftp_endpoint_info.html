@@ -58,17 +58,33 @@
                                     </span>
                         </uib-accordion-heading>
 
-                        <h5>{{ uploadFTPMessageLabel }}</h5>
+                        <h5>{{ currentRepositoryFilesLabel }}</h5>
+                        <br />
 
+                        <div id="no-files-found" ng-if="ftpFileTreeData.length == 0">
+                            {{ noFilesFoundLabel }}
+                        </div>
+
+                        <ul class="list-group list-group-flush" ng-if="ftpFileTreeData.length > 0">
+                            <li class="list-group-item" ng-repeat="fd in ftpFileTreeData">
+                                {{ fd }}
+                                <button class="btn btn-danger pull-right" style="margin-top: -7px;" type="button" ng-click="doDeleteUploadedFile(fd)">{{ deleteButtonLabel }}</button>
+                            </li>
+                        </ul>
+
+                        <br />
+                        <hr />
+
+                        <h5>{{ uploadFTPMessageLabel }}</h5>
                         <br />
 
                         <form>
 
-                            <label for="ftpFile" class="upload-select-file-button btn btn-default">
-                                <span ng-if="ftpFile.data == null">{{ selectFileLabel }}</span>
-                                <span ng-if="ftpFile.data != null">{{ ftpFile.data.name }}</span>
+                            <label for="ftpUploadFile" class="upload-select-file-button btn btn-default">
+                                <span ng-if="ftpUploadFile.data == null">{{ selectFileLabel }}</span>
+                                <span ng-if="ftpUploadFile.data != null">{{ ftpUploadFile.data.name }}</span>
                             </label>
-                            <input id="ftpFile" type="file" form-file-model="ftpFile.data" />
+                            <input id="ftpUploadFile" type="file" form-file-model="ftpUploadFile.data" />
 
                             <br />
                             <br />
@@ -94,6 +110,7 @@
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew">{{ deleteButtonLabel }}</button>
                     <button class="btn btn-primary" type="button" ng-click="doSaveFtpEndpoint()">{{ saveButtonLabel }}</button>
                 </div>
             </div>

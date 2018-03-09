@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.io.IOException;
+
 /**
  * Created by mgallina.
  */
@@ -18,29 +20,29 @@ public class ExceptionHandlerController {
     // NOTE Removed the use of the @ResponseStatus annotation and explicitly returning a ResponseEntity, as a workaround
     // to a problem with the the Jetty container, which seems to automatically wrap exceptions where no response is present.
 
-//    @ResponseStatus(value=HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<String> badRequest() {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    public ResponseEntity<String> handleDataIntegrityViolationException() {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
 
-//    @ResponseStatus(value=HttpStatus.NOT_FOUND)
     @ExceptionHandler(RecordNotFoundException.class)
-    public ResponseEntity<String> notFound() {
+    public ResponseEntity<String> handleRecordNotFoundException() {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-//    @ResponseStatus(value=HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> ValidationBadRequest(ValidationException ex) {
-//        return ex.getMessage();
+    public ResponseEntity<String> handleValidationBadRequest(ValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
-//    @ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(MockServerException.class)
-    public ResponseEntity<String> internalServerError(MockServerException ex) {
+    public ResponseEntity<String> handleMockServerException(MockServerException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
-    
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<String> handleIOException(IOException ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
 }

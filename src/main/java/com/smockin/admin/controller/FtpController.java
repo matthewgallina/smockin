@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,27 +35,40 @@ public class FtpController {
     }
 
     @RequestMapping(path = "/ftpmock/{extId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<String> update(@PathVariable("extId") final String extId, @RequestBody final FtpMockDTO dto) throws RecordNotFoundException {
+    public @ResponseBody ResponseEntity<Void> update(@PathVariable("extId") final String extId, @RequestBody final FtpMockDTO dto) throws RecordNotFoundException {
         ftpMockService.updateEndpoint(extId, dto);
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(path = "/ftpmock/{extId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<String> delete(@PathVariable("extId") final String extId) throws RecordNotFoundException {
+    public @ResponseBody ResponseEntity<Void> delete(@PathVariable("extId") final String extId) throws RecordNotFoundException, IOException {
         ftpMockService.deleteEndpoint(extId);
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(path="/ftpmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<List<FtpMockResponseDTO>> get() {
-        return new ResponseEntity<List<FtpMockResponseDTO>>(ftpMockService.loadAll(), HttpStatus.OK);
+        return ResponseEntity.ok(ftpMockService.loadAll());
     }
 
-    @RequestMapping(path="/ftpmock/{extId}/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(path="/ftpmock/{extId}/file/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public @ResponseBody ResponseEntity<Void> uploadFile(@PathVariable("extId") final String extId, @RequestParam("file") MultipartFile file)
             throws RecordNotFoundException, ValidationException, IOException {
         ftpMockService.uploadFile(extId, file);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
+    }
+
+    @RequestMapping(path="/ftpmock/{extId}/file", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<List<String>> loadUploadFiles(@PathVariable("extId") final String extId)
+            throws RecordNotFoundException, IOException {
+        return ResponseEntity.ok(ftpMockService.loadUploadFiles(extId));
+    }
+
+    @RequestMapping(path="/ftpmock/{extId}/file", method = RequestMethod.DELETE)
+    public @ResponseBody ResponseEntity<Void> deleteUploadedFile(@PathVariable("extId") final String extId, @RequestParam("uri") final String uri)
+            throws RecordNotFoundException, ValidationException, IOException {
+        ftpMockService.deleteUploadedFile(extId, uri);
+        return ResponseEntity.noContent().build();
     }
 
 }

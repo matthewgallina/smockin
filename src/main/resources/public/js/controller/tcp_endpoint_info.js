@@ -946,6 +946,12 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         utils.hideBlockingOverlay();
+
+        if (status == 409) {
+            showAlert("'" + $scope.endpoint.path + "' is already in use");
+            return;
+        }
+
         showAlert(globalVars.GeneralErrorMessage);
     };
 

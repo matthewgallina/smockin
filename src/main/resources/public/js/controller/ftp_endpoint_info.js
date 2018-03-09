@@ -11,17 +11,20 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
     // Labels
     $scope.serverRestartInstruction = '(Please note, the ftp mock server will need to be restarted for changes to take effect)';
     $scope.endpointHeading = (isNew) ? 'New FTP Repository' : 'FTP Repository';
-    $scope.nameLabel = 'Username:';
+    $scope.nameLabel = 'Username (& Password):';
     $scope.usernamePlaceHolderTxt = 'Enter a username for the FTP repository';
     $scope.endpointStatusLabel = 'Status:';
     $scope.manageFtpLabel = 'Manage FTP Repository';
-    $scope.uploadFTPMessageLabel = 'Upload to Repository';
+    $scope.currentRepositoryFilesLabel = 'Current Repository Files';
+    $scope.uploadFTPMessageLabel = 'Upload File to Repository';
     $scope.selectFileLabel = 'Select File...';
+    $scope.noFilesFoundLabel = 'No Files Found';
 
 
     //
     // Buttons
     $scope.uploadFTPButtonLabel = 'Upload to Repository';
+    $scope.deleteButtonLabel = 'Delete';
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Cancel';
 
@@ -80,9 +83,11 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
         extId = $rootScope.ftpEndpointData.extId;
     }
 
-    $scope.ftpFile = {
+    $scope.ftpUploadFile = {
         data : null
     };
+
+    $scope.ftpFileTreeData = [];
 
 
     //
@@ -113,10 +118,39 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
 
         // Save FTP endpoint
         if (!isNew) {
-            restClient.doPut($http, '/ftpmock/' + extId, req, serverCallbackFunc);
+            restClient.doPut($http, '/ftpmock/' + extId, req, saveMockCallbackFunc);
         } else {
-            restClient.doPost($http, '/ftpmock', req, serverCallbackFunc);
+            restClient.doPost($http, '/ftpmock', req, saveMockCallbackFunc);
         }
+
+    };
+
+    $scope.doDelete = function() {
+
+        if (isNew) {
+            return
+        }
+
+        utils.openDeleteConfirmation("Are you sure you wish to delete this endpoint?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doDelete($http, '/ftpmock/' + extId, function(status, data) {
+
+                    if (status != 204) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    $location.path("/dashboard").search({
+                        'tab' : 'FTP'
+                    });
+
+                });
+
+            }
+
+       });
 
     };
 
@@ -132,17 +166,19 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
             return;
         }
 
-        if ($scope.ftpFile.data == null) {
+        // Validation
+        if ($scope.ftpUploadFile.data == null) {
             showAlert("Please select a file to upload");
             return;
         }
 
+        // Send data
+        var fd = new FormData();
+        fd.append('file', $scope.ftpUploadFile.data);
+
         $scope.disableForm = true;
 
-        var fd = new FormData();
-        fd.append('file', $scope.ftpFile.data);
-
-        uploadClient.doPost($http, '/ftpmock/' + extId + '/upload', fd, function(status, data) {
+        uploadClient.doPost($http, '/ftpmock/' + extId + '/file/upload', fd, function(status, data) {
 
             if (status != 201) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -150,12 +186,47 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
                 return;
             }
 
-            $scope.ftpFile = {
+            $scope.ftpUploadFile = {
                 data : null
             }
 
             showAlert("File uploaded", "success");
             $scope.disableForm = false;
+        });
+
+    };
+
+    $scope.doDeleteUploadedFile = function(fileUri) {
+
+        closeAlertFunc();
+
+        if (isNew) {
+            return;
+        }
+
+        var deletionConfirmationMsg = "Delete the file '" + fileUri + "'?";
+
+        if (fileUri.endsWith("/")) {
+            deletionConfirmationMsg = "Delete the directory '" + fileUri + "' and any content?";
+        }
+
+        utils.openWarningConfirmation(deletionConfirmationMsg, function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doDelete($http, '/ftpmock/' + extId + '/file?uri=' + encodeURIComponent(fileUri), function(status, data) {
+
+                    if (status != 204) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    loadFtpUserFiles();
+                    showAlert("File deleted", "success");
+                });
+
+            }
+
         });
 
     };
@@ -180,7 +251,7 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
 
     }
 
-    var serverCallbackFunc = function (status, data) {
+    var saveMockCallbackFunc = function (status, data) {
 
         if (status == 201 || status == 204) {
 
@@ -203,7 +274,34 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         utils.hideBlockingOverlay();
+
+        if (status == 409) {
+            showAlert("'" + $scope.endpoint.name + "' is already in use");
+            return;
+        }
+
         showAlert(globalVars.GeneralErrorMessage);
     };
+
+    function loadFtpUserFiles() {
+
+        restClient.doGet($http, '/ftpmock/' + extId + '/file', function(status, data) {
+
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            $scope.ftpFileTreeData = data;
+        });
+
+    }
+
+
+    //
+    // Init page
+    if (!isNew) {
+        loadFtpUserFiles();
+    }
 
 });

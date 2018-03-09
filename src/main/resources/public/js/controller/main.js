@@ -2,6 +2,4 @@ var app = angular.module('smockinApp', ['ngRoute', 'ngAnimate', 'ngSanitize', 'u
 
 app.controller('mainController', function($scope) {
 
-
-
 });
