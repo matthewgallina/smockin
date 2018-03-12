@@ -31,6 +31,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     //
     // Buttons
     $scope.saveButtonLabel = 'Save';
+    $scope.deleteButtonLabel = 'Delete';
     $scope.cancelButtonLabel = 'Cancel';
     $scope.postJmsMessageButtonLabel = 'Push To Queue';
     $scope.postJmsTopicMessageButtonLabel = 'Broadcast';
@@ -150,11 +151,40 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
+    $scope.doDeleteJmsEndpoint = function() {
+
+        if (isNew) {
+            return;
+        }
+
+        utils.openDeleteConfirmation("Are you sure you wish to delete this jms " + $scope.endpoint.jmsMockType.value + "?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doDelete($http, '/jmsmock/' + extId, function(status, data) {
+
+                    if (status != 204) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    $location.path("/dashboard").search({
+                        'tab' : 'JMS'
+                    });
+
+                });
+
+            }
+
+       });
+
+    };
+
     $scope.doSetEndpointStatus = function(s) {
         $scope.endpoint.status = s;
     };
 
-    $scope.doPostJMSMessage = function() {
+    $scope.doPostJmsMessage = function() {
 
         // Validation
         if (utils.isBlank($scope.jmsMessage.body)) {
@@ -181,7 +211,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    $scope.doClearJMSQueue = function() {
+    $scope.doClearJmsQueue = function() {
 
         var req = {
             "name" : $scope.endpoint.name
@@ -199,7 +229,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    $scope.doPostJMSTopicBroadcastMessage = function() {
+    $scope.doPostJmsTopicBroadcastMessage = function() {
 
         // Validation
         if (utils.isBlank($scope.jmsTopicMessage.body)) {

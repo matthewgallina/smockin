@@ -68,7 +68,7 @@
                         <ul class="list-group list-group-flush" ng-if="ftpFileTreeData.length > 0">
                             <li class="list-group-item" ng-repeat="fd in ftpFileTreeData">
                                 {{ fd }}
-                                <button class="btn btn-danger pull-right" style="margin-top: -7px;" type="button" ng-click="doDeleteUploadedFile(fd)">{{ deleteButtonLabel }}</button>
+                                <button class="btn btn-danger pull-right delete-ftp-file-button" type="button" ng-click="doDeleteUploadedFile(fd)">{{ deleteButtonLabel }}</button>
                             </li>
                         </ul>
 

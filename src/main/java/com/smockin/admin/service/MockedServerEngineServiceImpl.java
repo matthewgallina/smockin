@@ -273,6 +273,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             case RESTFUL:
                 startRest();
                 break;
+            case JMS:
+                startJms();
+                break;
+            case FTP:
+                startFtp();
+                break;
         }
 
     }

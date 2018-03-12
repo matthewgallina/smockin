@@ -47,6 +47,10 @@ input[type="file"] {
     text-align: center;
 }
 
+.delete-ftp-file-button {
+    margin-top: -7px;
+}
+
 .upload-button {
     width: 100%;
 }

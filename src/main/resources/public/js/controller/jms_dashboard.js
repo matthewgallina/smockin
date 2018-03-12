@@ -1,5 +1,5 @@
 
-app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, utils, globalVars, restClient) {
+app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient) {
 
 
     //
@@ -7,6 +7,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     var MockServerRunningStatus = globalVars.MockServerRunningStatus;
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
     var MockServerRestartStatus = globalVars.MockServerRestartStatus;
+    var JmsServerType = globalVars.JmsServerType;
     var RestartServerRequired = $routeParams.restart;
 
 
@@ -48,6 +49,29 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     //
     // Scoped Functions
+    $scope.doOpenServerConfig = function() {
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'server_config.html',
+          controller: 'serverConfigController',
+          resolve: {
+            data: function () {
+              return { "serverType" : JmsServerType };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null && response.restartReq) {
+                RestartServerRequired = true;
+
+            }
+        }, function () {
+
+        });
+
+    };
+
     $scope.doOpenJmsEndpointInfo = function(jmsEndpointData) {
         $rootScope.jmsEndpointData = jmsEndpointData;
         $location.path("/jms_endpoint");

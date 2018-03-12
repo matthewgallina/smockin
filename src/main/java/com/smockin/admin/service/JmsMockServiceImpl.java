@@ -50,7 +50,7 @@ public class JmsMockServiceImpl implements JmsMockService {
     public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException {
         logger.debug("deleteEndpoint called");
 
-        jmsMockDAO.detach(loadJmsMock(mockExtId));
+        jmsMockDAO.delete(loadJmsMock(mockExtId));
     }
 
     @Override

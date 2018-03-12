@@ -58,7 +58,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
-    $scope.serverRestartInstruction = '(Please note, the mock server will need to be restarted for changes to take effect)';
+    $scope.serverRestartInstruction = '(Please note, the tcp mock server will need to be restarted for changes to take effect)';
     $scope.endpointStatusLabel = 'Status:';
     $scope.proxyTimeoutLabel = 'Long Polling Timeout (in millis)';
     $scope.webSocketTimeoutLabel = 'Idle Timeout (in millis)';

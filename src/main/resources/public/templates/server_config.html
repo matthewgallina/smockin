@@ -14,17 +14,17 @@
         <input id="port" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.port" placeholder="{{ portPlaceholderTxt }}" type="text" />
     </div>
 
-    <div class="form-group">
+    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType || serverConfig.serverType == JmsServerType">
         <label for="maxThreads" class="ng-binding">{{ maxThreadsLabel }}</label>
         <input id="maxThreads" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.maxThreads" placeholder="{{ maxThreadsPlaceholderTxt }}" type="text" />
     </div>
 
-    <div class="form-group">
+    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
         <label for="minThreads" class="ng-binding">{{ minThreadsLabel }}</label>
         <input id="minThreads" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.minThreads" placeholder="{{ minThreadsPlaceholderTxt }}" type="text" />
     </div>
 
-    <div class="form-group">
+    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
         <label for="timeOutMillis" class="ng-binding">{{ timeOutMillisLabel }}</label>
         <input id="timeOutMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.timeOutMillis" placeholder="{{ timeOutMillisPlaceholderTxt }}" type="text" />
     </div>
@@ -39,7 +39,7 @@
         <label for="autoRefresh" class="ng-binding">{{ autoRefreshLabel }}</label>
     </div>
 
-    <div class="form-group" ng-if="serverConfig.serverType == 'RESTFUL'">
+    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
         <input id="enableCors"  ng-model="serverConfig.enableCors" type="checkbox" />
         <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
     </div>

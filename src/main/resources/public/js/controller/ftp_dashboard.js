@@ -1,5 +1,5 @@
 
-app.controller('ftpDashboardController', function($scope, $rootScope, $location, $http, utils, globalVars, restClient) {
+app.controller('ftpDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient) {
 
 
     //
@@ -7,12 +7,14 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $location,
     var MockServerRunningStatus = globalVars.MockServerRunningStatus;
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
     var MockServerRestartStatus = globalVars.MockServerRestartStatus;
+    var FtpServerType = globalVars.FtpServerType;
+    var RestartServerRequired = $routeParams.restart;
 
 
     //
     // Labels
     $scope.mockServerStatusLabel = 'FTP Mock Server Status:';
-//  $scope.serverConfigLabel = '(edit settings)';
+    $scope.serverConfigLabel = '(edit settings)';
     $scope.noDataFoundMsg = 'No Data Found';
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
@@ -46,6 +48,29 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $location,
 
     //
     // Scoped Functions
+    $scope.doOpenServerConfig = function() {
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'server_config.html',
+          controller: 'serverConfigController',
+          resolve: {
+            data: function () {
+              return { "serverType" : FtpServerType };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null && response.restartReq) {
+                RestartServerRequired = true;
+
+            }
+        }, function () {
+
+        });
+
+    };
+
     $scope.doOpenFtpInfo = function(ftpData) {
         $rootScope.ftpEndpointData = ftpData;
         $location.path("/ftp_endpoint");

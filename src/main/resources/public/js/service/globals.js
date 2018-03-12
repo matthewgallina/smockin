@@ -7,6 +7,7 @@ app.service('globalVars', function($uibModal) {
 
     this.RestfulServerType = "RESTFUL";
     this.JmsServerType = "JMS";
+    this.FtpServerType = "FTP";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';

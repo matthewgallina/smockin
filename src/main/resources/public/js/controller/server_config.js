@@ -6,11 +6,14 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     // Constants
     var ServerType = data.serverType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    $scope.RestfulServerType = globalVars.RestfulServerType;
+    $scope.JmsServerType = globalVars.JmsServerType;
 
 
     //
     // Labels
-    $scope.serverConfigHeading = 'Mock Server Config';
+    var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"TCP":ServerType;
+    $scope.serverConfigHeading = ServerTypeLabel + ' Mock Server Config';
     $scope.portLabel = 'Port';
     $scope.maxThreadsLabel = 'Max Threads';
     $scope.minThreadsLabel = 'Min Threads';
@@ -75,6 +78,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     // Functions
     $scope.doSaveConfig = function() {
 
+        // Validation
         if (utils.isBlank($scope.serverConfig.port)
                 || !utils.isNumeric($scope.serverConfig.port)) {
             showAlert("'port' is required and must be numeric");
@@ -99,10 +103,18 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
             return;
         }
 
-        $scope.serverConfig.nativeProperties = {
-            "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
-        };
+        // Handle Native Server Properties
+        if (ServerType == globalVars.RestfulServerType) {
+            $scope.serverConfig.nativeProperties = {
+                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
+            };
+        } else if (ServerType == globalVars.JmsServerType) {
+            $scope.serverConfig.nativeProperties = {
+                "BROKER_URL" : "tcp://localhost:"
+            };
+        }
 
+        // Send update
         restClient.doPut($http, '/mockedserver/config/' + ServerType, $scope.serverConfig, function(status, data) {
 
             if (status == 204) {

@@ -85,14 +85,14 @@
                             </div>
 
                             <span class="pull-right">
-                                <button class="btn btn-success" type="button" ng-click="doPostJMSMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsMessageButtonLabel }}</button>
+                                <button class="btn btn-success" type="button" ng-click="doPostJmsMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsMessageButtonLabel }}</button>
                             </span>
 
                             <br />
                             <br />
                             <hr />
 
-                            <button class="btn btn-info clear-jms-button" type="button" ng-click="doClearJMSQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
+                            <button class="btn btn-info clear-jms-button" type="button" ng-click="doClearJmsQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearJmsQueueButtonLabel }}</button>
 
                         </div>
                     </uib-accordion>
@@ -123,7 +123,7 @@
                             </div>
 
                             <span class="pull-right">
-                                <button class="btn btn-success" type="button" ng-click="doPostJMSTopicBroadcastMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsTopicMessageButtonLabel }}</button>
+                                <button class="btn btn-success" type="button" ng-click="doPostJmsTopicBroadcastMessage()" ng-disabled="endpoint.status == inActiveStatus">{{ postJmsTopicMessageButtonLabel }}</button>
                             </span>
 
                         </div>
@@ -143,6 +143,7 @@
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+                    <button class="btn btn-danger" type="button" ng-click="doDeleteJmsEndpoint()">{{ deleteButtonLabel }}</button>
                     <button class="btn btn-primary" type="button" ng-click="doSaveJmsEndpoint()">{{ saveButtonLabel }}</button>
                 </div>
             </div>

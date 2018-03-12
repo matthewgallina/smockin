@@ -67,7 +67,7 @@ public class CoreDataHandler {
 
             final ServerConfig jmsServerConfig = new ServerConfig();
             jmsServerConfig.setServerType(ServerTypeEnum.JMS);
-            jmsServerConfig.setPort(61616);
+            jmsServerConfig.setPort(8002); // 61616
             jmsServerConfig.setMaxThreads(10);
             jmsServerConfig.setMinThreads(0);
             jmsServerConfig.setTimeOutMillis(0);
@@ -85,7 +85,7 @@ public class CoreDataHandler {
 
             final ServerConfig ftpServerConfig = new ServerConfig();
             ftpServerConfig.setServerType(ServerTypeEnum.FTP);
-            ftpServerConfig.setPort(8002);
+            ftpServerConfig.setPort(8003);
             ftpServerConfig.setMaxThreads(0);
             ftpServerConfig.setMinThreads(0);
             ftpServerConfig.setTimeOutMillis(0);
