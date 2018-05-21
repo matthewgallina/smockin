@@ -23,3 +23,5 @@ binary
 TODO
 standalone
 build_all_distributions.sh
+Dockerfile
+launch.sh
