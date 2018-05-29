@@ -7,12 +7,14 @@ baseUri: http://localhost:8001/{version}
     description: Say hello to everyone
     responses:
       200:
+        headers:
+          X-Powered-By:
+            description: You can describe response headers like this
+            example: FooBar
         body:
           application/json:
             example: |
-              {
-                "message": "helloworld"
-              }
+              { "message": "helloworld" }
   /{name}:
     get:
       description: Say hello to the named person
@@ -29,9 +31,7 @@ baseUri: http://localhost:8001/{version}
           body:
             application/json:
               example: |
-                {
-                  "message": "hello John!"
-                }
+                { "message": "hello John!" }
         404:
           body:
             application/json:
@@ -40,6 +40,22 @@ baseUri: http://localhost:8001/{version}
           body:
             application/json:
               example: |
-                {
-                  "message": "Missing name!"
-                }
+                { "message": "Missing name!" }
+    post:
+      headers:
+        Authorization:
+          description: OAuth Token
+          example: Bearer 1234-5678-9000-0000-0000
+      body:
+        application/json:
+          example: { "name" : "Harry" }
+      responses:
+        201:
+          headers:
+            X-Powered-By:
+              description: You can describe response headers like this
+              example: FooBar
+          body:
+            application/json:
+              example: |
+                { "id" : 1 }

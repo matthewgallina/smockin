@@ -36,6 +36,14 @@ public class RestfulMockDefinitionDTO {
         this.frequencyPercentage = frequencyPercentage;
     }
 
+    public RestfulMockDefinitionDTO(int orderNo, int httpStatusCode, String responseContentType, String responseBody, int frequencyCount) {
+        this.orderNo = orderNo;
+        this.httpStatusCode = httpStatusCode;
+        this.responseContentType = responseContentType;
+        this.responseBody = responseBody;
+        this.frequencyCount = frequencyCount;
+    }
+
     public String getExtId() {
         return extId;
     }

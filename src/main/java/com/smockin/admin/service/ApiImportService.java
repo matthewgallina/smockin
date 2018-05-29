@@ -1,11 +1,11 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.exception.ApiImportException;
-
-import java.io.File;
+import com.smockin.admin.exception.ValidationException;
 
 public interface ApiImportService {
 
-    void importApiFile(final File file) throws ApiImportException;
+    void importApiDoc(final ApiImportDTO dto) throws ApiImportException, ValidationException;
 
 }
