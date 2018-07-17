@@ -4,6 +4,7 @@ import com.smockin.admin.persistence.dao.MigrationDAO;
 import com.smockin.admin.persistence.migration.version.MigrationPatch;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_121;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_130;
+import com.smockin.admin.persistence.migration.version.MigrationPatch_141;
 import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ public class DataMigrationService {
         {
             add(new MigrationPatch_121());
             add(new MigrationPatch_130());
+            add(new MigrationPatch_141());
         }
     });
 

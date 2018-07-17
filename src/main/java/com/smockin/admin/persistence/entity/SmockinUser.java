@@ -15,7 +15,7 @@ public class SmockinUser extends Identifier {
     @Column(name = "USER_NAME", nullable = false, length = 35, unique = true)
     private String username;
 
-    @Column(name = "PASSWORD", nullable = false, length = 50)
+    @Column(name = "PASSWORD", nullable = false, length = 100)
     private String password; // digest encrypted
 
     @Column(name = "FULL_NAME", nullable = false, length = 100)
@@ -35,6 +35,19 @@ public class SmockinUser extends Identifier {
     @Column(name = "SESS_TOKEN", nullable = false, length = 50, unique = true)
     private String sessionToken;
 
+    public SmockinUser() {
+
+    }
+
+    public SmockinUser(String username, String password, String fullName, String ctxPath, SmockinUserRoleEnum role, RecordStatusEnum status, String sessionToken) {
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.ctxPath = ctxPath;
+        this.role = role;
+        this.status = status;
+        this.sessionToken = sessionToken;
+    }
 
     public String getUsername() {
         return username;

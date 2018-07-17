@@ -1,9 +1,10 @@
 
-app.service('globalVars', function($uibModal) {
+app.service('globalVars', function() {
 
     this.AlertTimeoutMillis = 5000;
 
     this.GeneralErrorMessage = "Oops looks like something went wrong!";
+    this.AuthErrorMessage = "Invalid Login";
 
     this.RestfulServerType = "RESTFUL";
     this.JmsServerType = "JMS";

@@ -2,10 +2,16 @@ package com.smockin.admin.persistence;
 
 import com.smockin.admin.persistence.dao.AppConfigDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.AppConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.persistence.migration.DataMigrationService;
+import com.smockin.admin.service.EncryptionService;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +37,20 @@ public class CoreDataHandler {
     @Autowired
     private DataMigrationService dataMigrationService;
 
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
+
+    @Autowired
+    private EncryptionService authService;
+
     @Transactional
     public void exec() {
 
         applyServerConfigDefaults();
 
         applyAppVersioning();
+
+        applyCoreAdminUser();
 
     }
 
@@ -120,6 +134,23 @@ public class CoreDataHandler {
 
             dataMigrationService.applyVersionChanges(currentVersion, appVersionArg);
         }
+
+    }
+
+    void applyCoreAdminUser() {
+
+        if (!smockinUserDAO.findAllByRole(SmockinUserRoleEnum.ADMIN).isEmpty()) {
+            return;
+        }
+
+        smockinUserDAO.save(new SmockinUser(
+                "admin",
+                authService.encrypt("admin"),
+                "Admin",
+                "admin",
+                SmockinUserRoleEnum.ADMIN,
+                RecordStatusEnum.ACTIVE,
+                GeneralUtils.generateUUID()));
 
     }
 

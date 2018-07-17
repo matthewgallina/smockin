@@ -1,5 +1,6 @@
 package com.smockin.admin.controller;
 
+import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.exception.MockServerException;
@@ -38,6 +39,11 @@ public class ExceptionHandlerController {
     @ExceptionHandler(MockServerException.class)
     public ResponseEntity<String> handleMockServerException(MockServerException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @ExceptionHandler(AuthException.class)
+    public ResponseEntity<String> handleAuthException(AuthException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @ExceptionHandler(IOException.class)

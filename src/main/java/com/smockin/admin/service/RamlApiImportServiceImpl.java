@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.dto.ApiImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RestfulMockDefinitionDTO;
@@ -36,13 +37,16 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         validate(dto);
 
         final Api api = readContent(dto.getContent());
+        final ApiImportConfigDTO apiImportConfig = dto.getConfig();
+
+        debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
+        debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
 
         debug("Base");
-
         debug("URI " + api.baseUri().value());
         debug("version " + api.version().value());
 
-        loadInResources(api.resources());
+        loadInResources(api.resources(), apiImportConfig);
 
     }
 
@@ -72,11 +76,11 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         return ramlModelResult.getApiV10();
     }
 
-    void loadInResources(final List<Resource> resources) throws ApiImportException {
-        resources.stream().forEach(this::parseResource);
+    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig) throws ApiImportException {
+        resources.stream().forEach(r -> parseResource(r, apiImportConfig));
     }
 
-    void parseResource(final Resource resource) throws ApiImportException {
+    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig) throws ApiImportException {
         debug("Importing Endpoint...");
 
         // path
@@ -173,7 +177,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             restfulMockService.createEndpoint(dto);
         });
 
-        loadInResources(resource.resources());
+        loadInResources(resource.resources(), apiImportConfig);
     }
 
     String formatPath(final String resourcePath) {

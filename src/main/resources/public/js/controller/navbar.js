@@ -12,6 +12,8 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
+    $scope.myAccountLink = "My Account";
+    $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
 
 
@@ -22,7 +24,7 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doOpenHttpClient = function() {
 
         var modalInstance = $uibModal.open({
@@ -66,6 +68,28 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
             wsClientState = state;
         }, function () {
         });
+
+    };
+
+    $scope.doOpenMyAccount = function() {
+
+        $uibModal.open({
+            templateUrl: 'my_account.html',
+            controller: 'myAccountController',
+            resolve: {
+                data: function () {
+                    return null;
+                }
+            },
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+    };
+
+    $scope.doLogout = function() {
+
+        // TODO
 
     };
 

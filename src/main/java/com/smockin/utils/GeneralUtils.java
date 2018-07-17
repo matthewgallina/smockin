@@ -24,6 +24,9 @@ public final class GeneralUtils {
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
 
+    public static final String OAUTH_HEADER_VALUE_PREFIX = "Bearer";
+    public static final String OAUTH_HEADER_NAME = "Authorization";
+
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
 
@@ -174,6 +177,10 @@ public final class GeneralUtils {
         }
 
         return null;
+    }
+
+    public static String extractOAuthToken(final String bearerToken) {
+        return StringUtils.replace(bearerToken, OAUTH_HEADER_VALUE_PREFIX, "").trim();
     }
 
 }

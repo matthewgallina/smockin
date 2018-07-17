@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="../css/configuration.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ configHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <br />
+
+    <div class="form-group">
+        <label for="enableUsers" class="ng-binding">{{ enableUsersLabel }}</label>
+        <button id="enableUsers" type="button" class="btn btn-primary" ng-model="config.usersEnabled" ng-click="doUpdateUserConfig()" uib-btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+        </button>
+    </div>
+
+    <br />
+
+    <div class="admin-warn">{{ adminWarnText }}</div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

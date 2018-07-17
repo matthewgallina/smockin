@@ -7,29 +7,18 @@ import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
  */
 public class SmockinUserDTO {
 
-    private String extId;
     private String username;
     private String fullName;
-    private String ctxPath; // same as username for now.
     private SmockinUserRoleEnum role;
 
     public SmockinUserDTO() {
 
     }
 
-    public SmockinUserDTO(String extId, String username, String fullName, String ctxPath, SmockinUserRoleEnum role) {
-        this.extId = extId;
+    public SmockinUserDTO(String username, String fullName, SmockinUserRoleEnum role) {
         this.username = username;
         this.fullName = fullName;
-        this.ctxPath = ctxPath;
         this.role = role;
-    }
-
-    public String getExtId() {
-        return extId;
-    }
-    public void setExtId(String extId) {
-        this.extId = extId;
     }
 
     public String getUsername() {
@@ -44,13 +33,6 @@ public class SmockinUserDTO {
     }
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getCtxPath() {
-        return ctxPath;
-    }
-    public void setCtxPath(String ctxPath) {
-        this.ctxPath = ctxPath;
     }
 
     public SmockinUserRoleEnum getRole() {
