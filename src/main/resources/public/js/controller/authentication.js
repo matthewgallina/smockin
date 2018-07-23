@@ -1,5 +1,5 @@
 
-app.controller('authenticationController', function($scope, $http, $timeout, $uibModalInstance, restClient, globalVars, utils) {
+app.controller('authenticationController', function($scope, $window, $http, $timeout, $uibModalInstance, restClient, globalVars, utils, auth) {
 
 
     //
@@ -19,7 +19,6 @@ app.controller('authenticationController', function($scope, $http, $timeout, $ui
     //
     // Buttons
     $scope.loginButtonLabel = "Login";
-    $scope.closeButtonLabel = "Cancel";
 
 
     //
@@ -55,11 +54,10 @@ app.controller('authenticationController', function($scope, $http, $timeout, $ui
 
     //
     // Scoped Functions
-    $scope.doClose = function() {
-        $uibModalInstance.dismiss();
-    };
-
     $scope.doAuthenticateUser = function() {
+
+        // clear current token
+        auth.clearToken();
 
         // Validation
         if (utils.isBlank($scope.auth.username)) {
@@ -80,14 +78,19 @@ app.controller('authenticationController', function($scope, $http, $timeout, $ui
 
         restClient.doPost($http, '/auth', authReqData, function(status, data) {
 
+            $scope.auth.password = "";
+
             if (status == 401) {
                 showAlert(globalVars.AuthErrorMessage);
+                return;
             } else if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            $uibModalInstance.close(data.message);
+            auth.saveToken(data.message);
+
+            $window.location.reload();
         });
 
 

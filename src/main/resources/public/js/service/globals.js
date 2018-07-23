@@ -4,7 +4,10 @@ app.service('globalVars', function() {
     this.AlertTimeoutMillis = 5000;
 
     this.GeneralErrorMessage = "Oops looks like something went wrong!";
+    this.AuthRequiredMessage = "Please login to access this service";
     this.AuthErrorMessage = "Invalid Login";
+
+    this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
 
     this.RestfulServerType = "RESTFUL";
     this.JmsServerType = "JMS";

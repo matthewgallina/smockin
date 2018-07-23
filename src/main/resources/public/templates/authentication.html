@@ -15,12 +15,11 @@
 
     <div class="form-group">
         <label for="password" class="ng-binding">{{ passwordLabel }}</label>
-        <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="auth.password" placeholder="{{ passwordPlaceholderTxt }}" type="text" />
+        <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="auth.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" />
     </div>
 
 </div>
 
 <div class="modal-footer">
-    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
     <button class="btn btn-primary" type="button" ng-click="doAuthenticateUser()">{{ loginButtonLabel }}</button>
 </div>

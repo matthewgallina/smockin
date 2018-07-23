@@ -115,6 +115,16 @@
             <artifactId>raml-parser-2</artifactId>
             <version>${raml-parser.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.jasypt</groupId>
+            <artifactId>jasypt</artifactId>
+            <version>1.9.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
 
         <!-- Testing -->
         <dependency>

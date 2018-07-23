@@ -1,10 +1,10 @@
 
-app.controller('navbarController', function($scope, $window, $uibModal) {
+app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, restClient) {
 
 
     //
     // Labels
-    $scope.toolsLabel = "Tools";
+    $scope.navbarLabel = (auth.isLoggedIn()) ? "Joe Bloggs (TODO)" : "Tools";
     $scope.helpLink = "Help"
 
 
@@ -12,13 +12,15 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
-    $scope.myAccountLink = "My Account";
+    $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
 
 
     //
     // Data Objects
+    $scope.isLoggedIn = auth.isLoggedIn();
+    $scope.isAdmin = true;
     var httpClientState = null;
     var wsClientState = null;
 
@@ -71,25 +73,33 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
 
     };
 
-    $scope.doOpenMyAccount = function() {
+    $scope.doOpenManageUsers = function() {
 
-        $uibModal.open({
-            templateUrl: 'my_account.html',
-            controller: 'myAccountController',
-            resolve: {
-                data: function () {
-                    return null;
-                }
-            },
-            backdrop  : 'static',
-            keyboard  : false
-        });
+        if (!auth.isLoggedIn() || !$scope.isAdmin) {
+            return;
+        }
+
+        $location.path("/manage_users");
 
     };
 
     $scope.doLogout = function() {
 
-        // TODO
+        if (!auth.isLoggedIn()) {
+            return;
+        }
+
+        var requestBody = {};
+
+        restClient.doPost($http, '/logout', requestBody, function(status, data) {
+
+            if (status != 204) {
+                return;
+            }
+
+            auth.clearToken();
+            $window.location.reload();
+        });
 
     };
 

@@ -13,24 +13,24 @@
 
             <ul class="nav navbar-nav navbar-right">
                 <li uib-dropdown on-toggle="toggled(open)">
-                    <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ toolsLabel }} <span class="caret"></span></a>
+                    <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ navbarLabel }} <span class="caret"></span></a>
                     <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
+                        <li>
+                            <a href="" ng-click="doOpenHelp()">{{ helpLink }}</a>
+                        </li>
+                        <li role="separator" class="divider"></li>
                         <li>
                             <a href="" ng-click="doOpenHttpClient()">{{ httpClientLink }}</a>
                         </li>
                         <li>
                             <a href="" ng-click="doOpenWebSocketClient()">{{ wsClientLink }}</a>
                         </li>
-                        <li role="separator" class="divider"></li>
-                        <li>
-                            <a href="" ng-click="doOpenMyAccount()">{{ myAccountLink }}</a>
+                        <li role="separator" class="divider" ng-if="isLoggedIn"></li>
+                        <li ng-if="isLoggedIn && isAdmin">
+                            <a href="" ng-click="doOpenManageUsers()">{{ manageUsersLink }}</a>
                         </li>
-                        <li>
+                        <li ng-if="isLoggedIn">
                             <a href="" ng-click="doLogout()">{{ logoutLink }}</a>
-                        </li>
-                        <li role="separator" class="divider"></li>
-                        <li>
-                            <a href="" ng-click="doOpenHelp()">{{ helpLink }}</a>
                         </li>
                     </ul>
                 </li>

@@ -20,6 +20,10 @@ app.config(function($routeProvider) {
         .when("/ftp_endpoint", {
             templateUrl : "ftp_endpoint_info.html",
             controller : "ftpEndpointInfoController"
+        })
+        .when("/manage_users", {
+            templateUrl : "manage_users.html",
+            controller : "manageUsersController"
         });
 
 });

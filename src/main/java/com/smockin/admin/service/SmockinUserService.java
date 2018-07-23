@@ -21,6 +21,8 @@ public interface SmockinUserService {
     void updateUser(final String externalId, final SmockinUserDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException;
     void deleteUser(final String extId, final String token) throws ValidationException, RecordNotFoundException, AuthException;
     void resetPassword(final PasswordDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException;
+    void resetToken(final String token) throws RecordNotFoundException;
+    void lookUpToken(final String sessionToken) throws AuthException;
     UserModeEnum getUserMode();
 
 }

@@ -118,8 +118,26 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     }
 
     @Override
+    public void resetToken(final String token) throws RecordNotFoundException {
+
+        final SmockinUser currentUser = loadCurrentUser(token);
+
+        currentUser.setSessionToken(GeneralUtils.generateUUID()); // using UUID simply to void this with a unique value.
+
+        smockinUserDAO.save(currentUser);
+    }
+
+    @Override
+    public void lookUpToken(final String sessionToken) throws AuthException {
+
+        if (smockinUserDAO.findBySessionToken(sessionToken) == null) {
+            throw new AuthException();
+        }
+    }
+
+    @Override
     public UserModeEnum getUserMode() {
-        return (multiUserMode) ? UserModeEnum.ACTIVE : UserModeEnum.DISABLED;
+        return (multiUserMode) ? UserModeEnum.ACTIVE : UserModeEnum.INACTIVE;
     }
 
     void validateDTO(final SmockinUserDTO dto) throws ValidationException {

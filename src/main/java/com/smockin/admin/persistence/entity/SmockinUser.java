@@ -32,8 +32,8 @@ public class SmockinUser extends Identifier {
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
-    @Column(name = "SESS_TOKEN", nullable = false, length = 50, unique = true)
-    private String sessionToken;
+    @Column(name = "SESS_TOKEN", nullable = false, length = 200, unique = true)
+    private String sessionToken; // JWT based
 
     public SmockinUser() {
 

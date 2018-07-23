@@ -156,7 +156,10 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
         restClient.doGet($http, '/ftpmock', function(status, data) {
 
-            if (status != 200) {
+            if (status == 401) {
+                showAlert(globalVars.AuthRequiredMessage);
+                return;
+            } else if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
                 return;
             }

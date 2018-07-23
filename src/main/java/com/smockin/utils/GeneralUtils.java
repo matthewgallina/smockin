@@ -8,6 +8,10 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +43,15 @@ public final class GeneralUtils {
 
     // Should be set to UTC from command line
     public final static Date getCurrentDate() {
-        return new Date();
+        return Date.from(getCurrentDateTime().atZone(ZoneId.systemDefault()).toInstant());
+    }
+
+    public final static Date toDate(final LocalDateTime localDateTime) {
+        return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
+    }
+
+    public final static LocalDateTime getCurrentDateTime() {
+        return LocalDateTime.now();
     }
 
     // NOTE It is important that this preserves any whitespaces around the token
@@ -180,6 +192,11 @@ public final class GeneralUtils {
     }
 
     public static String extractOAuthToken(final String bearerToken) {
+
+        if (bearerToken == null) {
+            return null;
+        }
+
         return StringUtils.replace(bearerToken, OAUTH_HEADER_VALUE_PREFIX, "").trim();
     }
 

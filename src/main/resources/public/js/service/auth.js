@@ -1,5 +1,4 @@
-
-app.service('auth', function($uibModal) {
+app.service('auth', function($uibModal, globalVars) {
 
     this.doRequestAuth = function (callbackAction) {
 
@@ -16,6 +15,22 @@ app.service('auth', function($uibModal) {
             callbackAction();
         });
 
+    };
+
+    this.isLoggedIn = function () {
+        return (this.getToken() != null);
+    };
+
+    this.saveToken = function (token) {
+        localStorage.setItem(globalVars.SmockinAuthToken, token);
+    };
+
+    this.getToken = function () {
+        return localStorage.getItem(globalVars.SmockinAuthToken);
+    };
+
+    this.clearToken = function () {
+    	localStorage.removeItem(globalVars.SmockinAuthToken);
     };
 
 });
