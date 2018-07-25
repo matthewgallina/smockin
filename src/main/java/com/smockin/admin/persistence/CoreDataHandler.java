@@ -139,7 +139,7 @@ public class CoreDataHandler {
 
     void applyCoreAdminUser() {
 
-        if (!smockinUserDAO.findAllByRole(SmockinUserRoleEnum.ADMIN).isEmpty()) {
+        if (!smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN).isEmpty()) {
             return;
         }
 
@@ -148,7 +148,7 @@ public class CoreDataHandler {
                 authService.encrypt("admin"),
                 "Admin",
                 "admin",
-                SmockinUserRoleEnum.ADMIN,
+                SmockinUserRoleEnum.SYS_ADMIN,
                 RecordStatusEnum.ACTIVE,
                 GeneralUtils.generateUUID()));
 

@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="SMOCKIN"
-APP_VERSION="1.4.1-SNAPSHOT"
+APP_VERSION="1.5.0-SNAPSHOT"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"
@@ -53,8 +53,9 @@ fi
 # Check if smockin already has a pid.
 if [ -f $SMOCKIN_PID_FILE ];
 then
-    echo "SMOCKIN is already running"
-    exit 0
+    echo "SMOCKIN appears to already running, restarting this service..."
+    ./shutdown.sh
+    sleep 5
 fi
 
 # DB properties

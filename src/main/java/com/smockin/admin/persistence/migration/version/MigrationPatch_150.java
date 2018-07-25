@@ -9,11 +9,11 @@ import com.smockin.utils.GeneralUtils;
 /**
  * Created by gallina.
  */
-public class MigrationPatch_141 implements MigrationPatch {
+public class MigrationPatch_150 implements MigrationPatch {
 
     @Override
     public String versionNo() {
-        return "1.4.1-SNAPSHOT";
+        return "1.5.0-SNAPSHOT";
     }
 
     @Override
@@ -24,7 +24,7 @@ public class MigrationPatch_141 implements MigrationPatch {
                 "OL93piQZrHhrlK5YZn+BDQ5zypWEpzYTMr7v73tY9Teu8qGdm2JiZ/VIUpQVRk5J", // admin
                 "Admin",
                 "admin",
-                SmockinUserRoleEnum.ADMIN,
+                SmockinUserRoleEnum.SYS_ADMIN,
                 RecordStatusEnum.ACTIVE,
                 GeneralUtils.generateUUID()));
     }

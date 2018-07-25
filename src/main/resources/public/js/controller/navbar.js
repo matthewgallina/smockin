@@ -20,7 +20,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     //
     // Data Objects
     $scope.isLoggedIn = auth.isLoggedIn();
-    $scope.isAdmin = true;
+    $scope.isAdmin = true; // TODO
     var httpClientState = null;
     var wsClientState = null;
 

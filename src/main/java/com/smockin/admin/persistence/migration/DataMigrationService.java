@@ -4,7 +4,7 @@ import com.smockin.admin.persistence.dao.MigrationDAO;
 import com.smockin.admin.persistence.migration.version.MigrationPatch;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_121;
 import com.smockin.admin.persistence.migration.version.MigrationPatch_130;
-import com.smockin.admin.persistence.migration.version.MigrationPatch_141;
+import com.smockin.admin.persistence.migration.version.MigrationPatch_150;
 import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class DataMigrationService {
         {
             add(new MigrationPatch_121());
             add(new MigrationPatch_130());
-            add(new MigrationPatch_141());
+            add(new MigrationPatch_150());
         }
     });
 
@@ -46,6 +46,11 @@ public class DataMigrationService {
 
         final int currentVersionNo = GeneralUtils.exactVersionNo(currentVersion);
         final int latestVersionNo = GeneralUtils.exactVersionNo(latestVersion);
+
+        if (logger.isInfoEnabled()) {
+            logger.info("Current Version No: " + currentVersionNo);
+            logger.info("Latest Version No: " + latestVersionNo);
+        }
 
         if (latestVersionNo == currentVersionNo) {
             // no app version change found, so nothing to migrate.

@@ -53,7 +53,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         return smockinUserDAO
                 .findAll()
                 .stream()
-                .map(u -> new SmockinUserResponseDTO(u.getExtId(), u.getUsername(), u.getFullName(), u.getRole()))
+                .map(u -> new SmockinUserResponseDTO(u.getExtId(), u.getDateCreated(), u.getUsername(), u.getFullName(), u.getRole()))
                 .collect(Collectors.toList());
 
     }
@@ -96,8 +96,8 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         // Admin user can never be deleted.
         final SmockinUser smockinUser = loadUserByExtId(externalId);
 
-        if (SmockinUserRoleEnum.ADMIN.equals(smockinUser.getRole())) {
-            throw new ValidationException("Admin user cannot be deleted");
+        if (SmockinUserRoleEnum.SYS_ADMIN.equals(smockinUser.getRole())) {
+            throw new ValidationException("System Admin user cannot be deleted");
         }
 
         smockinUserDAO.delete(smockinUser);
@@ -171,7 +171,10 @@ public class SmockinUserServiceImpl implements SmockinUserService {
 
     void assertCurrentUserIsAdmin(final String token) throws RecordNotFoundException, AuthException {
 
-        if (!SmockinUserRoleEnum.ADMIN.equals(loadCurrentUser(token).getRole())) {
+        final SmockinUserRoleEnum userRole = loadCurrentUser(token).getRole();
+
+        if (!SmockinUserRoleEnum.ADMIN.equals(userRole)
+                && !SmockinUserRoleEnum.SYS_ADMIN.equals(userRole)) {
             throw new AuthException();
         }
 

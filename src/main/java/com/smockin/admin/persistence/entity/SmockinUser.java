@@ -25,14 +25,14 @@ public class SmockinUser extends Identifier {
     private String ctxPath; // just copy username to here for now.
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ROLE", nullable = false, length = 8)
+    @Column(name = "ROLE", nullable = false, length = 10)
     private SmockinUserRoleEnum role;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
-    @Column(name = "SESS_TOKEN", nullable = false, length = 200, unique = true)
+    @Column(name = "SESS_TOKEN", nullable = false, length = 250, unique = true)
     private String sessionToken; // JWT based
 
     public SmockinUser() {
