@@ -6,8 +6,10 @@ import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.enums.ApiImportType;
 import com.smockin.admin.enums.ApiKeepStrategyEnum;
 import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,25 +45,25 @@ public class RamlApiImportServiceTest {
     private ApiImportDTO importDTO;
 
     @Before
-    public void setUp() throws URISyntaxException, IOException {
+    public void setUp() throws URISyntaxException, IOException, RecordNotFoundException {
 
         final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
         final ApiImportConfigDTO configDto = new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_EXISTING);
 
         importDTO = new ApiImportDTO(ApiImportType.RAML, new String(Files.readAllBytes(Paths.get(url.toURI()))), configDto);
 
-        Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class))).thenReturn("1");
+        Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString())).thenReturn("1");
 
     }
 
     @Test
-    public void importApiDocPass() throws ApiImportException, ValidationException {
+    public void importApiDocPass() throws ApiImportException, ValidationException, RecordNotFoundException {
 
         // Test
-        apiImportService.importApiDoc(importDTO);
+        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
 
         // Assertions
-        Mockito.verify(restfulMockService, Mockito.times(3)).createEndpoint(argCaptor.capture());
+        Mockito.verify(restfulMockService, Mockito.times(3)).createEndpoint(argCaptor.capture(), Matchers.anyString());
 
         final List<RestfulMockDTO> restfulMockDTOs = argCaptor.getAllValues();
 
@@ -146,7 +148,7 @@ public class RamlApiImportServiceTest {
         expected.expectMessage("No data was provided");
 
         // Test
-        apiImportService.importApiDoc(null);
+        apiImportService.importApiDoc(null, GeneralUtils.generateUUID());
 
     }
 
@@ -161,7 +163,7 @@ public class RamlApiImportServiceTest {
         expected.expectMessage("No API doc content found");
 
         // Test
-        apiImportService.importApiDoc(importDTO);
+        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
 
     }
 
@@ -176,7 +178,7 @@ public class RamlApiImportServiceTest {
         expected.expectMessage("Unexpected key 'get'. Options are :");
 
         // Test
-        apiImportService.importApiDoc(importDTO);
+        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
 
     }
 

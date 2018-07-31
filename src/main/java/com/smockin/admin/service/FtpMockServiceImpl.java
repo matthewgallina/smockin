@@ -6,6 +6,8 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.entity.FtpMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,15 +35,20 @@ public class FtpMockServiceImpl implements FtpMockService {
     @Autowired
     private FtpMockDAO ftpMockDAO;
 
+    @Autowired
+    private RestfulMockServiceUtils restfulMockServiceUtils;
+
     @Value("${smockin.ftp.root.dir}")
     private String ftpHomeDir;
 
 
     @Override
-    public String createEndpoint(final FtpMockDTO dto) {
+    public String createEndpoint(final FtpMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
 
-        final FtpMock mock = ftpMockDAO.save(new FtpMock(dto.getName(), dto.getStatus()));
+        final SmockinUser smockinUser = restfulMockServiceUtils.loadCurrentUser(token);
+
+        final FtpMock mock = ftpMockDAO.save(new FtpMock(dto.getName(), dto.getStatus(), smockinUser));
 
         new File(ftpHomeDir + dto.getName())
                 .mkdir();
@@ -51,10 +57,12 @@ public class FtpMockServiceImpl implements FtpMockService {
     }
 
     @Override
-    public void updateEndpoint(final String mockExtId, final FtpMockDTO dto) throws RecordNotFoundException {
+    public void updateEndpoint(final String mockExtId, final FtpMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("updateEndpoint called");
 
         final FtpMock mock = loadFtpMock(mockExtId);
+
+        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         final String originalName = mock.getName();
 
@@ -71,10 +79,13 @@ public class FtpMockServiceImpl implements FtpMockService {
     }
 
     @Override
-    public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException, IOException {
+    public void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, IOException, ValidationException {
         logger.debug("deleteEndpoint called");
 
         final FtpMock mock = loadFtpMock(mockExtId);
+
+        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
         final String ftpName = mock.getName();
 
         ftpMockDAO.delete(mock);
@@ -157,6 +168,7 @@ public class FtpMockServiceImpl implements FtpMockService {
     }
 
     FtpMock loadFtpMock(final String mockExtId) throws RecordNotFoundException {
+        logger.debug("loadFtpMock called");
 
         final FtpMock mock = ftpMockDAO.findByExtId(mockExtId);
 

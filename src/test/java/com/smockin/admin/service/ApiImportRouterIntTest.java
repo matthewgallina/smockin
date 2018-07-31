@@ -1,17 +1,19 @@
 package com.smockin.admin.service;
 
 import com.smockin.SmockinTestConfig;
+import com.smockin.SmockinTestUtils;
 import com.smockin.admin.dto.ApiImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.enums.ApiImportType;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
-import org.h2.jdbc.JdbcSQLException;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.hibernate.AssertionFailure;
@@ -33,7 +35,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -54,10 +55,16 @@ public class ApiImportRouterIntTest {
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
+
     private ApiImportDTO dto;
+    private SmockinUser user;
 
     @Before
     public void setUp() throws URISyntaxException, IOException {
+
+        user = smockinUserDAO.saveAndFlush(SmockinTestUtils.buildSmockinUser());
 
         final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
 
@@ -68,6 +75,9 @@ public class ApiImportRouterIntTest {
     public void tearDown() {
         restfulMockDAO.deleteAll();
         restfulMockDAO.flush();
+
+        smockinUserDAO.deleteAll();
+        smockinUserDAO.flush();
     }
 
     @Test
@@ -75,7 +85,7 @@ public class ApiImportRouterIntTest {
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
-        apiImportRouter.route(dto);
+        apiImportRouter.route(dto, user.getSessionToken());
 
         final List<RestfulMock> mocks = restfulMockDAO.findAll();
 
@@ -158,7 +168,7 @@ public class ApiImportRouterIntTest {
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
         // Setup
-        restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false));
+        restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, user));
         restfulMockDAO.flush();
 
         Assert.assertEquals(1, restfulMockDAO.findAll().size());
@@ -168,7 +178,7 @@ public class ApiImportRouterIntTest {
         expected.expect(new AssertInnerExceptions());
 
         // Test
-        apiImportRouter.route(dto);
+        apiImportRouter.route(dto, user.getSessionToken());
 
     }
 

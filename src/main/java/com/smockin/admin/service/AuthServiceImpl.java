@@ -35,6 +35,7 @@ public class AuthServiceImpl implements AuthService {
     private EncryptionService encryptionService;
 
     private final String jwtRoleKey = "role";
+    private final String jwtFullNameKey = "name";
     private final String jwtSubjectKey = "smockin-access";
     private final String jwtIssuer = "smockin";
     private final String jwtSecret = "somesobsecuresecretkey";
@@ -62,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException();
         }
 
-        final String token = generateJWT(user.getRole());
+        final String token = generateJWT(user);
 
         user.setSessionToken(token);
         smockinUserDAO.save(user);
@@ -70,10 +71,11 @@ public class AuthServiceImpl implements AuthService {
         return token;
     }
 
-    String generateJWT(final SmockinUserRoleEnum role) {
+    String generateJWT(final SmockinUser user) {
         return JWT.create()
                 .withIssuer(jwtIssuer)
-                .withClaim(jwtRoleKey, role.name())
+                .withClaim(jwtRoleKey, user.getRole().name())
+                .withClaim(jwtFullNameKey, user.getFullName())
                 .withSubject(jwtSubjectKey)
                 .withIssuedAt(GeneralUtils.getCurrentDate())
                 .withExpiresAt(GeneralUtils.toDate(GeneralUtils.getCurrentDateTime().plusDays(99)))

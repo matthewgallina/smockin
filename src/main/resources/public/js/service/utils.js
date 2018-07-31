@@ -14,6 +14,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
             && !isNaN(value));
     };
 
+    this.hasWhiteSpace = function (value) {
+        return /\s/g.test(value);
+    };
+
 
     //
     // Tools

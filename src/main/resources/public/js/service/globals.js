@@ -9,6 +9,10 @@ app.service('globalVars', function() {
 
     this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
 
+    this.SysAdminRole = "SYS_ADMIN";
+    this.AdminRole = "ADMIN";
+    this.RegularRole = "REGULAR";
+
     this.RestfulServerType = "RESTFUL";
     this.JmsServerType = "JMS";
     this.FtpServerType = "FTP";

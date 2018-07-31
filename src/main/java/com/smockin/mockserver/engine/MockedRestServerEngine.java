@@ -5,6 +5,7 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -15,17 +16,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by mgallina.
@@ -55,7 +54,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Autowired
     private ServerSideEventService serverSideEventService;
-
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
@@ -152,35 +150,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.threadPool(config.getMaxThreads(), config.getMinThreads(), config.getTimeOutMillis());
     }
 
-    /*
-    @Transactional
-    void buildIndex(final List<RestfulMock> mocks) {
-        logger.debug("buildIndex called");
-
-        final StringBuilder sb = new StringBuilder("<h2>Smockin REST Service Index</h2>");
-        sb.append("<br /><br />");
-
-        // NOTE JPA entity beans are still attached at this stage (See buildEndpoints() below).
-        for (RestfulMock m : mocks) {
-
-            if (RestMockTypeEnum.PROXY_WS.equals(m.getMockType())) {
-                continue;
-            }
-
-            sb.append(m.getMethod());
-            sb.append(" ");
-            sb.append(m.getPath());
-            sb.append("<br /><br />");
-        }
-
-        Spark.get("/", (req, res) -> {
-            res.type("text/html");
-            return sb.toString();
-        });
-
-    }
-    */
-
     @Transactional
     void invokeAndDetachData(final List<RestfulMock> mocks) {
 
@@ -205,95 +174,72 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         //
         // Define all web socket routes first as the Spark framework requires this
-        for (RestfulMock mock : mocks) {
-
-            if (!RestMockTypeEnum.PROXY_WS.equals(mock.getMockType())) {
-                continue;
+        mocks.stream().forEach(m -> {
+            if (RestMockTypeEnum.PROXY_WS.equals(m.getMockType())) {
+                // Create an echo service instance per web socket route, as we need to hold the path as state within this.
+                final String path = buildUserPath(m);
+                Spark.webSocket(path, new SparkWebSocketEchoService(m.getExtId(), path, m.getWebSocketTimeoutInMillis(), m.isProxyPushIdOnConnect(), webSocketService));
             }
-
-            // Create an echo service instance per web socket route, as we need to hold the path as state within this.
-            Spark.webSocket(mock.getPath(), new SparkWebSocketEchoService(mock.getExtId(), mock.getPath(), mock.getWebSocketTimeoutInMillis(), mock.isProxyPushIdOnConnect(), webSocketService));
-        }
-
+        });
     }
 
     // Expects RestfulMock to be detached
     void buildSSEEndpoints(final List<RestfulMock> mocks) throws MockServerException {
 
-        for (RestfulMock mock : mocks) {
+        mocks.stream().forEach(m -> {
 
-            if (!RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
-                continue;
+            if (RestMockTypeEnum.PROXY_SSE.equals(m.getMockType())) {
+
+                // Remove any suspended rule or sequence responses
+                removeSuspendedResponses(m);
+
+                // NOTE, Java Spark does not currently provide support for NIO SSE. This code therefore BLOCKS the request
+                // thread until the connection is closed by either party.
+                Spark.get(buildUserPath(m), (req, res) -> processSSERequest(m, req, res));
+
             }
 
-            // Remove any suspended rule or sequence responses
-            removeSuspendedResponses(mock);
+        });
 
-            // NOTE, Java Spark does not currently provide support for NIO SSE. This code therefore BLOCKS the request
-            // thread until the connection is closed by either party.
-            Spark.get(mock.getPath(), (req, res) -> {
-                return processSSERequest(mock, req, res);
-            });
-
-        }
     }
 
     // Expects RestfulMock to be detached
     void buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
 
-        for (RestfulMock mock : mocks) {
+        mocks.stream().forEach( m -> {
 
-            if (!RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
-                    && !RestMockTypeEnum.SEQ.equals(mock.getMockType())
-                    && !RestMockTypeEnum.RULE.equals(mock.getMockType())) {
-                continue;
+            if (RestMockTypeEnum.PROXY_HTTP.equals(m.getMockType())
+                    || RestMockTypeEnum.SEQ.equals(m.getMockType())
+                    || RestMockTypeEnum.RULE.equals(m.getMockType())) {
+
+                // Remove any suspended rule or sequence responses
+                removeSuspendedResponses(m);
+
+                final String path = buildUserPath(m);
+
+                switch (m.getMethod()) {
+                    case GET:
+                        Spark.get(path, (req, res) -> processRequest(m, req, res));
+                        break;
+                    case POST:
+                        Spark.post(path, (req, res) -> processRequest(m, req, res));
+                        break;
+                    case PUT:
+                        Spark.put(path, (req, res) -> processRequest(m, req, res));
+                        break;
+                    case DELETE:
+                        Spark.delete(path, (req, res) -> processRequest(m, req, res));
+                        break;
+                    case PATCH:
+                        Spark.patch(path, (req, res) -> processRequest(m, req, res));
+                        break;
+                    default:
+                        throw new MockServerException("Unsupported mock definition method type : " + m.getMethod());
+                }
+
             }
 
-            // Remove any suspended rule or sequence responses
-            removeSuspendedResponses(mock);
-
-            switch (mock.getMethod()) {
-                case GET:
-
-                    Spark.get(mock.getPath(), (req, res) -> {
-                        return processRequest(mock, req, res);
-                    });
-
-                    break;
-                case POST:
-
-                    Spark.post(mock.getPath(), (req, res) -> {
-                        return processRequest(mock, req, res);
-                    });
-
-                    break;
-                case PUT:
-
-                    Spark.put(mock.getPath(), (req, res) -> {
-                        return processRequest(mock, req, res);
-                    });
-
-                    break;
-                case DELETE:
-
-                    Spark.delete(mock.getPath(), (req, res) -> {
-                        return processRequest(mock, req, res);
-                    });
-
-                    break;
-
-                case PATCH:
-
-                    Spark.patch(mock.getPath(), (req, res) -> {
-                        return processRequest(mock, req, res);
-                    });
-
-                    break;
-                default:
-                    throw new MockServerException("Unsupported mock definition method type : " + mock.getMethod());
-            }
-
-        }
+        });
 
     }
 
@@ -323,9 +269,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         res.type(outcome.getResponseContentType());
 
         // Apply any response headers
-        for (Map.Entry<String, String> e : outcome.getHeaders().entrySet()) {
-            res.header(e.getKey(), e.getValue());
-        }
+        outcome.getHeaders().entrySet().forEach(e ->
+            res.header(e.getKey(), e.getValue())
+        );
 
         final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
 
@@ -334,7 +280,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     String processSSERequest(final RestfulMock mock, final Request req, final Response res) throws IOException {
 
-        serverSideEventService.register(mock.getPath(), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), res);
+        serverSideEventService.register(buildUserPath(mock), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), res);
 
         return null;
     }
@@ -387,23 +333,25 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final String enableCors = config.getNativeProperties().get("ENABLE_CORS");
 
-        if (!"TRUE".equals(enableCors)) {
+        if (!Boolean.TRUE.toString().equalsIgnoreCase(enableCors)) {
             return;
         }
 
         Spark.options("/*", (request, response) -> {
 
-            String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+            final String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+
             if (accessControlRequestHeaders != null) {
                 response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
             }
 
-            String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+            final String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+
             if (accessControlRequestMethod != null) {
                 response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
             }
 
-            return "OK";
+            return HttpStatus.OK.name();
         });
 
         Spark.before((request, response) -> {
@@ -411,10 +359,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
             response.header("Access-Control-Allow-Headers", "*");
             response.header("Access-Control-Allow-Credentials", "true");
-            // Note: this may or may not be necessary...
-//            response.type("application/json");
         });
 
+    }
+
+    String buildUserPath(final RestfulMock mock) {
+
+        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
+            return "/" + mock.getCreatedBy().getCtxPath() + mock.getPath();
+        }
+
+        return mock.getPath();
     }
 
 }

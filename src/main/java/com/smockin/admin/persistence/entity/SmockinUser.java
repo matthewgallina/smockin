@@ -4,6 +4,8 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by mgallina.
@@ -34,6 +36,10 @@ public class SmockinUser extends Identifier {
 
     @Column(name = "SESS_TOKEN", nullable = false, length = 250, unique = true)
     private String sessionToken; // JWT based
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true)
+    @OrderBy("path ASC")
+    private List<RestfulMock> restfulMocks = new ArrayList<>();
 
     public SmockinUser() {
 
@@ -96,6 +102,13 @@ public class SmockinUser extends Identifier {
     }
     public void setSessionToken(String sessionToken) {
         this.sessionToken = sessionToken;
+    }
+
+    public List<RestfulMock> getRestfulMocks() {
+        return restfulMocks;
+    }
+    public void setRestfulMocks(List<RestfulMock> restfulMocks) {
+        this.restfulMocks = restfulMocks;
     }
 
 }

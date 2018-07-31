@@ -6,6 +6,6 @@ import com.smockin.admin.exception.ValidationException;
 
 public interface ApiImportService {
 
-    void importApiDoc(final ApiImportDTO dto) throws ApiImportException, ValidationException;
+    void importApiDoc(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException;
 
 }

@@ -6,6 +6,7 @@ import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.FtpMockService;
+import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,36 +14,41 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by mgallina.
  */
 @Controller
-public class FtpController {
+public class FtpMockController {
 
 
     @Autowired
     private FtpMockService ftpMockService;
 
     @RequestMapping(path="/ftpmock", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final FtpMockDTO dto) {
-        return new ResponseEntity<SimpleMessageResponseDTO<String>>(new SimpleMessageResponseDTO<String>(ftpMockService.createEndpoint(dto)), HttpStatus.CREATED);
+    public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final FtpMockDTO dto,
+                                                                                 @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+                                                                                    throws RecordNotFoundException {
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<String>(ftpMockService.createEndpoint(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
     @RequestMapping(path = "/ftpmock/{extId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<Void> update(@PathVariable("extId") final String extId, @RequestBody final FtpMockDTO dto) throws RecordNotFoundException {
-        ftpMockService.updateEndpoint(extId, dto);
+    public @ResponseBody ResponseEntity<Void> update(@PathVariable("extId") final String extId,
+                                                     @RequestBody final FtpMockDTO dto,
+                                                     @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+                                                        throws RecordNotFoundException, ValidationException {
+        ftpMockService.updateEndpoint(extId, dto, GeneralUtils.extractOAuthToken(bearerToken));
         return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(path = "/ftpmock/{extId}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<Void> delete(@PathVariable("extId") final String extId) throws RecordNotFoundException, IOException {
-        ftpMockService.deleteEndpoint(extId);
+    public @ResponseBody ResponseEntity<Void> delete(@PathVariable("extId") final String extId,
+                                                     @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+                                                        throws RecordNotFoundException, IOException, ValidationException {
+        ftpMockService.deleteEndpoint(extId, GeneralUtils.extractOAuthToken(bearerToken));
         return ResponseEntity.noContent().build();
     }
 
@@ -55,7 +61,7 @@ public class FtpController {
     public @ResponseBody ResponseEntity<Void> uploadFile(@PathVariable("extId") final String extId, @RequestParam("file") MultipartFile file)
             throws RecordNotFoundException, ValidationException, IOException {
         ftpMockService.uploadFile(extId, file);
-        return new ResponseEntity<Void>(HttpStatus.CREATED);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(path="/ftpmock/{extId}/file", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

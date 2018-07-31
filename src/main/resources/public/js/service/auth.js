@@ -33,4 +33,33 @@ app.service('auth', function($uibModal, globalVars) {
     	localStorage.removeItem(globalVars.SmockinAuthToken);
     };
 
+    this.getRole = function () {
+
+        var token = this.getToken();
+
+        if (token == null) {
+            return null;
+        }
+
+        return jwt_decode(token).role;
+    };
+
+    this.getFullName = function () {
+
+        var token = this.getToken();
+
+        if (token == null) {
+            return null;
+        }
+
+        return jwt_decode(token).name;
+    };
+
+    this.isAdmin = function () {
+
+        var role = this.getRole();
+
+        return (role == globalVars.SysAdminRole || role == globalVars.AdminRole);
+    };
+
 });

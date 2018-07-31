@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "REST_MOCK", uniqueConstraints={
-    @UniqueConstraint(columnNames = {"PATH", "HTTP_METHOD"})
+    @UniqueConstraint(columnNames = {"PATH", "HTTP_METHOD", "CREATED_BY"})
 })
 public class RestfulMock extends Identifier {
 
@@ -66,11 +66,14 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="REST_CATGY_ID", nullable = true)
     private RestfulCategory category;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="CREATED_BY", nullable = false)
+    private SmockinUser createdBy;
 
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, SmockinUser createdBy) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -80,6 +83,7 @@ public class RestfulMock extends Identifier {
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
         this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.randomiseDefinitions = randomiseDefinitions;
+        this.createdBy = createdBy;
     }
 
     public String getPath() {
@@ -171,6 +175,13 @@ public class RestfulMock extends Identifier {
     }
     public void setCategory(RestfulCategory category) {
         this.category = category;
+    }
+
+    public SmockinUser getCreatedBy() {
+        return createdBy;
+    }
+    public void setCreatedBy(SmockinUser createdBy) {
+        this.createdBy = createdBy;
     }
 
 }

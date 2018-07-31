@@ -3,12 +3,12 @@
     padding: 12px;
     color: #fff;
     border-radius: 4px;
-    background-image: linear-gradient(to bottom,#f0ad4e 0,#eb9316 100%);
+    background-image: linear-gradient(to bottom,#f0ad4e 0,#eb9316 100%) !important;
 }
 
 .modal-header-danger {
     padding: 12px;
     color: #fff;
     border-radius: 4px;
-    background-image: linear-gradient(to bottom,#d9534f 0,#c12e2a 100%)
+    background-image: linear-gradient(to bottom,#d9534f 0,#c12e2a 100%) !important;
 }

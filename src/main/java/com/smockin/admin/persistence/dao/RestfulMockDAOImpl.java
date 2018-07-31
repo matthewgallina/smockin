@@ -35,4 +35,11 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .getResultList();
     }
 
+    @Override
+    public List<RestfulMock> findAllByUser(final long userId) {
+        return entityManager.createQuery("FROM RestfulMock rm WHERE rm.createdBy.id = :userId ORDER BY rm.initializationOrder ASC")
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
 }

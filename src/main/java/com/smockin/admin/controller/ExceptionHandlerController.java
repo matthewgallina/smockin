@@ -1,5 +1,6 @@
 package com.smockin.admin.controller;
 
+import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -32,8 +33,9 @@ public class ExceptionHandlerController {
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<String> handleValidationBadRequest(ValidationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    public ResponseEntity<SimpleMessageResponseDTO<String>> handleValidationBadRequest(ValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new SimpleMessageResponseDTO(ex.getMessage()));
     }
 
     @ExceptionHandler(MockServerException.class)

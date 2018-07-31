@@ -12,7 +12,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
 
     //
     // Labels
-    var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"TCP":ServerType;
+    var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"HTTP":ServerType;
     $scope.serverConfigHeading = ServerTypeLabel + ' Mock Server Config';
     $scope.portLabel = 'Port';
     $scope.maxThreadsLabel = 'Max Threads';

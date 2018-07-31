@@ -14,7 +14,7 @@ public class ApiImportRouter {
     @Qualifier("ramlApiImportService")
     private ApiImportService ramlApiImportService;
 
-    public void route(final ApiImportDTO dto) throws ApiImportException, ValidationException {
+    public void route(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
 
         if (dto == null) {
             throw new ValidationException("No data found");
@@ -26,7 +26,7 @@ public class ApiImportRouter {
 
         switch (dto.getType()) {
             case RAML:
-                ramlApiImportService.importApiDoc(dto);
+                ramlApiImportService.importApiDoc(dto, token);
                 break;
             default:
                 throw new ValidationException("Unsupported import type");

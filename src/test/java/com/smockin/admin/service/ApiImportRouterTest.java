@@ -4,6 +4,7 @@ import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.enums.ApiImportType;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,16 +34,16 @@ public class ApiImportRouterTest {
         dto = new ApiImportDTO();
         dto.setType(ApiImportType.RAML);
 
-        Mockito.doNothing().when(ramlApiImportService).importApiDoc(Matchers.any(ApiImportDTO.class));
+        Mockito.doNothing().when(ramlApiImportService).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
 
     }
 
     @Test
     public void routePass() throws ApiImportException, ValidationException {
 
-        apiImportRouter.route(dto);
+        apiImportRouter.route(dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.times(1)).importApiDoc(Matchers.any(ApiImportDTO.class));
+        Mockito.verify(ramlApiImportService, Mockito.times(1)).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
 
     }
 
@@ -54,9 +55,9 @@ public class ApiImportRouterTest {
         expected.expectMessage("No data found");
 
         // Test
-        apiImportRouter.route(null);
+        apiImportRouter.route(null, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Matchers.any(ApiImportDTO.class));
+        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
     }
 
     @Test
@@ -70,9 +71,9 @@ public class ApiImportRouterTest {
         expected.expectMessage("Import Type is required");
 
         // Test
-        apiImportRouter.route(dto);
+        apiImportRouter.route(dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Matchers.any(ApiImportDTO.class));
+        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
     }
 
 }

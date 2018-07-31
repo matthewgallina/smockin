@@ -146,8 +146,8 @@ public class CoreDataHandler {
         smockinUserDAO.save(new SmockinUser(
                 "admin",
                 authService.encrypt("admin"),
-                "Admin",
-                "admin",
+                "System Admin",
+                "",
                 SmockinUserRoleEnum.SYS_ADMIN,
                 RecordStatusEnum.ACTIVE,
                 GeneralUtils.generateUUID()));

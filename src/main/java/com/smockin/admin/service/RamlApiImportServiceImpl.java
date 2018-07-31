@@ -5,6 +5,7 @@ import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RestfulMockDefinitionDTO;
 import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -32,7 +33,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
     private RestfulMockService restfulMockService;
 
     @Override
-    public void importApiDoc(final ApiImportDTO dto) throws ApiImportException, ValidationException {
+    public void importApiDoc(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
 
         validate(dto);
 
@@ -46,7 +47,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         debug("URI " + api.baseUri().value());
         debug("version " + api.version().value());
 
-        loadInResources(api.resources(), apiImportConfig);
+        loadInResources(api.resources(), apiImportConfig, token);
 
     }
 
@@ -76,11 +77,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         return ramlModelResult.getApiV10();
     }
 
-    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig) throws ApiImportException {
-        resources.stream().forEach(r -> parseResource(r, apiImportConfig));
+    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final String token) throws ApiImportException {
+        resources.stream()
+                .forEach(r -> parseResource(r, apiImportConfig, token));
     }
 
-    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig) throws ApiImportException {
+    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final String token) throws ApiImportException {
         debug("Importing Endpoint...");
 
         // path
@@ -174,10 +176,14 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             });
 
-            restfulMockService.createEndpoint(dto);
+            try {
+                restfulMockService.createEndpoint(dto, token);
+            } catch (RecordNotFoundException e) {
+                throw new ApiImportException("Record not found");
+            }
         });
 
-        loadInResources(resource.resources(), apiImportConfig);
+        loadInResources(resource.resources(), apiImportConfig, token);
     }
 
     String formatPath(final String resourcePath) {

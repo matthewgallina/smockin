@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +66,10 @@ public class SmockinUserServiceImpl implements SmockinUserService {
 
         validateDTO(dto);
 
+        if (SmockinUserRoleEnum.SYS_ADMIN.equals(dto.getRole())) {
+            throw new ValidationException("This role is not permitted");
+        }
+
         final String passwordEnc = validateAndEncryptPassword(dto.getPassword());
 
         return smockinUserDAO
@@ -81,8 +86,14 @@ public class SmockinUserServiceImpl implements SmockinUserService {
 
         final SmockinUser smockinUser = loadUserByExtId(externalId);
 
+        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(smockinUser.getRole())
+                && SmockinUserRoleEnum.SYS_ADMIN.equals(dto.getRole())) {
+            throw new ValidationException("Updating to this role is not permitted");
+        }
+
         smockinUser.setFullName(dto.getFullName());
         smockinUser.setUsername(dto.getUsername());
+        smockinUser.setRole(dto.getRole());
         smockinUser.setCtxPath(dto.getUsername());
 
         smockinUserDAO.save(smockinUser);
@@ -140,6 +151,23 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         return (multiUserMode) ? UserModeEnum.ACTIVE : UserModeEnum.INACTIVE;
     }
 
+    @Override
+    public SmockinUser loadCurrentUser(final String sessionToken) throws RecordNotFoundException {
+
+        final SmockinUser smockinUser = smockinUserDAO.findBySessionToken(sessionToken);
+
+        if (smockinUser == null) {
+            throw new RecordNotFoundException();
+        }
+
+        return smockinUser;
+    }
+
+    @Override
+    public Optional<SmockinUser> loadDefaultUser() {
+        return smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN).stream().findFirst();
+    }
+
     void validateDTO(final SmockinUserDTO dto) throws ValidationException {
 
         if (StringUtils.isBlank(dto.getFullName())) {
@@ -151,10 +179,6 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         if (!dto.getUsername().matches(USERNAME_REGEX)) {
             throw new ValidationException("username can only contain alphanumeric characters and no spaces");
         }
-        if (!SmockinUserRoleEnum.REGULAR.equals(dto.getRole())) {
-            throw new ValidationException("Only " + SmockinUserRoleEnum.REGULAR.name() + " role is supported");
-        }
-
     }
 
     String validateAndEncryptPassword(final String passwordPlain) throws ValidationException {
@@ -163,7 +187,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
             throw new ValidationException("password is required");
         }
         if (!passwordPlain.matches(PASSWORD_REGEX)) {
-            throw new ValidationException("Invalid password (expect 1 digit, 1 upper & 1 lower case character)");
+            throw new ValidationException("Invalid password (min 8 chars, 1 digit, 1 upper case & 1 lower case)");
         }
 
         return encryptionService.encrypt(passwordPlain);
@@ -178,17 +202,6 @@ public class SmockinUserServiceImpl implements SmockinUserService {
             throw new AuthException();
         }
 
-    }
-
-    SmockinUser loadCurrentUser(final String sessionToken) throws RecordNotFoundException {
-
-        final SmockinUser smockinUser = smockinUserDAO.findBySessionToken(sessionToken);
-
-        if (smockinUser == null) {
-            throw new RecordNotFoundException();
-        }
-
-        return smockinUser;
     }
 
     SmockinUser loadUserByExtId(final String externalId) throws RecordNotFoundException {

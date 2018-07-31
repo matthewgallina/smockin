@@ -52,8 +52,8 @@ app.service('restClient', function(auth) {
           data: reqData,
           headers: applyAuthHeader({
             'Content-Type': 'application/json'
-           }),
-           timeout: HttpRequestTimeoutMillis
+          }),
+          timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);
         }, function errorCallback(response) {

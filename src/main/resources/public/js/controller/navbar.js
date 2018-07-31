@@ -1,10 +1,9 @@
 
 app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, restClient) {
 
-
     //
     // Labels
-    $scope.navbarLabel = (auth.isLoggedIn()) ? "Joe Bloggs (TODO)" : "Tools";
+    $scope.navbarLabel = (auth.isLoggedIn()) ? auth.getFullName() : "Tools";
     $scope.helpLink = "Help"
 
 
@@ -20,7 +19,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     //
     // Data Objects
     $scope.isLoggedIn = auth.isLoggedIn();
-    $scope.isAdmin = true; // TODO
+    $scope.isAdmin = auth.isAdmin();
     var httpClientState = null;
     var wsClientState = null;
 
@@ -86,6 +85,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.doLogout = function() {
 
         if (!auth.isLoggedIn()) {
+            $window.location.reload();
             return;
         }
 

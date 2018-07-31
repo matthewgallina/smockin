@@ -34,7 +34,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.mockTypeProxyHttp = MockTypeDefinitions.MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
-    $scope.endpointHeading = (isNew) ? 'New TCP Endpoint' : 'TCP Endpoint';
+    $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
     $scope.methodLabel = 'Method';
@@ -930,7 +930,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             checkAutoRefreshStatus(function(autoRefresh) {
 
                 var locParams = {
-                    'tab' : 'TCP'
+                    'tab' : 'HTTP'
                 };
 
                 if (autoRefresh != null && autoRefresh) {
@@ -958,7 +958,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.doCancel = function() {
 
         $location.path("/dashboard").search({
-            'tab' : 'TCP'
+            'tab' : 'HTTP'
         });
 
         clearEndpointData();

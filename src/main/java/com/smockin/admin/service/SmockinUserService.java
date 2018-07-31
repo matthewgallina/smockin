@@ -8,8 +8,10 @@ import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.entity.SmockinUser;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by gallina on 26/05/2018.
@@ -24,5 +26,7 @@ public interface SmockinUserService {
     void resetToken(final String token) throws RecordNotFoundException;
     void lookUpToken(final String sessionToken) throws AuthException;
     UserModeEnum getUserMode();
+    SmockinUser loadCurrentUser(final String sessionToken) throws RecordNotFoundException;
+    Optional<SmockinUser> loadDefaultUser();
 
 }

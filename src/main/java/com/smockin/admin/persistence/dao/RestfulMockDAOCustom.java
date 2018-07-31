@@ -13,5 +13,6 @@ public interface RestfulMockDAOCustom {
     void detach(final RestfulMock restfulMock);
     List<RestfulMock> findAllByStatus(final RecordStatusEnum status);
     List<RestfulMock> findAll();
+    List<RestfulMock> findAllByUser(final long userId);
 
 }

@@ -22,7 +22,7 @@ public class RestfulMockDTO {
     private boolean proxyPushIdOnConnect;
     private boolean randomiseDefinitions;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
-    private List<RuleDTO> rules = new ArrayList<RuleDTO>();
+    private List<RuleDTO> rules = new ArrayList<>();
 
     public RestfulMockDTO() {
 

@@ -54,7 +54,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
         "extId" : null,
         "username" : null,
         "fullName" : null,
-        "role" : "REGULAR",
+        "role" : globalVars.RegularRole,
         "password" : null,
         "confirmPassword" : null
     };
@@ -70,7 +70,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
         $scope.userData.dateCreated = data.dateCreated;
         $scope.userData.password = "********";
         $scope.userData.confirmPassword = "********";
-    }
+    };
 
 
     //
@@ -83,7 +83,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             doCreateUser();
         }
 
-    }
+    };
 
     $scope.doDeleteUser = function() {
 
@@ -91,7 +91,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             return;
         }
 
-        if (data.role == "SYS_ADMIN") {
+        if (data.role == globalVars.SysAdminRole) {
             showAlert("The System Admin user cannot be deleted");
             return;
         }
@@ -131,6 +131,11 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             return;
         }
 
+        if (utils.hasWhiteSpace($scope.userData.username)) {
+            showAlert("'Username' must be a complete word without any whitespace");
+            return;
+        }
+
         if (utils.isBlank($scope.userData.fullName)) {
             showAlert("'Full Name' is required");
             return;
@@ -141,8 +146,6 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             return;
         }
 
-        // TODO validate password format
-        // expect 1 digit, 1 upper & 1 lower case character)
         if (utils.isBlank($scope.userData.password)) {
             showAlert("'Password' is required");
             return;
@@ -159,16 +162,60 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             if (status == 201) {
                 $uibModalInstance.close("ok");
                 return;
+            } else if (status == 400) {
+                $scope.userData.password = null;
+                $scope.userData.confirmPassword = null;
+                showAlert(data.message);
+                return;
             }
 
             showAlert(globalVars.GeneralErrorMessage);
         });
 
-    };
+    }
 
     function doUpdateUser() {
 
-        // TODO
+        // Validation
+        if (utils.isBlank($scope.userData.username)) {
+            showAlert("'Username' is required");
+            return;
+        }
+
+        if (utils.hasWhiteSpace($scope.userData.username)) {
+            showAlert("'Username' must be a complete word without any whitespace");
+            return;
+        }
+
+        if (utils.isBlank($scope.userData.fullName)) {
+            showAlert("'Full Name' is required");
+            return;
+        }
+
+        if (utils.isBlank($scope.userData.role)) {
+            showAlert("'Role' is required");
+            return;
+        }
+
+        var reqBody = {
+            "username" : $scope.userData.username,
+            "fullName" : $scope.userData.fullName,
+            "role" : $scope.userData.role
+        };
+
+        // Send
+        restClient.doPut($http, '/user/' + data.extId, reqBody, function(status, data) {
+
+            if (status == 204) {
+                $uibModalInstance.close("ok");
+                return;
+            } else if (status == 400) {
+                showAlert(data.message);
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
 
     }
 
