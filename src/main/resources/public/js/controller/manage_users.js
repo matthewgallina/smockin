@@ -40,6 +40,8 @@ app.controller('manageUsersController', function($scope, $uibModal, $http, restC
         var modalInstance = $uibModal.open({
             templateUrl: 'user.html',
             controller: 'userController',
+            backdrop  : 'static',
+            keyboard  : false,
             resolve: {
                 data: function () {
                   return data;

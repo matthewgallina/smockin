@@ -58,6 +58,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.pathTableLabel = 'Path';
     $scope.methodTableLabel = 'Method';
     $scope.dateCreatedTableLabel = 'Date Created';
+    $scope.createdByTableLabel = 'Created By';
     $scope.statusTableLabel = 'Status';
     $scope.mockTypeTableLabel = 'HTTP Mock Type';
     $scope.actionTableLabel = 'Action';
@@ -70,6 +71,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
      var modalInstance = $uibModal.open({
           templateUrl: 'server_config.html',
           controller: 'serverConfigController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { "serverType" : RestfulServerType };
@@ -124,9 +127,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     };
 
     $scope.doToggleAllEndpoints = function() {
-
         $scope.showAllEndpoints = (!$scope.showAllEndpoints);
-
+        loadTableData($scope.showAllEndpoints);
     };
 
     $scope.stopTcpMockServer = function () {
@@ -151,11 +153,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Internal Functions
-    function loadTableData() {
+    function loadTableData(showAll) {
 
         $scope.restServices = [];
 
-        restClient.doGet($http, '/restmock', function(status, data) {
+        var filterParams = (showAll) ? '?filter=all' : '';
+
+        restClient.doGet($http, '/restmock' + filterParams, function(status, data) {
 
             if (status == 401) {
                 showAlert(globalVars.AuthRequiredMessage);
@@ -271,7 +275,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Init page
-    loadTableData();
+    loadTableData(false);
     loadTcpServerStatus();
 
 });

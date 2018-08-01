@@ -39,6 +39,8 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
        var modalInstance = $uibModal.open({
           templateUrl: 'confirmation_alert.html',
           controller: 'confirmationAlertController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {

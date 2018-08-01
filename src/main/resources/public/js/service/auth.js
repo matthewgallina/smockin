@@ -55,6 +55,17 @@ app.service('auth', function($uibModal, globalVars) {
         return jwt_decode(token).name;
     };
 
+    this.getUserName = function () {
+
+        var token = this.getToken();
+
+        if (token == null) {
+            return null;
+        }
+
+        return jwt_decode(token).username;
+    };
+
     this.isAdmin = function () {
 
         var role = this.getRole();

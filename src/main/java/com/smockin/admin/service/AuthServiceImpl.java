@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final String jwtRoleKey = "role";
     private final String jwtFullNameKey = "name";
+    private final String jwtUserNameKey = "username";
     private final String jwtSubjectKey = "smockin-access";
     private final String jwtIssuer = "smockin";
     private final String jwtSecret = "somesobsecuresecretkey";
@@ -76,6 +77,7 @@ public class AuthServiceImpl implements AuthService {
                 .withIssuer(jwtIssuer)
                 .withClaim(jwtRoleKey, user.getRole().name())
                 .withClaim(jwtFullNameKey, user.getFullName())
+                .withClaim(jwtUserNameKey, user.getUsername())
                 .withSubject(jwtSubjectKey)
                 .withIssuedAt(GeneralUtils.getCurrentDate())
                 .withExpiresAt(GeneralUtils.toDate(GeneralUtils.getCurrentDateTime().plusDays(99)))

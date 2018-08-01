@@ -34,7 +34,7 @@ public class SmockinUser extends Identifier {
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
-    @Column(name = "SESS_TOKEN", nullable = false, length = 250, unique = true)
+    @Column(name = "SESS_TOKEN", nullable = false, length = 350, unique = true)
     private String sessionToken; // JWT based
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true)

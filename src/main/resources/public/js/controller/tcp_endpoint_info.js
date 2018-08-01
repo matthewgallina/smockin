@@ -1,5 +1,5 @@
 
-app.controller('tcpEndpointInfoController', function($scope, $rootScope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient) {
+app.controller('tcpEndpointInfoController', function($scope, $rootScope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
 
 
     //
@@ -151,6 +151,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     ];
 
     var extId = null;
+
     $scope.isNew = isNew;
 
     $scope.responseHeaderList = [];
@@ -213,7 +214,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
-            "rules" : endpoint.rules
+            "rules" : endpoint.rules,
+            "createdBy" : endpoint.createdBy
         };
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
@@ -235,9 +237,11 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     }
 
+    $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
+
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doSelectMockType = function(et) {
 
         $scope.endpoint.mockType = et;
@@ -450,6 +454,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'ws_send_message.html',
           controller: 'wsSendMessageController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
@@ -473,6 +479,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'sse_send_message.html',
           controller: 'sseSendMessageController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
@@ -490,12 +498,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         });
 
     };
-
-    function updateRuleOrderNumbers() {
-        for (var r=0; r < $scope.endpoint.rules.length; r++) {
-            $scope.endpoint.rules[r].orderNo = (r + 1);
-        }
-    }
 
     $scope.doToggleSuspendRule = function (index) {
         $scope.endpoint.rules[index].suspend = !$scope.endpoint.rules[index].suspend;
@@ -558,12 +560,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    function updateSeqOrderNumbers() {
-        for (var s=0; s < $scope.endpoint.definitions.length; s++) {
-            $scope.endpoint.definitions[s].orderNo = (s + 1);
-        }
-    }
-
     $scope.doToggleSuspendSeq = function (index) {
 
         $scope.endpoint.definitions[index].suspend = !$scope.endpoint.definitions[index].suspend;
@@ -579,10 +575,13 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
       var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule.html',
           controller: 'endpointInfoRuleController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
-                "rule" : rule
+                "rule" : rule,
+                "createdBy" : $scope.endpoint.createdBy
               };
             }
           }
@@ -601,6 +600,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
       var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule.html',
           controller: 'endpointInfoRuleController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { };
@@ -622,9 +623,14 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_seq.html',
           controller: 'endpointInfoSeqController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
-              return { "seq" : seq };
+              return {
+                        "seq" : seq,
+                        "createdBy" : $scope.endpoint.createdBy
+                     };
             }
           }
         });
@@ -652,6 +658,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_seq.html',
           controller: 'endpointInfoSeqController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {};
@@ -786,6 +794,18 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
+    $scope.doCancel = function() {
+
+        $location.path("/dashboard").search({
+            'tab' : 'HTTP'
+        });
+
+        clearEndpointData();
+    };
+
+
+    //
+    // Internal Functions
     function validateRule() {
 
         if (utils.isBlank($scope.endpoint.method)) {
@@ -833,6 +853,18 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         return true;
+    }
+
+    function updateRuleOrderNumbers() {
+        for (var r=0; r < $scope.endpoint.rules.length; r++) {
+            $scope.endpoint.rules[r].orderNo = (r + 1);
+        }
+    }
+
+    function updateSeqOrderNumbers() {
+        for (var s=0; s < $scope.endpoint.definitions.length; s++) {
+            $scope.endpoint.definitions[s].orderNo = (s + 1);
+        }
     }
 
     function validateSeq() {
@@ -947,21 +979,15 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         utils.hideBlockingOverlay();
 
-        if (status == 409) {
+        if (status == 400) {
+            showAlert(data.message);
+            return;
+        } else if (status == 409) {
             showAlert("'" + $scope.endpoint.path + "' is already in use");
             return;
         }
 
         showAlert(globalVars.GeneralErrorMessage);
-    };
-
-    $scope.doCancel = function() {
-
-        $location.path("/dashboard").search({
-            'tab' : 'HTTP'
-        });
-
-        clearEndpointData();
     };
 
     function clearEndpointData() {

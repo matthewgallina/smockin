@@ -54,6 +54,8 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
      var modalInstance = $uibModal.open({
           templateUrl: 'server_config.html',
           controller: 'serverConfigController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { "serverType" : JmsServerType };

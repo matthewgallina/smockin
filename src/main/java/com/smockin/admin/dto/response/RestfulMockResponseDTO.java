@@ -17,13 +17,15 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
 
     private String extId;
     private Date dateCreated;
+    private String createdBy;
     private String userCtxPath;
     private List<RuleDTO> rules = new ArrayList<RuleDTO>();
 
-    public RestfulMockResponseDTO(String extId, String path, String userCtxPath, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
+    public RestfulMockResponseDTO(String extId, String path, String userCtxPath, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, String createdBy, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
         super(path, method, status, mockType, proxyTimeoutInMillis, webSocketTimeoutInMillis, sseHeartBeatInMillis, proxyPushIdOnConnect, randomiseDefinitions);
         this.extId = extId;
         this.dateCreated = dateCreated;
+        this.createdBy = createdBy;
         this.userCtxPath = userCtxPath;
     }
 
@@ -39,6 +41,13 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     }
     public void setDateCreated(Date dateCreated) {
         this.dateCreated = dateCreated;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
     }
 
     public String getUserCtxPath() {

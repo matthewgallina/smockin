@@ -1,5 +1,5 @@
 
-app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
+app.controller('endpointInfoSeqController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data, auth) {
 
 
     //
@@ -71,6 +71,8 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         "frequencyCount" : 1,
         "responseHeaders" : {}
     };
+
+    $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
 
     if (!isNew) {
 

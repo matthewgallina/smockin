@@ -38,7 +38,7 @@ public class RestfulMockServiceUtils {
         final List<RestfulMockResponseDTO> restMockDTOs = new ArrayList<>();
 
         for (RestfulMock rmd : restfulMockDefinitions) {
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), (rmd.getCreatedBy() != null) ? rmd.getCreatedBy().getCtxPath() : null, rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(), rmd.isRandomiseDefinitions());
+            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(), rmd.isRandomiseDefinitions());
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
@@ -161,7 +161,7 @@ public class RestfulMockServiceUtils {
 
         final SmockinUser currentUser = loadCurrentUser(token);
 
-        if (recordOwner.getId() == currentUser.getId()) {
+        if (recordOwner.getId() != currentUser.getId()) {
             throw new ValidationException("Insufficient record access");
         }
 
