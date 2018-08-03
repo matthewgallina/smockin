@@ -58,7 +58,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Endpoints Table
     $scope.pathTableLabel = 'Path';
-    $scope.methodTableLabel = 'Method';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.createdByTableLabel = 'Created By';
     $scope.statusTableLabel = 'Status';
@@ -187,12 +186,20 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             "other" : []
         };
 
-        for (var d=0; d < allData.length; d++) {
-            if (allData[d].createdBy == auth.getUserName()) {
-                splitOutData.own.push(allData[d]);
-            } else {
-                splitOutData.other.push(allData[d]);
+        if (!auth.isLoggedIn()) {
+
+            splitOutData.own = allData;
+
+        } else {
+
+            for (var d=0; d < allData.length; d++) {
+                if (allData[d].createdBy == auth.getUserName()) {
+                    splitOutData.own.push(allData[d]);
+                } else {
+                    splitOutData.other.push(allData[d]);
+                }
             }
+
         }
 
         return splitOutData;

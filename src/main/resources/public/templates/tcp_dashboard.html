@@ -59,9 +59,7 @@
                         <thead>
                         <tr>
                             <th>{{ pathTableLabel }}</th>
-                            <th>{{ methodTableLabel }}</th>
                             <th>{{ dateCreatedTableLabel }}</th>
-                            <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
                             <th>{{ mockTypeTableLabel }}</th>
                             <th>{{ statusTableLabel }}</th>
                             <th>{{ actionTableLabel }}</th>
@@ -69,10 +67,8 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="x in rs.data">
-                                <td>{{ x.path }}</td>
-                                <td>{{ x.method }}</td>
-                                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                                <th ng-if="isLoggedIn">{{ x.createdBy }}</th>
+                                <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.status | lowercase}}">
                                     {{ x.status }}
@@ -115,8 +111,6 @@
                             <thead>
                             <tr>
                                 <th>{{ pathTableLabel }}</th>
-                                <th>{{ methodTableLabel }}</th>
-                                <th>{{ dateCreatedTableLabel }}</th>
                                 <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
                                 <th>{{ mockTypeTableLabel }}</th>
                                 <th>{{ statusTableLabel }}</th>
@@ -125,10 +119,8 @@
                             </thead>
                             <tbody>
                             <tr ng-repeat="x in rs.data">
-                                <td>{{ x.path }}</td>
-                                <td>{{ x.method }}</td>
-                                <th>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                                <th ng-if="isLoggedIn">{{ x.createdBy }}</th>
+                                <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td ng-if="isLoggedIn">{{ x.createdBy }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.status | lowercase}}">
                                     {{ x.status }}
