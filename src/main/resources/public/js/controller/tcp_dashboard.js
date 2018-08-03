@@ -28,8 +28,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'Simulated HTTP Endpoints';
-    $scope.showAllEndpointsHeading = 'show all';
-    $scope.hideAllEndpointsHeading = 'hide all';
+    $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
+    $scope.showAllEndpointsHeading = 'display other user endpoints';
+    $scope.hideAllEndpointsHeading = 'hide';
 
 
     //
@@ -50,6 +51,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.mockServerStatus = '';
     $scope.restServices = [];
+    $scope.otherUserRestServices = [];
     $scope.showAllEndpoints = false;
 
 
@@ -126,8 +128,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     };
 
-    $scope.doToggleAllEndpoints = function() {
-        $scope.showAllEndpoints = (!$scope.showAllEndpoints);
+    $scope.doShowAllEndpoints = function(show) {
+        $scope.showAllEndpoints = show;
         loadTableData($scope.showAllEndpoints);
     };
 
@@ -156,6 +158,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     function loadTableData(showAll) {
 
         $scope.restServices = [];
+        $scope.otherUserRestServices = [];
 
         var filterParams = (showAll) ? '?filter=all' : '';
 
@@ -169,9 +172,30 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 return;
             }
 
-            $scope.restServices = batchByBasePath(data);
+            var splitData = splitUserData(data);
+
+            $scope.otherUserRestServices = batchByBasePath(splitData.other);
+            $scope.restServices = batchByBasePath(splitData.own);
         });
 
+    }
+
+    function splitUserData(allData) {
+
+        var splitOutData = {
+            "own" : [],
+            "other" : []
+        };
+
+        for (var d=0; d < allData.length; d++) {
+            if (allData[d].createdBy == auth.getUserName()) {
+                splitOutData.own.push(allData[d]);
+            } else {
+                splitOutData.other.push(allData[d]);
+            }
+        }
+
+        return splitOutData;
     }
 
     function batchByBasePath(allData) {

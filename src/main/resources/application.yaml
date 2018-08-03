@@ -20,7 +20,7 @@ logging:
     org.springframework: WARN
     com.smockin: WARN
     org.hibernate: WARN
-    ROOT: WARN
+    ROOT: ERROR
 
 smockin:
   ftp.root.dir: "${user.home}/.smockin/ftp/"

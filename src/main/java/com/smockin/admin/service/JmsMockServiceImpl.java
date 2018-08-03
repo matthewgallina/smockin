@@ -2,12 +2,13 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
+import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.entity.JmsMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
-import com.smockin.admin.service.utils.RestfulMockServiceUtils;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +31,13 @@ public class JmsMockServiceImpl implements JmsMockService {
     private JmsMockDAO jmsMockDAO;
 
     @Autowired
-    private RestfulMockServiceUtils restfulMockServiceUtils;
+    private UserTokenServiceUtils userTokenServiceUtils;
 
     @Override
     public String createEndpoint(final JmsMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
 
-        final SmockinUser smockinUser = restfulMockServiceUtils.loadCurrentUser(token);
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
         return jmsMockDAO.save(new JmsMock(dto.getName(), dto.getJmsMockType(), dto.getStatus(), smockinUser))
                 .getExtId();
@@ -48,7 +49,7 @@ public class JmsMockServiceImpl implements JmsMockService {
 
         final JmsMock mock = loadJmsMock(mockExtId);
 
-        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         mock.setName(dto.getName());
         mock.setStatus(dto.getStatus());
@@ -62,16 +63,24 @@ public class JmsMockServiceImpl implements JmsMockService {
 
         final JmsMock mock = loadJmsMock(mockExtId);
 
-        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         jmsMockDAO.delete(mock);
     }
 
     @Override
-    public List<JmsMockResponseDTO> loadAll() {
+    public List<JmsMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        return jmsMockDAO.findAll()
+        final List<JmsMock> jmsMocks;
+
+        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
+            jmsMocks = jmsMockDAO.findAll();
+        } else {
+            jmsMocks =  jmsMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId());
+        }
+
+        return jmsMocks
                 .stream()
                 .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
                 .collect(Collectors.toList());

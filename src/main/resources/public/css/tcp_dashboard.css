@@ -2,7 +2,7 @@
     display: none !important;
 }
 
-#no-data-label {
+.no-data-label {
     margin: 100px;
     text-align: center;
 }

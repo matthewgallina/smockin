@@ -35,4 +35,11 @@ public class JmsMockDAOImpl implements JmsMockDAOCustom {
                 .getResultList();
     }
 
+    @Override
+    public List<JmsMock> findAllByUser(final long userId) {
+        return entityManager.createQuery("FROM JmsMock jqm WHERE jqm.createdBy.id = :userId ORDER BY jqm.name ASC")
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
 }

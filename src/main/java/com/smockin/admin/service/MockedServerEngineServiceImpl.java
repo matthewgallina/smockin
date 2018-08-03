@@ -21,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 /**
  * Created by mgallina.
  */
@@ -249,9 +247,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     public void handleServerAutoStart() {
 
-        final List<ServerConfig> configList = serverConfigDAO.findAll();
-
-        for (ServerConfig sc : configList) {
+        serverConfigDAO.findAll().stream().forEach(sc -> {
             if (sc.isAutoStart()) {
                 try {
                     autoStartManager(sc.getServerType());
@@ -259,7 +255,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                     logger.error("Error auto starting server type : " + sc.getServerType(), ex);
                 }
             }
-        }
+        });
 
     }
 

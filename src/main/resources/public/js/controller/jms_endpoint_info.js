@@ -199,7 +199,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             "mimeType" : "text/plain"
         };
 
-        restClient.doPost($http, '/jms/queue', req, function(status, data) {
+        restClient.doPost($http, '/jmsmock/' + extId + '/queue', req, function(status, data) {
 
             if (status != 204) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -217,7 +217,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             "name" : $scope.endpoint.name
         };
 
-        restClient.doPatch($http, '/jms/queue/clear', req, function(status, data) {
+        restClient.doPatch($http, '/jmsmock/' + extId + '/queue/clear', req, function(status, data) {
 
             if (status != 204) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -244,7 +244,7 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
             "mimeType" : "text/plain"
         };
 
-        restClient.doPost($http, '/jms/topic', req, function(status, data) {
+        restClient.doPost($http, '/jmsmock/' + extId + '/topic', req, function(status, data) {
 
             if (status != 204) {
                 showAlert(globalVars.GeneralErrorMessage);

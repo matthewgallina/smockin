@@ -9,5 +9,6 @@ public interface FtpMockDAOCustom {
 
     void detach(final FtpMock ftpMock);
     List<FtpMock> findAllByStatus(final RecordStatusEnum status);
+    List<FtpMock> findAllByUser(final long userId);
 
 }

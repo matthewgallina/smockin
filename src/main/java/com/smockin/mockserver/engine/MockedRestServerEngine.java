@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -153,19 +155,18 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Transactional
     void invokeAndDetachData(final List<RestfulMock> mocks) {
 
-        for (RestfulMock mock : mocks) {
-
+        mocks.stream().forEach(m -> {
             // Invoke lazily Loaded rules and definitions whilst in this active transaction before
             // the entity is detached below.
-            mock.getRules().size();
-            mock.getDefinitions().size();
+            m.getRules().size();
+            m.getDefinitions().size();
 
             // Important!
             // Detach all JPA entity beans from EntityManager Context, so they can be
             // continually accessed again here as a simple data bean
             // within each request to the mocked REST endpoint.
-            restfulMockDAO.detach(mock);
-        }
+            restfulMockDAO.detach(m);
+        });
 
     }
 
@@ -299,6 +300,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final Iterator<RestfulMockDefinitionOrder> definitionsIter =  mock.getDefinitions().iterator();
 
+
+
         while (definitionsIter.hasNext()) {
             final RestfulMockDefinitionOrder d = definitionsIter.next();
 
@@ -366,7 +369,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     String buildUserPath(final RestfulMock mock) {
 
         if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
-            return "/" + mock.getCreatedBy().getCtxPath() + mock.getPath();
+            return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();
         }
 
         return mock.getPath();

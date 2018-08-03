@@ -2,12 +2,8 @@ package com.smockin.admin.service.utils;
 
 import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.enums.UserModeEnum;
-import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
-import com.smockin.admin.service.SmockinUserService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,9 +24,6 @@ public class RestfulMockServiceUtils {
 
     @Autowired
     private RestfulMockSortingUtils restfulMockSortingUtils;
-
-    @Autowired
-    private SmockinUserService smockinUserService;
 
     @Transactional
     public List<RestfulMockResponseDTO> buildRestfulMockDefinitionDTO(final List<RestfulMock> restfulMockDefinitions) {
@@ -143,28 +136,6 @@ public class RestfulMockServiceUtils {
 
     public void amendPath(final RestfulMockDTO dto) {
         dto.setPath(GeneralUtils.prefixPath(dto.getPath()));
-    }
-
-    @Transactional
-    public SmockinUser loadCurrentUser(final String token) throws RecordNotFoundException {
-
-        if (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode())) {
-            return smockinUserService.loadDefaultUser()
-                    .orElseThrow(() -> new RecordNotFoundException());
-        }
-
-        return smockinUserService.loadCurrentUser(token);
-    }
-
-    @Transactional
-    public void validateRecordOwner(final SmockinUser recordOwner, final String token) throws RecordNotFoundException, ValidationException {
-
-        final SmockinUser currentUser = loadCurrentUser(token);
-
-        if (recordOwner.getId() != currentUser.getId()) {
-            throw new ValidationException("Insufficient record access");
-        }
-
     }
 
 }

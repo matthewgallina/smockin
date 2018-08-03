@@ -32,6 +32,11 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
     // Injected from application.yaml
     private final Map<String, List<String>> exclusions = new HashMap<>();
 
+    /*
+        For more info:
+            https://www.tuturself.com/posts/view?menuId=3&postId=1071
+            http://www.baeldung.com/spring-mvc-handlerinterceptor
+    */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         logger.debug("Request received...");
@@ -64,13 +69,6 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
 
         // Check token is valid
         authService.verifyToken(token);
-
-        // Integer personId = ServletRequestUtils.getIntParameter(request, "personId", 0);
-        // String name = ServletRequestUtils.getStringParameter(request, "name");
-
-        // See:
-        //  https://www.tuturself.com/posts/view?menuId=3&postId=1071
-        //  http://www.baeldung.com/spring-mvc-handlerinterceptor
 
         return true;
     }

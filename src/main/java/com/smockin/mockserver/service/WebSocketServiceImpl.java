@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by mgallina.
  */
 @Service
+@Transactional
 public class WebSocketServiceImpl implements WebSocketService {
 
     private final Logger logger = LoggerFactory.getLogger(WebSocketServiceImpl.class);
@@ -52,7 +54,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
 
-        final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<SessionIdWrapper>());
+        final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<>());
 
         final String assignedId = GeneralUtils.generateUUID();
 

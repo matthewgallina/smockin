@@ -79,6 +79,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     }
 
+    $scope.isNew = isNew;
     $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
 
 

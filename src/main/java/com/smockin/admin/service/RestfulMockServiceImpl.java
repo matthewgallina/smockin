@@ -10,6 +10,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDefinitionRuleDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,12 +37,15 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Autowired
     private RestfulMockServiceUtils restfulMockServiceUtils;
 
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
     public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
 
         restfulMockServiceUtils.amendPath(dto);
 
-        final SmockinUser smockinUser = restfulMockServiceUtils.loadCurrentUser(token);
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
         RestfulMock mock = new RestfulMock(dto.getPath(),
                 dto.getMethod(),
@@ -71,7 +75,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final RestfulMock mock = loadRestMock(mockExtId);
 
-        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         final boolean pathChanged = (!mock.getPath().equalsIgnoreCase(dto.getPath()));
 
@@ -104,7 +108,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final RestfulMock mock = loadRestMock(mockExtId);
 
-        restfulMockServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         restfulMockDAO.delete(mock);
     }
@@ -112,13 +116,11 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     public List<RestfulMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        final SmockinUser smockinUser = restfulMockServiceUtils.loadCurrentUser(token);
-
         if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
             return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAll());
         }
 
-        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAllByUser(smockinUser.getId()));
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
     }
 
     RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {

@@ -72,6 +72,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
         "responseHeaders" : {}
     };
 
+    $scope.isNew = isNew;
     $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
 
     if (!isNew) {
@@ -86,7 +87,7 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doAddResponseHeaderRow = function() {
         $scope.responseHeaderList.push({ "name" : null, "value" : null });
     };

@@ -29,4 +29,11 @@ public class FtpMockDAOImpl implements FtpMockDAOCustom {
                 .getResultList();
     }
 
+    @Override
+    public List<FtpMock> findAllByUser(final long userId) {
+        return entityManager.createQuery("FROM FtpMock fm WHERE fm.createdBy.id = :userId ORDER BY fm.name ASC")
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
 }

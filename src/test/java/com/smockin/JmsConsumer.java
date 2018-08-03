@@ -15,10 +15,10 @@ public class JmsConsumer {
     @Test
     public void start() throws Exception {
 
-        // curl -i -H "Content-Type: application/json" -X POST -d '{ "name" : "dogs", "body" : "Hello", "mimeType" : "text/plain" }' http://mgallina-desktop:8000/jms/queue
+        // curl -i -H "Content-Type: application/json" -X POST -d '{ "name" : "dogs", "body" : "Hello", "mimeType" : "text/plain" }' http://mgallina-desktop:8000/jmsmock/EXT_ID/queue
 
-        final String brokerUrl = "tcp://localhost:61616";
-        final String queueName = "dogs";
+        final String brokerUrl = "tcp://localhost:8002";
+        final String queueName = "user/jmsName";
 
         final ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(brokerUrl);
 

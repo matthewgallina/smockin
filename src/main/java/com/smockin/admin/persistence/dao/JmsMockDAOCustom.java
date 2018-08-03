@@ -13,5 +13,7 @@ public interface JmsMockDAOCustom {
     void detach(final JmsMock jmsQueueMock);
     List<JmsMock> findAllByStatus(final RecordStatusEnum status);
     List<JmsMock> findAll();
+    List<JmsMock> findAllByUser(final long userId);
+
 
 }

@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.enums;
 
+import java.util.stream.Stream;
+
 /**
  * Created by mgallina.
  */
@@ -11,13 +13,9 @@ public enum RestMethodEnum {
     PATCH;
 
     public static RestMethodEnum findByName(final String name) {
-
-        for (RestMethodEnum restMethod : RestMethodEnum.values()) {
-            if (restMethod.name().equalsIgnoreCase(name))
-                return restMethod;
-        }
-
-        return null;
+        return Stream.of(RestMethodEnum.values())
+                .filter(rm -> (rm.name().equalsIgnoreCase(name)))
+                .findFirst().orElse(null);
     }
 
 }

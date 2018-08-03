@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Created by mgallina.
@@ -143,9 +144,9 @@ public class HttpClientServiceImpl implements HttpClientService {
         if (requestHeaders == null)
             return;
 
-        for (Map.Entry<String, String> h : requestHeaders.entrySet()) {
-            request.addHeader(h.getKey(), h.getValue());
-        }
+        requestHeaders.entrySet().forEach(h ->
+            request.addHeader(h.getKey(), h.getValue()));
+
     }
 
     Map<String, String> extractResponseHeaders(final HttpResponse httpResponse) {
@@ -182,17 +183,17 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         if (requestHeaders.containsValue(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
 
-            final List<NameValuePair> postParameters = new ArrayList<NameValuePair>();
+            final List<NameValuePair> postParameters = new ArrayList<>();
 
             if (reqDto.getBody() != null && reqDto.getBody().contains("&")) {
 
                 final String[] formParameterPairsArray = reqDto.getBody().split("&");
 
-                for (String pairStr : formParameterPairsArray) {
+                Stream.of(formParameterPairsArray).forEach(pa -> {
 
-                    if (pairStr.contains("=")) {
+                    if (pa.contains("=")) {
 
-                        final String[] pairArray = pairStr.split("=");
+                        final String[] pairArray = pa.split("=");
 
                         if (pairArray.length == 2) {
                             postParameters.add(new BasicNameValuePair(pairArray[0], pairArray[1]));
@@ -200,7 +201,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
                     }
 
-                }
+                });
 
             }
 
@@ -219,9 +220,8 @@ public class HttpClientServiceImpl implements HttpClientService {
             logger.debug( "BODY : " + dto.getBody() );
             logger.debug( "HEADERS : " );
 
-            for (Map.Entry<String, String> h : dto.getHeaders().entrySet()) {
-                logger.debug( h.getKey() +  " : " + h.getValue() );
-            }
+            dto.getHeaders().entrySet().forEach(h ->
+                    logger.debug( h.getKey() +  " : " + h.getValue() ));
         }
 
     }

@@ -53,13 +53,16 @@ public class FtpMockController {
     }
 
     @RequestMapping(path="/ftpmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<FtpMockResponseDTO>> get() {
-        return ResponseEntity.ok(ftpMockService.loadAll());
+    public @ResponseBody ResponseEntity<List<FtpMockResponseDTO>> get(@RequestParam(value = "filter", required = false) final String searchFilter,
+                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+                                                                           throws RecordNotFoundException {
+        return ResponseEntity.ok(ftpMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)));
     }
 
     @RequestMapping(path="/ftpmock/{extId}/file/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public @ResponseBody ResponseEntity<Void> uploadFile(@PathVariable("extId") final String extId, @RequestParam("file") MultipartFile file)
-            throws RecordNotFoundException, ValidationException, IOException {
+    public @ResponseBody ResponseEntity<Void> uploadFile(@PathVariable("extId") final String extId,
+                                                         @RequestParam("file") MultipartFile file)
+            throws RecordNotFoundException, IOException {
         ftpMockService.uploadFile(extId, file);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -71,7 +74,8 @@ public class FtpMockController {
     }
 
     @RequestMapping(path="/ftpmock/{extId}/file", method = RequestMethod.DELETE)
-    public @ResponseBody ResponseEntity<Void> deleteUploadedFile(@PathVariable("extId") final String extId, @RequestParam("uri") final String uri)
+    public @ResponseBody ResponseEntity<Void> deleteUploadedFile(@PathVariable("extId") final String extId,
+                                                                 @RequestParam("uri") final String uri)
             throws RecordNotFoundException, ValidationException, IOException {
         ftpMockService.deleteUploadedFile(extId, uri);
         return ResponseEntity.noContent().build();

@@ -11,7 +11,7 @@
 
     <div class="form-group">
         <label for="user" class="ng-binding">{{ usernameLabel }}</label>
-        <input id="user" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.username" placeholder="{{ usernamePlaceholderTxt }}" type="text" />
+        <input id="user" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.username" focus="userData.extId == null" placeholder="{{ usernamePlaceholderTxt }}" type="text" />
     </div>
 
     <div class="form-group">

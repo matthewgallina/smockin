@@ -77,7 +77,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
             throw new RecordNotFoundException();
 
         final String prefixedPath = GeneralUtils.prefixPath(mock.getPath());
-        final List<PushClientDTO> sessionIds = new ArrayList<PushClientDTO>();
+        final List<PushClientDTO> sessionIds = new ArrayList<>();
 
         clients.forEach( (id, data) -> {
             if (data.getPath().equals(prefixedPath)) {

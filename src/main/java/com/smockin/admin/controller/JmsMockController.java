@@ -49,8 +49,9 @@ public class JmsMockController {
     }
 
     @RequestMapping(path="/jmsmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<JmsMockResponseDTO>> get() {
-        return new ResponseEntity<>(jmsMockService.loadAll(), HttpStatus.OK);
+    public @ResponseBody ResponseEntity<List<JmsMockResponseDTO>> get(@RequestParam(value = "filter", required = false) final String searchFilter,
+                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws RecordNotFoundException {
+        return new ResponseEntity<>(jmsMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
 }

@@ -11,7 +11,7 @@
 
     <div class="form-group">
         <label for="contentType" class="ng-binding">{{ contentTypeLabel }}</label>
-        <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="seqResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
+        <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="seqResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" focus="isNew" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
     </div>
 
     <div class="form-group">
