@@ -7,7 +7,6 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
  */
 public class HttpProxiedDTO {
 
-    private String path;
     private RestMethodEnum method;
     private int httpStatusCode;
     private String responseContentType;
@@ -16,19 +15,11 @@ public class HttpProxiedDTO {
     public HttpProxiedDTO() {
     }
 
-    public HttpProxiedDTO(String path, RestMethodEnum method, int httpStatusCode, String responseContentType, String body) {
-        this.path = path;
+    public HttpProxiedDTO(RestMethodEnum method, int httpStatusCode, String responseContentType, String body) {
         this.method = method;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;
         this.body = body;
-    }
-
-    public String getPath() {
-        return path;
-    }
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public RestMethodEnum getMethod() {

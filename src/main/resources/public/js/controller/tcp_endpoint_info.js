@@ -92,7 +92,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.clearProxyResponseFieldsButtonLabel = 'Clear Fields';
     $scope.postProxyResponseButtonLabel = 'Post Response';
     $scope.messageButtonLabel = 'Message';
-    $scope.messageAllButtonLabel = 'Message All';
 
 
     //
@@ -215,7 +214,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules,
-            "createdBy" : endpoint.createdBy
+            "createdBy" : endpoint.createdBy,
+            "userCtxPath" : endpoint.userCtxPath
         };
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
@@ -449,7 +449,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.doRefreshActiveSseClients = doRefreshActiveSseClientsFunc;
 
-    $scope.doOpenPushWSMessageView = function(path, sessionId) {
+    $scope.doOpenPushWSMessageView = function(sessionId) {
 
         var modalInstance = $uibModal.open({
           templateUrl: 'ws_send_message.html',
@@ -459,7 +459,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
           resolve: {
             data: function () {
               return {
-                "path" : path,
+                "path" : getUserCtxPushPath($scope.endpoint),
                 "sessionId" : sessionId
               };
             }
@@ -474,7 +474,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    $scope.doOpenPushSseMessageView = function(path, sessionId) {
+    $scope.doOpenPushSseMessageView = function(sessionId) {
 
         var modalInstance = $uibModal.open({
           templateUrl: 'sse_send_message.html',
@@ -484,7 +484,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
           resolve: {
             data: function () {
               return {
-                "path" : path,
+                "path" : getUserCtxPushPath($scope.endpoint),
                 "sessionId" : sessionId
               };
             }
@@ -853,6 +853,10 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         return true;
+    }
+
+    function getUserCtxPushPath(endpoint) {
+        return (endpoint.userCtxPath.length > 0) ? "/" + (endpoint.userCtxPath + endpoint.path) : endpoint.path;
     }
 
     function updateRuleOrderNumbers() {

@@ -326,7 +326,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         // Proxy related state
         webSocketService.clearSession();
-        proxyService.clearSession();
+        proxyService.clearAllSessions();
         mockOrderingCounterService.clearState();
         serverSideEventService.clearState();
 
@@ -366,7 +366,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    String buildUserPath(final RestfulMock mock) {
+    public String buildUserPath(final RestfulMock mock) {
 
         if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
             return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();

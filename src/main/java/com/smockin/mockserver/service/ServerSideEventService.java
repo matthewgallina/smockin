@@ -1,6 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.service.dto.SseMessageDTO;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import spark.Response;
@@ -14,9 +15,7 @@ import java.util.List;
 public interface ServerSideEventService {
 
     void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Response response) throws IOException;
-//    void clear(final String path);
-    List<PushClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException;
-    void broadcastMessage(final SseMessageDTO dto);
+    List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
     void addMessage(final String id, final SseMessageDTO dto);
     void interruptAndClearAllHeartBeatThreads();
     void clearState();

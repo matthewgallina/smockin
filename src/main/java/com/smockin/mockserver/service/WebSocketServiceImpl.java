@@ -1,8 +1,12 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
@@ -31,9 +35,15 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
+    @Autowired
+    private MockedRestServerEngine mockedRestServerEngine;
+
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
-    private final ConcurrentHashMap<String, Set<SessionIdWrapper>> sessionMap = new ConcurrentHashMap<String, Set<SessionIdWrapper>>();
+    private final ConcurrentHashMap<String, Set<SessionIdWrapper>> sessionMap = new ConcurrentHashMap<>();
 
     /**
      *
@@ -63,11 +73,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         sessionMap.put(path, sessions);
 
         if (proxyPushIdOnConnect) {
-            try {
-                sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
-            } catch (IOException ex) {
-                logger.error("Error pushing client id to client on 1st connect", ex);
-            }
+            sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
         }
 
     }
@@ -83,28 +89,18 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
 
-        sessionMap.values().forEach( sessionSet -> {
-
+        sessionMap.values().forEach(sessionSet ->
             sessionSet.forEach( s -> {
-
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
                     return;
                 }
-
-            });
-
-        });
+            })
+        );
 
     }
 
-    public void broadcastMessage(final WebSocketDTO dto) throws IOException {
-        logger.debug("broadcastMessage called");
-
-        sendMessage(null, dto);
-    }
-
-    public void sendMessage(final String id, final WebSocketDTO dto) throws IOException {
+    public void sendMessage(final String id, final WebSocketDTO dto) throws MockServerException {
         logger.debug("sendMessage called");
 
         dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
@@ -115,46 +111,38 @@ public class WebSocketServiceImpl implements WebSocketService {
             return;
         }
 
-        if (id != null) {
-
-            // Push to specific client session for the given handshake id
-            for (SessionIdWrapper s : sessions) {
-
-                if (s.getId().equals(id)) {
+        // Push to specific client session for the given handshake id
+        sessions.stream()
+            .filter(s -> (s.getId().equals(id)))
+            .findFirst()
+            .ifPresent(s -> {
+                try {
                     s.getSession().getRemote().sendString(dto.getBody());
-                    return;
+                } catch (IOException e) {
+                    throw new MockServerException(e);
                 }
-
-            }
-
-        } else {
-
-            // Broadcast to all session on this path if not id is specified
-            for (SessionIdWrapper s : sessions) {
-                s.getSession().getRemote().sendString(dto.getBody());
-            }
-
-        }
+            });
 
     }
 
-    public List<PushClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException {
+    public List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
 
         final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
 
         if (mock == null)
             throw new RecordNotFoundException();
 
-        final String prefixedPath = GeneralUtils.prefixPath(mock.getPath());
-        final List<PushClientDTO> sessionHandshakeIds = new ArrayList<PushClientDTO>();
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        final String prefixedPath = mockedRestServerEngine.buildUserPath(mock);
+        final List<PushClientDTO> sessionHandshakeIds = new ArrayList<>();
 
         if (!sessionMap.containsKey(prefixedPath)) {
             return sessionHandshakeIds;
         }
 
-        sessionMap.get(prefixedPath).forEach( s -> {
-            sessionHandshakeIds.add(new PushClientDTO(s.getId(), s.getDateJoined()));
-        });
+        sessionMap.get(prefixedPath)
+                .forEach(s -> sessionHandshakeIds.add(new PushClientDTO(s.getId(), s.getDateJoined())));
 
         return sessionHandshakeIds;
     }
