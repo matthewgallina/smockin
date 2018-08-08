@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -50,7 +51,8 @@ public class RamlApiImportServiceTest {
         final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
         final ApiImportConfigDTO configDto = new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_EXISTING);
 
-        importDTO = new ApiImportDTO(ApiImportType.RAML, new String(Files.readAllBytes(Paths.get(url.toURI()))), configDto);
+        final String content = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(url.toURI()))));
+        importDTO = new ApiImportDTO(ApiImportType.RAML, content, configDto);
 
         Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString())).thenReturn("1");
 
@@ -171,7 +173,8 @@ public class RamlApiImportServiceTest {
     public void importApiDoc_InvalidContent_Fail() throws ApiImportException, ValidationException {
 
         // Setup
-        importDTO.setContent("#%RAML 1.0\ntitle: helloworld API\nversion: v1\nbaseUri: http://localhost:8001/{version}\n/hello:\nget:"); // get is not indented correctly in YAML config
+        final String badRaml = "#%RAML 1.0\ntitle: helloworld API\nversion: v1\nbaseUri: http://localhost:8001/{version}\n/hello:\nget:";
+        importDTO.setContent(new String(Base64.getEncoder().encode(badRaml.getBytes()))); // get is not indented correctly in YAML config
 
         // Assertions
         expected.expect(ApiImportException.class);

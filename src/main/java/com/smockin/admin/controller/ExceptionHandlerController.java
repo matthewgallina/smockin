@@ -1,6 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
+import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -51,6 +52,12 @@ public class ExceptionHandlerController {
     @ExceptionHandler(IOException.class)
     public ResponseEntity<String> handleIOException(IOException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
+    @ExceptionHandler(ApiImportException.class)
+    public ResponseEntity<SimpleMessageResponseDTO<String>> handleApiImportException(ApiImportException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new SimpleMessageResponseDTO(ex.getMessage()));
     }
 
 }

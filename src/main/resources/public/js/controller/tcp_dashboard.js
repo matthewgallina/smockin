@@ -36,6 +36,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Buttons
     $scope.addEndpointButtonLabel = 'New HTTP Endpoint';
+    $scope.importEndpointButtonLabel = 'Import RAML API';
     $scope.viewEndpointButtonLabel = 'View';
 
 
@@ -106,6 +107,27 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doOpenTcpEndpointInfo = function(endpointData) {
         $rootScope.endpointData = endpointData;
         $location.path("/tcp_endpoint");
+    };
+
+    $scope.doOpenTcpRamlImport = function() {
+        $rootScope.endpointData = null;
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'api_import.html',
+          controller: 'apiImportController',
+          backdrop  : 'static',
+          keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null
+                    && response.uploadCompleted) {
+                loadTableData(false);
+            }
+        }, function () {
+
+        });
+
     };
 
     $scope.startTcpMockServer = function() {

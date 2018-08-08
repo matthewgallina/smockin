@@ -167,7 +167,7 @@
 
                                 <a href="" ng-click="doToggleSuspendSeq($index)">
                                     <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
-                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend" ng-hide="readOnly"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
                                 </a>
                                 <a href="" ng-click="doRemoveSeq($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
@@ -229,7 +229,7 @@
 
                                 <a href="" ng-click="doToggleSuspendRule($index)">
                                     <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
-                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend" ng-hide="readOnly"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
                                 </a>
                                 <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>

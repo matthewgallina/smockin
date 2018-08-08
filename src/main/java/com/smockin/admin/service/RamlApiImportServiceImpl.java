@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
     @Override
     public void importApiDoc(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
+        logger.debug("importApiDoc (RAML) called");
 
         validate(dto);
 
@@ -61,7 +63,9 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
     }
 
-    Api readContent(final String fileContent) throws ApiImportException {
+    Api readContent(final String fileContentEnc) throws ApiImportException {
+
+        final String fileContent = new String(Base64.getDecoder().decode(fileContentEnc));
 
         final RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(fileContent, "");
 

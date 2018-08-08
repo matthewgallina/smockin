@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 
@@ -68,7 +69,8 @@ public class ApiImportRouterIntTest {
 
         final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
 
-        dto = new ApiImportDTO(ApiImportType.RAML, new String(Files.readAllBytes(Paths.get(url.toURI()))), new ApiImportConfigDTO());
+        final String content = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(url.toURI()))));
+        dto = new ApiImportDTO(ApiImportType.RAML, content, new ApiImportConfigDTO());
     }
 
     @After

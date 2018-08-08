@@ -48,6 +48,10 @@
     margin-top: 15px;
 }
 
+#import-endpoints-button {
+    margin-top: 15px;
+}
+
 #server-config {
     font-size: 16px;
 }

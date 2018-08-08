@@ -1,0 +1,33 @@
+<link rel="stylesheet" href="../css/api_import.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ apiImportHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <form>
+
+        <label for="apiUploadFile" class="upload-select-file-button btn btn-default">
+            <span ng-if="apiUploadFile.data == null">{{ selectFileLabel }}</span>
+            <span ng-if="apiUploadFile.data != null">{{ apiUploadFile.data.name }}</span>
+        </label>
+        <input id="apiUploadFile" type="file" form-file-model="apiUploadFile.data" />
+
+        <br />
+        <br />
+
+        <button class="btn btn-success upload-button" type="button" ng-click="doUploadApiFile()" ng-disabled="disableForm">
+            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ importButtonLabel }}
+        </button>
+
+    </form>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>
