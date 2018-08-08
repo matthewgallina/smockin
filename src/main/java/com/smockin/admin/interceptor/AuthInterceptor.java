@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
@@ -45,10 +47,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
             return true;
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Request URI: " + request.getRequestURI());
-            logger.debug("Request Method: " + request.getMethod());
-        }
+        debugRequest(request);
 
         final boolean isExcluded = exclusions.entrySet()
             .stream()
@@ -76,4 +75,24 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
     public Map<String, List<String>> getExclusions() {
         return exclusions;
     }
+
+    @PostConstruct
+    public void after() {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Current Exclusions:");
+            exclusions.entrySet().forEach(e -> logger.debug("key: " + e.getKey() + ", value: " + e.getValue()));
+        }
+
+    }
+
+    private void debugRequest(final HttpServletRequest request) {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Request URI: " + request.getRequestURI());
+            logger.debug("Request Method: " + request.getMethod());
+        }
+
+    }
+
 }
