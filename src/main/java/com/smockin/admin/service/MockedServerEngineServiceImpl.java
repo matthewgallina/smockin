@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.FtpMockDAO;
@@ -9,6 +10,7 @@ import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.engine.MockedFtpServerEngine;
@@ -51,9 +53,13 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
 
     //
     // Rest
+    @Override
     public MockedServerConfigDTO startRest() throws MockServerException {
 
         try {
@@ -70,6 +76,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public MockedServerConfigDTO restartRest() throws MockServerException {
 
         if (getRestServerState().isRunning()) {
@@ -79,10 +86,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         return startRest();
     }
 
+    @Override
     public MockServerState getRestServerState() throws MockServerException {
         return mockedRestServerEngine.getCurrentState();
     }
 
+    @Override
     public void shutdownRest() throws MockServerException {
 
         try {
@@ -97,6 +106,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     //
     // JMS
+    @Override
     public MockedServerConfigDTO startJms() throws MockServerException {
 
         try {
@@ -121,6 +131,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public void shutdownJms() throws MockServerException {
 
         try {
@@ -132,6 +143,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public MockedServerConfigDTO restartJms() throws MockServerException {
 
         if (getJmsServerState().isRunning()) {
@@ -142,6 +154,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public MockServerState getJmsServerState() throws MockServerException {
         return mockedJmsServerEngine.getCurrentState();
     }
@@ -149,6 +162,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     //
     // FTP
+    @Override
     public MockedServerConfigDTO startFtp() throws MockServerException {
 
         try {
@@ -173,6 +187,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public void shutdownFtp() throws MockServerException {
 
         try {
@@ -184,6 +199,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public MockedServerConfigDTO restartFtp() throws MockServerException {
 
         if (getFtpServerState().isRunning()) {
@@ -194,6 +210,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
+    @Override
     public MockServerState getFtpServerState() throws MockServerException {
         return mockedFtpServerEngine.getCurrentState();
     }
@@ -201,6 +218,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     //
     // Config
+    @Override
     public MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException {
 
         final ServerConfig serverConfig = serverConfigDAO.findByServerType(serverType);
@@ -222,7 +240,11 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     }
 
-    public void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config) throws ValidationException {
+    @Override
+    public void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token)
+            throws RecordNotFoundException, AuthException, ValidationException {
+
+        smockinUserService.assertCurrentUserIsAdmin(token);
 
         validateServerConfig(config);
 

@@ -24,6 +24,18 @@
             <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ importButtonLabel }}
         </button>
 
+        <br />
+        <br />
+
+        <div class="form-group">
+            <label for="import-feedback" class="ng-binding">{{ importFeedbackLabel }}</label>
+            <textarea id="import-feedback" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="importFeedback" readonly></textarea>
+        </div>
+
+        <div class="import-info">
+            {{ existingEndpointsInfo }}
+        </div>
+
     </form>
 
 </div>

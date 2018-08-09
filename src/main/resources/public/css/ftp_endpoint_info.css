@@ -54,3 +54,7 @@ input[type="file"] {
 .upload-button {
     width: 100%;
 }
+
+.actual-path {
+    font-size: 12px;
+}

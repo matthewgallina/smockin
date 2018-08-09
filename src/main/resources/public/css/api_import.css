@@ -21,3 +21,11 @@ input[type="file"] {
 .upload-button {
     width: 100%;
 }
+
+#import-feedback {
+    height: 200px;
+}
+
+.import-info {
+    font-size: 12px;
+}

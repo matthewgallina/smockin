@@ -75,6 +75,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
+    $scope.actualPathPrefixLabel = "actual path:";
 
 
     //
@@ -183,6 +184,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         "responseBody" : null
     };
 
+    $scope.defaultCtxPathPrefix = (auth.isLoggedIn() && !auth.isSysAdmin()) ? ('/' + auth.getUserName()) : null;
 
     // Populate form if viewing existing record...
     if (!isNew) {
@@ -214,9 +216,10 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules,
-            "createdBy" : endpoint.createdBy,
-            "userCtxPath" : endpoint.userCtxPath
+            "createdBy" : endpoint.createdBy
         };
+
+        $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
                 || endpoint.mockType == MockTypeDefinitions.MockTypeRule) {
@@ -1034,15 +1037,48 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         return null;
     }
 
+    // TODO Remove jQuery and replace with directive
+    function applyPathFieldEvent() {
+
+        var typingTimer;
+        var doneTypingInterval = 500;
+        var pathField = jQuery('#path');
+
+        //on keyup, start the countdown
+        pathField.on('keyup', function() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(doneTyping, doneTypingInterval);
+        });
+
+        //on keydown, clear the countdown
+        pathField.on('keydown', function() {
+            clearTimeout(typingTimer);
+        });
+
+        function doneTyping() {
+            var pathFieldValue = pathField.val();
+
+            if (!pathFieldValue.startsWith("/")) {
+                $scope.endpoint.path = "/" + $scope.endpoint.path;
+                $scope.$apply();
+            }
+        }
+
+    }
+
 
     //
     // Init Page
     if (!isNew
+            && !$scope.readOnly
             && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
         doRefreshActiveWsClientsFunc();
     } else if (!isNew
-           && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
+            && !$scope.readOnly
+            && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
         doRefreshActiveSseClientsFunc();
     }
+
+    applyPathFieldEvent();
 
 });

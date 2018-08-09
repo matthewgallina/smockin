@@ -73,4 +73,8 @@ app.service('auth', function($uibModal, globalVars) {
         return (role == globalVars.SysAdminRole || role == globalVars.AdminRole);
     };
 
+    this.isSysAdmin = function () {
+        return (this.getRole() == globalVars.SysAdminRole);
+    };
+
 });

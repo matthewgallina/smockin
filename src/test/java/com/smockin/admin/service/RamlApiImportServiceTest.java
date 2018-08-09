@@ -8,7 +8,10 @@ import com.smockin.admin.enums.ApiKeepStrategyEnum;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +39,15 @@ public class RamlApiImportServiceTest {
     @Mock
     private RestfulMockService restfulMockService;
 
+    @Mock
+    private RestfulMockDAO restfulMockDAO;
+
+    @Mock
+    private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Mock
+    private SmockinUser user;
+
     @Captor
     private ArgumentCaptor<RestfulMockDTO> argCaptor;
 
@@ -55,6 +67,9 @@ public class RamlApiImportServiceTest {
         importDTO = new ApiImportDTO(ApiImportType.RAML, content, configDto);
 
         Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString())).thenReturn("1");
+
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(user);
+        Mockito.when(user.getSessionToken()).thenReturn(GeneralUtils.generateUUID());
 
     }
 

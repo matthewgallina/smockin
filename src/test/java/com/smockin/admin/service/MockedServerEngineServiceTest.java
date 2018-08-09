@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -11,7 +12,9 @@ import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -34,6 +37,9 @@ public class MockedServerEngineServiceTest {
     @Mock
     private ServerConfigDAO serverConfigDAO;
 
+    @Mock
+    private SmockinUserService smockinUserService;
+
     @Spy
     @InjectMocks
     private MockedServerEngineService mockedServerEngineService = new MockedServerEngineServiceImpl();
@@ -45,6 +51,16 @@ public class MockedServerEngineServiceTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
+    private String token;
+
+    @Before
+    public void setUp() throws AuthException, RecordNotFoundException {
+
+        token = GeneralUtils.generateUUID();
+
+        Mockito.doNothing().when(smockinUserService).assertCurrentUserIsAdmin(Matchers.anyString());
+
+    }
 
     @Test(expected = RecordNotFoundException.class)
     public void loadServerConfig_NotFound_Test() throws RecordNotFoundException {
@@ -87,7 +103,7 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void saveServerConfig_NotFoundCreateNew_Test() throws ValidationException {
+    public void saveServerConfig_NotFoundCreateNew_Test() throws ValidationException, AuthException, RecordNotFoundException {
 
         // Setup
         final MockedServerConfigDTO dto = new MockedServerConfigDTO();
@@ -100,7 +116,7 @@ public class MockedServerEngineServiceTest {
         dto.getNativeProperties().put("serverName", "foo");
 
         // Test
-        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, dto);
+        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, dto, token);
 
         // Assertions
         final ArgumentCaptor<ServerConfig> argument = ArgumentCaptor.forClass(ServerConfig.class);
@@ -121,7 +137,7 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void saveServerConfig_UpdateExisting_Test() throws ValidationException {
+    public void saveServerConfig_UpdateExisting_Test() throws ValidationException, AuthException, RecordNotFoundException {
 
         // Setup
         final MockedServerConfigDTO dto = new MockedServerConfigDTO();
@@ -137,7 +153,7 @@ public class MockedServerEngineServiceTest {
         Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
-        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, dto);
+        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, dto, token);
 
         // Assertions
         Assert.assertEquals(dto.getPort(), serverConfig.getPort());
@@ -155,14 +171,14 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void saveServerConfig_ValidationFailure_Test() throws ValidationException {
+    public void saveServerConfig_ValidationFailure_Test() throws ValidationException, AuthException, RecordNotFoundException {
 
         // Assertions
         thrown.expect(ValidationException.class);
         thrown.expectMessage("config is required");
 
         // Test
-        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, null);
+        mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, null, token);
 
     }
 

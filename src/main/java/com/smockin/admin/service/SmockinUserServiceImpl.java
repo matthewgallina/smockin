@@ -193,7 +193,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         return encryptionService.encrypt(passwordPlain);
     }
 
-    void assertCurrentUserIsAdmin(final String token) throws RecordNotFoundException, AuthException {
+    public void assertCurrentUserIsAdmin(final String token) throws RecordNotFoundException, AuthException {
 
         final SmockinUserRoleEnum userRole = loadCurrentUser(token).getRole();
 

@@ -39,7 +39,7 @@
             <div class="col-sm-6">
 
                 <div class="form-group">
-                    <label for="path" class="ng-binding">{{ pathLabel }}</label>
+                    <label for="path" class="ng-binding">{{ pathLabel }}</label><span class="pull-right actual-path" ng-if="defaultCtxPathPrefix != null"> ({{ actualPathPrefixLabel }} {{ defaultCtxPathPrefix }}<b>{{ endpoint.path }}</b>)</span>
                     <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" ng-disabled="readOnly" />
                 </div>
 
@@ -258,7 +258,7 @@
 
                     <br />
 
-                    <uib-accordion id="manageProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -324,7 +324,7 @@
                     </div>
 
 
-                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -336,7 +336,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus && !readOnly">
                                 <a href="" ng-click="doRefreshActiveWsClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -363,7 +363,7 @@
                                             <td class="conn-client-cell">{{ ws.id }}</td>
                                             <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                             <td class="conn-client-cell">
-                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(ws.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
+                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(ws.id)" ng-disabled="endpoint.status == inActiveStatus || readOnly">{{ messageButtonLabel }}</button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -392,7 +392,7 @@
 
                     <br />
 
-                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -404,7 +404,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus && !readOnly">
                                 <a href="" ng-click="doRefreshActiveSseClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -431,7 +431,7 @@
                                         <td class="conn-client-cell">{{ as.id }}</td>
                                         <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                         <td class="conn-client-cell">
-                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(as.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
+                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(as.id)" ng-disabled="endpoint.status == inActiveStatus || readOnly">{{ messageButtonLabel }}</button>
                                         </td>
                                     </tr>
                                     </tbody>

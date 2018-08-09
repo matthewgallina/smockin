@@ -7,9 +7,14 @@ import com.smockin.admin.dto.RestfulMockDefinitionDTO;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.utils.GeneralUtils;
 import org.raml.v2.api.RamlModelBuilder;
 import org.raml.v2.api.RamlModelResult;
 import org.raml.v2.api.model.v10.api.Api;
@@ -20,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +39,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
     @Autowired
     private RestfulMockService restfulMockService;
 
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
+
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
     @Override
     public void importApiDoc(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
         logger.debug("importApiDoc (RAML) called");
@@ -41,6 +53,8 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
         final Api api = readContent(dto.getContent());
         final ApiImportConfigDTO apiImportConfig = dto.getConfig();
+        final String conflictCtxPath = "raml_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
+                .format(GeneralUtils.getCurrentDate());
 
         debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
         debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
@@ -49,7 +63,11 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         debug("URI " + api.baseUri().value());
         debug("version " + api.version().value());
 
-        loadInResources(api.resources(), apiImportConfig, token);
+        try {
+            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath);
+        } catch (RecordNotFoundException ex) {
+            throw new ApiImportException("Unauthorized user access");
+        }
 
     }
 
@@ -81,12 +99,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         return ramlModelResult.getApiV10();
     }
 
-    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final String token) throws ApiImportException {
+    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) throws ApiImportException {
         resources.stream()
-                .forEach(r -> parseResource(r, apiImportConfig, token));
+                .forEach(r -> parseResource(r, apiImportConfig, user, conflictCtxPath));
     }
 
-    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final String token) throws ApiImportException {
+    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) throws ApiImportException {
         debug("Importing Endpoint...");
 
         // path
@@ -181,13 +199,39 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             });
 
             try {
-                restfulMockService.createEndpoint(dto, token);
+                handleExistingEndpoints(dto, apiImportConfig, user, conflictCtxPath);
+                restfulMockService.createEndpoint(dto, user.getSessionToken());
             } catch (RecordNotFoundException e) {
-                throw new ApiImportException("Record not found");
+                throw new ApiImportException("Unauthorized user access");
             }
         });
 
-        loadInResources(resource.resources(), apiImportConfig, token);
+        loadInResources(resource.resources(), apiImportConfig, user, conflictCtxPath);
+    }
+
+    void handleExistingEndpoints(final RestfulMockDTO dto, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) {
+
+        final RestfulMock existingRestFulMock = restfulMockDAO.findByPathAndMethodAndUser(dto.getPath(), dto.getMethod(), user);
+
+        if (existingRestFulMock == null) {
+            return;
+        }
+
+        if (!apiImportConfig.isKeepExisting()) {
+            restfulMockDAO.delete(existingRestFulMock);
+            return;
+        }
+
+        switch (apiImportConfig.getKeepStrategy()) {
+            case RENAME_EXISTING:
+                existingRestFulMock.setPath("/" + conflictCtxPath + existingRestFulMock.getPath());
+                restfulMockDAO.save(existingRestFulMock);
+                break;
+            case RENAME_NEW:
+                dto.setPath("/" + conflictCtxPath + dto.getPath());
+                break;
+        }
+
     }
 
     String formatPath(final String resourcePath) {

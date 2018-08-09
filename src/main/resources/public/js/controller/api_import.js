@@ -11,6 +11,8 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
     // Labels
     $scope.apiImportHeading = 'RAML API Importer';
     $scope.selectFileLabel = 'Select API RAML File...';
+    $scope.importFeedbackLabel = 'Import Result';
+    $scope.existingEndpointsInfo = 'Please note, any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello) ';
 
 
     //
@@ -51,6 +53,8 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
         data : null
     };
 
+    $scope.importFeedback = "Awaiting import...";
+
 
     //
     // Scoped Functions
@@ -64,13 +68,15 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
 
     $scope.doUploadApiFile = function() {
 
+        $scope.importFeedback = "Awaiting import...";
+
         if ($scope.apiUploadFile.data == null) {
-            showAlert("Please select the RAML file to import");
+            showAlert("Please select a .raml based file to import");
             return;
         }
 
-        if ($scope.apiUploadFile.data.name.indexOf(".raml") == -1) {
-            showAlert("Invalid file type. Please select a .raml file");
+        if ($scope.apiUploadFile.data.name.toLowerCase().indexOf(".raml") == -1) {
+            showAlert("Invalid file type. Please select a .raml based file");
 
             $scope.apiUploadFile = {
                 data : null
@@ -98,17 +104,25 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
 
             restClient.doPost($http, '/api/import', reqData, function(status, data) {
 
-                if (status != 201) {
-                    showAlert((status == 400) ? data.message : globalVars.GeneralErrorMessage);
-                    $scope.disableForm = false;
-                    return;
-                }
-
                 $scope.apiUploadFile = {
                     data : null
                 }
 
+                if (status != 201) {
+
+                    if (status == 400) {
+                        $scope.importFeedback = data.message;
+                        showAlert("There is an issue with this file");
+                    } else {
+                        showAlert(globalVars.GeneralErrorMessage);
+                    }
+
+                    $scope.disableForm = false;
+                    return;
+                }
+
                 showAlert("RAML file successfully imported", "success");
+                $scope.importFeedback = "All endpoints imported";
 
                 $scope.uploadCompleted = true;
                 $scope.disableForm = false;
