@@ -29,3 +29,7 @@ input[type="file"] {
 .import-info {
     font-size: 12px;
 }
+
+.import-info-details {
+    margin-left: 20px;
+}

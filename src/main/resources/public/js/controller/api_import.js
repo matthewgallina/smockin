@@ -12,13 +12,15 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
     $scope.apiImportHeading = 'RAML API Importer';
     $scope.selectFileLabel = 'Select API RAML File...';
     $scope.importFeedbackLabel = 'Import Result';
-    $scope.existingEndpointsInfo = 'Please note, any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello) ';
+    $scope.pleaseNoteLabel = 'Please note';
+    $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';
+    $scope.ramlVersionInfo = "This facility supports RAML based on the 'RAML 100 Tutorial' at raml.org";
 
 
     //
     // Buttons
     $scope.closeButtonLabel = 'Close';
-    $scope.importButtonLabel = 'Import';
+    $scope.importButtonLabel = 'Run Import';
 
 
     //

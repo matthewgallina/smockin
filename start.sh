@@ -76,7 +76,7 @@ H2_PORT=$(echo "$APP_PROPS_FILE" | grep "H2_PORT" | awk '{ print $3 }')
 APP_PORT=$(echo "$APP_PROPS_FILE" | grep "APP_PORT" | awk '{ print $3 }')
 MULTI_USER_MODE_CONF=$(echo "$APP_PROPS_FILE" | grep "MULTI_USER_MODE" | awk '{ print $3 }')
 
-if [ $MULTI_USER_MODE_CONF = "TRUE" ]
+if ([ ! -z $MULTI_USER_MODE_CONF ] && [ $MULTI_USER_MODE_CONF = "TRUE" ])
 then
     MULTI_USER_MODE=true
 fi

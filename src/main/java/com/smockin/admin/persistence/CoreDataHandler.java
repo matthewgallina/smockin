@@ -48,9 +48,9 @@ public class CoreDataHandler {
 
         applyServerConfigDefaults();
 
-        applyAppVersioning();
-
         applyCoreAdminUser();
+
+        applyAppVersioning();
 
     }
 

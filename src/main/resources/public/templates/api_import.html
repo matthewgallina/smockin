@@ -33,7 +33,13 @@
         </div>
 
         <div class="import-info">
-            {{ existingEndpointsInfo }}
+            {{ pleaseNoteLabel }}
+            <br />
+            <div class="import-info-details">
+                <i>- {{ existingEndpointsInfo }}</i>
+                <br />
+                <i>- {{ ramlVersionInfo }}</i>
+            </div>
         </div>
 
     </form>

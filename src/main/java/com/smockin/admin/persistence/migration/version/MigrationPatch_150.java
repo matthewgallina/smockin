@@ -1,11 +1,24 @@
 package com.smockin.admin.persistence.migration.version;
 
+import com.smockin.admin.exception.MigrationException;
 import com.smockin.admin.persistence.dao.MigrationDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by gallina.
  */
+@Component
 public class MigrationPatch_150 implements MigrationPatch {
+
+    @Autowired
+    private MigrationDAO migrationDAO;
+
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
 
     @Override
     public String versionNo() {
@@ -13,19 +26,27 @@ public class MigrationPatch_150 implements MigrationPatch {
     }
 
     @Override
-    public void execute(final MigrationDAO migrationDAO) {
+    public void execute() {
+
+        final SmockinUser sysAdmin = smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new MigrationException("Error retrieving SYS_ADMIN user"));
 
         // REST_MOCK
-        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK ADD COLUMN CREATED_BY INT;").executeUpdate();
-        migrationDAO.buildNativeQuery("ALTER TABLE REST_MOCK ADD FOREIGN KEY CREATED_BY REFERENCES SMKN_USER(ID);").executeUpdate();
+        migrationDAO.buildNativeQuery("UPDATE REST_MOCK SET CREATED_BY = :userId")
+                .setParameter("userId", sysAdmin.getId())
+                .executeUpdate();
 
         // JMS_MOCK
-        migrationDAO.buildNativeQuery("ALTER TABLE JMS_MOCK ADD COLUMN CREATED_BY INT;").executeUpdate();
-        migrationDAO.buildNativeQuery("ALTER TABLE JMS_MOCK ADD FOREIGN KEY CREATED_BY REFERENCES SMKN_USER(ID);").executeUpdate();
+        migrationDAO.buildNativeQuery("UPDATE JMS_MOCK SET CREATED_BY = :userId")
+                .setParameter("userId", sysAdmin.getId())
+                .executeUpdate();
 
         // FTP_MOCK
-        migrationDAO.buildNativeQuery("ALTER TABLE FTP_MOCK ADD COLUMN CREATED_BY INT;").executeUpdate();
-        migrationDAO.buildNativeQuery("ALTER TABLE FTP_MOCK ADD FOREIGN KEY CREATED_BY REFERENCES SMKN_USER(ID);").executeUpdate();
+        migrationDAO.buildNativeQuery("UPDATE FTP_MOCK SET CREATED_BY = :userId")
+                .setParameter("userId", sysAdmin.getId())
+                .executeUpdate();
 
     }
 

@@ -67,7 +67,7 @@ public class RestfulMock extends Identifier {
     private RestfulCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="CREATED_BY", nullable = false)
+    @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
 
     public RestfulMock() {

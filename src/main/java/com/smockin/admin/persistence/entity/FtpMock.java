@@ -19,7 +19,7 @@ public class FtpMock extends Identifier {
     private RecordStatusEnum status;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="CREATED_BY", nullable = false)
+    @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
 
     public FtpMock() {
