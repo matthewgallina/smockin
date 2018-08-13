@@ -1,42 +1,22 @@
 package com.smockin.admin.dto;
 
-import com.smockin.admin.enums.ApiImportType;
+import org.springframework.web.multipart.MultipartFile;
 
 public class ApiImportDTO {
 
-    private ApiImportType type;
-    private String content;
+    private MultipartFile file;
     private ApiImportConfigDTO config;
 
-    public ApiImportDTO() {
-
-    }
-
-    public ApiImportDTO(ApiImportType type, String content, ApiImportConfigDTO config) {
-        this.type = type;
-        this.content = content;
+    public ApiImportDTO(final MultipartFile file, final ApiImportConfigDTO config) {
+        this.file = file;
         this.config = config;
     }
 
-    public ApiImportType getType() {
-        return type;
+    public MultipartFile getFile() {
+        return file;
     }
-    public void setType(ApiImportType type) {
-        this.type = type;
-    }
-
-    public String getContent() {
-        return content;
-    }
-    public void setContent(String content) {
-        this.content = content;
-    }
-
     public ApiImportConfigDTO getConfig() {
         return config;
-    }
-    public void setConfig(ApiImportConfigDTO config) {
-        this.config = config;
     }
 
 }

@@ -1,13 +1,14 @@
 package com.smockin.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -16,6 +17,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Created by mgallina.
@@ -198,6 +201,85 @@ public final class GeneralUtils {
         }
 
         return StringUtils.replace(bearerToken, OAUTH_HEADER_VALUE_PREFIX, "").trim();
+    }
+
+    public static String getFileTypeExtension(final String fileName) {
+
+        if (fileName == null) {
+            return null;
+        }
+
+        final int extPos = fileName.lastIndexOf(".");
+
+        if (extPos == -1) {
+            return null;
+        }
+
+        return fileName.substring(extPos);
+    }
+
+    public static void unpackArchive(final String zipFilePath, final String destDir) {
+
+        final File dir = new File(destDir);
+
+        if (!dir.exists())
+            dir.mkdirs();
+
+        final byte[] buffer = new byte[1024];
+        FileInputStream fis = null;
+
+        try {
+
+            fis = new FileInputStream(zipFilePath);
+            final ZipInputStream zis = new ZipInputStream(fis);
+
+            ZipEntry ze = zis.getNextEntry();
+
+            while (ze != null) {
+
+                final File newFile = new File(destDir + File.separator + ze.getName());
+
+                if (ze.isDirectory()) {
+
+                    newFile.mkdir();
+
+                } else {
+
+                    FileOutputStream fos = null;
+
+                    try {
+                        fos = new FileOutputStream(newFile);
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+
+                    } finally {
+                        if (fos != null)
+                            fos.close();
+                    }
+
+                }
+
+                zis.closeEntry();
+                ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+        } catch (IOException e) {
+            logger.error("Error unpacking archive file", e);
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+
+                }
+            }
+        }
+
     }
 
 }

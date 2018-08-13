@@ -3,7 +3,6 @@ package com.smockin.admin.service;
 import com.smockin.admin.dto.ApiImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
-import com.smockin.admin.enums.ApiImportType;
 import com.smockin.admin.enums.ApiKeepStrategyEnum;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -13,6 +12,7 @@ import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,13 +21,12 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
-
+import org.springframework.mock.web.MockMultipartFile;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -53,18 +52,10 @@ public class RamlApiImportServiceTest {
 
     @Spy
     @InjectMocks
-    private ApiImportService apiImportService = new RamlApiImportServiceImpl();;
-
-    private ApiImportDTO importDTO;
+    private ApiImportService apiImportService = new RamlApiImportServiceImpl();
 
     @Before
-    public void setUp() throws URISyntaxException, IOException, RecordNotFoundException {
-
-        final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
-        final ApiImportConfigDTO configDto = new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_EXISTING);
-
-        final String content = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(url.toURI()))));
-        importDTO = new ApiImportDTO(ApiImportType.RAML, content, configDto);
+    public void setUp() throws RecordNotFoundException {
 
         Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString())).thenReturn("1");
 
@@ -74,7 +65,10 @@ public class RamlApiImportServiceTest {
     }
 
     @Test
-    public void importApiDocPass() throws ApiImportException, ValidationException, RecordNotFoundException {
+    public void importApiDocPass() throws ApiImportException, ValidationException, RecordNotFoundException, URISyntaxException, IOException {
+
+        // Setup
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml_100.raml"), new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_EXISTING));
 
         // Test
         apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
@@ -170,14 +164,14 @@ public class RamlApiImportServiceTest {
     }
 
     @Test
-    public void importApiDoc_NullContent_Fail() throws ApiImportException, ValidationException {
+    public void importApiDoc_NullFile_Fail() throws ApiImportException, ValidationException {
 
         // Setup
-        importDTO.setContent(null);
+        final ApiImportDTO importDTO = new ApiImportDTO(null, new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_EXISTING));
 
         // Assertions
         expected.expect(ValidationException.class);
-        expected.expectMessage("No API doc content found");
+        expected.expectMessage("No file found");
 
         // Test
         apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
@@ -185,11 +179,25 @@ public class RamlApiImportServiceTest {
     }
 
     @Test
-    public void importApiDoc_InvalidContent_Fail() throws ApiImportException, ValidationException {
+    public void importApiDoc_NullConfig_Fail() throws ApiImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final String badRaml = "#%RAML 1.0\ntitle: helloworld API\nversion: v1\nbaseUri: http://localhost:8001/{version}\n/hello:\nget:";
-        importDTO.setContent(new String(Base64.getEncoder().encode(badRaml.getBytes()))); // get is not indented correctly in YAML config
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml_100.raml"), null);
+
+        // Assertions
+        expected.expect(ValidationException.class);
+        expected.expectMessage("No config found");
+
+        // Test
+        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
+
+    }
+
+    @Test
+    public void importApiDoc_InvalidContent_Fail() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+
+        // Setup
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("bad_raml_100.raml"), new ApiImportConfigDTO());
 
         // Assertions
         expected.expect(ApiImportException.class);
@@ -198,6 +206,15 @@ public class RamlApiImportServiceTest {
         // Test
         apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
 
+    }
+
+    MockMultipartFile buildMockMultiPartFile(final String fileName) throws URISyntaxException, IOException {
+
+        final URL ramlUrl = this.getClass().getClassLoader().getResource(fileName);
+        final File ramlFile = new File(ramlUrl.toURI());
+        final FileInputStream ramlInput = new FileInputStream(ramlFile);
+
+        return new MockMultipartFile(fileName, ramlFile.getName(), "text/plain", IOUtils.toByteArray(ramlInput));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.smockin.admin.service;
 
 import com.smockin.admin.dto.ApiImportDTO;
+import com.smockin.admin.enums.ApiImportTypeEnum;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.ValidationException;
 import org.slf4j.Logger;
@@ -18,27 +19,47 @@ public class ApiImportRouter {
     @Qualifier("ramlApiImportService")
     private ApiImportService ramlApiImportService;
 
-    public void route(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
+    public void route(final String importType, final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
         logger.debug("route called");
 
-        if (dto == null) {
-            throw new ValidationException("No data found");
-        }
+        validate(importType, dto, token);
 
-        if (dto.getType() == null) {
-            throw new ValidationException("Import Type is required");
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("API import type " + dto.getType());
-        }
-
-        switch (dto.getType()) {
+        switch (ApiImportTypeEnum.valueOf(importType)) {
             case RAML:
                 ramlApiImportService.importApiDoc(dto, token);
                 break;
             default:
                 throw new ValidationException("Unsupported import type");
+        }
+
+    }
+
+    void validate(final String importType, final ApiImportDTO dto, final String token) throws ValidationException {
+
+        if (importType == null) {
+            throw new ValidationException("Import Type is required");
+        }
+
+        try {
+             ApiImportTypeEnum.valueOf(importType);
+        } catch (Throwable ex) {
+            throw new ValidationException("Invalid Import Type: " + importType);
+        }
+
+        if (dto == null) {
+            throw new ValidationException("Inbound dto is undefined");
+        }
+
+        if (dto.getFile() == null) {
+            throw new ValidationException("Inbound file (in dto) is undefined");
+        }
+
+        if (dto.getConfig() == null) {
+            throw new ValidationException("Inbound config (in dto) is undefined");
+        }
+
+        if (token == null) {
+            throw new ValidationException("Auth token is undefined");
         }
 
     }

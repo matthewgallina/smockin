@@ -15,6 +15,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.io.FileUtils;
 import org.raml.v2.api.RamlModelBuilder;
 import org.raml.v2.api.RamlModelResult;
 import org.raml.v2.api.model.v10.api.Api;
@@ -22,11 +23,16 @@ import org.raml.v2.api.model.v10.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,22 +57,35 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
         validate(dto);
 
-        final Api api = readContent(dto.getContent());
-        final ApiImportConfigDTO apiImportConfig = dto.getConfig();
-        final String conflictCtxPath = "raml_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
-                .format(GeneralUtils.getCurrentDate());
-
-        debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
-        debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
-
-        debug("Base");
-        debug("URI " + api.baseUri().value());
-        debug("version " + api.version().value());
+        File tempDir = null;
 
         try {
+
+            tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
+            final Api api = readContent(loadRamlFileFromUpload(dto.getFile(), tempDir));
+            final ApiImportConfigDTO apiImportConfig = dto.getConfig();
+            final String conflictCtxPath = "raml_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
+                    .format(GeneralUtils.getCurrentDate());
+
+            debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
+            debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
+
+            debug("Base");
+            debug("URI " + api.baseUri().value());
+            debug("version " + api.version().value());
+
             loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath);
         } catch (RecordNotFoundException ex) {
             throw new ApiImportException("Unauthorized user access");
+        } catch (ApiImportException ex) {
+            throw ex;
+        } catch (Throwable ex) {
+            logger.error("Unexpected error whilst importing RAML API", ex);
+            throw new ApiImportException("Unexpected error whilst importing RAML API");
+        } finally {
+            if (!FileUtils.deleteQuietly(tempDir)) {
+                logger.error("Error deleting temp dir");
+            }
         }
 
     }
@@ -76,16 +95,17 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         if (dto == null)
             throw new ValidationException("No data was provided");
 
-        if (dto.getContent() == null)
-            throw new ValidationException("No API doc content found");
+        if (dto.getFile() == null)
+            throw new ValidationException("No file found");
+
+        if (dto.getConfig() == null)
+            throw new ValidationException("No config found");
 
     }
 
-    Api readContent(final String fileContentEnc) throws ApiImportException {
+    Api readContent(final File ramlFile) throws ApiImportException {
 
-        final String fileContent = new String(Base64.getDecoder().decode(fileContentEnc));
-
-        final RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(fileContent, "");
+        final RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(ramlFile);
 
         if (ramlModelResult.hasErrors()) {
 
@@ -219,6 +239,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
         if (!apiImportConfig.isKeepExisting()) {
             restfulMockDAO.delete(existingRestFulMock);
+            restfulMockDAO.flush();
             return;
         }
 
@@ -247,6 +268,44 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
         if (logger.isDebugEnabled())
             logger.debug(msg);
+
+    }
+
+    File loadRamlFileFromUpload(final MultipartFile file, final File tempDir) {
+
+        final String fileName = file.getName();
+        final String fileTypeExtension = GeneralUtils.getFileTypeExtension(fileName);
+
+        try {
+
+            final File uploadedFile = new File(tempDir + File.separator + file.getName());
+            FileUtils.copyInputStreamToFile(file.getInputStream(), uploadedFile);
+
+            if (".zip".equalsIgnoreCase(fileTypeExtension)) {
+
+                final String parent = uploadedFile.getParent();
+
+                GeneralUtils.unpackArchive(uploadedFile.getAbsolutePath(), parent);
+
+                // Delete uploaded zip file
+                uploadedFile.delete();
+
+                return Files.find(Paths.get(parent), 5, (path, attr)
+                        -> path.getFileName().toString().toLowerCase().indexOf(".raml") > -1)
+                    .findFirst()
+                    .orElseThrow(() -> new ApiImportException("Error locating raml file within uploaded archive"))
+                    .toFile();
+
+            } else if (".raml".equalsIgnoreCase(fileTypeExtension)) {
+                return uploadedFile;
+            } else {
+                throw new ApiImportException("Unsupported file extension: " + fileName);
+            }
+
+        } catch (IOException e) {
+            logger.error("Error reading uploaded RAML file: " + fileName, e);
+            throw new ApiImportException("Error reading uploaded RAML file: " + fileName);
+        }
 
     }
 

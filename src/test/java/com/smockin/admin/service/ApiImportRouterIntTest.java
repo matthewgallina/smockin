@@ -4,7 +4,8 @@ import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.dto.ApiImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
-import com.smockin.admin.enums.ApiImportType;
+import com.smockin.admin.enums.ApiImportTypeEnum;
+import com.smockin.admin.enums.ApiKeepStrategyEnum;
 import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -14,28 +15,25 @@ import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
-import org.hibernate.AssertionFailure;
+import org.apache.commons.io.IOUtils;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.MultipleFailureException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -59,7 +57,6 @@ public class ApiImportRouterIntTest {
     @Autowired
     private SmockinUserDAO smockinUserDAO;
 
-    private ApiImportDTO dto;
     private SmockinUser user;
 
     @Before
@@ -67,10 +64,6 @@ public class ApiImportRouterIntTest {
 
         user = smockinUserDAO.saveAndFlush(SmockinTestUtils.buildSmockinUser());
 
-        final URL url = this.getClass().getClassLoader().getResource("hello-api.raml");
-
-        final String content = new String(Base64.getEncoder().encode(Files.readAllBytes(Paths.get(url.toURI()))));
-        dto = new ApiImportDTO(ApiImportType.RAML, content, new ApiImportConfigDTO());
     }
 
     @After
@@ -83,12 +76,18 @@ public class ApiImportRouterIntTest {
     }
 
     @Test
-    public void routePass() throws ApiImportException, ValidationException {
+    public void route_Raml100_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+
+        // Setup
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"),
+                new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_NEW));
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
-        apiImportRouter.route(dto, user.getSessionToken());
+        // Test
+        apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, user.getSessionToken());
 
+        // Assertions
         final List<RestfulMock> mocks = restfulMockDAO.findAll();
 
         Assert.assertEquals(3, mocks.size());
@@ -164,46 +163,197 @@ public class ApiImportRouterIntTest {
     }
 
     @Test
-    public void route_EndpointAlreadyExistsConflict_Fail() throws ApiImportException, ValidationException {
+    public void route_Raml200_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+
+        // Setup
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_200.zip"),
+                new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_NEW));
+
+        Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
+
+        // Test
+        apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, user.getSessionToken());
+
+        // Assertions
+        final List<RestfulMock> mocks = restfulMockDAO.findAll();
+
+        Assert.assertEquals(12, mocks.size());
+
+        mocks.stream().forEach(m -> {
+
+            if ("/bars".equals(m.getPath())) {
+
+                if (RestMethodEnum.GET.equals(m.getMethod())) {
+
+                    Assert.assertEquals(1, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                } else if (RestMethodEnum.POST.equals(m.getMethod())) {
+
+                    Assert.assertEquals(1, m.getDefinitions().size());
+
+                    Assert.assertEquals(201, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                } else {
+                    Assert.fail();
+                }
+
+/*
+                Assert.assertEquals(1, m.getDefinitions().get(0).getResponseHeaders().size());
+                Assert.assertNotNull(m.getDefinitions().get(0).getResponseHeaders().get("X-Powered-By"));
+                Assert.assertEquals("FooBar", m.getDefinitions().get(0).getResponseHeaders().get("X-Powered-By"));
+*/
+            } else if ("/bars/:barId".equals(m.getPath())) {
+
+                if (RestMethodEnum.GET.equals(m.getMethod())) {
+
+                    Assert.assertEquals(2, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+
+                } else if (RestMethodEnum.PUT.equals(m.getMethod())) {
+
+                    Assert.assertEquals(2, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+
+                } else if (RestMethodEnum.DELETE.equals(m.getMethod())) {
+
+                    Assert.assertEquals(1, m.getDefinitions().size());
+
+                    Assert.assertEquals(404, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                } else {
+                    Assert.fail();
+                }
+
+            } else if ("/bars/fooId/:fooId".equals(m.getPath())) {
+
+                Assert.assertEquals(RestMethodEnum.GET, m.getMethod());
+                Assert.assertEquals(1, m.getDefinitions().size());
+
+                Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+            } else if ("/foos".equals(m.getPath())) {
+
+                if (RestMethodEnum.GET.equals(m.getMethod())) {
+
+                    Assert.assertEquals(1, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Foo\", \"ownerName\" : \"Jack Robinson\" }, { \"id\" : 2, \"name\" : \"Second Foo\" }, { \"id\" : 3, \"name\" : \"Third Foo\", \"ownerName\" : \"Chuck Norris\" } ]",
+                            m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                } else if (RestMethodEnum.POST.equals(m.getMethod())) {
+
+                    Assert.assertEquals(1, m.getDefinitions().size());
+
+                    Assert.assertEquals(201, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                } else {
+                    Assert.fail();
+                }
+
+            } else if ("/foos/:fooId".equals(m.getPath())) {
+
+                if (RestMethodEnum.GET.equals(m.getMethod())) {
+
+                    Assert.assertEquals(2, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }",
+                            m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+
+                } else if (RestMethodEnum.PUT.equals(m.getMethod())) {
+
+                    // TODO
+
+                } else if (RestMethodEnum.DELETE.equals(m.getMethod())) {
+
+                    // TODO
+
+                } else {
+                    Assert.fail();
+                }
+
+            } else if ("/foos/name/:name".equals(m.getPath())) {
+
+                Assert.assertEquals(RestMethodEnum.GET, m.getMethod());
+
+                // TODO
+
+            }
+
+        });
+
+    }
+
+    @Test
+    public void route_RemoveExisting_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+
+        // Setup
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"), new ApiImportConfigDTO());
 
         // Pre-test Assertions
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
-        // Setup
-        restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, user));
+        final long originalMockId = restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, user)).getId();
+        Assert.assertEquals(1, restfulMockDAO.findAll().size());
         restfulMockDAO.flush();
 
-        Assert.assertEquals(1, restfulMockDAO.findAll().size());
+        // Test
+        apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, user.getSessionToken());
 
         // Assertions
-        expected.expect(MultipleFailureException.class);
-        expected.expect(new AssertInnerExceptions());
+        final List<RestfulMock> mocks = restfulMockDAO.findAll();
 
-        // Test
-        apiImportRouter.route(dto, user.getSessionToken());
+        Assert.assertEquals(3, restfulMockDAO.findAll().size());
+
+        final Optional<RestfulMock> mock = mocks.stream()
+            .filter(m -> "/hello/:name".equals(m.getPath()))
+            .findFirst();
+
+        Assert.assertTrue(mock.isPresent());
+        Assert.assertNotEquals(originalMockId, mock.get().getId());
 
     }
 
-    class AssertInnerExceptions extends TypeSafeMatcher<Throwable> {
+    MockMultipartFile buildMockMultipartFile(final String fileName) throws URISyntaxException, IOException {
 
-        @Override
-        protected boolean matchesSafely(Throwable cause) {
+        final URL ramlUrl = this.getClass().getClassLoader().getResource(fileName);
+        final File ramlFile = new File(ramlUrl.toURI());
+        final FileInputStream ramlInput = new FileInputStream(ramlFile);
 
-            if (!(cause instanceof MultipleFailureException)) {
-                return false;
-            }
-
-            return !((MultipleFailureException)cause).getFailures().stream().anyMatch(f ->
-                    (!(f instanceof DataIntegrityViolationException)
-                        && !(f instanceof AssertionFailure)
-                    )
-            );
-        }
-
-        @Override
-        public void describeTo(Description description) {
-
-        }
+        return new MockMultipartFile(fileName, ramlFile.getName(), "text/plain", IOUtils.toByteArray(ramlInput));
     }
 
 }
