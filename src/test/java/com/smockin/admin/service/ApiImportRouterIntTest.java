@@ -189,7 +189,7 @@ public class ApiImportRouterIntTest {
 
                     Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                 } else if (RestMethodEnum.POST.equals(m.getMethod())) {
 
@@ -197,7 +197,7 @@ public class ApiImportRouterIntTest {
 
                     Assert.assertEquals(201, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                 } else {
                     Assert.fail();
@@ -216,11 +216,11 @@ public class ApiImportRouterIntTest {
 
                     Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                     Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
-                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else if (RestMethodEnum.PUT.equals(m.getMethod())) {
 
@@ -228,19 +228,23 @@ public class ApiImportRouterIntTest {
 
                     Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                     Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
-                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else if (RestMethodEnum.DELETE.equals(m.getMethod())) {
 
-                    Assert.assertEquals(1, m.getDefinitions().size());
+                    Assert.assertEquals(2, m.getDefinitions().size());
 
-                    Assert.assertEquals(404, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals(204, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertNull(m.getDefinitions().get(0).getResponseBody());
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else {
                     Assert.fail();
@@ -253,7 +257,7 @@ public class ApiImportRouterIntTest {
 
                 Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                 Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Bar\", \"city\" : \"Austin\", \"fooId\" : 2 }, { \"id\" : 2, \"name\" : \"Second Bar\", \"city\" : \"Dallas\", \"fooId\" : 1 }, { \"id\" : 3, \"name\" : \"Third Bar\", \"fooId\" : 2 } ]", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
             } else if ("/foos".equals(m.getPath())) {
 
@@ -264,7 +268,7 @@ public class ApiImportRouterIntTest {
                     Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
                     Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Foo\", \"ownerName\" : \"Jack Robinson\" }, { \"id\" : 2, \"name\" : \"Second Foo\" }, { \"id\" : 3, \"name\" : \"Third Foo\", \"ownerName\" : \"Chuck Norris\" } ]",
-                            m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                            flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                 } else if (RestMethodEnum.POST.equals(m.getMethod())) {
 
@@ -272,7 +276,7 @@ public class ApiImportRouterIntTest {
 
                     Assert.assertEquals(201, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
-                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }", m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }", flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                 } else {
                     Assert.fail();
@@ -287,19 +291,35 @@ public class ApiImportRouterIntTest {
                     Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
                     Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }",
-                            m.getDefinitions().get(0).getResponseBody().replaceAll("\\s+", " "));
+                            flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
                     Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
                     Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
-                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", m.getDefinitions().get(1).getResponseBody().replaceAll("\\s+", " "));
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else if (RestMethodEnum.PUT.equals(m.getMethod())) {
 
-                    // TODO
+                    Assert.assertEquals(2, m.getDefinitions().size());
+
+                    Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertEquals("{ \"id\" : 1, \"name\" : \"First Foo\" }", flattenJson(m.getDefinitions().get(0).getResponseBody()));
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else if (RestMethodEnum.DELETE.equals(m.getMethod())) {
 
-                    // TODO
+                    Assert.assertEquals(2, m.getDefinitions().size());
+
+                    Assert.assertEquals(204, m.getDefinitions().get(0).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                    Assert.assertNull(m.getDefinitions().get(0).getResponseBody());
+
+                    Assert.assertEquals(404, m.getDefinitions().get(1).getHttpStatusCode());
+                    Assert.assertEquals("application/json", m.getDefinitions().get(1).getResponseContentType());
+                    Assert.assertEquals("{ \"message\" : \"Not found\", \"code\" : 1001 }", flattenJson(m.getDefinitions().get(1).getResponseBody()));
 
                 } else {
                     Assert.fail();
@@ -309,7 +329,12 @@ public class ApiImportRouterIntTest {
 
                 Assert.assertEquals(RestMethodEnum.GET, m.getMethod());
 
-                // TODO
+                Assert.assertEquals(1, m.getDefinitions().size());
+
+                Assert.assertEquals(200, m.getDefinitions().get(0).getHttpStatusCode());
+                Assert.assertEquals("application/json", m.getDefinitions().get(0).getResponseContentType());
+                Assert.assertEquals("[ { \"id\" : 1, \"name\" : \"First Foo\", \"ownerName\" : \"Jack Robinson\" }, { \"id\" : 2, \"name\" : \"Second Foo\" }, { \"id\" : 3, \"name\" : \"Third Foo\", \"ownerName\" : \"Chuck Norris\" } ]",
+                        flattenJson(m.getDefinitions().get(0).getResponseBody()));
 
             }
 
@@ -347,13 +372,17 @@ public class ApiImportRouterIntTest {
 
     }
 
-    MockMultipartFile buildMockMultipartFile(final String fileName) throws URISyntaxException, IOException {
+    private MockMultipartFile buildMockMultipartFile(final String fileName) throws URISyntaxException, IOException {
 
         final URL ramlUrl = this.getClass().getClassLoader().getResource(fileName);
         final File ramlFile = new File(ramlUrl.toURI());
         final FileInputStream ramlInput = new FileInputStream(ramlFile);
 
         return new MockMultipartFile(fileName, ramlFile.getName(), "text/plain", IOUtils.toByteArray(ramlInput));
+    }
+
+    private String flattenJson(final String str) {
+        return str.replaceAll("\\s+", " ");
     }
 
 }

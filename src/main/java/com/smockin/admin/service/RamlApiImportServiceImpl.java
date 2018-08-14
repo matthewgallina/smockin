@@ -23,7 +23,6 @@ import org.raml.v2.api.model.v10.resources.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,7 +73,9 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             debug("URI " + api.baseUri().value());
             debug("version " + api.version().value());
 
-            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath);
+            final String defaultMimeType = api.mediaType().stream().findFirst().orElse(() -> "text/plain").value();
+
+            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath, defaultMimeType);
         } catch (RecordNotFoundException ex) {
             throw new ApiImportException("Unauthorized user access");
         } catch (ApiImportException ex) {
@@ -119,12 +120,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         return ramlModelResult.getApiV10();
     }
 
-    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) throws ApiImportException {
+    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws ApiImportException {
         resources.stream()
-                .forEach(r -> parseResource(r, apiImportConfig, user, conflictCtxPath));
+                .forEach(r -> parseResource(r, apiImportConfig, user, conflictCtxPath, defaultMimeType));
     }
 
-    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) throws ApiImportException {
+    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws ApiImportException {
         debug("Importing Endpoint...");
 
         // path
@@ -184,6 +185,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 final int statusCode = Integer.valueOf(resp.code().value());
                 debug("HTTP Response Status Code: " + statusCode); // HTTP response code
 
+                // Accounts for response codes which will not have a body such as 204.
+                if (resp.body().isEmpty()) {
+                    final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(1, statusCode, defaultMimeType, null, 1);
+                    dto.getDefinitions().add(restfulMockDefinitionDTO);
+                }
+
                 // Response Body
                 resp.body().forEach(b -> {
 
@@ -226,7 +233,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             }
         });
 
-        loadInResources(resource.resources(), apiImportConfig, user, conflictCtxPath);
+        loadInResources(resource.resources(), apiImportConfig, user, conflictCtxPath, defaultMimeType);
     }
 
     void handleExistingEndpoints(final RestfulMockDTO dto, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) {
