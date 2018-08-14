@@ -14,7 +14,7 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
     $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';
-    $scope.ramlVersionInfo = "This facility supports RAML based on the 'RAML 100 Tutorial' at raml.org";
+    $scope.ramlVersionInfo = "This facility supports most common RAML features, based on the 'RAML 100 & 200 Tutorials' at raml.org";
 
 
     //
