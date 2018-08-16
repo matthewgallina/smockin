@@ -7,6 +7,22 @@ Intelligent API simulation for application development and QA testing
     Contact: info@smockin.com
 
 
+
+WHAT'S NEW
+
+    User Accounts
+
+        A single installation of sMockin can now be used across your development and QA teams
+        with the introduction of user accounts. Please see the 'MULTI USER SUPPORT' section below
+        for further details on how to enable this feature.
+
+    RAML API Importer
+
+        You can now quickly create HTTP mocks by uploading your RAML files into sMockin
+        using the new RAML Import facility.
+
+
+
 OVERVIEW
 
     sMockin is a light framework used for setting up API simulations in a bid to aid development
@@ -93,6 +109,41 @@ QUICK START
 
 
 
+MULTI USER SUPPORT
+
+    To enable multi user support simply edit the 'app.properties' file under the .smockin directory
+    within your user home directory (i.e .smockin/app.properties) and edit/add the following argument:
+
+        MULTI_USER_MODE = TRUE
+
+    Once saved, simply shutdown and then restart sMockin.
+
+    On start up, you should see the following message in the terminal window confirming that this
+    has been enabled:
+
+        The application is running in 'Multi User Mode'
+
+    User credentials will now be required in order to access the dashboard. You can login and begin
+    creating other user accounts using the 'system admin' account:
+
+        username: admin
+        password: admin
+
+    Please note any mocks that we're created prior to enabling 'Multi User Mode' will now be owned
+    by the 'system admin' user.
+
+
+
+RAML SUPPORT
+
+    The RAML Importer supports to the following file types:
+
+        - .raml (for single raml files)
+        - .zip (where the raml file has external file references to 'include'.
+                The .raml file itself should be in the root of the zip archive.)
+
+
+
 TROUBLESHOOTING
 
     sMockin's log files can be found here within your user home directory: .smockin/log/smockin.log
@@ -161,6 +212,11 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
         Mockito                     -       http://site.mockito.org/
         Apache ActiveMQ             -       http://activemq.apache.org/
         Apache FtpServer            -       https://mina.apache.org/ftpserver-project/
+        RAML Parser 2               -       https://github.com/raml-org/raml-java-parser
+        Jasypt                      -       http://www.jasypt.org/
+        Java-JWT                    -       https://github.com/auth0/java-jwt
+        JWT-Decode                  -       https://github.com/auth0/jwt-decode
+        JQuery                      -       https://jquery.com/
 
 
 

@@ -32,6 +32,8 @@
         <activemq-all.version>5.15.1</activemq-all.version>
         <ftpserver-core.version>1.1.1</ftpserver-core.version>
         <raml-parser.version>1.0.25</raml-parser.version>
+        <jasypt.version>1.9.2</jasypt.version>
+        <java-jwt.version>3.4.0</java-jwt.version>
     </properties>
 
     <dependencies>
@@ -118,12 +120,12 @@
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
-            <version>1.9.2</version>
+            <version>${jasypt.version}</version>
         </dependency>
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>3.4.0</version>
+            <version>${java-jwt.version}</version>
         </dependency>
 
         <!-- Testing -->
