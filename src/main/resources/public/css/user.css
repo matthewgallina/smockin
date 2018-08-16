@@ -9,3 +9,7 @@
 .reg-font {
     font-family: inherit;
 }
+
+.password-reset-token {
+    font-size: 12px;
+}

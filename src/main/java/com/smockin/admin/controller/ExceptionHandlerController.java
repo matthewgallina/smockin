@@ -8,6 +8,7 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.exception.MockServerException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,38 +26,50 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrityViolationException() {
-        return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @ExceptionHandler(RecordNotFoundException.class)
     public ResponseEntity<String> handleRecordNotFoundException() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<SimpleMessageResponseDTO<String>> handleValidationBadRequest(ValidationException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(new SimpleMessageResponseDTO(ex.getMessage()));
     }
 
     @ExceptionHandler(MockServerException.class)
     public ResponseEntity<String> handleMockServerException(MockServerException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @ExceptionHandler(AuthException.class)
     public ResponseEntity<String> handleAuthException(AuthException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<String> handleIOException(IOException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
     @ExceptionHandler(ApiImportException.class)
     public ResponseEntity<SimpleMessageResponseDTO<String>> handleApiImportException(ApiImportException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(new SimpleMessageResponseDTO(ex.getMessage()));
     }
 

@@ -54,7 +54,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         return smockinUserDAO
                 .findAll()
                 .stream()
-                .map(u -> new SmockinUserResponseDTO(u.getExtId(), u.getDateCreated(), u.getUsername(), u.getFullName(), u.getRole()))
+                .map(u -> new SmockinUserResponseDTO(u.getExtId(), (isPasswordResetTokenValid(u)) ? u.getPasswordResetToken() : null, u.getDateCreated(), u.getUsername(), u.getFullName(), u.getRole()))
                 .collect(Collectors.toList());
 
     }
@@ -73,7 +73,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         final String passwordEnc = validateAndEncryptPassword(dto.getPassword());
 
         return smockinUserDAO
-                .save(new SmockinUser(dto.getUsername(), passwordEnc, dto.getFullName(), dto.getUsername(), SmockinUserRoleEnum.REGULAR, RecordStatusEnum.ACTIVE, GeneralUtils.generateUUID()))
+                .save(new SmockinUser(dto.getUsername(), passwordEnc, dto.getFullName(), dto.getUsername(), SmockinUserRoleEnum.REGULAR, RecordStatusEnum.ACTIVE, GeneralUtils.generateUUID(), GeneralUtils.generateUUID()))
                 .getExtId();
     }
 
@@ -115,17 +115,59 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     }
 
     @Override
-    public void resetPassword(final PasswordDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException {
+    public void updateUserPassword(final PasswordDTO dto, final String token) throws ValidationException, RecordNotFoundException {
 
         final SmockinUser currentUser = loadCurrentUser(token);
 
         if (!encryptionService.verify(dto.getCurrentPassword(), currentUser.getPassword())) {
-            throw new AuthException();
+            throw new ValidationException("Invalid Password");
         }
 
         currentUser.setPassword(validateAndEncryptPassword(dto.getNewPassword()));
 
         smockinUserDAO.save(currentUser);
+    }
+
+    @Override
+    public String issuePasswordResetToken(final String extId, final String token) throws RecordNotFoundException, AuthException {
+
+        assertCurrentUserIsAdmin(token);
+
+        final SmockinUser user = loadUserByExtId(extId);
+        final String passwordResetToken = GeneralUtils.generateUUID();
+
+        user.setPasswordResetToken(passwordResetToken);
+        user.setPasswordResetTokenExpiry(GeneralUtils.toDate(GeneralUtils.getCurrentDateTime().plusHours(24)));
+
+        smockinUserDAO.save(user);
+
+        return passwordResetToken;
+    }
+
+    @Override
+    public void validatePasswordResetToken(final String passwordResetToken) throws RecordNotFoundException {
+
+        if (smockinUserDAO.findByValidPasswordResetToken(passwordResetToken) == null) {
+            throw new RecordNotFoundException();
+        }
+
+    }
+
+    @Override
+    public void applyPasswordResetToken(final String passwordResetToken, final String newPassword) throws RecordNotFoundException, ValidationException {
+
+        final SmockinUser smockinUser = smockinUserDAO.findByValidPasswordResetToken(passwordResetToken);
+
+        if (smockinUser == null) {
+            throw new RecordNotFoundException();
+        }
+
+        smockinUser.setPassword(validateAndEncryptPassword(newPassword));
+
+        smockinUser.setPasswordResetToken(GeneralUtils.generateUUID());
+        smockinUser.setPasswordResetTokenExpiry(null);
+
+        smockinUserDAO.save(smockinUser);
     }
 
     @Override
@@ -213,6 +255,12 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         }
 
         return smockinUser;
+    }
+
+    boolean isPasswordResetTokenValid(final SmockinUser user) {
+        return (user.getPasswordResetToken() != null
+                    && user.getPasswordResetTokenExpiry() != null
+                    && GeneralUtils.getCurrentDate().before(user.getPasswordResetTokenExpiry()));
     }
 
 }

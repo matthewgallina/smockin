@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -41,7 +42,7 @@ public class CoreDataHandler {
     private SmockinUserDAO smockinUserDAO;
 
     @Autowired
-    private EncryptionService authService;
+    private EncryptionService encryptionService;
 
     @Transactional
     public void exec() {
@@ -51,6 +52,8 @@ public class CoreDataHandler {
         applyCoreAdminUser();
 
         applyAppVersioning();
+
+        resetSystemAdmin();
 
     }
 
@@ -145,12 +148,34 @@ public class CoreDataHandler {
 
         smockinUserDAO.save(new SmockinUser(
                 "admin",
-                authService.encrypt("admin"),
+                encryptionService.encrypt("admin"),
                 "System Admin",
                 "",
                 SmockinUserRoleEnum.SYS_ADMIN,
                 RecordStatusEnum.ACTIVE,
+                GeneralUtils.generateUUID(),
                 GeneralUtils.generateUUID()));
+
+    }
+
+    void resetSystemAdmin() {
+
+        final String resetSysAdminArg = System.getProperty("reset.sys.admin");
+
+        if (resetSysAdminArg == null
+                || Boolean.getBoolean(resetSysAdminArg)) {
+            return;
+        }
+
+        final Optional<SmockinUser> userOpt = smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN)
+                .stream()
+                .findFirst();
+
+        if (userOpt.isPresent()) {
+            final SmockinUser user = userOpt.get();
+            user.setPassword(encryptionService.encrypt("admin"));
+            smockinUserDAO.save(user);
+        }
 
     }
 

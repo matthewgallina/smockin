@@ -11,6 +11,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
+    $scope.myAccountLink = "Change Password";
     $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
@@ -68,6 +69,21 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
         modalInstance.result.then(function (state) {
             wsClientState = state;
         }, function () {
+        });
+
+    };
+
+    $scope.doOpenMyAccount = function() {
+
+        if (!auth.isLoggedIn()) {
+            return;
+        }
+
+        $uibModal.open({
+            templateUrl: 'update_password.html',
+            controller: 'updatePasswordController',
+            backdrop  : 'static',
+            keyboard  : false
         });
 
     };

@@ -104,7 +104,7 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
                 }
             };
 
-            restClient.doPost($http, '/api/import', reqData, function(status, data) {
+            restClient.doPost($http, '/api/RAML/import', reqData, function(status, data) {
 
                 $scope.apiUploadFile = {
                     data : null

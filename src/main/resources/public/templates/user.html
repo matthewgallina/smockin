@@ -26,12 +26,26 @@
 
     <div class="form-group">
         <label for="password" class="ng-binding">{{ passwordLabel }}</label>
-        <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" ng-disabled="userData.extId != null" />
+        <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" ng-disabled="userData.extId != null" ng-if="userData.extId == null || isSysAdmin" />
+        <div class="row" ng-if="userData.extId != null && !isSysAdmin">
+            <div class="col-sm-9">
+                <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" ng-disabled="true" />
+            </div>
+            <div class="col-sm-3">
+                <button class="btn btn-warning pull-right" type="button" ng-click="doCreatePasswordResetToken()" ng-disabled="userData.passwordResetToken != null">{{ passwordResetTokenButtonLabel }}</button>
+            </div>
+        </div>
+
     </div>
 
     <div class="form-group">
         <label for="confirmPassword" class="ng-binding">{{ confirmPasswordLabel }}</label>
         <input id="confirmPassword" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.confirmPassword" placeholder="{{ confirmPasswordPlaceholderTxt }}" type="password" ng-disabled="userData.extId != null" />
+    </div>
+
+    <div class="form-group" ng-if="userData.passwordResetToken != null">
+        <label for="passwordResetToken" class="ng-binding">{{ passwordResetTokenLabel }}</label>
+        <input id="passwordResetToken" class="form-control ng-isolate-scope ng-pristine ng-valid password-reset-token" ng-model="userData.passwordResetToken" type="text" readonly="true" />
     </div>
 
     <div class="form-group" ng-if="userData.extId != null">
@@ -43,6 +57,6 @@
 
 <div class="modal-footer">
     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-    <button class="btn btn-danger" type="button" ng-click="doDeleteUser()" ng-if="userData.extId != null">{{ deleteButtonLabel }}</button>
+    <button class="btn btn-danger" type="button" ng-click="doDeleteUser()" ng-if="userData.extId != null && !isSysAdmin">{{ deleteButtonLabel }}</button>
     <button class="btn btn-primary" type="button" ng-click="doSaveUser()">{{ saveButtonLabel }}</button>
 </div>

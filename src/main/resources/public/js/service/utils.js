@@ -1,7 +1,6 @@
 
 app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
 
-
     //
     // Validation
     this.isBlank = function (value) {
@@ -44,20 +43,22 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
           resolve: {
             data: function () {
               return {
-              "heading" : heading,
-              "body" : body,
-              "alertType" : actionType,
-              "nextButtonLabel" : nextButtonLabel
+                  "heading" : heading,
+                  "body" : body,
+                  "alertType" : actionType,
+                  "nextButtonLabel" : nextButtonLabel
               };
             }
           }
         });
 
-        modalInstance.result.then(function () {
-            callbackAction(true);
-        }, function () {
-            callbackAction(false);
-        });
+        if (callbackAction != null) {
+            modalInstance.result.then(function () {
+                callbackAction(true);
+            }, function () {
+                callbackAction(false);
+            });
+        }
 
     }
 
@@ -67,6 +68,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
 
     this.openWarningConfirmation = function(body, callbackAction) {
         openConfirmation("Confirmation", body, "warning", "Continue", callbackAction);
+    };
+
+    this.openAlert = function(heading, body, callbackAction) {
+        openConfirmation(heading, body, "success", null, callbackAction);
     };
 
 

@@ -7,14 +7,16 @@ import java.util.Date;
 public class SmockinUserResponseDTO extends SmockinUserDTO {
 
     private String extId;
+    private String passwordResetToken;
     private Date dateCreated;
 
     public SmockinUserResponseDTO() {
     }
 
-    public SmockinUserResponseDTO(String extId, Date dateCreated, String username, String fullName, SmockinUserRoleEnum role) {
+    public SmockinUserResponseDTO(String extId, String passwordResetToken, Date dateCreated, String username, String fullName, SmockinUserRoleEnum role) {
         super(username, fullName, role);
         this.extId = extId;
+        this.passwordResetToken = passwordResetToken;
         this.dateCreated = dateCreated;
     }
 
@@ -23,6 +25,13 @@ public class SmockinUserResponseDTO extends SmockinUserDTO {
     }
     public void setExtId(String extId) {
         this.extId = extId;
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
     }
 
     public Date getDateCreated() {

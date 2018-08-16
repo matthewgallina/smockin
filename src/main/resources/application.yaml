@@ -36,6 +36,9 @@ auth.exclusions:
     - GET
   /mockedserver/ftp/status:
     - GET
+  /password/reset/token/*:
+    - GET
+    - POST
 
 ---
 # NOTE

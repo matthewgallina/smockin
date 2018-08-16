@@ -26,6 +26,9 @@
                             <a href="" ng-click="doOpenWebSocketClient()">{{ wsClientLink }}</a>
                         </li>
                         <li role="separator" class="divider" ng-if="isLoggedIn"></li>
+                        <li ng-if="isLoggedIn">
+                            <a href="" ng-click="doOpenMyAccount()">{{ myAccountLink }}</a>
+                        </li>
                         <li ng-if="isLoggedIn && isAdmin">
                             <a href="" ng-click="doOpenManageUsers()">{{ manageUsersLink }}</a>
                         </li>

@@ -52,7 +52,7 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         final boolean isExcluded = exclusions.entrySet()
             .stream()
             .anyMatch(e ->
-                e.getKey().equalsIgnoreCase(request.getRequestURI())
+                    matchExclusionUrl(e.getKey(), request.getRequestURI())
                         && e.getValue().stream().anyMatch(m -> m.equalsIgnoreCase(request.getMethod()))
             );
 
@@ -70,6 +70,17 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         authService.verifyToken(token);
 
         return true;
+    }
+
+    private boolean matchExclusionUrl(final String exclusionKey, final String inboundUrl) {
+
+        final int wildCardPos = exclusionKey.indexOf("*");
+
+        if (wildCardPos > -1) {
+            return inboundUrl.startsWith(exclusionKey.substring(0, wildCardPos));
+        }
+
+        return exclusionKey.equalsIgnoreCase(inboundUrl);
     }
 
     public Map<String, List<String>> getExclusions() {

@@ -8,6 +8,7 @@ app.service('globalVars', function() {
     this.AuthErrorMessage = "Invalid Login";
 
     this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
+    this.PasswordResetUrl = "http://localhost:8000/reset_password.html?rt=";
 
     this.SysAdminRole = "SYS_ADMIN";
     this.AdminRole = "ADMIN";

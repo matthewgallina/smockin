@@ -22,7 +22,10 @@ public interface SmockinUserService {
     String createUser(final SmockinNewUserDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException;
     void updateUser(final String externalId, final SmockinUserDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException;
     void deleteUser(final String extId, final String token) throws ValidationException, RecordNotFoundException, AuthException;
-    void resetPassword(final PasswordDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException;
+    void updateUserPassword(final PasswordDTO dto, final String token) throws ValidationException, RecordNotFoundException;
+    String issuePasswordResetToken(final String extId, final String token) throws RecordNotFoundException, AuthException;
+    void validatePasswordResetToken(final String passwordResetToken) throws RecordNotFoundException;
+    void applyPasswordResetToken(final String passwordResetToken, final String newPassword) throws RecordNotFoundException, ValidationException;
     void resetToken(final String token) throws RecordNotFoundException;
     void lookUpToken(final String sessionToken) throws AuthException;
     UserModeEnum getUserMode();

@@ -5,6 +5,7 @@ import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,6 +38,13 @@ public class SmockinUser extends Identifier {
     @Column(name = "SESS_TOKEN", nullable = false, length = 350, unique = true)
     private String sessionToken; // JWT based
 
+    @Column(name = "PW_RESET_TOKEN", nullable = false, length = 50, unique = true)
+    private String passwordResetToken;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "PW_RESET_TOKEN_EXPIRY")
+    private Date passwordResetTokenExpiry;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "createdBy", orphanRemoval = true)
     @OrderBy("path ASC")
     private List<RestfulMock> restfulMocks = new ArrayList<>();
@@ -45,7 +53,7 @@ public class SmockinUser extends Identifier {
 
     }
 
-    public SmockinUser(String username, String password, String fullName, String ctxPath, SmockinUserRoleEnum role, RecordStatusEnum status, String sessionToken) {
+    public SmockinUser(String username, String password, String fullName, String ctxPath, SmockinUserRoleEnum role, RecordStatusEnum status, String sessionToken, String passwordResetToken) {
         this.username = username;
         this.password = password;
         this.fullName = fullName;
@@ -53,6 +61,7 @@ public class SmockinUser extends Identifier {
         this.role = role;
         this.status = status;
         this.sessionToken = sessionToken;
+        this.passwordResetToken = passwordResetToken;
     }
 
     public String getUsername() {
@@ -102,6 +111,20 @@ public class SmockinUser extends Identifier {
     }
     public void setSessionToken(String sessionToken) {
         this.sessionToken = sessionToken;
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public Date getPasswordResetTokenExpiry() {
+        return passwordResetTokenExpiry;
+    }
+    public void setPasswordResetTokenExpiry(Date passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
     }
 
     public List<RestfulMock> getRestfulMocks() {

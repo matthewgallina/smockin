@@ -1,7 +1,6 @@
 
 app.controller('userController', function($scope, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
 
-
     //
     // Labels
     $scope.userHeading = 'New User';
@@ -11,7 +10,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
     $scope.passwordLabel = 'Password';
     $scope.confirmPasswordLabel = 'Confirm Password';
     $scope.dateCreatedLabel = 'Date Created';
-
+    $scope.passwordResetTokenLabel = 'Password Reset Token';
     $scope.usernamePlaceholderTxt = "Enter a username";
     $scope.fullNamePlaceholderTxt = "Enter the full name";
     $scope.passwordPlaceholderTxt = "Enter a password";
@@ -23,6 +22,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
     $scope.cancelButtonLabel = 'Cancel';
     $scope.saveButtonLabel = 'Save';
     $scope.deleteButtonLabel = "Delete";
+    $scope.passwordResetTokenButtonLabel = "Reset Password";
 
 
     //
@@ -55,9 +55,12 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
         "username" : null,
         "fullName" : null,
         "role" : globalVars.RegularRole,
+        "passwordResetToken" : null,
         "password" : null,
         "confirmPassword" : null
     };
+
+    $scope.isSysAdmin = false;
 
     if (data != null) {
 
@@ -68,8 +71,12 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
         $scope.userData.fullName = data.fullName;
         $scope.userData.role = data.role;
         $scope.userData.dateCreated = data.dateCreated;
+        $scope.userData.passwordResetToken = (data.passwordResetToken != null) ? (globalVars.PasswordResetUrl + data.passwordResetToken) : null;
         $scope.userData.password = "********";
         $scope.userData.confirmPassword = "********";
+
+        $scope.isSysAdmin = (data.role == globalVars.SysAdminRole);
+
     };
 
 
@@ -106,6 +113,30 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
 
                 if (status == 204) {
                     $uibModalInstance.close("ok");
+                    return;
+                }
+
+                showAlert(globalVars.GeneralErrorMessage);
+            });
+
+        });
+
+    };
+
+    $scope.doCreatePasswordResetToken = function() {
+
+        utils.openWarningConfirmation("Are you sure you wish to reset this user's password?", function(result) {
+
+            if (!result) {
+                return;
+            }
+
+            restClient.doGet($http, '/user/' + data.extId + '/password/reset', function(status, data) {
+
+                if (status == 200) {
+                    utils.openAlert("Password Reset", "This user can now reset their password using the following link: " + globalVars.PasswordResetUrl + data.message, function() {
+                        $uibModalInstance.close("ok");
+                    });
                     return;
                 }
 
@@ -156,8 +187,15 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             return;
         }
 
+        var reqBody = {
+            "username" : $scope.userData.username,
+            "fullName" : $scope.userData.fullName,
+            "role" : globalVars.RegularRole,
+            "password" : $scope.userData.password,
+        };
+
         // Send
-        restClient.doPost($http, '/user', $scope.userData, function(status, data) {
+        restClient.doPost($http, '/user', reqBody, function(status, data) {
 
             if (status == 201) {
                 $uibModalInstance.close("ok");

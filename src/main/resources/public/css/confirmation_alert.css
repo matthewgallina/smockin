@@ -1,4 +1,11 @@
 
+.modal-header-success {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+background-image: linear-gradient(to bottom,#4db34d 0,#367d36 100%) !important;
+}
+
 .modal-header-warning {
     padding: 12px;
     color: #fff;

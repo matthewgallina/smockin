@@ -29,7 +29,7 @@ public class RestfulMockController {
     public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final RestfulMockDTO dto,
                                                                                  @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                                     throws RecordNotFoundException {
-        return new ResponseEntity<SimpleMessageResponseDTO<String>>(new SimpleMessageResponseDTO<>(restfulMockService.createEndpoint(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(restfulMockService.createEndpoint(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
     @RequestMapping(path = "/restmock/{extId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
