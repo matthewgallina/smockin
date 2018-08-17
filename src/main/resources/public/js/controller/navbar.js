@@ -1,10 +1,9 @@
 
-app.controller('navbarController', function($scope, $window, $uibModal) {
-
+app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, restClient) {
 
     //
     // Labels
-    $scope.toolsLabel = "Tools";
+    $scope.navbarLabel = (auth.isLoggedIn()) ? auth.getFullName() : "Tools";
     $scope.helpLink = "Help"
 
 
@@ -12,17 +11,22 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
+    $scope.myAccountLink = "Change Password";
+    $scope.manageUsersLink = "Manage Users";
+    $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
 
 
     //
     // Data Objects
+    $scope.isLoggedIn = auth.isLoggedIn();
+    $scope.isAdmin = auth.isAdmin();
     var httpClientState = null;
     var wsClientState = null;
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doOpenHttpClient = function() {
 
         var modalInstance = $uibModal.open({
@@ -65,6 +69,52 @@ app.controller('navbarController', function($scope, $window, $uibModal) {
         modalInstance.result.then(function (state) {
             wsClientState = state;
         }, function () {
+        });
+
+    };
+
+    $scope.doOpenMyAccount = function() {
+
+        if (!auth.isLoggedIn()) {
+            return;
+        }
+
+        $uibModal.open({
+            templateUrl: 'update_password.html',
+            controller: 'updatePasswordController',
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+    };
+
+    $scope.doOpenManageUsers = function() {
+
+        if (!auth.isLoggedIn() || !$scope.isAdmin) {
+            return;
+        }
+
+        $location.path("/manage_users");
+
+    };
+
+    $scope.doLogout = function() {
+
+        if (!auth.isLoggedIn()) {
+            $window.location.reload();
+            return;
+        }
+
+        var requestBody = {};
+
+        restClient.doPost($http, '/logout', requestBody, function(status, data) {
+
+            if (status != 204) {
+                return;
+            }
+
+            auth.clearToken();
+            $window.location.reload();
         });
 
     };

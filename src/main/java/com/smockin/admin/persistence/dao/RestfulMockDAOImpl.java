@@ -1,7 +1,9 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -33,6 +35,26 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
     public List<RestfulMock> findAll() {
         return entityManager.createQuery("FROM RestfulMock rm ORDER BY rm.initializationOrder ASC")
                 .getResultList();
+    }
+
+    @Override
+    public List<RestfulMock> findAllByUser(final long userId) {
+        return entityManager.createQuery("FROM RestfulMock rm WHERE rm.createdBy.id = :userId ORDER BY rm.initializationOrder ASC")
+                .setParameter("userId", userId)
+                .getResultList();
+    }
+
+    @Override
+    public RestfulMock findByPathAndMethodAndUser(final String path, final RestMethodEnum method, final SmockinUser user) {
+        try {
+            return entityManager.createQuery("FROM RestfulMock rm WHERE rm.path = :path AND rm.method = :method AND rm.createdBy.id = :userId", RestfulMock.class)
+                    .setParameter("path", path)
+                    .setParameter("method", method)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+        } catch (Throwable ex) {
+            return null;
+        }
     }
 
 }

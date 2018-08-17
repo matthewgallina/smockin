@@ -25,6 +25,21 @@ logging:
 smockin:
   ftp.root.dir: "${user.home}/.smockin/ftp/"
 
+auth.exclusions:
+  /auth:
+    - POST
+  /user/mode:
+    - GET
+  /mockedserver/rest/status:
+    - GET
+  /mockedserver/jms/status:
+    - GET
+  /mockedserver/ftp/status:
+    - GET
+  /password/reset/token/*:
+    - GET
+    - POST
+
 ---
 # NOTE
 # The 'start.sh' script overrides the below DB related params using values defined

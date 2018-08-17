@@ -1,5 +1,5 @@
 
-app.controller('serverConfigController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
+app.controller('serverConfigController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, auth, data) {
 
 
     //
@@ -12,7 +12,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
 
     //
     // Labels
-    var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"TCP":ServerType;
+    var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"HTTP":ServerType;
     $scope.serverConfigHeading = ServerTypeLabel + ' Mock Server Config';
     $scope.portLabel = 'Port';
     $scope.maxThreadsLabel = 'Max Threads';
@@ -28,6 +28,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
 
     $scope.restartServerMessage = "(Note, saving will cause the server to restart if currently running)"
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
 
 
     //
@@ -77,6 +78,10 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     //
     // Functions
     $scope.doSaveConfig = function() {
+
+        if ($scope.readOnly) {
+            return;
+        }
 
         // Validation
         if (utils.isBlank($scope.serverConfig.port)

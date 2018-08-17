@@ -1,0 +1,62 @@
+<link rel="stylesheet" href="../css/user.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ userHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group">
+        <label for="user" class="ng-binding">{{ usernameLabel }}</label>
+        <input id="user" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.username" focus="userData.extId == null" placeholder="{{ usernamePlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <label for="fullName" class="ng-binding">{{ fullNameLabel }}</label>
+        <input id="fullName" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.fullName" placeholder="{{ fullNamePlaceholderTxt }}" type="text" />
+    </div>
+
+    <div class="form-group">
+        <label for="role" class="ng-binding">{{ roleLabel }}</label>
+        <pre id="role" class="reg-font">{{ userData.role }}</pre>
+    </div>
+
+    <div class="form-group">
+        <label for="password" class="ng-binding">{{ passwordLabel }}</label>
+        <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" ng-disabled="userData.extId != null" ng-if="userData.extId == null || isSysAdmin" />
+        <div class="row" ng-if="userData.extId != null && !isSysAdmin">
+            <div class="col-sm-9">
+                <input id="password" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.password" placeholder="{{ passwordPlaceholderTxt }}" type="password" ng-disabled="true" />
+            </div>
+            <div class="col-sm-3">
+                <button class="btn btn-warning pull-right" type="button" ng-click="doCreatePasswordResetToken()" ng-disabled="userData.passwordResetToken != null">{{ passwordResetTokenButtonLabel }}</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="form-group">
+        <label for="confirmPassword" class="ng-binding">{{ confirmPasswordLabel }}</label>
+        <input id="confirmPassword" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="userData.confirmPassword" placeholder="{{ confirmPasswordPlaceholderTxt }}" type="password" ng-disabled="userData.extId != null" />
+    </div>
+
+    <div class="form-group" ng-if="userData.passwordResetToken != null">
+        <label for="passwordResetToken" class="ng-binding">{{ passwordResetTokenLabel }}</label>
+        <input id="passwordResetToken" class="form-control ng-isolate-scope ng-pristine ng-valid password-reset-token" ng-model="userData.passwordResetToken" type="text" readonly="true" />
+    </div>
+
+    <div class="form-group" ng-if="userData.extId != null">
+        <label for="dateCreated" class="ng-binding">{{ dateCreatedLabel }}</label>
+        <pre id="dateCreated" class="reg-font">{{ userData.dateCreated | date:'dd/MM/yyyy HH:mm Z' }}</pre>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-danger" type="button" ng-click="doDeleteUser()" ng-if="userData.extId != null && !isSysAdmin">{{ deleteButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveUser()">{{ saveButtonLabel }}</button>
+</div>

@@ -3,6 +3,7 @@ package com.smockin.admin.service;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 
 import java.util.List;
 
@@ -11,12 +12,9 @@ import java.util.List;
  */
 public interface RestfulMockService {
 
-    String createEndpoint(final RestfulMockDTO dto);
-    void updateEndpoint(final String mockExtId, final RestfulMockDTO dto) throws RecordNotFoundException;
-    void deleteEndpoint(final String mockExtId) throws RecordNotFoundException;
-    List<RestfulMockResponseDTO> loadAll();
-//    List<RestfulMockResponseDTO> loadAllByStatus(final RecordStatusEnum status);
-//    String createRule(final String mockDefExtId, final RuleDTO dto) throws RecordNotFoundException;
-//    void updateRule(final String ruleExtId, final RuleDTO dto) throws RecordNotFoundException;
+    String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException;
+    void updateEndpoint(final String mockExtId, final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException;
+    void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
+    List<RestfulMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException;
 
 }

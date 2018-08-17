@@ -1,15 +1,15 @@
 
-app.controller('endpointInfoRuleController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, data) {
+app.controller('endpointInfoRuleController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, data, auth) {
 
 
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
-
+    var isNew = (data.rule == null);
 
     //
     // Labels
-    $scope.newEndpointRuleHeading = ( (data.rule != null)?'View':'New' ) + ' Rule';
+    $scope.newEndpointRuleHeading = ( (!isNew)?'View':'New' ) + ' Rule';
     $scope.contentTypeLabel = 'Content Type';
     $scope.contentTypePlaceholderTxt = 'e.g. (application/json)';
     $scope.httpStatusCodeLabel = 'HTTP Status Code';
@@ -24,7 +24,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
     //
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
-    $scope.saveButtonLabel = (data.rule != null)?'Amend Rule':'Add Rule';
+    $scope.saveButtonLabel = (!isNew)?'Amend Rule':'Add Rule';
     $scope.addConditionButtonLabel = 'Add Rule Condition';
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
@@ -70,7 +70,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
         "groups" : []
     };
 
-    if (data.rule != null) {
+    if (!isNew) {
         $scope.ruleResponse = data.rule;
 
         angular.forEach($scope.ruleResponse.responseHeaders, function(v, k) {
@@ -78,6 +78,9 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
         });
 
     }
+
+    $scope.isNew = isNew;
+    $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
 
 
     //
@@ -163,6 +166,8 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule_condition.html',
           controller: 'endpointInfoRuleConditionController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { };

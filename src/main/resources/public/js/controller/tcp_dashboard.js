@@ -1,5 +1,5 @@
 
-app.controller('tcpDashboardController', function($scope, $window, $rootScope, $location, $uibModal, $http, restClient, globalVars, utils, $routeParams) {
+app.controller('tcpDashboardController', function($scope, $window, $rootScope, $location, $uibModal, $http, restClient, globalVars, utils, $routeParams, auth) {
 
 
     //
@@ -20,19 +20,23 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Labels
-    $scope.mockServerStatusLabel = 'TCP Mock Server Status:';
+    $scope.mockServerStatusLabel = 'HTTP Mock Server Status:';
     $scope.serverConfigLabel = '(edit settings)';
     $scope.portLabel = 'port';
     $scope.noDataFoundMsg = 'No Data Found';
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated TCP Endpoints';
+    $scope.endpointsHeading = 'Simulated HTTP Endpoints';
+    $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
+    $scope.showAllEndpointsHeading = 'display other user endpoints';
+    $scope.hideAllEndpointsHeading = 'hide';
 
 
     //
     // Buttons
-    $scope.addEndpointButtonLabel = 'New TCP Endpoint';
+    $scope.addEndpointButtonLabel = 'New HTTP Endpoint';
+    $scope.importEndpointButtonLabel = 'Import RAML API';
     $scope.viewEndpointButtonLabel = 'View';
 
 
@@ -45,27 +49,32 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Data Objects
+    $scope.isLoggedIn = auth.isLoggedIn();
     $scope.mockServerStatus = '';
     $scope.restServices = [];
+    $scope.otherUserRestServices = [];
+    $scope.showAllEndpoints = false;
 
 
     //
     // Endpoints Table
     $scope.pathTableLabel = 'Path';
-    $scope.methodTableLabel = 'Method';
     $scope.dateCreatedTableLabel = 'Date Created';
+    $scope.createdByTableLabel = 'Created By';
     $scope.statusTableLabel = 'Status';
-    $scope.mockTypeTableLabel = 'TCP Mock Type';
+    $scope.mockTypeTableLabel = 'HTTP Mock Type';
     $scope.actionTableLabel = 'Action';
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doOpenServerConfig = function() {
 
      var modalInstance = $uibModal.open({
           templateUrl: 'server_config.html',
           controller: 'serverConfigController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { "serverType" : RestfulServerType };
@@ -100,20 +109,122 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         $location.path("/tcp_endpoint");
     };
 
-    function loadTableData() {
+    $scope.doOpenTcpRamlImport = function() {
+        $rootScope.endpointData = null;
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'api_import.html',
+          controller: 'apiImportController',
+          backdrop  : 'static',
+          keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null
+                    && response.uploadCompleted) {
+                loadTableData(false);
+            }
+        }, function () {
+
+        });
+
+    };
+
+    $scope.startTcpMockServer = function() {
+
+        utils.showLoadingOverlay('Starting HTTP Server');
+
+        restClient.doPost($http, '/mockedserver/rest/start', {}, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status == 200) {
+                $scope.mockServerStatus = MockServerRunningStatus;
+                showAlert("HTTP Server Started (on port " + String(data.port) + ")", "success");
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    };
+
+    $scope.doShowAllEndpoints = function(show) {
+        $scope.showAllEndpoints = show;
+        loadTableData($scope.showAllEndpoints);
+    };
+
+    $scope.stopTcpMockServer = function () {
+
+        utils.showLoadingOverlay('Stopping HTTP Server');
+
+        restClient.doPost($http, '/mockedserver/rest/stop', {}, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status == 204) {
+                $scope.mockServerStatus = MockServerStoppedStatus;
+                showAlert("HTTP Server Stopped", "success");
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    };
+
+
+    //
+    // Internal Functions
+    function loadTableData(showAll) {
 
         $scope.restServices = [];
+        $scope.otherUserRestServices = [];
 
-        restClient.doGet($http, '/restmock', function(status, data) {
+        var filterParams = (showAll) ? '?filter=all' : '';
 
-            if (status != 200) {
+        restClient.doGet($http, '/restmock' + filterParams, function(status, data) {
+
+            if (status == 401) {
+                showAlert(globalVars.AuthRequiredMessage);
+                return;
+            } else if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            $scope.restServices = batchByBasePath(data);
+            var splitData = splitUserData(data);
+
+            $scope.otherUserRestServices = batchByBasePath(splitData.other);
+            $scope.restServices = batchByBasePath(splitData.own);
         });
 
+    }
+
+    function splitUserData(allData) {
+
+        var splitOutData = {
+            "own" : [],
+            "other" : []
+        };
+
+        if (!auth.isLoggedIn()) {
+
+            splitOutData.own = allData;
+
+        } else {
+
+            for (var d=0; d < allData.length; d++) {
+                if (allData[d].createdBy == auth.getUserName()) {
+                    splitOutData.own.push(allData[d]);
+                } else {
+                    splitOutData.other.push(allData[d]);
+                }
+            }
+
+        }
+
+        return splitOutData;
     }
 
     function batchByBasePath(allData) {
@@ -198,47 +309,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     }
 
-    $scope.startTcpMockServer = function() {
-
-        utils.showLoadingOverlay('Starting TCP Server');
-
-        restClient.doPost($http, '/mockedserver/rest/start', {}, function(status, data) {
-
-            utils.hideLoadingOverlay();
-
-            if (status == 200) {
-                $scope.mockServerStatus = MockServerRunningStatus;
-                showAlert("TCP Server Started (on port " + String(data.port) + ")", "success");
-                return;
-            }
-
-            showAlert(globalVars.GeneralErrorMessage);
-        });
-
-    }
-
-    $scope.stopTcpMockServer = function () {
-
-        utils.showLoadingOverlay('Stopping TCP Server');
-
-        restClient.doPost($http, '/mockedserver/rest/stop', {}, function(status, data) {
-
-            utils.hideLoadingOverlay();
-
-            if (status == 204) {
-                $scope.mockServerStatus = MockServerStoppedStatus;
-                showAlert("TCP Server Stopped", "success");
-                return;
-            }
-
-            showAlert(globalVars.GeneralErrorMessage);
-        });
-
-    }
-
     function restartTcpMockServer(callback) {
 
-        utils.showLoadingOverlay('Updating TCP Server');
+        utils.showLoadingOverlay('Updating HTTP Server');
 
         restClient.doPost($http, '/mockedserver/rest/restart', {}, function(status, data) {
 
@@ -255,7 +328,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Init page
-    loadTableData();
+    loadTableData(false);
     loadTcpServerStatus();
 
 });

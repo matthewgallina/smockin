@@ -1,6 +1,5 @@
 
-app.service('utils', function($uibModal, globalVars, restClient, $http) {
-
+app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
 
     //
     // Validation
@@ -12,6 +11,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
     this.isNumeric = function (value) {
         return (value != null
             && !isNaN(value));
+    };
+
+    this.hasWhiteSpace = function (value) {
+        return /\s/g.test(value);
     };
 
 
@@ -35,23 +38,27 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
        var modalInstance = $uibModal.open({
           templateUrl: 'confirmation_alert.html',
           controller: 'confirmationAlertController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
-              "heading" : heading,
-              "body" : body,
-              "alertType" : actionType,
-              "nextButtonLabel" : nextButtonLabel
+                  "heading" : heading,
+                  "body" : body,
+                  "alertType" : actionType,
+                  "nextButtonLabel" : nextButtonLabel
               };
             }
           }
         });
 
-        modalInstance.result.then(function () {
-            callbackAction(true);
-        }, function () {
-            callbackAction(false);
-        });
+        if (callbackAction != null) {
+            modalInstance.result.then(function () {
+                callbackAction(true);
+            }, function () {
+                callbackAction(false);
+            });
+        }
 
     }
 
@@ -61,6 +68,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
     this.openWarningConfirmation = function(body, callbackAction) {
         openConfirmation("Confirmation", body, "warning", "Continue", callbackAction);
+    };
+
+    this.openAlert = function(heading, body, callbackAction) {
+        openConfirmation(heading, body, "success", null, callbackAction);
     };
 
 
@@ -138,7 +149,6 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
     //
     // Mock Server Actions
-
     this.checkRestServerStatus = function (callback) {
 
         restClient.doGet($http, '/mockedserver/rest/status', function(status, data) {

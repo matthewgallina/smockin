@@ -25,9 +25,8 @@ public class RestfulResponseDTO {
         this.responseContentType = responseContentType;
         this.responseBody = responseBody;
 
-        for (Map.Entry<String, String> h : headers) {
-            this.headers.put(h.getKey(), h.getValue());
-        }
+        headers.stream().forEach(h ->
+            this.headers.put(h.getKey(), h.getValue()));
     }
 
     public int getHttpStatusCode() {

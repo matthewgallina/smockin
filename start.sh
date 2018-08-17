@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="SMOCKIN"
-APP_VERSION="1.4.0-SNAPSHOT"
+APP_VERSION="1.5.0-SNAPSHOT"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"
@@ -36,6 +36,8 @@ H2_DB_PID_FILE="$PIDS_DIR_PATH/smockin-db.pid"
 
 USE_DEBUG=false
 USE_INMEM_DB=false
+RESET_SYS_ADMIN=false
+MULTI_USER_MODE=false
 
 if [ ! -d "${APP_DIR_PATH}" ]
 then
@@ -52,8 +54,9 @@ fi
 # Check if smockin already has a pid.
 if [ -f $SMOCKIN_PID_FILE ];
 then
-    echo "SMOCKIN is already running"
-    exit 0
+    echo "SMOCKIN appears to already running, restarting this service..."
+    ./shutdown.sh
+    sleep 5
 fi
 
 # DB properties
@@ -72,8 +75,12 @@ APP_PROPS_FILE=$(grep "^[^#;]" ${APP_DIR_PATH}/${APP_PROPS_FILE})
 
 H2_PORT=$(echo "$APP_PROPS_FILE" | grep "H2_PORT" | awk '{ print $3 }')
 APP_PORT=$(echo "$APP_PROPS_FILE" | grep "APP_PORT" | awk '{ print $3 }')
+MULTI_USER_MODE_CONF=$(echo "$APP_PROPS_FILE" | grep "MULTI_USER_MODE" | awk '{ print $3 }')
 
-
+if ([ ! -z $MULTI_USER_MODE_CONF ] && [ $MULTI_USER_MODE_CONF = "TRUE" ])
+then
+    MULTI_USER_MODE=true
+fi
 
 if ([ ! -z "$1" ] && [ $1 = "-DEBUG" ]) || ([ ! -z "$2" ] && [ $2 = "-DEBUG" ]); then
     USE_DEBUG=true
@@ -84,6 +91,9 @@ if ([ ! -z "$1" ] && [ $1 = "-INMEM" ]) || ([ ! -z "$2" ] && [ $2 = "-INMEM" ]);
     JDBC_URL='jdbc:h2:mem:smockindev'
 fi
 
+if ([ ! -z "$1" ] && [ $1 = "-RESET_SYS_ADMIN" ]) || ([ ! -z "$2" ] && [ $2 = "-RESET_SYS_ADMIN" ]); then
+    RESET_SYS_ADMIN=true
+fi
 
 
 echo "#####################################################################################"
@@ -124,12 +134,15 @@ echo "#"
 #
 VM_ARGS="-Dspring.datasource.url=$JDBC_URL -Dspring.datasource.username=$DB_USERNAME -Dspring.datasource.password=$DB_PASSWORD -Dspring.datasource.maximumPoolSize=$MAX_POOL_SIZE -Dspring.datasource.minimumIdle=$MIN_POOL_SIZE -Duser.timezone=UTC -Dapp.version=$APP_VERSION"
 APP_PROFILE="production"
+RESET_SYS_ADMIN_ARG=""
 
 if ( $USE_INMEM_DB ); then
   APP_PROFILE=""
 fi
 
-
+if ( $RESET_SYS_ADMIN ); then
+  RESET_SYS_ADMIN_ARG="-Dreset.sys.admin=true"
+fi
 
 
 #
@@ -139,6 +152,12 @@ fi
 echo "#"
 echo "#  Starting Main Application..."
 echo "#"
+
+if ( $MULTI_USER_MODE ); then
+  echo "#  The application is running in 'Multi User Mode'"
+  echo "#"
+fi
+
 echo "#  Please Note:"
 echo "#  - Application logs are available from: .smockin/log (under the user.home directory)"
 echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Smockin Admin UI."
@@ -151,17 +170,18 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 # Note, these commands can be combined.
 # (i.e 'start.sh -DEBUG' will enable the debug port and use the main DB, whereas 'start.sh -DEBUG -INMEM' will do the same but with an in mem DB.)
 #
-# -DEBUG            Allows remote debugging
-# -INMEM            Uses an in-memory DB
+# -DEBUG               Allows remote debugging.
+# -INMEM               Uses an in-memory DB.
+# -RESET_SYS_ADMIN     Resets the System Admin user's password back to factory default.
 #
 #
 
 
 if ( $USE_DEBUG ); then
-  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT $VM_ARGS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
+  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
 else
   echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
-  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT $VM_ARGS" > /dev/null 2>&1 &
+  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
   echo "$!" > $SMOCKIN_PID_FILE
 fi
 

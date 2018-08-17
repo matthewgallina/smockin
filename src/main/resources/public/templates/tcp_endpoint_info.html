@@ -15,7 +15,7 @@
                 <div class="col-sm-3 endpoint-status-row">
                     {{ endpointStatusLabel }}
                     <div id="endpoint-status" class="btn-group" uib-dropdown>
-                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled">
+                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled || readOnly">
                             <span>{{ endpoint.status }}</span>
                             <span class="caret"></span>
                         </button>
@@ -39,15 +39,15 @@
             <div class="col-sm-6">
 
                 <div class="form-group">
-                    <label for="path" class="ng-binding">{{ pathLabel }}</label>
-                    <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="true" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
+                    <label for="path" class="ng-binding">{{ pathLabel }}</label><span class="pull-right actual-path" ng-if="defaultCtxPathPrefix != null"> ({{ actualPathPrefixLabel }} {{ defaultCtxPathPrefix }}<b>{{ endpoint.path }}</b>)</span>
+                    <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" ng-disabled="readOnly" />
                 </div>
 
                 <div class="form-group">
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || readOnly">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ selectDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -62,17 +62,17 @@
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
-                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
-                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" />
+                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly" />
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody"></textarea>
+                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly"></textarea>
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
@@ -92,19 +92,19 @@
                                 <tbody>
                                 <tr ng-repeat="rh in responseHeaderList">
                                     <td>
-                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
                                     </td>
                                     <td>
-                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
                                     </td>
                                     <td class="remove-resp-head-row-button">
-                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)">{{ removeResponseHeaderButtonLabel }}</button>
+                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly">{{ removeResponseHeaderButtonLabel }}</button>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
 
-                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
 
                         </div>
                     </div>
@@ -115,7 +115,7 @@
 
                 <div class="form-group">
                     <div id="mock-type" class="btn-group" uib-dropdown>
-                        <button id="mock-type-button" type="button" class="btn btn-default" uib-dropdown-toggle>
+                        <button id="mock-type-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="readOnly">
                             {{ endpoint.mockType.name }} <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
@@ -131,7 +131,7 @@
                 <div ng-show="endpoint.mockType.value == mockTypeSeq">
 
                     <div class="add-button-div">
-                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddSequence()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addSequenceButtonLabel }}</button>
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddSequence()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addSequenceButtonLabel }}</button>
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.definitions.length == 0">
@@ -156,20 +156,20 @@
                             <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
-                                <a href="" ng-click="doMoveSeqUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
+                                <a href="" ng-click="doMoveSeqUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                                 </a>
-                                <a href="" ng-click="doMoveSeqDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                <a href="" ng-click="doMoveSeqDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
                                 </a>
 
                                 <br />
 
                                 <a href="" ng-click="doToggleSuspendSeq($index)">
-                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend"></span>
-                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend"></span>
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
                                 </a>
-                                <a href="" ng-click="doRemoveSeq($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                <a href="" ng-click="doRemoveSeq($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
                                 </a>
 
@@ -184,7 +184,7 @@
                     </table>
 
                     <div class="form-group" class="shuffle-seq-group" ng-show="endpoint.definitions.length > 1">
-                        <input id="shuffleSequence" ng-model="endpoint.randomiseDefinitions" type="checkbox" />
+                        <input id="shuffleSequence" ng-model="endpoint.randomiseDefinitions" type="checkbox" ng-disabled="readOnly" />
                         <label for="shuffleSequence" class="ng-binding">{{ shuffleSequenceLabel }}</label>
                     </div>
 
@@ -195,7 +195,7 @@
                 <div ng-show="endpoint.mockType.value == mockTypeRule">
 
                     <div class="add-button-div">
-                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddRule()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRuleButtonLabel }}</button>
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddRule()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRuleButtonLabel }}</button>
                     </div>
 
                     <div class="no-results-found" ng-if="endpoint.rules.length == 0">
@@ -218,20 +218,20 @@
                             <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
                             <td class="action-button-table-cell">
 
-                                <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''">
+                                <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                                 </a>
-                                <a href="" ng-click="doMoveRuleDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                <a href="" ng-click="doMoveRuleDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
                                 </a>
 
                                 <br />
 
                                 <a href="" ng-click="doToggleSuspendRule($index)">
-                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend"></span>
-                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend"></span>
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
                                 </a>
-                                <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'">
+                                <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
                                     <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
                                 </a>
 
@@ -253,12 +253,12 @@
 
                     <div class="form-group proxy-timeout-group">
                         <label for="proxyTimeout" class="ng-binding">{{ proxyTimeoutLabel }}</label>
-                        <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" />
+                        <input id="proxyTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.proxyTimeout" placeholder="{{ proxyTimeoutPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
                     </div>
 
                     <br />
 
-                    <uib-accordion id="manageProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -302,7 +302,7 @@
                             <br />
                             <hr />
 
-                            <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus">{{ clearProxyButtonLabel }}</button>
+                            <button id="clear-proxy-button" class="btn btn-info" type="button" ng-click="doClearProxyQueue()" ng-disabled="endpoint.status == inActiveStatus || readOnly">{{ clearProxyButtonLabel }}</button>
 
                         </div>
                     </uib-accordion>
@@ -315,16 +315,16 @@
 
                     <div class="form-group proxy-timeout-group">
                         <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
-                        <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" />
+                        <input id="websocketTimeout" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.webSocketTimeout" placeholder="{{ webSocketTimeoutPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
                     </div>
 
                     <div class="form-group proxy-timeout-group">
-                        <input id="wsPushIdOnConnect"  ng-model="endpoint.wsPushIdOnConnect" type="checkbox" />
+                        <input id="wsPushIdOnConnect"  ng-model="endpoint.wsPushIdOnConnect" type="checkbox" ng-disabled="readOnly" />
                         <label for="wsPushIdOnConnect" class="ng-binding">{{ pushIdOnConnectLabel }}</label>
                     </div>
 
 
-                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageWsProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -336,7 +336,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus && !readOnly">
                                 <a href="" ng-click="doRefreshActiveWsClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -363,15 +363,11 @@
                                             <td class="conn-client-cell">{{ ws.id }}</td>
                                             <td class="conn-client-cell">{{ ws.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                             <td class="conn-client-cell">
-                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path, ws.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
+                                                <button class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(ws.id)" ng-disabled="endpoint.status == inActiveStatus || readOnly">{{ messageButtonLabel }}</button>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
-
-                                <hr />
-
-                                <button id="ws-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushWSMessageView(endpoint.path)" ng-disabled="endpoint.status == inActiveStatus">{{ messageAllButtonLabel }}</button>
 
                             </div>
 
@@ -386,17 +382,17 @@
 
                     <div class="form-group proxy-timeout-group">
                         <label for="sseHeartbeat" class="ng-binding">{{ sseHeartbeatLabel }}</label>
-                        <input id="sseHeartbeat" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.sseHeartbeat" placeholder="{{ sseHeartbeatPlaceholderTxt }}" type="text" />
+                        <input id="sseHeartbeat" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.sseHeartbeat" placeholder="{{ sseHeartbeatPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
                     </div>
 
                     <div class="form-group proxy-timeout-group">
-                        <input id="ssePushIdOnConnect"  ng-model="endpoint.ssePushIdOnConnect" type="checkbox" />
+                        <input id="ssePushIdOnConnect"  ng-model="endpoint.ssePushIdOnConnect" type="checkbox" ng-disabled="readOnly" />
                         <label for="ssePushIdOnConnect" class="ng-binding">{{ pushIdOnConnectLabel }}</label>
                     </div>
 
                     <br />
 
-                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="!isNew">
+                    <uib-accordion id="manageSseProxy" close-others="false" ng-if="!isNew && !readOnly">
                         <div uib-accordion-group class="panel panel-default">
 
                             <uib-accordion-heading>
@@ -408,7 +404,7 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus">
+                            <div class="refresh-clients-link" ng-if="endpoint.status == activeStatus && !readOnly">
                                 <a href="" ng-click="doRefreshActiveSseClients()">
                                     {{ refreshClientsLinkLabel }}
                                     <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
@@ -435,15 +431,11 @@
                                         <td class="conn-client-cell">{{ as.id }}</td>
                                         <td class="conn-client-cell">{{ as.dateJoined | date: "dd/MM/yyyy HH:mm:ss" : "UTC" }}</td>
                                         <td class="conn-client-cell">
-                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path, as.id)" ng-disabled="endpoint.status == inActiveStatus">{{ messageButtonLabel }}</button>
+                                            <button class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(as.id)" ng-disabled="endpoint.status == inActiveStatus || readOnly">{{ messageButtonLabel }}</button>
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
-
-                                <hr />
-
-                                <button id="sse-client-message-all-button" class="btn btn-info" type="button" ng-click="doOpenPushSseMessageView(endpoint.path)" ng-disabled="endpoint.status == inActiveStatus">{{ messageAllButtonLabel }}</button>
 
                             </div>
 
@@ -465,8 +457,8 @@
                 </div>
                 <div class="col-sm-3">
                     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew">{{ deleteButtonLabel }}</button>
-                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()">{{ saveButtonLabel }}</button>
+                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
                 </div>
             </div>
         </div>

@@ -5,7 +5,7 @@ REM   for /f tokens^=2-5^ delims^=.-_^" %j in ('java -fullversion 2^>^&1') do @s
 REM   echo %jver%
 
 set APP_NAME=SMOCKIN
-set APP_VERSION=1.4.0-SNAPSHOT
+set APP_VERSION=1.5.0-SNAPSHOT
 
 set APP_DIR_PATH=%userprofile%\.smockin
 set DB_DIR_PATH=%APP_DIR_PATH%\db
@@ -45,6 +45,13 @@ FOR /F "tokens=3 USEBACKQ" %%F IN (`findstr "^[^#;]" %APP_DIR_PATH%\%APP_PROPS_F
 )
 set H2_PORT=%var1%
 set APP_PORT=%var2%
+set MULTI_USER_MODE_CONF=%var3%
+
+set MULTI_USER_MODE=false
+
+if "%MULTI_USER_MODE_CONF%"=="TRUE" (
+  set MULTI_USER_MODE=true
+)
 
 
 call set MOD_DB_PATH1=%%userprofile:C:\=C:/%%
@@ -90,7 +97,7 @@ echo #  Please Note:
 echo #  - Application logs are available from: .smockin/log (under the user.home directory)
 echo #  - Navigate to: 'http://localhost:%APP_PORT%/index.html' to access the Smockin Admin UI.
 
-mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=%APP_PROFILE% -Dserver.port=%APP_PORT% %VM_ARGS%"
+mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=%APP_PROFILE% -Dmulti.user.mode=%MULTI_USER_MODE% -Dserver.port=%APP_PORT% %VM_ARGS%"
 
 echo #
 echo #####################################################################################

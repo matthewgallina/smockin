@@ -1,9 +1,18 @@
 
-app.service('globalVars', function($uibModal) {
+app.service('globalVars', function() {
 
     this.AlertTimeoutMillis = 5000;
 
     this.GeneralErrorMessage = "Oops looks like something went wrong!";
+    this.AuthRequiredMessage = "Please login to access this service";
+    this.AuthErrorMessage = "Invalid Login";
+
+    this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
+    this.PasswordResetUrl = "/reset_password.html?rt=";
+
+    this.SysAdminRole = "SYS_ADMIN";
+    this.AdminRole = "ADMIN";
+    this.RegularRole = "REGULAR";
 
     this.RestfulServerType = "RESTFUL";
     this.JmsServerType = "JMS";

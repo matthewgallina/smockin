@@ -1,0 +1,61 @@
+#%RAML 1.0
+title: helloworld API
+version: v1
+baseUri: http://localhost:8001/{version}
+/hello:
+  get:
+    description: Say hello to everyone
+    responses:
+      200:
+        headers:
+          X-Powered-By:
+            description: You can describe response headers like this
+            example: FooBar
+        body:
+          application/json:
+            example: |
+              { "message": "helloworld" }
+  /{name}:
+    get:
+      description: Say hello to the named person
+      queryParameters:
+        lastName:
+          displayName: LastName
+          type: string
+          description: The peron's full name
+          example: Mary Roach
+          minLength: 1
+          required: false
+      responses:
+        200:
+          body:
+            application/json:
+              example: |
+                { "message": "hello John!" }
+        404:
+          body:
+            application/json:
+              example:
+        400:
+          body:
+            application/json:
+              example: |
+                { "message": "Missing name!" }
+    post:
+      headers:
+        Authorization:
+          description: OAuth Token
+          example: Bearer 1234-5678-9000-0000-0000
+      body:
+        application/json:
+          example: { "name" : "Harry" }
+      responses:
+        201:
+          headers:
+            X-Powered-By:
+              description: You can describe response headers like this
+              example: FooBar
+          body:
+            application/json:
+              example: |
+                { "id" : 1 }

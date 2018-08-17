@@ -14,17 +14,17 @@
 
             <div class="form-group">
                 <label for="contentType" class="ng-binding">{{ contentTypeLabel }}</label>
-                <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" type="text" focus="isNew" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
             </div>
 
             <div class="form-group">
                 <label for="httpStatusCode" class="ng-binding">{{ httpStatusCodeLabel }}</label>
-                <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.httpStatusCode" placeholder="{{ httpStatusCodePlaceholderTxt }}" type="text" />
+                <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.httpStatusCode" placeholder="{{ httpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly" />
             </div>
 
             <div class="form-group">
                 <label for="rule-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
-                <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody"></textarea>
+                <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody" ng-disabled="readOnly"></textarea>
             </div>
 
             <div class="form-group">
@@ -43,19 +43,19 @@
                             <tbody>
                             <tr ng-repeat="rh in responseHeaderList">
                                 <td>
-                                    <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
                                 </td>
                                 <td>
-                                    <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
                                 </td>
                                 <td class="remove-resp-head-row-button">
-                                    <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)">{{ removeResponseHeaderButtonLabel }}</button>
+                                    <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly">{{ removeResponseHeaderButtonLabel }}</button>
                                 </td>
                             </tr>
                             </tbody>
                         </table>
 
-                        <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+                        <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
 
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                         <td>
                             <span>
 
-                                <div class="condition-arg-buttons">
+                                <div class="condition-arg-buttons" ng-hide="readOnly">
                                     <a href="" ng-click="doMoveConditionUp($index)">
                                         <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
                                     </a>
@@ -139,7 +139,7 @@
             </table>
 
             <div class="add-condition-div">
-                <button class="btn btn-primary" type="button" ng-click="doAddCondition()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addConditionButtonLabel }}</button>
+                <button class="btn btn-primary" type="button" ng-click="doAddCondition()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addConditionButtonLabel }}</button>
             </div>
 
         </div>
@@ -149,5 +149,5 @@
 
 <div class="modal-footer">
     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-    <button class="btn btn-primary" type="button" ng-click="doSaveRule()">{{ saveButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveRule()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
 </div>

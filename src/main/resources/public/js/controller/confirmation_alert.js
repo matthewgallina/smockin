@@ -14,6 +14,10 @@ app.controller('confirmationAlertController', function($scope, $location, $uibMo
     $scope.continueButtonLabel = data.nextButtonLabel;
     $scope.cancelButtonLabel = 'Cancel';
 
+    if (data.nextButtonLabel == null) {
+        $scope.continueButtonLabel = null;
+        $scope.cancelButtonLabel = 'Close';
+    }
 
     //
     // Functions

@@ -2,10 +2,16 @@ package com.smockin.admin.persistence;
 
 import com.smockin.admin.persistence.dao.AppConfigDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.AppConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.persistence.migration.DataMigrationService;
+import com.smockin.admin.service.EncryptionService;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -31,12 +38,22 @@ public class CoreDataHandler {
     @Autowired
     private DataMigrationService dataMigrationService;
 
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
+
+    @Autowired
+    private EncryptionService encryptionService;
+
     @Transactional
     public void exec() {
 
         applyServerConfigDefaults();
 
+        applyCoreAdminUser();
+
         applyAppVersioning();
+
+        resetSystemAdmin();
 
     }
 
@@ -119,6 +136,45 @@ public class CoreDataHandler {
             appConfigDAO.save(appConfig);
 
             dataMigrationService.applyVersionChanges(currentVersion, appVersionArg);
+        }
+
+    }
+
+    void applyCoreAdminUser() {
+
+        if (!smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN).isEmpty()) {
+            return;
+        }
+
+        smockinUserDAO.save(new SmockinUser(
+                "admin",
+                encryptionService.encrypt("admin"),
+                "System Admin",
+                "",
+                SmockinUserRoleEnum.SYS_ADMIN,
+                RecordStatusEnum.ACTIVE,
+                GeneralUtils.generateUUID(),
+                GeneralUtils.generateUUID()));
+
+    }
+
+    void resetSystemAdmin() {
+
+        final String resetSysAdminArg = System.getProperty("reset.sys.admin");
+
+        if (resetSysAdminArg == null
+                || Boolean.getBoolean(resetSysAdminArg)) {
+            return;
+        }
+
+        final Optional<SmockinUser> userOpt = smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN)
+                .stream()
+                .findFirst();
+
+        if (userOpt.isPresent()) {
+            final SmockinUser user = userOpt.get();
+            user.setPassword(encryptionService.encrypt("admin"));
+            smockinUserDAO.save(user);
         }
 
     }

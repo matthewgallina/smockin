@@ -2,9 +2,13 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
+import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.entity.JmsMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,19 +30,26 @@ public class JmsMockServiceImpl implements JmsMockService {
     @Autowired
     private JmsMockDAO jmsMockDAO;
 
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
     @Override
-    public String createEndpoint(final JmsMockDTO dto) {
+    public String createEndpoint(final JmsMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
 
-        return jmsMockDAO.save(new JmsMock(dto.getName(), dto.getJmsMockType(), dto.getStatus()))
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
+
+        return jmsMockDAO.save(new JmsMock(dto.getName(), dto.getJmsMockType(), dto.getStatus(), smockinUser))
                 .getExtId();
     }
 
     @Override
-    public void updateEndpoint(final String mockExtId, final JmsMockDTO dto) throws RecordNotFoundException {
+    public void updateEndpoint(final String mockExtId, final JmsMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("updateEndpoint called");
 
         final JmsMock mock = loadJmsMock(mockExtId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         mock.setName(dto.getName());
         mock.setStatus(dto.getStatus());
@@ -47,23 +58,36 @@ public class JmsMockServiceImpl implements JmsMockService {
     }
 
     @Override
-    public void deleteEndpoint(final String mockExtId) throws RecordNotFoundException {
+    public void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("deleteEndpoint called");
 
-        jmsMockDAO.delete(loadJmsMock(mockExtId));
+        final JmsMock mock = loadJmsMock(mockExtId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        jmsMockDAO.delete(mock);
     }
 
     @Override
-    public List<JmsMockResponseDTO> loadAll() {
+    public List<JmsMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        return jmsMockDAO.findAll()
+        final List<JmsMock> jmsMocks;
+
+        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
+            jmsMocks = jmsMockDAO.findAll();
+        } else {
+            jmsMocks =  jmsMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId());
+        }
+
+        return jmsMocks
                 .stream()
-                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
+                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 
     JmsMock loadJmsMock(final String mockExtId) throws RecordNotFoundException {
+        logger.debug("loadJmsMock called");
 
         final JmsMock mock = jmsMockDAO.findByExtId(mockExtId);
 

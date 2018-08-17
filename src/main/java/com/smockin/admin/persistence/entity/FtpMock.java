@@ -18,12 +18,17 @@ public class FtpMock extends Identifier {
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="CREATED_BY", nullable = true)
+    private SmockinUser createdBy;
+
     public FtpMock() {
     }
 
-    public FtpMock(final String name, final RecordStatusEnum status) {
+    public FtpMock(final String name, final RecordStatusEnum status, final SmockinUser createdBy) {
         this.name = name;
         this.status = status;
+        this.createdBy = createdBy;
     }
 
     public String getName() {
@@ -38,6 +43,13 @@ public class FtpMock extends Identifier {
     }
     public void setStatus(RecordStatusEnum status) {
         this.status = status;
+    }
+
+    public SmockinUser getCreatedBy() {
+        return createdBy;
+    }
+    public void setCreatedBy(SmockinUser createdBy) {
+        this.createdBy = createdBy;
     }
 
 }

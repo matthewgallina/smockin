@@ -20,19 +20,45 @@ app.directive('formFileModel', function ($parse) {
 });
 
 
-app.service('uploadClient', function() {
+app.service('uploadClient', function(auth) {
 
     var HttpRequestTimeoutMillis = 30000;
 
+    //
+    // Private functions
+    function applyAuthHeader(reqHeaders) {
+
+        if (reqHeaders == null) {
+            reqHeaders = {};
+        }
+
+        var token = auth.getToken();
+
+        if (token != null) {
+            reqHeaders.Authorization = 'Bearer ' + token;
+        }
+
+        return reqHeaders;
+    }
+
+    function handleAuthResponse(status) {
+        if (status == 401) {
+            auth.clearToken();
+        }
+    }
+
+
+    //
+    // Service Level Functions
     this.doPost = function (http, url, formData, callback) {
 
         http({
           method: 'POST',
           url: url,
           data: formData,
-          headers: {
+          headers: applyAuthHeader({
              'Content-Type': undefined
-           },
+           }),
            timeout: HttpRequestTimeoutMillis
         }).then(function successCallback(response) {
             callback(response.status, response.data);

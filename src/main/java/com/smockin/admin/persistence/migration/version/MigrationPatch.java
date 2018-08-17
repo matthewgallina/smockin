@@ -1,6 +1,6 @@
 package com.smockin.admin.persistence.migration.version;
 
-import com.smockin.admin.persistence.dao.MigrationDAO;
+import com.smockin.admin.exception.MigrationException;
 
 /**
  * Created by gallina on 15/09/2017.
@@ -8,6 +8,6 @@ import com.smockin.admin.persistence.dao.MigrationDAO;
 public interface MigrationPatch {
 
     String versionNo();
-    void execute(final MigrationDAO migrationDAO);
+    void execute() throws MigrationException;
 
 }

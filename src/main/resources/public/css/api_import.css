@@ -1,0 +1,35 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-select-file-button {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.upload-button {
+    width: 100%;
+}
+
+#import-feedback {
+    height: 200px;
+}
+
+.import-info {
+    font-size: 12px;
+}
+
+.import-info-details {
+    margin-left: 20px;
+}

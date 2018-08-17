@@ -1,13 +1,20 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -19,6 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created by mgallina on 09/08/17.
  */
 @Service
+@Transactional
 public class HttpProxyServiceImpl implements HttpProxyService {
 
     private final Logger logger = LoggerFactory.getLogger(HttpProxyServiceImpl.class);
@@ -29,6 +37,14 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
 
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
+
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Autowired
+    private MockedRestServerEngine mockedRestServerEngine;
 
     @Override
     public RestfulResponseDTO waitForResponse(final String requestPath, final RestfulMock mock) {
@@ -77,23 +93,26 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     }
 
     @Override
-    public void addResponse(final HttpProxiedDTO dto) {
+    public void addResponse(final String externalId, final HttpProxiedDTO dto, final String token) throws RecordNotFoundException, ValidationException {
 
-        // TODO
-        // Need to add a guard to ensure only legitimate paths are added to the 'synchronizedProxyResponsesMap', to prevent this building up with duff/inaccessible data.
+        final RestfulMock mock = loadRestMock(externalId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        final String path = mockedRestServerEngine.buildUserPath(mock);
 
         try {
 
             lock.lock();
 
-            final ProxiedKey key = new ProxiedKey(dto.getPath(), dto.getMethod());
-            final List<HttpProxiedDTO> responses = synchronizedProxyResponsesMap.getOrDefault(key, new ArrayList<HttpProxiedDTO>());
+            final ProxiedKey key = new ProxiedKey(path, dto.getMethod());
+            final List<HttpProxiedDTO> responses = synchronizedProxyResponsesMap.getOrDefault(key, new ArrayList<>());
             responses.add(dto);
 
             synchronizedProxyResponsesMap.put(key, responses);
 
             if (logger.isDebugEnabled())
-                logger.debug("Added dto " + dto.getPath() + ". Responses size is " + responses.size());
+                logger.debug("Added dto " + path + ". Responses size is " + responses.size());
 
             // Signal ALL threads waiting on a proxied response to check synchronizedProxyResponsesMap.
             condition.signalAll();
@@ -105,19 +124,17 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     }
 
     @Override
-    public void clearSession(final String requestPath) {
+    public void clearSession(final String externalId, final String token) throws RecordNotFoundException, ValidationException {
 
-        if (requestPath == null) {
-            clearSession();
-            return;
-        }
+        final RestfulMock mock = loadRestMock(externalId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
         try {
             lock.lock();
 
-            Arrays.stream(RestMethodEnum.values()).forEach( restMethod ->
-                synchronizedProxyResponsesMap.remove(new ProxiedKey(requestPath, restMethod))
-            );
+            Arrays.stream(RestMethodEnum.values())
+                    .forEach( rm -> synchronizedProxyResponsesMap.remove(new ProxiedKey(mockedRestServerEngine.buildUserPath(mock), rm)));
 
         } finally {
             lock.unlock();
@@ -126,7 +143,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     }
 
     @Override
-    public void clearSession() {
+    public void clearAllSessions() {
 
         try {
             lock.lock();
@@ -136,6 +153,17 @@ public class HttpProxyServiceImpl implements HttpProxyService {
             lock.unlock();
         }
 
+    }
+
+    RestfulMock loadRestMock(final String externalId) throws RecordNotFoundException {
+
+        final RestfulMock mock = restfulMockDAO.findByExtId(externalId);
+
+        if (mock == null) {
+            throw new RecordNotFoundException();
+        }
+
+        return mock;
     }
 
 }

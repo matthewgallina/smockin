@@ -1,5 +1,5 @@
 
-app.controller('tcpEndpointInfoController', function($scope, $rootScope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient) {
+app.controller('tcpEndpointInfoController', function($scope, $rootScope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
 
 
     //
@@ -34,7 +34,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.mockTypeProxyHttp = MockTypeDefinitions.MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
-    $scope.endpointHeading = (isNew) ? 'New TCP Endpoint' : 'TCP Endpoint';
+    $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
     $scope.methodLabel = 'Method';
@@ -75,6 +75,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
+    $scope.actualPathPrefixLabel = "actual path:";
 
 
     //
@@ -92,7 +93,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.clearProxyResponseFieldsButtonLabel = 'Clear Fields';
     $scope.postProxyResponseButtonLabel = 'Post Response';
     $scope.messageButtonLabel = 'Message';
-    $scope.messageAllButtonLabel = 'Message All';
 
 
     //
@@ -151,6 +151,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     ];
 
     var extId = null;
+
     $scope.isNew = isNew;
 
     $scope.responseHeaderList = [];
@@ -183,6 +184,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         "responseBody" : null
     };
 
+    $scope.defaultCtxPathPrefix = (auth.isLoggedIn() && !auth.isSysAdmin()) ? ('/' + auth.getUserName()) : null;
 
     // Populate form if viewing existing record...
     if (!isNew) {
@@ -213,8 +215,11 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "definitions" : endpoint.definitions,
-            "rules" : endpoint.rules
+            "rules" : endpoint.rules,
+            "createdBy" : endpoint.createdBy
         };
+
+        $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
                 || endpoint.mockType == MockTypeDefinitions.MockTypeRule) {
@@ -235,9 +240,11 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     }
 
+    $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
+
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doSelectMockType = function(et) {
 
         $scope.endpoint.mockType = et;
@@ -445,15 +452,17 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.doRefreshActiveSseClients = doRefreshActiveSseClientsFunc;
 
-    $scope.doOpenPushWSMessageView = function(path, sessionId) {
+    $scope.doOpenPushWSMessageView = function(sessionId) {
 
         var modalInstance = $uibModal.open({
           templateUrl: 'ws_send_message.html',
           controller: 'wsSendMessageController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
-                "path" : path,
+                "path" : getUserCtxPushPath($scope.endpoint),
                 "sessionId" : sessionId
               };
             }
@@ -468,15 +477,17 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    $scope.doOpenPushSseMessageView = function(path, sessionId) {
+    $scope.doOpenPushSseMessageView = function(sessionId) {
 
         var modalInstance = $uibModal.open({
           templateUrl: 'sse_send_message.html',
           controller: 'sseSendMessageController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
-                "path" : path,
+                "path" : getUserCtxPushPath($scope.endpoint),
                 "sessionId" : sessionId
               };
             }
@@ -490,12 +501,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         });
 
     };
-
-    function updateRuleOrderNumbers() {
-        for (var r=0; r < $scope.endpoint.rules.length; r++) {
-            $scope.endpoint.rules[r].orderNo = (r + 1);
-        }
-    }
 
     $scope.doToggleSuspendRule = function (index) {
         $scope.endpoint.rules[index].suspend = !$scope.endpoint.rules[index].suspend;
@@ -558,12 +563,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
-    function updateSeqOrderNumbers() {
-        for (var s=0; s < $scope.endpoint.definitions.length; s++) {
-            $scope.endpoint.definitions[s].orderNo = (s + 1);
-        }
-    }
-
     $scope.doToggleSuspendSeq = function (index) {
 
         $scope.endpoint.definitions[index].suspend = !$scope.endpoint.definitions[index].suspend;
@@ -579,10 +578,13 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
       var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule.html',
           controller: 'endpointInfoRuleController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {
-                "rule" : rule
+                "rule" : rule,
+                "createdBy" : $scope.endpoint.createdBy
               };
             }
           }
@@ -601,6 +603,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
       var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule.html',
           controller: 'endpointInfoRuleController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return { };
@@ -622,9 +626,14 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_seq.html',
           controller: 'endpointInfoSeqController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
-              return { "seq" : seq };
+              return {
+                        "seq" : seq,
+                        "createdBy" : $scope.endpoint.createdBy
+                     };
             }
           }
         });
@@ -652,6 +661,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_seq.html',
           controller: 'endpointInfoSeqController',
+          backdrop  : 'static',
+          keyboard  : false,
           resolve: {
             data: function () {
               return {};
@@ -786,6 +797,18 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     };
 
+    $scope.doCancel = function() {
+
+        $location.path("/dashboard").search({
+            'tab' : 'HTTP'
+        });
+
+        clearEndpointData();
+    };
+
+
+    //
+    // Internal Functions
     function validateRule() {
 
         if (utils.isBlank($scope.endpoint.method)) {
@@ -833,6 +856,22 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         }
 
         return true;
+    }
+
+    function getUserCtxPushPath(endpoint) {
+        return (endpoint.userCtxPath.length > 0) ? "/" + (endpoint.userCtxPath + endpoint.path) : endpoint.path;
+    }
+
+    function updateRuleOrderNumbers() {
+        for (var r=0; r < $scope.endpoint.rules.length; r++) {
+            $scope.endpoint.rules[r].orderNo = (r + 1);
+        }
+    }
+
+    function updateSeqOrderNumbers() {
+        for (var s=0; s < $scope.endpoint.definitions.length; s++) {
+            $scope.endpoint.definitions[s].orderNo = (s + 1);
+        }
     }
 
     function validateSeq() {
@@ -930,7 +969,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             checkAutoRefreshStatus(function(autoRefresh) {
 
                 var locParams = {
-                    'tab' : 'TCP'
+                    'tab' : 'HTTP'
                 };
 
                 if (autoRefresh != null && autoRefresh) {
@@ -947,21 +986,15 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         utils.hideBlockingOverlay();
 
-        if (status == 409) {
+        if (status == 400) {
+            showAlert(data.message);
+            return;
+        } else if (status == 409) {
             showAlert("'" + $scope.endpoint.path + "' is already in use");
             return;
         }
 
         showAlert(globalVars.GeneralErrorMessage);
-    };
-
-    $scope.doCancel = function() {
-
-        $location.path("/dashboard").search({
-            'tab' : 'TCP'
-        });
-
-        clearEndpointData();
     };
 
     function clearEndpointData() {
@@ -1004,15 +1037,48 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         return null;
     }
 
+    // TODO Remove jQuery and replace with directive
+    function applyPathFieldEvent() {
+
+        var typingTimer;
+        var doneTypingInterval = 500;
+        var pathField = jQuery('#path');
+
+        //on keyup, start the countdown
+        pathField.on('keyup', function() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(doneTyping, doneTypingInterval);
+        });
+
+        //on keydown, clear the countdown
+        pathField.on('keydown', function() {
+            clearTimeout(typingTimer);
+        });
+
+        function doneTyping() {
+            var pathFieldValue = pathField.val();
+
+            if (!pathFieldValue.startsWith("/")) {
+                $scope.endpoint.path = "/" + $scope.endpoint.path;
+                $scope.$apply();
+            }
+        }
+
+    }
+
 
     //
     // Init Page
     if (!isNew
+            && !$scope.readOnly
             && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
         doRefreshActiveWsClientsFunc();
     } else if (!isNew
-           && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
+            && !$scope.readOnly
+            && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
         doRefreshActiveSseClientsFunc();
     }
+
+    applyPathFieldEvent();
 
 });

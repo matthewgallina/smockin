@@ -3,7 +3,7 @@ package com.smockin.mockserver.exception;
 /**
  * Created by mgallina.
  */
-public class MockServerException extends Exception {
+public class MockServerException extends RuntimeException {
 
     public MockServerException(String msg) {
         super(msg);

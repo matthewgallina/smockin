@@ -3,6 +3,7 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.entity.JmsMock;
 import com.smockin.admin.persistence.enums.JmsMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jms.*;
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -255,15 +257,11 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     @Transactional
     void invokeAndDetachData(final List<JmsMock> mocks) {
 
-        for (JmsMock mock : mocks) {
-
-            // Important!
-            // Detach all JPA entity beans from EntityManager Context, so they can be
-            // continually accessed again here as a simple data bean
-            // within each request to the mocked JMS endpoint.
-            jmsQueueMockDAO.detach(mock);
-        }
-
+        // Important!
+        // Detach all JPA entity beans from EntityManager Context, so they can be
+        // continually accessed again here as a simple data bean
+        // within each request to the mocked JMS endpoint.
+        mocks.stream().forEach(jmsQueueMockDAO::detach);
     }
 
     // Expects JmsQueueMock to be detached
@@ -273,13 +271,22 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         synchronized (monitor) {
             mocks.forEach(mock -> {
                 if (JmsMockTypeEnum.QUEUE.equals(mock.getJmsType())) {
-                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQQueue(mock.getName()) });
+                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQQueue(buildJmsUserPath(mock)) });
                 } else if (JmsMockTypeEnum.TOPIC.equals(mock.getJmsType())) {
-                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQTopic(mock.getName()) });
+                    broker.setDestinations(new ActiveMQDestination[] { new ActiveMQTopic(buildJmsUserPath(mock)) });
                 }
             });
         }
 
+    }
+
+    public String buildJmsUserPath(final JmsMock mock) {
+
+        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
+            return mock.getCreatedBy().getCtxPath() + File.separator + mock.getName();
+        }
+
+        return mock.getName();
     }
 
 }

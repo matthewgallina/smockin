@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -28,7 +29,7 @@ public interface MockedServerEngineService {
     MockedServerConfigDTO restartFtp() throws MockServerException;
 
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
-    void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config) throws ValidationException;
+    void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;
     void handleServerAutoStart();
 
 }

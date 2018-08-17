@@ -5,7 +5,6 @@ package com.smockin.mockserver.service.dto;
  */
 public class JmsProxiedDTO {
 
-    private String name;
     private String body;
     private String mimeType;
 
@@ -13,17 +12,9 @@ public class JmsProxiedDTO {
 
     }
 
-    public JmsProxiedDTO(final String name, final String body, final String mimeType) {
-        this.name = name;
+    public JmsProxiedDTO(final String body, final String mimeType) {
         this.body = body;
         this.mimeType = mimeType;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getBody() {

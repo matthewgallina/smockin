@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.dao;
 import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -32,16 +33,22 @@ public class RestfulMockDAOTest {
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
+
     private RestfulMock a, b, c, d, e;
+    private SmockinUser user;
 
     @Before
     public void setUp() {
 
-        a = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        b = SmockinTestUtils.buildRestfulMock("/b", RestMockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        c = SmockinTestUtils.buildRestfulMock("/c", RestMockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
-        d = SmockinTestUtils.buildRestfulMock("/d", RestMockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE);
-        e = SmockinTestUtils.buildRestfulMock("/e", RestMockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE);
+        user = smockinUserDAO.saveAndFlush(SmockinTestUtils.buildSmockinUser());
+
+        a = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 6, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        b = SmockinTestUtils.buildRestfulMock("/b", RestMockTypeEnum.SEQ, 2, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        c = SmockinTestUtils.buildRestfulMock("/c", RestMockTypeEnum.SEQ, 3, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        d = SmockinTestUtils.buildRestfulMock("/d", RestMockTypeEnum.SEQ, 10, RestMethodEnum.GET, RecordStatusEnum.INACTIVE, user);
+        e = SmockinTestUtils.buildRestfulMock("/e", RestMockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
 
         a = restfulMockDAO.saveAndFlush(a);
         b = restfulMockDAO.saveAndFlush(b);
@@ -54,6 +61,9 @@ public class RestfulMockDAOTest {
     public void tearDown() {
         restfulMockDAO.deleteAll();
         restfulMockDAO.flush();
+
+        smockinUserDAO.deleteAll();
+        smockinUserDAO.flush();
     }
 
     @Test

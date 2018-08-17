@@ -14,11 +14,11 @@ import java.util.List;
  */
 public interface FtpMockService {
 
-    String createEndpoint(final FtpMockDTO dto);
-    void updateEndpoint(final String mockExtId, final FtpMockDTO dto) throws RecordNotFoundException;
-    void deleteEndpoint(final String mockExtId) throws RecordNotFoundException, IOException;
-    List<FtpMockResponseDTO> loadAll();
-    void uploadFile(final String mockExtId, final MultipartFile file) throws RecordNotFoundException, ValidationException, IOException;
+    String createEndpoint(final FtpMockDTO dto, final String token) throws RecordNotFoundException;
+    void updateEndpoint(final String mockExtId, final FtpMockDTO dto, final String token) throws RecordNotFoundException, ValidationException;
+    void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, IOException, ValidationException;
+    List<FtpMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException;
+    void uploadFile(final String mockExtId, final MultipartFile file) throws RecordNotFoundException, IOException;
     List<String> loadUploadFiles(final String mockExtId) throws RecordNotFoundException, IOException;
     void deleteUploadedFile(final String mockExtId, final String uri) throws RecordNotFoundException, ValidationException, IOException;
 

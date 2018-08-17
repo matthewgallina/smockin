@@ -23,13 +23,18 @@ public class JmsMock extends Identifier {
     @Column(name = "REC_STATUS", nullable = false, length = 15)
     private RecordStatusEnum status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="CREATED_BY", nullable = true)
+    private SmockinUser createdBy;
+
     public JmsMock() {
     }
 
-    public JmsMock(final String name, final JmsMockTypeEnum jmsType, final RecordStatusEnum status) {
+    public JmsMock(final String name, final JmsMockTypeEnum jmsType, final RecordStatusEnum status, final SmockinUser createdBy) {
         this.name = name;
         this.jmsType = jmsType;
         this.status = status;
+        this.createdBy = createdBy;
     }
 
     public String getName() {
@@ -53,4 +58,10 @@ public class JmsMock extends Identifier {
         this.status = status;
     }
 
+    public SmockinUser getCreatedBy() {
+        return createdBy;
+    }
+    public void setCreatedBy(SmockinUser createdBy) {
+        this.createdBy = createdBy;
+    }
 }

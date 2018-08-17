@@ -3,6 +3,7 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.entity.FtpMock;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
@@ -61,7 +62,7 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         }
 
     }
-*/
+    */
 
     @Override
     public void start(final MockedServerConfigDTO config, final List<FtpMock> data) throws MockServerException {
@@ -153,27 +154,27 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
     @Transactional
     void invokeAndDetachData(final List<FtpMock> mocks) {
 
-        for (FtpMock mock : mocks) {
-
-            // Important!
-            // Detach all JPA entity beans from EntityManager Context, so they can be
-            // continually accessed again here as a simple data bean
-            // within each request to the mocked FTP endpoint.
-            ftpMockDAO.detach(mock);
-        }
-
+        // Important!
+        // Detach all JPA entity beans from EntityManager Context, so they can be
+        // continually accessed again here as a simple data bean
+        // within each request to the mocked FTP endpoint.
+        mocks.stream().forEach(ftpMockDAO::detach);
     }
 
     // Expects FtpMock to be detached
     void buildFTPUsers(final List<FtpMock> mocks) throws MockServerException {
         logger.debug("buildFTPDestinations called");
 
-        for (FtpMock m : mocks) {
-            buildUser(m.getName(), m.getName(), m.getName());
-        }
-
+        mocks.stream()
+             .forEach(m ->
+                buildUser(m.getName(), m.getName(), buildUserHomeDir(m)));
     }
 
+    String buildUserHomeDir(final FtpMock mock) {
+        return (SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole()))
+                ? "admin" + File.separator + mock.getName()
+                : (mock.getCreatedBy().getCtxPath() + File.separator + mock.getName());
+    }
 
     void buildUser(final String username, final String password, final String userHomeDir) throws MockServerException {
         logger.debug("buildUser called");

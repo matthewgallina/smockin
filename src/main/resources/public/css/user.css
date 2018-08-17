@@ -1,0 +1,15 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.reg-font {
+    font-family: inherit;
+}
+
+.password-reset-token {
+    font-size: 12px;
+}

@@ -1,13 +1,15 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.service.dto.SseMessageDTO;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.io.RuntimeIOException;
-import org.h2.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,11 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
+    @Autowired
+    private MockedRestServerEngine mockedRestServerEngine;
+
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
 
     @Override
     public void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Response response) throws IOException {
@@ -53,31 +60,18 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, response);
     }
 
-    /*
     @Override
-    public void clear(final String path) {
-        logger.debug("clear called");
-
-        clients.forEach( (key, msgs) -> {
-            if (key.getPath().equals(path)) {
-                msgs.getMessages().clear();
-            }
-        });
-
-        throw new NotImplementedException("");
-    }
-    */
-
-    @Override
-    public List<PushClientDTO> getClientConnections(final String mockExtId) throws RecordNotFoundException {
+    public List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
 
         final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
 
         if (mock == null)
             throw new RecordNotFoundException();
 
-        final String prefixedPath = GeneralUtils.prefixPath(mock.getPath());
-        final List<PushClientDTO> sessionIds = new ArrayList<PushClientDTO>();
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        final String prefixedPath = mockedRestServerEngine.buildUserPath(mock);
+        final List<PushClientDTO> sessionIds = new ArrayList<>();
 
         clients.forEach( (id, data) -> {
             if (data.getPath().equals(prefixedPath)) {
@@ -86,13 +80,6 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         });
 
         return sessionIds;
-    }
-
-    @Override
-    public void broadcastMessage(final SseMessageDTO dto) {
-        logger.debug("broadcastMessage called");
-
-        addMessage(null, dto);
     }
 
     @Override

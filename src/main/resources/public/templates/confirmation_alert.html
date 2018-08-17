@@ -10,5 +10,5 @@
 
 <div class="modal-footer">
     <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-    <button class="btn btn-{{alertType}}" type="button" ng-click="doContinue()">{{ continueButtonLabel }}</button>
+    <button class="btn btn-{{alertType}}" type="button" ng-click="doContinue()" ng-if="continueButtonLabel != null">{{ continueButtonLabel }}</button>
 </div>

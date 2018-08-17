@@ -5,14 +5,14 @@ app.controller('dashboardController', function($scope, $routeParams, $timeout, g
     // Constants
     var SelectedTab = $routeParams.tab;
     var tabIndexes = {
-        'TCP' : 0,
+        'HTTP' : 0,
         'JMS' : 1,
         'FTP' : 2
     }
 
     //
     // Labels
-    $scope.tcpHeading = 'TCP';
+    $scope.tcpHeading = 'HTTP';
     $scope.jmsHeading = 'JMS';
     $scope.ftpHeading = 'FTP';
 
@@ -42,7 +42,7 @@ app.controller('dashboardController', function($scope, $routeParams, $timeout, g
 
     //
     // Data
-    $scope.selectedTab = tabIndexes.TCP;
+    $scope.selectedTab = tabIndexes.HTTP;
 
     if (SelectedTab != null) {
         $scope.selectedTab = tabIndexes[SelectedTab];
