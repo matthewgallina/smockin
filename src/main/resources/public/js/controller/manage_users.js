@@ -1,5 +1,5 @@
 
-app.controller('manageUsersController', function($scope, $uibModal, $http, restClient, globalVars) {
+app.controller('manageUsersController', function($scope, $window, $uibModal, $http, restClient, globalVars, auth) {
 
     //
     // Labels
@@ -66,10 +66,10 @@ app.controller('manageUsersController', function($scope, $uibModal, $http, restC
         restClient.doGet($http, '/user', function(status, data) {
 
             if (status == 401) {
-                showAlert(globalVars.AuthRequiredMessage);
+                redirectToHome();
                 return;
             } else if (status != 200) {
-                showAlert(globalVars.GeneralErrorMessage);
+                redirectToHome();
                 return;
             }
 
@@ -78,9 +78,17 @@ app.controller('manageUsersController', function($scope, $uibModal, $http, restC
 
     }
 
+    function redirectToHome() {
+        $window.location.href = "/index.html";
+    }
 
     //
     // Init Page
+    if (!auth.isLoggedIn() || !auth.isAdmin()) {
+        redirectToHome();
+        return;
+    }
+
     loadTableData();
 
 });
