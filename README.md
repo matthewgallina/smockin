@@ -1,4 +1,4 @@
-# sMockin Version 1.5.0
+# sMockin version 1.5.0
 
 Intelligent API simulation for application development and QA testing
 
@@ -119,19 +119,20 @@ QUICK START
 
 MULTI USER SUPPORT
 
-    To enable multi user support simply edit the 'app.properties' file under the .smockin directory
-    within your user home directory (i.e .smockin/app.properties) and edit/add the following argument:
+    Once sMockin is installed, you can enable multi user mode by editing the 'app.properties' file under 
+    the .smockin directory within your user home directory (i.e .smockin/app.properties) 
+    From here add/amend the MULTI_USER_MODE argument setting this to true:
 
         MULTI_USER_MODE = TRUE
 
     Once saved, simply shutdown and then restart sMockin.
 
-    On start up, you should see the following message in the terminal window confirming that this
-    has been enabled:
+    On start up, you can verify this is enabled by looking for the below message in the terminal window:
 
-        The application is running in 'Multi User Mode'
+        "The application is running in 'Multi User Mode'"
 
-    User credentials will now be required in order to access the dashboard.
+    Once running in this mode, the sMockin dashboard will only be accessible by logging in 
+    with user credentials.
 
     You can login and begin creating other user accounts using the 'system admin' account:
 
@@ -141,14 +142,15 @@ MULTI USER SUPPORT
     Please note any mocks that we're created prior to enabling 'Multi User Mode' will be
     automatically owned by the 'system admin' user.
 
-    Mock endpoints are uniquely distinguished between users, by being served from a
-    context path based on the user's username. For example the user 'bob' would access a mock
-    endpoint 'GET /hello' they had created like so:
+    In 'multiple user mode', mock endpoints are uniquely distinguished between users by being served 
+    from a context path based on the user's username. To give an example of this, say the user 'bob' 
+    creates the mock HTTP endpoint 'GET /hello', once the mock server has been started this will be 
+    accessed like so:
 
         curl -i -X GET http://localhost:8001/bob/hello
 
-    The one exception to this convention is where mocks are created by system admin user, whose
-    endpoints are served directly from the root context path like so:
+    The system admin user, however will continue to access their endpoints directly from the root 
+    context path like so:
 
         curl -i -X GET http://localhost:8001/hello
 
