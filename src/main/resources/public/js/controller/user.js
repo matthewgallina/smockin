@@ -1,5 +1,6 @@
 
-app.controller('userController', function($scope, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
+app.controller('userController', function($scope, $window, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, data) {
+
 
     //
     // Labels
@@ -71,7 +72,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
         $scope.userData.fullName = data.fullName;
         $scope.userData.role = data.role;
         $scope.userData.dateCreated = data.dateCreated;
-        $scope.userData.passwordResetToken = (data.passwordResetToken != null) ? (globalVars.PasswordResetUrl + data.passwordResetToken) : null;
+        $scope.userData.passwordResetToken = (data.passwordResetToken != null) ? ($window.location.origin + globalVars.PasswordResetUrl + data.passwordResetToken) : null;
         $scope.userData.password = "********";
         $scope.userData.confirmPassword = "********";
 
@@ -134,7 +135,7 @@ app.controller('userController', function($scope, $uibModalInstance, $http, $tim
             restClient.doGet($http, '/user/' + data.extId + '/password/reset', function(status, data) {
 
                 if (status == 200) {
-                    utils.openAlert("Password Reset", "This user can now reset their password using the following link: " + globalVars.PasswordResetUrl + data.message, function() {
+                    utils.openAlert("Password Reset", "This user can now reset their password using the following link: " + $window.location.origin + globalVars.PasswordResetUrl + data.message, function() {
                         $uibModalInstance.close("ok");
                     });
                     return;
