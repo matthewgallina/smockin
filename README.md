@@ -8,18 +8,26 @@ Intelligent API simulation for application development and QA testing
 
 
 
-WHAT'S NEW
+WHAT'S NEW IN THIS RELEASE
 
-    User Accounts
+    User Accounts for your Team
 
         A single installation of sMockin can now be used across your development and QA teams
-        with the introduction of user accounts. Please see the 'MULTI USER SUPPORT' section below
-        for further details on how to enable this feature.
+        with the introduction of user accounts. Each user can create and manage their own mocks
+        which are served from their own unique context path. User's can also view, copy and access each
+        others mock definitions.
+
+        Please see the 'MULTI USER SUPPORT' section below for further details on how to enable
+        this feature.
 
     RAML API Importer
 
-        You can now quickly create HTTP mocks by uploading your RAML files into sMockin
-        using the new RAML Import facility.
+        Following demand for this feature, you can now create HTTP mocks based on RAML API files by
+        uploading them into sMockin using the new RAML Import facility.
+
+        For those using other API Documentation libraries (API Blueprint, OAS, etc.), there are a
+        number of online API conversion tools available for creating RAML files such as
+        https://apimatic.io/transformer.
 
 
 
@@ -123,24 +131,40 @@ MULTI USER SUPPORT
 
         The application is running in 'Multi User Mode'
 
-    User credentials will now be required in order to access the dashboard. You can login and begin
-    creating other user accounts using the 'system admin' account:
+    User credentials will now be required in order to access the dashboard.
+
+    You can login and begin creating other user accounts using the 'system admin' account:
 
         username: admin
         password: admin
 
-    Please note any mocks that we're created prior to enabling 'Multi User Mode' will now be owned
-    by the 'system admin' user.
+    Please note any mocks that we're created prior to enabling 'Multi User Mode' will be
+    automatically owned by the 'system admin' user.
+
+    Mock endpoints are uniquely distinguished between users, by being served from a
+    context path based on the user's username. For example the user 'bob' would access a mock
+    endpoint 'GET /hello' they had created like so:
+
+        curl -i -X GET http://localhost:8001/bob/hello
+
+    The one exception to this convention is where mocks are created by system admin user, whose
+    endpoints are served directly from the root context path like so:
+
+        curl -i -X GET http://localhost:8001/hello
 
 
 
 RAML SUPPORT
 
-    The RAML Importer supports to the following file types:
+    The RAML Importer can be found under the HTTP section of the dashboard and supports
+    the following file types:
 
-        - .raml (for single raml files)
-        - .zip (where the raml file has external file references to 'include'.
-                The .raml file itself should be in the root of the zip archive.)
+        - .raml
+        - .zip
+
+    The zip archive format should be used for any raml files that have external file
+    references (i.e 'include'). The .raml file itself should be located in the root
+    of the zip archive.
 
 
 
