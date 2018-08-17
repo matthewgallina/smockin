@@ -33,34 +33,18 @@ WHAT'S NEW IN THIS RELEASE
 
 OVERVIEW
 
-    sMockin is a light framework used for setting up API simulations in a bid to aid development
-    and QA testing in the ever growing realm of the 'Internet of Things'.
+    sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid 
+    development and QA testing in the ever growing realm of the 'Internet of Things'.
 
     Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working
-    with complex SOA/IoT infrastructure, sMockin can help by mimicking any services that would be
-    otherwise too difficult or time consuming to set up.
+    with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that 
+    would be otherwise too difficult or time consuming to set up.
 
     With the ability to vary content using easy to set up sequences and rules, sMockin can help
     simulate all of your use case scenarios.
 
-    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
-    locally on a developers machine or centrally on a development teams' server.
-
-    Features include:
-
-        - Internal Mocking Servers used to serve up your simulations.
-
-        - An Admin UI for:
-            - Creating and editing your mocked endpoints.
-            - Applying 'rules' or 'sequenced responses' to your mocked endpoints.
-            - Configuring, Starting and Stopping the Internal Mocking Server.
-
-        - Support for:
-               - REST
-               - Web Sockets
-               - SSE
-               - JMS
-               - FTP
+    sMockin runs as a small web app which can be either installed locally to a developers machine 
+    or hosted centrally with mutliple user accounts on a development / QA team server.
 
 
 
@@ -199,10 +183,10 @@ UPDATING TO LATER VERSIONS
 
     All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
-    Therefore as long as this settings dir is preserved then updating sMockin is simply a case of deleting
+    Therefore as long as this settings dir is preserved, then updating sMockin is simply a case of deleting
     the current application and replacing this with a later version.
 
-    The bundled 'start' script will always automatically handle any data migration that may need to take place.
+    The bundled 'start' script will automatically handle any data migration that may need to take place.
 
     (Please note the above text, is only applicable to mainline 'master' releases of sMockin where neither the
     code base or database of the previous/outgoing version have been subject to personal / customised changes).
