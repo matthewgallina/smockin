@@ -163,8 +163,17 @@ RAML SUPPORT
         - .zip
 
     The zip archive format should be used for any raml files that have external file
-    references (i.e 'include'). The .raml file itself should be located in the root
-    of the zip archive.
+    references (i.e 'include'). In order for the .zip archive to be accepted, it must be
+    packed 'including' a root directory and with the .raml file located directly within the
+    root dir like so:
+
+    - raml_upload.zip
+        - root_raml_dir
+            - raml.api
+            - some_dir_1
+                - Foo.json
+            - some_dir_2
+                - Foo.raml
 
 
 
