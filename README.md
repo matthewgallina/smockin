@@ -177,7 +177,7 @@ RAML SUPPORT
             - some_dir_2
                 - Foo.raml
 
-    (Please note an example of this can be found under the src/test/resources/)
+    (Please note an example of this can be found under src/test/resources/raml_200.zip)
 
 
 
