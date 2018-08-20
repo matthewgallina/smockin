@@ -280,12 +280,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
     File loadRamlFileFromUpload(final MultipartFile file, final File tempDir) {
 
-        final String fileName = file.getName();
+        final String fileName = file.getOriginalFilename();
         final String fileTypeExtension = GeneralUtils.getFileTypeExtension(fileName);
 
         try {
 
-            final File uploadedFile = new File(tempDir + File.separator + file.getName());
+            final File uploadedFile = new File(tempDir + File.separator + file.getOriginalFilename());
             FileUtils.copyInputStreamToFile(file.getInputStream(), uploadedFile);
 
             if (".zip".equalsIgnoreCase(fileTypeExtension)) {
