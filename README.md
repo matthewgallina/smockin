@@ -1,4 +1,4 @@
-# sMockin Version 1.5.0
+# sMockin version 1.5.0
 
 Intelligent API simulation for application development and QA testing
 
@@ -33,34 +33,18 @@ WHAT'S NEW IN THIS RELEASE
 
 OVERVIEW
 
-    sMockin is a light framework used for setting up API simulations in a bid to aid development
-    and QA testing in the ever growing realm of the 'Internet of Things'.
+    sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid 
+    development and QA testing in the ever growing realm of the 'Internet of Things'.
 
     Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working
-    with complex SOA/IoT infrastructure, sMockin can help by mimicking any services that would be
-    otherwise too difficult or time consuming to set up.
+    with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that 
+    would be otherwise too difficult or time consuming to set up.
 
     With the ability to vary content using easy to set up sequences and rules, sMockin can help
     simulate all of your use case scenarios.
 
-    Written in Java using Spring Boot, the application runs as a small web app which can be hosted either 
-    locally on a developers machine or centrally on a development teams' server.
-
-    Features include:
-
-        - Internal Mocking Servers used to serve up your simulations.
-
-        - An Admin UI for:
-            - Creating and editing your mocked endpoints.
-            - Applying 'rules' or 'sequenced responses' to your mocked endpoints.
-            - Configuring, Starting and Stopping the Internal Mocking Server.
-
-        - Support for:
-               - REST
-               - Web Sockets
-               - SSE
-               - JMS
-               - FTP
+    sMockin runs as a small web app which can be either installed locally to a developers machine 
+    or hosted centrally with mutliple user accounts on a development / QA team server.
 
 
 
@@ -119,19 +103,20 @@ QUICK START
 
 MULTI USER SUPPORT
 
-    To enable multi user support simply edit the 'app.properties' file under the .smockin directory
-    within your user home directory (i.e .smockin/app.properties) and edit/add the following argument:
+    Once sMockin is installed, you can enable multi user mode by editing the 'app.properties' file under 
+    the .smockin directory within your user home directory (i.e .smockin/app.properties) 
+    From here add/amend the MULTI_USER_MODE argument setting this to true:
 
         MULTI_USER_MODE = TRUE
 
     Once saved, simply shutdown and then restart sMockin.
 
-    On start up, you should see the following message in the terminal window confirming that this
-    has been enabled:
+    On start up, you can verify this is enabled by looking for the below message in the terminal window:
 
-        The application is running in 'Multi User Mode'
+        "The application is running in 'Multi User Mode'"
 
-    User credentials will now be required in order to access the dashboard.
+    Once running in this mode, the sMockin dashboard will only be accessible by logging in 
+    with user credentials.
 
     You can login and begin creating other user accounts using the 'system admin' account:
 
@@ -141,14 +126,15 @@ MULTI USER SUPPORT
     Please note any mocks that we're created prior to enabling 'Multi User Mode' will be
     automatically owned by the 'system admin' user.
 
-    Mock endpoints are uniquely distinguished between users, by being served from a
-    context path based on the user's username. For example the user 'bob' would access a mock
-    endpoint 'GET /hello' they had created like so:
+    In 'multiple user mode', mock endpoints are uniquely distinguished between users by being served 
+    from a context path based on the user's username. To give an example of this, say the user 'bob' 
+    creates the mock HTTP endpoint 'GET /hello', once the mock server has been started this will be 
+    accessed like so:
 
         curl -i -X GET http://localhost:8001/bob/hello
 
-    The one exception to this convention is where mocks are created by system admin user, whose
-    endpoints are served directly from the root context path like so:
+    The system admin user, however will continue to access their endpoints directly from the root 
+    context path like so:
 
         curl -i -X GET http://localhost:8001/hello
 
@@ -163,17 +149,21 @@ RAML SUPPORT
         - .zip
 
     The zip archive format should be used for any raml files that have external file
-    references (i.e 'include'). In order for the .zip archive to be accepted, it must be
+    references (i.e 'include'). 
+    
+    In order for the .zip archive to be accepted, it must be
     packed 'including' a root directory and with the .raml file located directly within the
     root dir like so:
 
-    - raml_upload.zip
-        - root_raml_dir
-            - raml.api
+    - your_raml_upload.zip
+        - your_root_raml_dir
+            - your_raml.api
             - some_dir_1
                 - Foo.json
             - some_dir_2
                 - Foo.raml
+
+    (Please note an example of this can be found under src/test/resources/raml_200.zip)
 
 
 
@@ -206,10 +196,10 @@ UPDATING TO LATER VERSIONS
 
     All config and DB data is stored under the settings dir '.smockin' located under your user home.
 
-    Therefore as long as this settings dir is preserved then updating sMockin is simply a case of deleting
+    Therefore as long as this settings dir is preserved, then updating sMockin is simply a case of deleting
     the current application and replacing this with a later version.
 
-    The bundled 'start' script will always automatically handle any data migration that may need to take place.
+    The bundled 'start' script will automatically handle any data migration that may need to take place.
 
     (Please note the above text, is only applicable to mainline 'master' releases of sMockin where neither the
     code base or database of the previous/outgoing version have been subject to personal / customised changes).
