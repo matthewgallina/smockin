@@ -58,10 +58,6 @@ public class ApiImportRouter {
             throw new ValidationException("Inbound config (in dto) is undefined");
         }
 
-        if (token == null) {
-            throw new ValidationException("Auth token is undefined");
-        }
-
     }
 
 }
