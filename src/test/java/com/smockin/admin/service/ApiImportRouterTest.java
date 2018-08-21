@@ -107,19 +107,6 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_nullToken_Fail() throws ApiImportException, ValidationException {
-
-        // Assertions
-        expected.expect(ValidationException.class);
-        expected.expectMessage("Auth token is undefined");
-
-        // Test
-        apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, null);
-
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
-    }
-
-    @Test
     public void route_nullConfig_Fail() throws ApiImportException, ValidationException {
 
         // Setup
