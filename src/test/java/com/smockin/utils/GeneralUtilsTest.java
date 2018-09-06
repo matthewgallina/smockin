@@ -1,6 +1,5 @@
 package com.smockin.utils;
 
-import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

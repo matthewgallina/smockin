@@ -21,6 +21,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
+    $scope.enableProxyServer = 'Enable Proxy Server (mock interceptor)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
@@ -71,7 +72,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
         "autoStart" : false,
         "autoRefresh" : false,
         "enableCors" : false,
-        "nativeProperties" : {}
+        "enableProxyServer" : false
     };
 
 
@@ -108,19 +109,33 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
             return;
         }
 
+        var req = {
+            "serverType" : $scope.serverConfig.serverType,
+            "port" : $scope.serverConfig.port,
+            "maxThreads" : $scope.serverConfig.maxThreads,
+            "minThreads" : $scope.serverConfig.minThreads,
+            "timeOutMillis" : $scope.serverConfig.timeOutMillis,
+            "autoStart" : $scope.serverConfig.autoStart,
+            "autoRefresh" : $scope.serverConfig.autoRefresh,
+            "nativeProperties" : {}
+        }
+
         // Handle Native Server Properties
         if (ServerType == globalVars.RestfulServerType) {
-            $scope.serverConfig.nativeProperties = {
+            req.nativeProperties = {
                 "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
             };
+            req.nativeProperties = {
+                "PROXY_SERVER_ENABLED" : ($scope.serverConfig.enableProxyServer)?"TRUE":"FALSE"
+            };
         } else if (ServerType == globalVars.JmsServerType) {
-            $scope.serverConfig.nativeProperties = {
+            req.nativeProperties = {
                 "BROKER_URL" : "tcp://localhost:"
             };
         }
 
         // Send update
-        restClient.doPut($http, '/mockedserver/config/' + ServerType, $scope.serverConfig, function(status, data) {
+        restClient.doPut($http, '/mockedserver/config/' + ServerType, req, function(status, data) {
 
             if (status == 204) {
                 $uibModalInstance.close({
@@ -155,7 +170,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
                     "autoStart" : data.autoStart,
                     "autoRefresh" : data.autoRefresh,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
-                    "nativeProperties" : data.nativeProperties
+                    "enableProxyServer" : (data.nativeProperties.PROXY_SERVER_ENABLED != null && data.nativeProperties.PROXY_SERVER_ENABLED.toUpperCase() == "TRUE")
                 };
 
                 return;

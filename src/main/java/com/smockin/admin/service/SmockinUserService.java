@@ -31,6 +31,6 @@ public interface SmockinUserService {
     UserModeEnum getUserMode();
     SmockinUser loadCurrentUser(final String sessionToken) throws RecordNotFoundException;
     Optional<SmockinUser> loadDefaultUser();
-    void assertCurrentUserIsAdmin(final String token) throws RecordNotFoundException, AuthException;
+    void assertCurrentUserIsAdmin(final SmockinUser user) throws AuthException;
 
 }

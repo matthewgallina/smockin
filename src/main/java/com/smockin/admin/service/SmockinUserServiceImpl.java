@@ -49,7 +49,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Override
     public List<SmockinUserResponseDTO> loadAllUsers(final String token) throws RecordNotFoundException, AuthException {
 
-        assertCurrentUserIsAdmin(token);
+        assertCurrentUserIsAdmin(loadCurrentUser(token));
 
         return smockinUserDAO
                 .findAll()
@@ -62,7 +62,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Override
     public String createUser(final SmockinNewUserDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException {
 
-        assertCurrentUserIsAdmin(token);
+        assertCurrentUserIsAdmin(loadCurrentUser(token));
 
         validateDTO(dto);
 
@@ -80,7 +80,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Override
     public void updateUser(final String externalId, final SmockinUserDTO dto, final String token) throws ValidationException, RecordNotFoundException, AuthException {
 
-        assertCurrentUserIsAdmin(token);
+        assertCurrentUserIsAdmin(loadCurrentUser(token));
 
         validateDTO(dto);
 
@@ -102,7 +102,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Override
     public void deleteUser(final String externalId, final String token) throws ValidationException, RecordNotFoundException, AuthException {
 
-        assertCurrentUserIsAdmin(token);
+        assertCurrentUserIsAdmin(loadCurrentUser(token));
 
         // Admin user can never be deleted.
         final SmockinUser smockinUser = loadUserByExtId(externalId);
@@ -131,7 +131,7 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Override
     public String issuePasswordResetToken(final String extId, final String token) throws RecordNotFoundException, AuthException {
 
-        assertCurrentUserIsAdmin(token);
+        assertCurrentUserIsAdmin(loadCurrentUser(token));
 
         final SmockinUser user = loadUserByExtId(extId);
         final String passwordResetToken = GeneralUtils.generateUUID();
@@ -194,6 +194,11 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     }
 
     @Override
+    public Optional<SmockinUser> loadDefaultUser() {
+        return smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN).stream().findFirst();
+    }
+
+    @Override
     public SmockinUser loadCurrentUser(final String sessionToken) throws RecordNotFoundException {
 
         final SmockinUser smockinUser = smockinUserDAO.findBySessionToken(sessionToken);
@@ -206,8 +211,15 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     }
 
     @Override
-    public Optional<SmockinUser> loadDefaultUser() {
-        return smockinUserDAO.findAllByRole(SmockinUserRoleEnum.SYS_ADMIN).stream().findFirst();
+    public void assertCurrentUserIsAdmin(final SmockinUser user) throws AuthException {
+
+        final SmockinUserRoleEnum userRole = user.getRole();
+
+        if (!SmockinUserRoleEnum.ADMIN.equals(userRole)
+                && !SmockinUserRoleEnum.SYS_ADMIN.equals(userRole)) {
+            throw new AuthException();
+        }
+
     }
 
     void validateDTO(final SmockinUserDTO dto) throws ValidationException {
@@ -233,17 +245,6 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         }
 
         return encryptionService.encrypt(passwordPlain);
-    }
-
-    public void assertCurrentUserIsAdmin(final String token) throws RecordNotFoundException, AuthException {
-
-        final SmockinUserRoleEnum userRole = loadCurrentUser(token).getRole();
-
-        if (!SmockinUserRoleEnum.ADMIN.equals(userRole)
-                && !SmockinUserRoleEnum.SYS_ADMIN.equals(userRole)) {
-            throw new AuthException();
-        }
-
     }
 
     SmockinUser loadUserByExtId(final String externalId) throws RecordNotFoundException {

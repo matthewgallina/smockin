@@ -6,7 +6,7 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>1.5.0-SNAPSHOT</version>
+    <version>1.5.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -34,6 +34,7 @@
         <raml-parser.version>1.0.25</raml-parser.version>
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
+        <littleproxy.version>  1.1.2</littleproxy.version>
     </properties>
 
     <dependencies>
@@ -126,6 +127,11 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java-jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.littleshoot</groupId>
+            <artifactId>littleproxy</artifactId>
+            <version>${littleproxy.version}</version>
         </dependency>
 
         <!-- Testing -->

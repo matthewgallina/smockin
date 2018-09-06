@@ -1,4 +1,4 @@
-# sMockin version 1.5.0
+# sMockin version 1.5.1
 
 Intelligent API simulation for application development and QA testing
 
@@ -240,6 +240,7 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
         Java-JWT                    -       https://github.com/auth0/java-jwt
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
+        Little Proxy                -       https://github.com/adamfisk/LittleProxy
 
 
 

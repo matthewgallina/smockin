@@ -84,7 +84,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doAddResponseHeaderRow = function() {
         $scope.responseHeaderList.push({ "name" : null, "value" : null });
     };
@@ -157,11 +157,28 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
         $scope.ruleResponse.groups.splice((index + 1), 0, rule);
     };
 
+    $scope.doEditCondition = function(index) {
+        openRuleConditions($scope.ruleResponse.groups[index]);
+    };
+
     $scope.doRemoveCondition = function(index) {
         $scope.ruleResponse.groups.splice(index, 1);
     };
 
     $scope.doAddCondition = function() {
+
+        openRuleConditions();
+
+    };
+
+    $scope.doCancel = function() {
+        $uibModalInstance.dismiss('cancel');
+    };
+
+
+    //
+    // Internal Functions
+    function openRuleConditions(ruleGroup) {
 
         var modalInstance = $uibModal.open({
           templateUrl: 'endpoint_info_rule_condition.html',
@@ -170,12 +187,21 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
           keyboard  : false,
           resolve: {
             data: function () {
-              return { };
+              return { "ruleGroup" : ruleGroup };
             }
           }
         });
 
         modalInstance.result.then(function (conditionArgs) {
+
+            if (ruleGroup != null) {
+                for (var g=0; g < $scope.ruleResponse.groups.length; g++) {
+                    if ($scope.ruleResponse.groups[g].extId == ruleGroup.extId) {
+                        $scope.ruleResponse.groups.splice(g, 1);
+                        break;
+                    }
+                }
+            }
 
             $scope.ruleResponse.groups.push({
                 "extId" : null,
@@ -187,10 +213,6 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
         });
 
-    };
-
-    $scope.doCancel = function() {
-        $uibModalInstance.dismiss('cancel');
-    };
+    }
 
 });

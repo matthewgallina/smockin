@@ -34,6 +34,11 @@ public final class GeneralUtils {
     public static final String OAUTH_HEADER_VALUE_PREFIX = "Bearer";
     public static final String OAUTH_HEADER_NAME = "Authorization";
 
+    public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
+    public static final String BROKER_URL_PARAM = "BROKER_URL";
+    public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
+    public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
+
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
 
