@@ -170,9 +170,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             return;
         }
 
-        final int port = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
+        final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
 
-        proxyServer.start(port, activeMocks);
+        proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeMocks);
     }
 
     @Transactional
