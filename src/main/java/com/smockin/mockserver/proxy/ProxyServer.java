@@ -13,6 +13,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -29,6 +30,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List<RestMethodEnum>>> {
@@ -36,6 +38,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List
     private final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
     private static final String MOCK_SERVER_HOST = "http://localhost:";
+    static final String PATH_VAR_REGEX = "[a-zA-Z0-9_+-._~:!$&'()*+,=@]+";
 
     private HttpProxyServer httpProxyServer;
     private final Object monitor = new Object();
@@ -81,7 +84,6 @@ logger.debug("request headers " + request.headers().entries());
 // TEMP
 
                                             context.setRequestBody(contentStr);
-                                            context.getRequestHeaders().addAll(request.headers().entries());
 
                                             /*
                                             final String newBody = contentStr.replace("e", "ei");
@@ -112,6 +114,8 @@ logger.debug("request headers " + request.headers().entries());
 
                                         final URL url = new URL(originalRequest.getUri());
 
+                                        context.getRequestHeaders().addAll(originalRequest.headers().entries());
+
 // TEMP
 if (logger.isDebugEnabled()) {
     logger.debug("path " + url.getPath());
@@ -124,7 +128,7 @@ if (logger.isDebugEnabled()) {
 }
 // TEMP
 
-                                        final Optional<Map.Entry<String, List<RestMethodEnum>>> pathMatchOpt = checkForMockPathMatch(url, activeMocks);
+                                        final Optional<Map.Entry<String, List<RestMethodEnum>>> pathMatchOpt = checkForMockPathMatch(url.getPath(), activeMocks);
 
                                         if (!pathMatchOpt.isPresent()) {
                                             return httpObject;
@@ -138,8 +142,17 @@ if (logger.isDebugEnabled()) {
 
                                         //
                                         // Use mock
-                                        final String mockUrl = MOCK_SERVER_HOST + mockServerPort + url.getPath();
-                                        final HttpClientCallDTO dto = buildRequestDTO(context, restMethodOpt.get(), mockUrl);
+                                        final StringBuilder mockUrl = new StringBuilder();
+                                        mockUrl.append(MOCK_SERVER_HOST);
+                                        mockUrl.append(mockServerPort);
+                                        mockUrl.append(url.getPath());
+
+                                        if (url.getQuery() != null) {
+                                            mockUrl.append("?");
+                                            mockUrl.append(url.getQuery());
+                                        }
+
+                                        final HttpClientCallDTO dto = buildRequestDTO(context, restMethodOpt.get(), mockUrl.toString());
 
                                         return buildResponse(callMock(dto));
 
@@ -222,6 +235,17 @@ if (logger.isDebugEnabled()) {
     HttpClientCallDTO buildRequestDTO(final LittleProxyContext context, final RestMethodEnum method, final String destUrl) {
         logger.debug("buildRequestDTO called");
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("dest url " + destUrl);
+            logger.debug("dest method " + method);
+            logger.debug("dest body " + context.getRequestBody());
+
+            logger.debug("dest headers");
+            context.getRequestHeaders().stream().forEach(h ->
+                logger.debug(h.getKey() + ": " + h.getValue())
+            );
+        }
+
         final HttpClientCallDTO dto = new HttpClientCallDTO();
 
         if (RestMethodEnum.POST.equals(method)
@@ -239,13 +263,34 @@ if (logger.isDebugEnabled()) {
         return dto;
     }
 
-    Optional<Map.Entry<String, List<RestMethodEnum>>> checkForMockPathMatch(final URL url, final Map<String, List<RestMethodEnum>> activeMocks) {
+    Optional<Map.Entry<String, List<RestMethodEnum>>> checkForMockPathMatch(final String inboundPath, final Map<String, List<RestMethodEnum>> activeMocks) {
         logger.debug("checkForMockPathMatch called");
 
+        // Need to think about order of paths which start with same value (i.e /house, /house/people/bob)
         return activeMocks.entrySet()
                 .stream()
-                .filter(e -> e.getKey().equalsIgnoreCase(url.getPath()))
+                .filter(e -> doesPathMatch(inboundPath, e.getKey()))
                 .findFirst();
+    }
+
+    private boolean doesPathMatch(final String inboundPath, final String mock) {
+
+        String newMockPathRegex = mock;
+        String mockPath = mock;
+        int mockPathVarIdx;
+
+        while ((mockPathVarIdx = mockPath.indexOf(":")) > -1) {
+
+            final int pathVarEnd = mockPath.indexOf("/", mockPathVarIdx);
+            final int pathVarEndIdx = (pathVarEnd > -1) ? pathVarEnd : mockPath.length();
+            final String part = mockPath.substring(mockPathVarIdx, pathVarEndIdx);
+
+            newMockPathRegex = StringUtils.replaceOnce(newMockPathRegex, part, PATH_VAR_REGEX);
+
+            mockPath = mockPath.substring(pathVarEndIdx, mockPath.length());
+        }
+
+        return inboundPath.matches("^" + newMockPathRegex + "$");
     }
 
     Optional<RestMethodEnum> checkForMockMethodMatch(final String method, final Map.Entry<String, List<RestMethodEnum>> pathMatch) {
@@ -280,6 +325,8 @@ if (logger.isDebugEnabled()) {
     }
 
     private void sanitizeRequestHeaders(final HttpClientCallDTO dto) {
+        // BUG Fix. HTTPClient has a problem when the 'Content-Length' header is set
+        // so filtering it out here...
         dto.setHeaders(dto.getHeaders()
                 .entrySet()
                 .stream()

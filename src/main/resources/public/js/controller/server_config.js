@@ -21,7 +21,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
-    $scope.enableProxyServer = 'Enable Proxy Server (mock interceptor)';
+    $scope.enableProxyServer = 'Enable Proxy Server (mock interceptor) on port 8010 (BETA)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
