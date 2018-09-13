@@ -8,7 +8,7 @@ Intelligent API simulation for application development and QA testing
 
 
 
-WHAT'S NEW IN v1.5
+WHAT'S NEW IN VERSION 1.5
 
     User Accounts for your Team
 
@@ -32,8 +32,9 @@ WHAT'S NEW IN v1.5
     PROXY SERVER
 
         sMockin can now be enabled as a proxy server and sit between your client and backend server stack.
-        When run in this way, sMockin will intercept all requests and attempt to match this to any active mock 
-        endpoints. Where a match is made, the proxy server will proceed to return the mock instead to the caller.
+        When run in this way, sMockin will intercept all requests and attempt to match this to any active 
+        mock endpoints. Where a match is made, the proxy server will proceed to return the mock instead 
+        to the caller.
 
         Please note this specific feature is still in BETA.
 
