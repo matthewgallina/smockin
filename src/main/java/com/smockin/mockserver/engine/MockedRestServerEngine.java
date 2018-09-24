@@ -276,6 +276,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {
+        logger.debug("processRequest called");
 
         RestfulResponseDTO outcome;
 

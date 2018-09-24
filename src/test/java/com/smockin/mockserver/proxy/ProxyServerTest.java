@@ -1,23 +1,21 @@
 package com.smockin.mockserver.proxy;
 
 import com.smockin.admin.persistence.enums.RestMethodEnum;
-import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import java.util.*;
 
 public class ProxyServerTest {
 
-    private ProxyServer proxyServer;
+    private ProxyServerUtils proxyServerUtils;
     private Map<String, List<RestMethodEnum>> activeMocks;
 
     @Before
     public void setUp() {
 
-        proxyServer = new ProxyServer();
+        proxyServerUtils = new ProxyServerUtils();
 
         activeMocks = new HashMap<>();
         activeMocks.put("/helloworld", Arrays.asList(RestMethodEnum.GET));
@@ -74,7 +72,7 @@ public class ProxyServerTest {
     private void checkForMockPathMatch(final Map<String, List<RestMethodEnum>> activeMocks, final String inboundPath, final String expectedMockPath) {
 
         // Test
-        final Optional<Map.Entry<String, List<RestMethodEnum>>> matchedPath = proxyServer.checkForMockPathMatch(inboundPath, activeMocks);
+        final Optional<Map.Entry<String, List<RestMethodEnum>>> matchedPath = proxyServerUtils.checkForMockPathMatch(inboundPath, activeMocks);
 
         // Assertions
         Assert.assertNotNull(matchedPath);
@@ -85,7 +83,7 @@ public class ProxyServerTest {
     @Test
     public void pathVariableRegexTest() {
 
-        final String regex = "^ABC/" + ProxyServer.PATH_VAR_REGEX + "+/DEF$";
+        final String regex = "^ABC/" + ProxyServerUtils.PATH_VAR_REGEX + "+/DEF$";
 
         Assert.assertTrue("ABC/ABC/DEF".matches(regex));
         Assert.assertTrue("ABC/123/DEF".matches(regex));

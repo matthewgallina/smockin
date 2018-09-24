@@ -15,6 +15,13 @@ public class HttpClientCallDTO {
     private String url;
     private String body;
 
+    public HttpClientCallDTO() { }
+
+    public HttpClientCallDTO(final String url, final RestMethodEnum method) {
+        this.url = url;
+        this.method = method;
+    }
+
     public RestMethodEnum getMethod() {
         return method;
     }
