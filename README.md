@@ -37,7 +37,8 @@ WHAT'S NEW IN VERSION 1.5
         mock endpoints. Where a match is made, the proxy server will proceed to return the mock instead 
         to the caller.
 
-        Please note this specific feature is still in BETA.
+        Please note this specific feature is still in BETA and only will work with mocks served from the root 
+        context path of the mock server.
 
 
 
@@ -185,9 +186,10 @@ PROXY SERVER MODE
     The proxy server is automatically run alongside the regular HTTP mock server, so simply click play 
     button to launch this.
     
-    To see this in action:
-    
-    curl -i -X GET http://localhost/hello --proxy http://localhost:8010
+    To see this in action, create mock of an existing or missing webservice (i.e /hello). 
+    Once done, start the mock server and run the following call to point to the proxy server:
+
+    curl -i -X GET http://yourserver/hello --proxy http://localhost:8010
 
 
 
