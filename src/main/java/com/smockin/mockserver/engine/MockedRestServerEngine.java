@@ -4,15 +4,20 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.mockserver.proxy.ProxyServer;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
+import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +30,7 @@ import spark.Spark;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by mgallina.
@@ -57,9 +61,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private ServerSideEventService serverSideEventService;
 
+    @Autowired
+    private ProxyServer proxyServer;
+
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
+    @Override
     public void start(final MockedServerConfigDTO config, final List<RestfulMock> mocks) throws MockServerException {
         logger.debug("start called");
 
@@ -75,23 +83,25 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        buildRESTEndpoints(mocks);
+        final Map<String, List<RestMethodEnum>> activeMocks = buildRESTEndpoints(mocks);
 
         // Next handle all HTTP SSE web service routes
         buildSSEEndpoints(mocks);
 
-//        buildIndex(mocks);
-
         initServer(config.getPort());
+
+        initProxyServer(activeMocks, config);
 
     }
 
+    @Override
     public MockServerState getCurrentState() throws MockServerException {
         synchronized (monitor) {
             return serverState;
         }
     }
 
+    @Override
     public void shutdown() throws MockServerException {
 
         try {
@@ -112,6 +122,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             clearState();
+
+            proxyServer.shutdown();
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
@@ -150,6 +162,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.port(config.getPort());
         Spark.threadPool(config.getMaxThreads(), config.getMinThreads(), config.getTimeOutMillis());
+    }
+
+    void initProxyServer(final Map<String, List<RestMethodEnum>> activeMocks, final MockedServerConfigDTO config) {
+
+        if (!BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM))) {
+            return;
+        }
+
+        final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
+
+        proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeMocks);
     }
 
     @Transactional
@@ -205,7 +228,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     // Expects RestfulMock to be detached
-    void buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+    Map<String, List<RestMethodEnum>> buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+
+        final Map<String, List<RestMethodEnum>> activeMocks = new HashMap<>();
 
         mocks.stream().forEach( m -> {
 
@@ -218,7 +243,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
                 final String path = buildUserPath(m);
 
-                switch (m.getMethod()) {
+                final RestMethodEnum method = m.getMethod();
+
+                activeMocks.putIfAbsent(path, new ArrayList<>());
+                activeMocks.get(path).add(method);
+
+                switch (method) {
                     case GET:
                         Spark.get(path, (req, res) -> processRequest(m, req, res));
                         break;
@@ -242,9 +272,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         });
 
+        return activeMocks;
     }
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {
+        logger.debug("processRequest called");
 
         RestfulResponseDTO outcome;
 
@@ -334,7 +366,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     void handleCORS(final MockedServerConfigDTO config) {
 
-        final String enableCors = config.getNativeProperties().get("ENABLE_CORS");
+        final String enableCors = config.getNativeProperties().get(GeneralUtils.ENABLE_CORS_PARAM);
 
         if (!Boolean.TRUE.toString().equalsIgnoreCase(enableCors)) {
             return;

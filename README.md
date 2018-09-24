@@ -1,4 +1,4 @@
-# sMockin version 1.5.0
+# sMockin version 1.5.1
 
 Intelligent API simulation for application development and QA testing
 
@@ -8,7 +8,7 @@ Intelligent API simulation for application development and QA testing
 
 
 
-WHAT'S NEW IN THIS RELEASE
+WHAT'S NEW IN VERSION 1.5
 
     User Accounts for your Team
 
@@ -28,6 +28,17 @@ WHAT'S NEW IN THIS RELEASE
         For those using other API Documentation libraries (API Blueprint, OAS, etc.), there are a
         number of online API conversion tools available for creating RAML files such as
         https://apimatic.io/transformer.
+
+    PROXY SERVER
+
+        sMockin can now be enabled as a proxy server and sit between your client and backend server stack.
+
+        When run in this way, sMockin will intercept all requests and attempt to match this to any active 
+        mock endpoints. Where a match is made, the proxy server will proceed to return the mock instead 
+        to the caller.
+
+        Please note this specific feature is still in BETA and only will work with mocks served from the root 
+        context path of the mock server.
 
 
 
@@ -167,6 +178,21 @@ RAML SUPPORT
 
 
 
+PROXY SERVER MODE
+
+    sMockin can be enabled as a proxy server, by clicking on 'edit settings' under the HTTP tab and then 
+    enabling the option 'Enable Proxy Server (mock interceptor) on port 8010 (BETA)'.
+    
+    The proxy server is automatically run alongside the regular HTTP mock server, so simply click play 
+    button to launch this.
+    
+    To see this in action, create mock of an existing or missing webservice (i.e /hello). 
+    Once done, start the mock server and run the following call to point to the proxy server:
+
+    curl -i -X GET http://yourserver/hello --proxy http://localhost:8010
+
+
+
 TROUBLESHOOTING
 
     sMockin's log files can be found here within your user home directory: .smockin/log/smockin.log
@@ -240,6 +266,7 @@ ACKNOWLEDGEMENTS / THIRD PARTIES
         Java-JWT                    -       https://github.com/auth0/java-jwt
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
+        Little Proxy                -       https://github.com/adamfisk/LittleProxy
 
 
 

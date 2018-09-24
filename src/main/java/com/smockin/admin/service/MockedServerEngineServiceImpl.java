@@ -56,6 +56,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Autowired
     private SmockinUserService smockinUserService;
 
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
 
     //
     // Rest
@@ -244,7 +247,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     public void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token)
             throws RecordNotFoundException, AuthException, ValidationException {
 
-        smockinUserService.assertCurrentUserIsAdmin(token);
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
         validateServerConfig(config);
 

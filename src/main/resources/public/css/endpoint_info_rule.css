@@ -40,8 +40,12 @@
     margin-left: 3px;
 }
 
+.condition-arg-edit-button {
+    margin-left: 8px;
+}
+
 .condition-arg-remove-button {
-    margin-left: 12px;
+    margin-left: 8px;
 }
 
 .condition-arg-small-font {

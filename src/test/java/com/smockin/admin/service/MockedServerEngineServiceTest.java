@@ -7,7 +7,10 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
@@ -40,6 +43,9 @@ public class MockedServerEngineServiceTest {
     @Mock
     private SmockinUserService smockinUserService;
 
+    @Mock
+    private UserTokenServiceUtils userTokenServiceUtils;
+
     @Spy
     @InjectMocks
     private MockedServerEngineService mockedServerEngineService = new MockedServerEngineServiceImpl();
@@ -52,13 +58,17 @@ public class MockedServerEngineServiceTest {
     public ExpectedException thrown = ExpectedException.none();
 
     private String token;
+    private SmockinUser smockinUser;
 
     @Before
     public void setUp() throws AuthException, RecordNotFoundException {
 
         token = GeneralUtils.generateUUID();
+        smockinUser = new SmockinUser();
+        smockinUser.setRole(SmockinUserRoleEnum.ADMIN);
 
-        Mockito.doNothing().when(smockinUserService).assertCurrentUserIsAdmin(Matchers.anyString());
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(smockinUser);
+        Mockito.doNothing().when(smockinUserService).assertCurrentUserIsAdmin(Matchers.any(SmockinUser.class));
 
     }
 

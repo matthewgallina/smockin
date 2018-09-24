@@ -73,7 +73,7 @@ public class CoreDataHandler {
             restServerConfig.setTimeOutMillis(30000);
             restServerConfig.setAutoStart(false);
             restServerConfig.setAutoRefresh(false);
-            restServerConfig.getNativeProperties().put("ENABLE_CORS", "false");
+            restServerConfig.getNativeProperties().put(GeneralUtils.ENABLE_CORS_PARAM, "false");
 
             serverConfigDAO.save(restServerConfig);
         }
@@ -90,7 +90,7 @@ public class CoreDataHandler {
             jmsServerConfig.setTimeOutMillis(0);
             jmsServerConfig.setAutoStart(false);
             jmsServerConfig.setAutoRefresh(false);
-            jmsServerConfig.getNativeProperties().put("BROKER_URL", "tcp://localhost:");
+            jmsServerConfig.getNativeProperties().put(GeneralUtils.BROKER_URL_PARAM, "tcp://localhost:");
 
             serverConfigDAO.save(jmsServerConfig);
 

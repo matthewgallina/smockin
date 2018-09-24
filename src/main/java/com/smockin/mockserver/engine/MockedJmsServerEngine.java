@@ -7,6 +7,7 @@ import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
@@ -223,10 +224,10 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
                 broker = new BrokerService();
                 broker.setPersistent(false);
                 broker.setUseJmx(false);
-                broker.addConnector(config.getNativeProperties().get("BROKER_URL") + config.getPort());
+                broker.addConnector(config.getNativeProperties().get(GeneralUtils.BROKER_URL_PARAM) + config.getPort());
             }
 
-            connectionFactory = new ActiveMQConnectionFactory(config.getNativeProperties().get("BROKER_URL") + config.getPort());
+            connectionFactory = new ActiveMQConnectionFactory(config.getNativeProperties().get(GeneralUtils.BROKER_URL_PARAM) + config.getPort());
             connectionFactory.setMaxThreadPoolSize(config.getMaxThreads());
             connectionFactory.setRejectedTaskHandler(new ThreadPoolExecutor.CallerRunsPolicy());
 

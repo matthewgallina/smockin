@@ -17,7 +17,7 @@ public class MockedServerConfigDTO {
     private Integer timeOutMillis;
     private boolean autoStart;
     private boolean autoRefresh;
-    private Map<String, String> nativeProperties = new HashMap<String, String>();
+    private Map<String, String> nativeProperties = new HashMap<>();
 
     public MockedServerConfigDTO() {
     }

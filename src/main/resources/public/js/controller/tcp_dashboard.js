@@ -140,7 +140,15 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
             if (status == 200) {
                 $scope.mockServerStatus = MockServerRunningStatus;
-                showAlert("HTTP Server Started (on port " + String(data.port) + ")", "success");
+
+                var alertMsg = "HTTP Server Started (on port " + String(data.port) + ")";
+
+                if (data.nativeProperties != null
+                        && data.nativeProperties.PROXY_SERVER_ENABLED == "TRUE") {
+                    alertMsg += " with proxy server (on port 8010)";
+                }
+
+                showAlert(alertMsg, "success");
                 return;
             }
 

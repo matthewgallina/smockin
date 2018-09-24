@@ -63,9 +63,12 @@ app.controller('endpointInfoRuleConditionController', function($scope, $location
     //
     // Data Objects
     $scope.matchingTypes = globalVars.RuleMatchingTypes;
-
     $scope.comparators = [];
     $scope.conditionArgs = [];
+
+    if (data.ruleGroup != null) {
+        $scope.conditionArgs = data.ruleGroup.conditions;
+    }
 
 
     //
