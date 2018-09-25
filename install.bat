@@ -1,6 +1,14 @@
 @echo off
 
-set APP_DIR_PATH=%userprofile%\.smockin
+IF DEFINED %1 (
+    set APP_DIR_PATH=%1\.smockin
+    
+) ELSE (
+    set APP_DIR_PATH=%userprofile%\.smockin
+)
+
+setx SMOCKIN_DIR_PATH = %APP_DIR_PATH%
+
 set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
 set DB_DATA_DIR_PATH=%DB_DIR_PATH%\data
