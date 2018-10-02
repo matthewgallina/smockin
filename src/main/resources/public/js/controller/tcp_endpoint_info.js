@@ -859,7 +859,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     }
 
     function getUserCtxPushPath(endpoint) {
-        return (endpoint.userCtxPath.length > 0) ? "/" + (endpoint.userCtxPath + endpoint.path) : endpoint.path;
+        return ($scope.defaultCtxPathPrefix != null) ? "/" + ($scope.defaultCtxPathPrefix + endpoint.path) : endpoint.path;
     }
 
     function updateRuleOrderNumbers() {
