@@ -25,3 +25,5 @@ standalone
 build_all_distributions.sh
 Dockerfile
 launch.sh
+/src/test/java/com/smockin/temp
+
