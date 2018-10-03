@@ -21,6 +21,7 @@ public class RestfulMockDTO {
     private long sseHeartBeatInMillis;
     private boolean proxyPushIdOnConnect;
     private boolean randomiseDefinitions;
+    private boolean proxyForwardWhenNoRuleMatch;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<>();
 
@@ -28,7 +29,7 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -38,6 +39,7 @@ public class RestfulMockDTO {
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
         this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.randomiseDefinitions = randomiseDefinitions;
+        this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
     }
 
     public String getPath() {
@@ -101,6 +103,13 @@ public class RestfulMockDTO {
     }
     public void setRandomiseDefinitions(boolean randomiseDefinitions) {
         this.randomiseDefinitions = randomiseDefinitions;
+    }
+
+    public boolean isProxyForwardWhenNoRuleMatch() {
+        return proxyForwardWhenNoRuleMatch;
+    }
+    public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
+        this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
     }
 
     public List<RestfulMockDefinitionDTO> getDefinitions() {

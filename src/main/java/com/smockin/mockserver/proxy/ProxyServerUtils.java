@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.littleshoot.proxy.impl.ProxyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -29,7 +30,7 @@ public class ProxyServerUtils {
     static final String PATH_VAR_REGEX = "[a-zA-Z0-9_+-._~:!$&'()*+,=@]+";
 
     HttpResponse buildBadResponse() {
-        return buildResponse(new HttpClientResponseDTO(400, "text/html; charset=UTF-8", new HashMap<>() ,""));
+        return buildResponse(new HttpClientResponseDTO(HttpStatus.BAD_REQUEST.value(), "text/html; charset=UTF-8", new HashMap<>() ,""));
     }
 
     HttpResponse buildResponse(final HttpClientResponseDTO dto) {

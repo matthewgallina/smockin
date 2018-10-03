@@ -321,7 +321,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     RestfulResponseDTO getDefault(final RestfulMock restfulMock) {
 
         if (RestMockTypeEnum.PROXY_HTTP.equals(restfulMock.getMockType())) {
-            return new RestfulResponseDTO(404);
+            return new RestfulResponseDTO(HttpStatus.NOT_FOUND.value());
+        }
+
+        if (RestMockTypeEnum.RULE.equals(restfulMock.getMockType())
+                && restfulMock.isProxyForwardWhenNoRuleMatch()) {
+            return new RestfulResponseDTO(HttpStatus.TEMPORARY_REDIRECT.value());
         }
 
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);

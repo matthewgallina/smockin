@@ -15,6 +15,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +51,7 @@ public class HttpClientServiceImpl implements HttpClientService {
             final MockServerState state = mockedServerEngineService.getRestServerState();
 
             if (!state.isRunning()) {
-                return new HttpClientResponseDTO(404);
+                return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
             }
 
             dto.setUrl("http://localhost:" + state.getPort() + dto.getUrl());
@@ -71,7 +72,7 @@ public class HttpClientServiceImpl implements HttpClientService {
             }
 
         } catch (IOException | MockServerException ex) {
-            return new HttpClientResponseDTO(404);
+            return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 
     }

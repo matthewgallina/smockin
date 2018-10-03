@@ -56,6 +56,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 dto.getSseHeartBeatInMillis(),
                 dto.isProxyPushIdOnConnect(),
                 dto.isRandomiseDefinitions(),
+                dto.isProxyForwardWhenNoRuleMatch(),
                 smockinUser);
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
@@ -92,6 +93,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setSseHeartBeatInMillis(dto.getSseHeartBeatInMillis());
         mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
         mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
+        mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 

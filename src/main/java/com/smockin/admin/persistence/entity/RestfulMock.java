@@ -66,6 +66,10 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="REST_CATGY_ID", nullable = true)
     private RestfulCategory category;
 
+    @ColumnDefault("false")
+    @Column(name = "PROXY_FW_NO_RULE_MATCH", nullable = false)
+    private boolean proxyForwardWhenNoRuleMatch;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
@@ -73,7 +77,7 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, SmockinUser createdBy) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, SmockinUser createdBy) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -83,6 +87,7 @@ public class RestfulMock extends Identifier {
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
         this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.randomiseDefinitions = randomiseDefinitions;
+        this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
         this.createdBy = createdBy;
     }
 
@@ -175,6 +180,13 @@ public class RestfulMock extends Identifier {
     }
     public void setCategory(RestfulCategory category) {
         this.category = category;
+    }
+
+    public boolean isProxyForwardWhenNoRuleMatch() {
+        return proxyForwardWhenNoRuleMatch;
+    }
+    public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
+        this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
     }
 
     public SmockinUser getCreatedBy() {
