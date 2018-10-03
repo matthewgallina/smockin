@@ -107,8 +107,6 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
 
        for (var ct=0; ct < conditionDTOs.length; ct++) {
 
-           conditionDTOs[ct];
-
             conditionArgList.push({
                "matchType" : getMatchingTypeForValue(conditionDTOs[ct].ruleMatchingType),
                "fieldName" : conditionDTOs[ct].field,

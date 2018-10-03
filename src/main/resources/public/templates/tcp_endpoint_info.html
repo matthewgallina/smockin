@@ -62,17 +62,17 @@
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
-                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
+                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
-                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly" />
+                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
                     <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly"></textarea>
+                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"></textarea>
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
@@ -92,22 +92,27 @@
                                 <tbody>
                                 <tr ng-repeat="rh in responseHeaderList">
                                     <td>
-                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
+                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
                                     </td>
                                     <td>
-                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly" />
+                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
                                     </td>
                                     <td class="remove-resp-head-row-button">
-                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly">{{ removeResponseHeaderButtonLabel }}</button>
+                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch">{{ removeResponseHeaderButtonLabel }}</button>
                                     </td>
                                 </tr>
                                 </tbody>
                             </table>
 
-                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
 
                         </div>
                     </div>
+                </div>
+
+                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
+                    <input id="proxy-pass-through"  ng-model="endpoint.proxyForwardWhenNoRuleMatch" type="checkbox" ng-disabled="readOnly" />
+                    <label for="proxy-pass-through" class="ng-binding default-label-color">{{ proxyPassThroughLabel }}</label>
                 </div>
 
             </div>

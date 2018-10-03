@@ -351,7 +351,7 @@ public class ApiImportRouterIntTest {
         // Pre-test Assertions
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
-        final long originalMockId = restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, user)).getId();
+        final long originalMockId = restfulMockDAO.save(new RestfulMock("/hello/:name", RestMethodEnum.POST, RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, false, user)).getId();
         Assert.assertEquals(1, restfulMockDAO.findAll().size());
         restfulMockDAO.flush();
 

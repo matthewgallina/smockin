@@ -1,6 +1,7 @@
 package com.smockin.mockserver.proxy;
 
 import com.smockin.admin.dto.HttpClientCallDTO;
+import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.engine.BaseServerEngine;
@@ -8,6 +9,7 @@ import com.smockin.mockserver.exception.MockServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.apache.http.HttpStatus;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -120,7 +122,13 @@ public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List
                                         final HttpClientCallDTO dto = proxyServerUtils.buildRequestDTO(context, inboundMethod, proxyServerUtils.buildMockUrl(inboundUrl, mockServerPort));
 
                                         // Store response from mock server for re-use
-                                        context.setClientResponse(proxyServerUtils.buildResponse(proxyServerUtils.callMock(dto)));
+                                        final HttpClientResponseDTO response = proxyServerUtils.callMock(dto);
+
+                                        if (response.getStatus() == HttpStatus.SC_TEMPORARY_REDIRECT) {
+                                            return httpObject;
+                                        }
+
+                                        context.setClientResponse(proxyServerUtils.buildResponse(response));
 
                                         return context.getClientResponse();
 

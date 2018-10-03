@@ -76,6 +76,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
     $scope.actualPathPrefixLabel = "actual path:";
+    $scope.proxyPassThroughLabel = "Only intercept if rule matched";
 
 
     //
@@ -173,6 +174,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         "ssePushIdOnConnect" : false,
         "mockType" : lookupMockType(MockTypeDefinitions.MockTypeSeq),
         "randomiseDefinitions" : false,
+        "proxyForwardWhenNoRuleMatch" : false,
         "definitions" : [],
         "rules" : []
     };
@@ -214,6 +216,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "ssePushIdOnConnect" : endpoint.proxyPushIdOnConnect,
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
+            "proxyForwardWhenNoRuleMatch" : endpoint.proxyForwardWhenNoRuleMatch,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules,
             "createdBy" : endpoint.createdBy
@@ -222,7 +225,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
 
         if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
-                || endpoint.mockType == MockTypeDefinitions.MockTypeRule) {
+                || (endpoint.mockType == MockTypeDefinitions.MockTypeRule
+                        && !endpoint.proxyForwardWhenNoRuleMatch)) {
 
             $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
             $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
@@ -731,6 +735,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "sseHeartBeatInMillis" : $scope.endpoint.sseHeartbeat,
             "proxyPushIdOnConnect" : false,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
+            "proxyForwardWhenNoRuleMatch" : $scope.endpoint.proxyForwardWhenNoRuleMatch,
             "definitions" : [],
             "rules" : []
         };
@@ -749,36 +754,42 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         // Handle Rule specifics
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule) {
 
-           // Default response (where a rule is not matched)
-            reqData.definitions.push({
-                "extId" : null,
-                "orderNo" : 1,
-                "responseContentType" : $scope.endpoint.contentType,
-                "httpStatusCode" : $scope.endpoint.httpStatusCode,
-                "responseBody" : $scope.endpoint.responseBody,
-                "sleepInMillis" : 0,
-                "suspend" : false,
-                "responseHeaders" : {}
-            });
+            if (!$scope.endpoint.proxyForwardWhenNoRuleMatch) {
 
-            // Default response headers (where a rule is not matched)
-            for (var r=0; r < $scope.responseHeaderList.length; r++) {
-                reqData.definitions[0].responseHeaders[$scope.responseHeaderList[r].name] = $scope.responseHeaderList[r].value;
+                // Default response (where a rule is not matched)
+                reqData.definitions.push({
+                    "extId" : null,
+                    "orderNo" : 1,
+                    "responseContentType" : $scope.endpoint.contentType,
+                    "httpStatusCode" : $scope.endpoint.httpStatusCode,
+                    "responseBody" : $scope.endpoint.responseBody,
+                    "sleepInMillis" : 0,
+                    "suspend" : false,
+                    "responseHeaders" : {}
+                });
+
+                // Default response headers (where a rule is not matched)
+                for (var r=0; r < $scope.responseHeaderList.length; r++) {
+                    reqData.definitions[0].responseHeaders[$scope.responseHeaderList[r].name] = $scope.responseHeaderList[r].value;
+                }
+
             }
 
             // Rules
-            for (var r=0; r < $scope.endpoint.rules.length; r++) {
+            angular.copy($scope.endpoint.rules, reqData.rules); // deep copy rules array
+
+            for (var r=0; r < reqData.rules.length; r++) {
 
                 // Convert all local rule arg objects to DTO
-                for (var g=0; g < $scope.endpoint.rules[r].groups.length; g++) {
-                    $scope.endpoint.rules[r].groups[g].conditions = utils.convertToDTO($scope.endpoint.rules[r].groups[g].conditions);
+                for (var g=0; g < reqData.rules[r].groups.length; g++) {
+                    reqData.rules[r].groups[g].conditions = utils.convertToDTO(reqData.rules[r].groups[g].conditions);
                 }
-
-                reqData.rules.push($scope.endpoint.rules[r]);
             }
 
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxyHttp) {
+
             // Nothing extra to do
+
          } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
 
             reqData.proxyPushIdOnConnect = $scope.endpoint.wsPushIdOnConnect;
@@ -814,6 +825,18 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         if (utils.isBlank($scope.endpoint.method)) {
             showAlert("'Method' is required");
             return false;
+        }
+
+        /*
+        if (isNew && countActiveRules($scope.endpoint.rules) == 0) {
+            showAlert("At least one active 'Rule' is required");
+            return false;
+        }
+        */
+
+        if ($scope.endpoint.proxyForwardWhenNoRuleMatch) {
+            // No need to provide a default response
+            return true;
         }
 
         if (utils.isBlank($scope.endpoint.contentType)) {
@@ -1026,6 +1049,21 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         return activeDefinitions;
     }
+
+    /*
+    function countActiveRules(rules) {
+
+        var activeRules = 0;
+
+        for (var r=0; r < rules.length; r++) {
+            if (!rules[r].suspend) {
+                activeRules++;
+            }
+        }
+
+        return activeRules;
+    }
+    */
 
     function lookupMockType(mockType) {
         for (var i=0; i < $scope.mockTypes.length; i++) {
