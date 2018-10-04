@@ -28,7 +28,7 @@ public class MockedServerEngineController {
     //
     // REST Server
     @RequestMapping(path="/mockedserver/rest/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> startRest() throws ValidationException, MockServerException {
+    public @ResponseBody ResponseEntity<?> startRest() throws MockServerException {
         return new ResponseEntity<>(mockedServerEngineService.startRest(), HttpStatus.OK);
     }
 

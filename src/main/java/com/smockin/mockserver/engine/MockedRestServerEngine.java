@@ -166,13 +166,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     void initProxyServer(final Map<String, List<RestMethodEnum>> activeMocks, final MockedServerConfigDTO config) {
 
-        if (!BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM))) {
+        if (!isProxyServerModeEnabled(config)) {
             return;
         }
 
         final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
 
         proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeMocks);
+    }
+
+    public boolean isProxyServerModeEnabled(final MockedServerConfigDTO config) {
+        return BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM));
     }
 
     @Transactional

@@ -74,6 +74,10 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
 
+    @ColumnDefault("false")
+    @Column(name = "PROXY_PRTY", nullable = false)
+    private boolean proxyPriority;
+
     public RestfulMock() {
     }
 
@@ -194,6 +198,13 @@ public class RestfulMock extends Identifier {
     }
     public void setCreatedBy(SmockinUser createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public boolean isProxyPriority() {
+        return proxyPriority;
+    }
+    public void setProxyPriority(boolean proxyPriority) {
+        this.proxyPriority = proxyPriority;
     }
 
 }
