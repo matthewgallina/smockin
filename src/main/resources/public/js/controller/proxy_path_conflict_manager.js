@@ -51,6 +51,10 @@ app.controller('proxyPathConflictManagerController', function($scope, $uibModalI
 
     $scope.doSave = function() {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         var pathDuplicatePriorities = [];
 
         // Validation
