@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="../css/proxy_path_conflict_manager.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ heading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+
+            <span>{{ instructionsLineLabel }}</span>
+
+            <br />
+            <br />
+
+            <div class="list-group">
+                <div class="list-group-item" ng-repeat="pd in pathDuplicates">
+                    <h5 class="list-group-item-heading">{{ pd.method }} {{ pd.path }}</h5>
+                    <p class="list-group-item-text">
+                        <div class="row conflict-row" ng-repeat="m in pd.mocks">
+                            <div class="col-sm-11">
+                                {{ ((m.userCtxPath != null && m.userCtxPath.length > 0) ? ('/' + m.userCtxPath) : '') }}{{ m.path }}
+                            </div>
+                            <div class="col-sm-1">
+                                <div class="radio">
+                                    <input type="radio" name="{{ pd.path }}Radio" ng-model="pd.priorityExtId" value="{{ m.extId }}" ng-disabled="readOnly">
+                                </div>
+                            </div>
+                        </div>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSave()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
+</div>

@@ -1,13 +1,19 @@
 package com.smockin.mockserver.engine;
 
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.service.SmockinUserService;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.mockserver.service.HttpProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,8 +22,12 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.http.HttpStatus;
+
+import java.util.*;
 
 /**
  * Created by mgallina.
@@ -36,6 +46,9 @@ public class MockedRestServerEngineTest {
 
     @Mock
     private MockOrderingCounterService mockOrderingCounterService;
+
+    @Mock
+    private SmockinUserService smockinUserService;
 
     @Spy
     @InjectMocks
@@ -115,20 +128,10 @@ public class MockedRestServerEngineTest {
 
         // Assertions
         Assert.assertNotNull(result);
-        Assert.assertEquals(404, result.getHttpStatusCode());
+        Assert.assertEquals(HttpStatus.NOT_FOUND.value(), result.getHttpStatusCode());
         Assert.assertNull(result.getResponseContentType());
         Assert.assertNull(result.getResponseBody());
         Assert.assertTrue(result.getHeaders().isEmpty());
-    }
-
-
-
-        @Test
-    public void processRequest__Test() {
-
-        // TODO
-//        engine.processRequest();
-
     }
 
 }

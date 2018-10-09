@@ -1,0 +1,16 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.conflict-row {
+    margin-top: 10px;
+    margin-left: 12px;
+}
+
+.checkbox, .radio {
+    margin-top: 0px;
+}

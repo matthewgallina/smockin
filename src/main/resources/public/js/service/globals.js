@@ -37,6 +37,8 @@ app.service('globalVars', function() {
     this.MockServerStoppedStatus = 'Stopped';
     this.MockServerRestartStatus = 'Restarting';
 
+    this.ERROR_PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";
+
     this.ContentMimeTypes = [
         'application/json',
         'text/html',

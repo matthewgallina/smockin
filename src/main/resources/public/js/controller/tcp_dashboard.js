@@ -1,5 +1,5 @@
 
-app.controller('tcpDashboardController', function($scope, $window, $rootScope, $location, $uibModal, $http, restClient, globalVars, utils, $routeParams, auth) {
+app.controller('tcpDashboardController', function($scope, $window, $rootScope, $location, $timeout, $uibModal, $http, restClient, globalVars, utils, $routeParams, auth) {
 
 
     //
@@ -152,7 +152,17 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 return;
             }
 
-            showAlert(globalVars.GeneralErrorMessage);
+            var errorMsg = globalVars.GeneralErrorMessage;
+
+            if (status == 400
+                    && data.message == globalVars.ERROR_PROXY_PATH_CONFLICT) {
+                errorMsg = "Cannot start proxy server. Path conflicts were found. Opening priority path manager...";
+                $timeout(function() {
+                    openProxyPathConflictManager();
+                }, 3000);
+            }
+
+            showAlert(errorMsg);
         });
 
     };
@@ -329,6 +339,23 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             }
 
             callback();
+        });
+
+    }
+
+    function openProxyPathConflictManager() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'proxy_path_conflict_manager.html',
+            controller: 'proxyPathConflictManagerController',
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+
+        }, function () {
+
         });
 
     }

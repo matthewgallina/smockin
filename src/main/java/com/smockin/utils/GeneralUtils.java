@@ -39,6 +39,8 @@ public final class GeneralUtils {
     public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
     public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
 
+    public static final String PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";
+
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
 

@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -7,6 +8,7 @@ import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -17,6 +19,7 @@ import com.smockin.mockserver.engine.MockedFtpServerEngine;
 import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,9 +69,17 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     public MockedServerConfigDTO startRest() throws MockServerException {
 
         try {
-            final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.RESTFUL);
-            mockedRestServerEngine.start(dto, restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
-            return dto;
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.RESTFUL);
+
+            checkForUnresolvedProxyUserPathMatchConflicts(configDTO);
+
+            mockedRestServerEngine.start(configDTO, restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            mockedRestServerEngine.shutdown();
+            throw ex;
         } catch (RecordNotFoundException ex) {
             logger.error("Starting REST Mocking Engine, due to missing mock server config", ex);
             throw new MockServerException("Missing mock REST server config");
@@ -321,6 +332,27 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
         }
+
+    }
+
+    void checkForUnresolvedProxyUserPathMatchConflicts(final MockedServerConfigDTO config) {
+
+        if (!mockedRestServerEngine.isProxyServerModeEnabled(config)
+                || UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode())) {
+            return;
+        }
+
+        restfulMockDefinitionDAO.findAllActivePathDuplicates()
+                .entrySet()
+                .stream()
+                .forEach(d -> {
+
+                    if (!d.getValue()
+                            .stream()
+                            .anyMatch(RestfulMock::isProxyPriority)) {
+                        throw new IllegalArgumentException(GeneralUtils.PROXY_PATH_CONFLICT);
+                    }
+                });
 
     }
 

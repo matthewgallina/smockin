@@ -4,6 +4,7 @@ import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.mockserver.engine.BaseServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,7 +27,7 @@ import java.net.URL;
 import java.util.*;
 
 @Service
-public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List<RestMethodEnum>>> {
+public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActiveMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
 
@@ -38,7 +39,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List
     private ProxyServerUtils proxyServerUtils;
 
     @Override
-    public void start(final Integer[] ports, final Map<String, List<RestMethodEnum>> activeMocks) {
+    public void start(final Integer[] ports, final List<ProxyActiveMock> activeMocks) {
 
         try {
 
@@ -80,10 +81,13 @@ public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List
                                             if (proxyServerUtils.excludeInboundMethod(originalRequest.getMethod().name()))
                                                 return null;
 
-                                            if (!proxyServerUtils.mockMatchFound(originalRequest, activeMocks))
+                                            final Optional<ProxyActiveMock> mock = proxyServerUtils.findMockMatch(originalRequest, activeMocks);
+
+                                            if (!mock.isPresent())
                                                 return null;
 
                                             context.setUseMock(true);
+                                            context.setUserCtx(mock.get().getUserCtx());
                                             context.getRequestHeaders().addAll(originalRequest.headers().entries());
 
                                             if (request.getMethod() == HttpMethod.POST)
@@ -119,7 +123,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], Map<String, List
 
                                         final URL inboundUrl = new URL(proxyServerUtils.fixProtocolWithDummyPrefix(originalRequest.getUri()));
                                         final RestMethodEnum inboundMethod = RestMethodEnum.findByName(originalRequest.getMethod().name());
-                                        final HttpClientCallDTO dto = proxyServerUtils.buildRequestDTO(context, inboundMethod, proxyServerUtils.buildMockUrl(inboundUrl, mockServerPort));
+                                        final HttpClientCallDTO dto = proxyServerUtils.buildRequestDTO(context, inboundMethod, proxyServerUtils.buildMockUrl(inboundUrl, mockServerPort, context.getUserCtx()));
 
                                         // Store response from mock server for re-use
                                         final HttpClientResponseDTO response = proxyServerUtils.callMock(dto);

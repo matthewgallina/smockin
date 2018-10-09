@@ -45,6 +45,13 @@ public class ExceptionHandlerController {
                 .body(new SimpleMessageResponseDTO(ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<SimpleMessageResponseDTO<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new SimpleMessageResponseDTO(ex.getMessage()));
+    }
+
     @ExceptionHandler(MockServerException.class)
     public ResponseEntity<String> handleMockServerException(MockServerException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

@@ -1,8 +1,11 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.dto.ProxyRestDuplicatePriorityDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
+import com.smockin.admin.dto.response.ProxyRestDuplicateDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.enums.SearchFilterEnum;
+import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by mgallina.
@@ -40,6 +44,10 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
+    @Override
     public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
 
@@ -69,6 +77,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         return mock.getExtId();
     }
 
+    @Override
     public void updateEndpoint(final String mockExtId, final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("updateEndpoint called");
 
@@ -105,6 +114,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
     }
 
+    @Override
     public void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("deleteEndpoint called");
 
@@ -115,6 +125,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         restfulMockDAO.delete(mock);
     }
 
+    @Override
     public List<RestfulMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
@@ -123,6 +134,41 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         }
 
         return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
+    }
+
+    @Override
+    public List<ProxyRestDuplicateDTO> loadAllUserPathDuplicates(final String token) throws RecordNotFoundException, AuthException {
+        logger.debug("loadAllUserPathDuplicates called");
+
+//        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        return restfulMockDAO.findAllActivePathDuplicates()
+                .entrySet()
+                .stream()
+                .map(m -> new ProxyRestDuplicateDTO(m.getKey().getLeft(), m.getKey().getRight(), restfulMockServiceUtils.buildRestfulMockDefinitionDTO(m.getValue())))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void saveUserPathDuplicatePriorities(final ProxyRestDuplicatePriorityDTO priorityMocks,
+                                                final String token) throws RecordNotFoundException, AuthException {
+        logger.debug("saveUserPathDuplicatePriorities called");
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        for (String extId : priorityMocks.getProxyPriorityMockIds()) {
+
+            // Set priority
+            final RestfulMock restMock = loadRestMock(extId);
+            restMock.setProxyPriority(true);
+
+            // Revert any existing priority flags for same path and method.
+            // Note if inbound caller is silly enough to pass in 2 priorities for the same path, then this ensure only 1 is set in the end.
+            restfulMockDAO.resetAllOtherProxyPriorities(restMock.getPath(), restMock.getMethod(), restMock.getExtId());
+
+            restfulMockDAO.save(restMock);
+        }
+
     }
 
     RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {

@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -8,6 +9,7 @@ import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
@@ -16,6 +18,7 @@ import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,6 +27,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.*;
 
 /**
  * Created by mgallina on 21/07/17.
@@ -407,16 +413,134 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void handleServerAutoStartTest() {
+    public void checkForProxyMockConflicts_ThrowsExceptionDueToProxyConflict_Test() {
 
-        // TODO
+        // Assertions
+        thrown.expect(IllegalArgumentException.class);
+        thrown.expectMessage(CoreMatchers.is(GeneralUtils.PROXY_PATH_CONFLICT));
+
+        // Setup
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
+        Mockito.when(mockedRestServerEngine.isProxyServerModeEnabled(Matchers.any(MockedServerConfigDTO.class)))
+                .thenReturn(true);
+
+        final RestfulMock m1 = new RestfulMock();
+        m1.setId(1);
+        m1.setPath("/hello");
+
+        final RestfulMock m2 = new RestfulMock();
+        m2.setId(2);
+        m2.setPath("/hello");
+        m2.setProxyPriority(true);
+
+        final RestfulMock m3 = new RestfulMock();
+        m3.setId(3);
+        m3.setPath("/hello");
+
+        final RestfulMock m4 = new RestfulMock();
+        m4.setId(4);
+        m4.setPath("/pets");
+
+        final RestfulMock m5 = new RestfulMock();
+        m5.setId(5);
+        m5.setPath("/pets");
+
+        Mockito.when(restfulMockDefinitionDAO.findAllActivePathDuplicates())
+                .thenReturn(new HashMap<Pair<String,RestMethodEnum>, List<RestfulMock>>() {
+                    {
+                        put(Pair.of("/hello", RestMethodEnum.GET), Arrays.asList(m1, m2, m3));
+                        put(Pair.of("/pets", RestMethodEnum.GET), Arrays.asList(m4, m5));
+                    }
+                });
+
+        // Test
+        mockedServerEngineServiceImpl.checkForUnresolvedProxyUserPathMatchConflicts(new MockedServerConfigDTO());
 
     }
 
     @Test
-    public void restartRestTest() {
+    public void checkForProxyMockConflicts_PriorityIsSet_Test() {
 
-        // TODO
+        // Setup
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
+        Mockito.when(mockedRestServerEngine.isProxyServerModeEnabled(Matchers.any(MockedServerConfigDTO.class)))
+                .thenReturn(true);
+
+        final RestfulMock m1 = new RestfulMock();
+        m1.setId(1);
+        m1.setPath("/hello");
+
+        final RestfulMock m2 = new RestfulMock();
+        m2.setId(2);
+        m2.setPath("/hello");
+        m2.setProxyPriority(true);
+
+        final RestfulMock m3 = new RestfulMock();
+        m3.setId(3);
+        m3.setPath("/hello");
+
+        Mockito.when(restfulMockDefinitionDAO.findAllActivePathDuplicates())
+                .thenReturn(new HashMap<Pair<String, RestMethodEnum>, List<RestfulMock>>() {
+                    {
+                        put(Pair.of("/hello", RestMethodEnum.GET), Arrays.asList(m1, m2, m3));
+                    }
+                });
+
+        // Test
+        mockedServerEngineServiceImpl.checkForUnresolvedProxyUserPathMatchConflicts(new MockedServerConfigDTO());
+
+        // Assertions
+        Mockito.verify(restfulMockDefinitionDAO, Mockito.times(1)).findAllActivePathDuplicates();
+
+    }
+
+    @Test
+    public void checkForProxyMockConflicts_NoMocksInQuery_Test() {
+
+        // Setup
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
+        Mockito.when(mockedRestServerEngine.isProxyServerModeEnabled(Matchers.any(MockedServerConfigDTO.class)))
+                .thenReturn(true);
+        Mockito.when(restfulMockDefinitionDAO.findAllActivePathDuplicates())
+                .thenReturn(new HashMap<>());
+
+        // Test
+        mockedServerEngineServiceImpl.checkForUnresolvedProxyUserPathMatchConflicts(new MockedServerConfigDTO());
+
+        // Assertions
+        Mockito.verify(restfulMockDefinitionDAO, Mockito.times(1)).findAllActivePathDuplicates();
+
+    }
+
+    @Test
+    public void checkForProxyMockConflicts_NotInProxyMode_Test() {
+
+        // Setup
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
+        Mockito.when(mockedRestServerEngine.isProxyServerModeEnabled(Matchers.any(MockedServerConfigDTO.class)))
+                .thenReturn(false);
+
+        // Test
+        mockedServerEngineServiceImpl.checkForUnresolvedProxyUserPathMatchConflicts(new MockedServerConfigDTO());
+
+        // Assertions
+        Mockito.verify(restfulMockDefinitionDAO, Mockito.never()).findAllActivePathDuplicates();
+
+    }
+
+    @Test
+    public void checkForProxyMockConflicts_NotMultiUserMode_Test() {
+
+        // Setup
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.INACTIVE);
+        Mockito.when(mockedRestServerEngine.isProxyServerModeEnabled(Matchers.any(MockedServerConfigDTO.class)))
+                .thenReturn(true);
+
+        // Test
+        mockedServerEngineServiceImpl.checkForUnresolvedProxyUserPathMatchConflicts(new MockedServerConfigDTO());
+
+        // Assertions
+        Mockito.verify(restfulMockDefinitionDAO, Mockito.never()).findAllActivePathDuplicates();
 
     }
 

@@ -22,6 +22,7 @@ public class RestfulMockDTO {
     private boolean proxyPushIdOnConnect;
     private boolean randomiseDefinitions;
     private boolean proxyForwardWhenNoRuleMatch;
+    private boolean proxyPriority;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<>();
 
@@ -29,7 +30,7 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, boolean proxyPriority) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -40,6 +41,7 @@ public class RestfulMockDTO {
         this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.randomiseDefinitions = randomiseDefinitions;
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
+        this.proxyPriority = proxyPriority;
     }
 
     public String getPath() {
@@ -110,6 +112,13 @@ public class RestfulMockDTO {
     }
     public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
+    }
+
+    public boolean isProxyPriority() {
+        return proxyPriority;
+    }
+    public void setProxyPriority(boolean proxyPriority) {
+        this.proxyPriority = proxyPriority;
     }
 
     public List<RestfulMockDefinitionDTO> getDefinitions() {
