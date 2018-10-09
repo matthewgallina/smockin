@@ -5,7 +5,7 @@ app.controller('proxyPathConflictManagerController', function($scope, $uibModalI
     //
     // Labels
     $scope.heading = 'Proxy Priority Path Manager';
-    $scope.instructionsLineLabel = 'Please specify which mock the proxy server should use where there is matching path:';
+    $scope.instructionsLineLabel = 'The selected mocks below will be used by the proxy server, where the given mock path is duplicated by other users:';
 
 
     //

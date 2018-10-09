@@ -8,7 +8,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.RestfulServerType = globalVars.RestfulServerType;
     $scope.JmsServerType = globalVars.JmsServerType;
-
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
 
     //
     // Labels
@@ -22,7 +22,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
     $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
-    $scope.manageProxyPriorityPathsLabel = '(manage priority paths)';
+    $scope.manageProxyPriorityPathsLabel = '(' + (($scope.readOnly) ? 'view' : 'manage') +  ' priority paths)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
@@ -30,7 +30,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
 
     $scope.restartServerMessage = "(Note, saving will cause the server to restart if currently running)"
-    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
 
 
     //
