@@ -1,5 +1,5 @@
 
-app.controller('serverConfigController', function($scope, $location, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, auth, data) {
+app.controller('serverConfigController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, restClient, auth, data) {
 
 
     //
@@ -21,7 +21,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
-    $scope.enableProxyServer = 'Enable Proxy Server (mock interceptor) on port 8010 (BETA)';
+    $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
+    $scope.manageProxyPriorityPathsLabel = '(manage priority paths)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
@@ -77,7 +78,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
 
 
     //
-    // Functions
+    // Scoped Functions
     $scope.doSaveConfig = function() {
 
         if ($scope.readOnly) {
@@ -150,10 +151,30 @@ app.controller('serverConfigController', function($scope, $location, $uibModalIn
 
     };
 
+    $scope.doOpenProxyPathPriorityManager = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'proxy_path_conflict_manager.html',
+            controller: 'proxyPathConflictManagerController',
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+
+        }, function () {
+
+        });
+
+    };
+
     $scope.doCancel = function() {
         $uibModalInstance.dismiss('cancel');
     };
 
+
+    //
+    // Internal Functions
     function loadServerConfig() {
 
         restClient.doGet($http, '/mockedserver/config/' + ServerType, function(status, data) {

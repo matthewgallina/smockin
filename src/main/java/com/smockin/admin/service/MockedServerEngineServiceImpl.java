@@ -77,6 +77,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             mockedRestServerEngine.start(configDTO, restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
 
             return configDTO;
+        } catch (IllegalArgumentException ex) {
+            mockedRestServerEngine.shutdown();
+            throw ex;
         } catch (RecordNotFoundException ex) {
             logger.error("Starting REST Mocking Engine, due to missing mock server config", ex);
             throw new MockServerException("Missing mock REST server config");
@@ -343,12 +346,13 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 .entrySet()
                 .stream()
                 .forEach(d -> {
+
                     if (!d.getValue()
                             .stream()
                             .anyMatch(RestfulMock::isProxyPriority)) {
                         throw new IllegalArgumentException(GeneralUtils.PROXY_PATH_CONFLICT);
                     }
-        });
+                });
 
     }
 

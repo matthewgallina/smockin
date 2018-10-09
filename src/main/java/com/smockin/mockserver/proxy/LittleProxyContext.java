@@ -9,6 +9,7 @@ import java.util.Map;
 public class LittleProxyContext {
 
     private boolean useMock;
+    private String userCtx;
     private String requestBody;
     private HttpResponse clientResponse;
     private List<Map.Entry<String, String>> requestHeaders = new ArrayList<>();
@@ -18,6 +19,13 @@ public class LittleProxyContext {
     }
     public void setUseMock(boolean useMock) {
         this.useMock = useMock;
+    }
+
+    public String getUserCtx() {
+        return userCtx;
+    }
+    public void setUserCtx(String userCtx) {
+        this.userCtx = userCtx;
     }
 
     public String getRequestBody() {

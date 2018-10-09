@@ -156,10 +156,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
             if (status == 400
                     && data.message == globalVars.ERROR_PROXY_PATH_CONFLICT) {
-                errorMsg = "Cannot start proxy server. Loading conflict manager...";
+                errorMsg = "Cannot start proxy server. Path conflicts were found. Opening priority path manager...";
                 $timeout(function() {
                     openProxyPathConflictManager();
-                }, 2000);
+                }, 3000);
             }
 
             showAlert(errorMsg);
@@ -345,11 +345,11 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     function openProxyPathConflictManager() {
 
-     var modalInstance = $uibModal.open({
-          templateUrl: 'proxy_path_conflict_manager.html',
-          controller: 'proxyPathConflictManagerController',
-          backdrop  : 'static',
-          keyboard  : false
+        var modalInstance = $uibModal.open({
+            templateUrl: 'proxy_path_conflict_manager.html',
+            controller: 'proxyPathConflictManagerController',
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (response) {

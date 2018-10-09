@@ -1,6 +1,7 @@
 package com.smockin.mockserver.proxy;
 
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.mockserver.dto.ProxyActiveMock;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,19 +11,18 @@ import java.util.*;
 public class ProxyServerTest {
 
     private ProxyServerUtils proxyServerUtils;
-    private Map<String, List<RestMethodEnum>> activeMocks;
+    private List<ProxyActiveMock> activeMocks;
 
     @Before
     public void setUp() {
 
         proxyServerUtils = new ProxyServerUtils();
 
-        activeMocks = new HashMap<>();
-        activeMocks.put("/helloworld", Arrays.asList(RestMethodEnum.GET));
-        activeMocks.put("/hellomama", Arrays.asList(RestMethodEnum.POST));
-        activeMocks.put("/hellopapa", Arrays.asList(RestMethodEnum.PATCH));
-        activeMocks.put("/wiremock", Arrays.asList(RestMethodEnum.DELETE));
-
+        activeMocks = new ArrayList<>();
+        activeMocks.add(new ProxyActiveMock("/helloworld", null, RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock("/hellomama", null, RestMethodEnum.POST));
+        activeMocks.add(new ProxyActiveMock("/hellopapa", null, RestMethodEnum.PATCH));
+        activeMocks.add(new ProxyActiveMock("/wiremock", null, RestMethodEnum.DELETE));
     }
 
     @Test
@@ -30,10 +30,10 @@ public class ProxyServerTest {
 
         // Setup
         final String mockPath = "/hello";
-        activeMocks.put(mockPath, Arrays.asList(RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.GET));
 
         // Test
-        checkForMockPathMatch(activeMocks, "/hello", mockPath);
+        checkForMockPathMatch(activeMocks, mockPath, mockPath);
     }
 
     @Test
@@ -41,7 +41,7 @@ public class ProxyServerTest {
 
         // Setup
         final String mockPath = "/hello/:name";
-        activeMocks.put(mockPath, Arrays.asList(RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.GET));
 
         // Test
         checkForMockPathMatch(activeMocks, "/hello/bob", mockPath);
@@ -52,7 +52,7 @@ public class ProxyServerTest {
 
         // Setup
         final String mockPath = "/hello/:name/age/:age";
-        activeMocks.put(mockPath, Arrays.asList(RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.GET));
 
         // Test
         checkForMockPathMatch(activeMocks, "/hello/bob/age/28", mockPath);
@@ -63,21 +63,45 @@ public class ProxyServerTest {
 
         // Setup
         final String mockPath = "/hello/:name/hello/:name2/hello/:name3";
-        activeMocks.put(mockPath, Arrays.asList(RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.GET));
 
         // Test
         checkForMockPathMatch(activeMocks, "/hello/bob/hello/peter/hello/paul", mockPath);
     }
 
-    private void checkForMockPathMatch(final Map<String, List<RestMethodEnum>> activeMocks, final String inboundPath, final String expectedMockPath) {
+    @Test
+    public void checkForMockPathMatch_multi_Match() {
+
+        // Setup
+        final String mockPath = "/hello";
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.GET));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.POST));
+        activeMocks.add(new ProxyActiveMock(mockPath, null, RestMethodEnum.DELETE));
 
         // Test
-        final Optional<Map.Entry<String, List<RestMethodEnum>>> matchedPath = proxyServerUtils.checkForMockPathMatch(inboundPath, activeMocks);
+        final List<ProxyActiveMock> matchedPaths = proxyServerUtils.findMockPathMatches(mockPath, activeMocks);
 
         // Assertions
-        Assert.assertNotNull(matchedPath);
-        Assert.assertTrue(matchedPath.isPresent());
-        Assert.assertThat(matchedPath.get().getKey(), CoreMatchers.is(expectedMockPath));
+        Assert.assertNotNull(matchedPaths);
+        Assert.assertEquals(3, matchedPaths.size());
+        Assert.assertThat(matchedPaths.get(0).getPath(), CoreMatchers.is(mockPath));
+        Assert.assertThat(matchedPaths.get(1).getPath(), CoreMatchers.is(mockPath));
+        Assert.assertThat(matchedPaths.get(2).getPath(), CoreMatchers.is(mockPath));
+
+        Assert.assertThat(matchedPaths.get(0).getMethod(), CoreMatchers.anyOf(CoreMatchers.is(RestMethodEnum.GET), CoreMatchers.is(RestMethodEnum.POST), CoreMatchers.is(RestMethodEnum.DELETE)));
+        Assert.assertThat(matchedPaths.get(1).getMethod(), CoreMatchers.anyOf(CoreMatchers.is(RestMethodEnum.GET), CoreMatchers.is(RestMethodEnum.POST), CoreMatchers.is(RestMethodEnum.DELETE)));
+        Assert.assertThat(matchedPaths.get(2).getMethod(), CoreMatchers.anyOf(CoreMatchers.is(RestMethodEnum.GET), CoreMatchers.is(RestMethodEnum.POST), CoreMatchers.is(RestMethodEnum.DELETE)));
+    }
+
+    private void checkForMockPathMatch(final List<ProxyActiveMock> activeMocks, final String inboundPath, final String expectedMockPath) {
+
+        // Test
+        final List<ProxyActiveMock> matchedPaths = proxyServerUtils.findMockPathMatches(inboundPath, activeMocks);
+
+        // Assertions
+        Assert.assertNotNull(matchedPaths);
+        Assert.assertFalse(matchedPaths.isEmpty());
+        Assert.assertThat(matchedPaths.get(0).getPath(), CoreMatchers.is(expectedMockPath));
     }
 
     @Test

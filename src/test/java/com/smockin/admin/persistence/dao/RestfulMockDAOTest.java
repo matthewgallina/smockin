@@ -8,6 +8,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import org.apache.commons.lang3.tuple.Pair;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -40,7 +41,7 @@ public class RestfulMockDAOTest {
     @Autowired
     private SmockinUserDAO smockinUserDAO;
 
-    private RestfulMock a, b, c, d, e, f, g;
+    private RestfulMock a, b, c, d, e, f, g, h, i, j, k;
     private SmockinUser user;
 
     @Before
@@ -55,6 +56,7 @@ public class RestfulMockDAOTest {
         e = SmockinTestUtils.buildRestfulMock("/e", RestMockTypeEnum.SEQ, 1, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
         f = SmockinTestUtils.buildRestfulMock("/f", RestMockTypeEnum.SEQ, 12, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
         g = SmockinTestUtils.buildRestfulMock("/g", RestMockTypeEnum.SEQ, 14, RestMethodEnum.GET, RecordStatusEnum.INACTIVE, user);
+        h = SmockinTestUtils.buildRestfulMock("/h", RestMockTypeEnum.SEQ, 15, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
 
         a = restfulMockDAO.saveAndFlush(a);
         b = restfulMockDAO.saveAndFlush(b);
@@ -63,11 +65,13 @@ public class RestfulMockDAOTest {
         e = restfulMockDAO.saveAndFlush(e);
         f = restfulMockDAO.saveAndFlush(f);
         g = restfulMockDAO.saveAndFlush(g);
+        h = restfulMockDAO.saveAndFlush(h);
 
     }
 
     @After
     public void tearDown() {
+
         restfulMockDAO.deleteAll();
         restfulMockDAO.flush();
 
@@ -81,9 +85,9 @@ public class RestfulMockDAOTest {
         final List<RestfulMock> mocks = restfulMockDAO.findAllByStatus(RecordStatusEnum.ACTIVE);
 
         Assert.assertNotNull(mocks);
-        Assert.assertEquals(5, mocks.size());
+        Assert.assertEquals(6, mocks.size());
 
-        int[] expectedLoadOrder = new int[] { 1, 2, 3, 6, 12 };
+        int[] expectedLoadOrder = new int[] { 1, 2, 3, 6, 12, 15 };
 
         int index = 0;
 
@@ -99,9 +103,9 @@ public class RestfulMockDAOTest {
         final List<RestfulMock> mocks = restfulMockDAO.findAll();
 
         Assert.assertNotNull(mocks);
-        Assert.assertEquals(7, mocks.size());
+        Assert.assertEquals(8, mocks.size());
 
-        int[] expectedLoadOrder = new int[] { 1, 2, 3, 6, 10, 12, 14 };
+        int[] expectedLoadOrder = new int[] { 1, 2, 3, 6, 10, 12, 14, 15 };
 
         int index = 0;
 
@@ -129,60 +133,48 @@ public class RestfulMockDAOTest {
     @Test
     public void findAllPathDuplicatesTest() {
 
-        SmockinUser userB = SmockinTestUtils.buildSmockinUser();
-        userB.setUsername("User_B");
-        userB.setRole(SmockinUserRoleEnum.REGULAR);
-        userB.setCtxPath(userB.getUsername());
-        userB = smockinUserDAO.saveAndFlush(userB);
-
-        SmockinUser userC = SmockinTestUtils.buildSmockinUser();
-        userC.setUsername("User_C");
-        userC.setRole(SmockinUserRoleEnum.REGULAR);
-        userC.setCtxPath(userC.getUsername());
-        userC = smockinUserDAO.saveAndFlush(userC);
-
-        SmockinUser userD = SmockinTestUtils.buildSmockinUser();
-        userD.setUsername("User_D");
-        userD.setRole(SmockinUserRoleEnum.REGULAR);
-        userD.setCtxPath(userD.getUsername());
-        userD = smockinUserDAO.saveAndFlush(userD);
-
-        SmockinUser userE = SmockinTestUtils.buildSmockinUser();
-        userE.setUsername("User_E");
-        userE.setRole(SmockinUserRoleEnum.REGULAR);
-        userE.setCtxPath(userE.getUsername());
-        userE = smockinUserDAO.saveAndFlush(userE);
-
-        SmockinUser userF = SmockinTestUtils.buildSmockinUser();
-        userF.setUsername("userF");
-        userF.setRole(SmockinUserRoleEnum.ADMIN);
-        userF.setCtxPath(userF.getUsername());
-        userF = smockinUserDAO.saveAndFlush(userF);
-
-        SmockinUser userG = SmockinTestUtils.buildSmockinUser();
-        userG.setUsername("userG");
-        userG.setRole(SmockinUserRoleEnum.REGULAR);
-        userG.setCtxPath(userG.getUsername());
-        userG = smockinUserDAO.saveAndFlush(userG);
-
+        SmockinUser userB = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userB", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userC = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userC", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userD = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userD", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userE = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userE", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userF = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userF", SmockinUserRoleEnum.ADMIN));
+        SmockinUser userG = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userG", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userH = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userH", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userI = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userI", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userJ = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userJ", SmockinUserRoleEnum.REGULAR));
+        SmockinUser userK = smockinUserDAO.saveAndFlush(buildPathDuplicatesUser("userK", SmockinUserRoleEnum.REGULAR));
 
         a.setPath("/a");
         a.setCreatedBy(user);
+
         b.setPath("/b");
         b.setCreatedBy(userB);
+
         c.setPath("/a");
         c.setCreatedBy(userC);
+
         d.setPath("/b");
         d.setCreatedBy(userD);
         d.setStatus(RecordStatusEnum.ACTIVE);
+
         e.setPath("/c");
         e.setCreatedBy(userE);
+
         f.setPath("/c");
         f.setCreatedBy(userF);
         f.setStatus(RecordStatusEnum.INACTIVE);
+
         g.setPath("/a");
         g.setCreatedBy(userG);
         g.setStatus(RecordStatusEnum.INACTIVE);
+
+        h.setPath("/a");
+        h.setCreatedBy(userH);
+        h.setMethod(RestMethodEnum.PUT);
+
+        i = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 1, RestMethodEnum.PATCH, RecordStatusEnum.ACTIVE, userI);
+        j = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 2, RestMethodEnum.PATCH, RecordStatusEnum.ACTIVE, userJ);
+        k = SmockinTestUtils.buildRestfulMock("/a", RestMockTypeEnum.SEQ, 3, RestMethodEnum.PATCH, RecordStatusEnum.ACTIVE, userK);
 
         a = restfulMockDAO.saveAndFlush(a);
         b = restfulMockDAO.saveAndFlush(b);
@@ -191,36 +183,71 @@ public class RestfulMockDAOTest {
         e = restfulMockDAO.saveAndFlush(e);
         f = restfulMockDAO.saveAndFlush(f);
         g = restfulMockDAO.saveAndFlush(g);
+        h = restfulMockDAO.saveAndFlush(h);
+        i = restfulMockDAO.saveAndFlush(i);
+        j = restfulMockDAO.saveAndFlush(j);
+        k = restfulMockDAO.saveAndFlush(k);
 
-        final Map<String, List<RestfulMock>> activeDuplicateMocks = restfulMockDAO.findAllActivePathDuplicates();
+        final Map<Pair<String, RestMethodEnum>, List<RestfulMock>> activeDuplicateMocks
+                = restfulMockDAO.findAllActivePathDuplicates();
 
         Assert.assertNotNull(activeDuplicateMocks);
-        Assert.assertEquals(2, activeDuplicateMocks.size());
+        Assert.assertEquals(3, activeDuplicateMocks.size());
 
-        activeDuplicateMocks.entrySet().stream().forEach(m -> {
+        activeDuplicateMocks.entrySet()
+                .stream()
+                .forEach(m -> {
 
-            if ("/a".equals(m.getKey())) {
+            if ("/a".equals(m.getKey().getLeft())) {
+
+                if (RestMethodEnum.GET.equals(m.getKey().getRight())) {
+
+                    Assert.assertEquals(2, m.getValue().size());
+
+                    m.getValue().stream().forEach(r ->
+                            Assert.assertThat(r.getId(),
+                                    CoreMatchers.anyOf(CoreMatchers.equalTo(a.getId()), CoreMatchers.equalTo(c.getId())))
+                    );
+
+                } else if (RestMethodEnum.PATCH.equals(m.getKey().getRight())) {
+
+                    Assert.assertEquals(3, m.getValue().size());
+
+                    m.getValue().stream().forEach(r ->
+                            Assert.assertThat(r.getId(),
+                                    CoreMatchers.anyOf(CoreMatchers.equalTo(i.getId()), CoreMatchers.equalTo(j.getId()), CoreMatchers.equalTo(k.getId())))
+                    );
+
+                } else {
+
+                    Assert.fail();
+                }
+
+            } else if ("/b".equals(m.getKey().getLeft())) {
 
                 Assert.assertEquals(2, m.getValue().size());
 
-                m.getValue().stream().forEach(r -> {
-                    Assert.assertThat(r.getId(), CoreMatchers.anyOf(CoreMatchers.equalTo(a.getId()), CoreMatchers.equalTo(c.getId())));
-                });
-
-            } else if ("/b".equals(m.getKey())) {
-
-                Assert.assertEquals(2, m.getValue().size());
-
-                m.getValue().stream().forEach(r -> {
-                    Assert.assertThat(r.getId(), CoreMatchers.anyOf(CoreMatchers.equalTo(b.getId()), CoreMatchers.equalTo(d.getId())));
-                });
+                m.getValue().stream().forEach(r ->
+                    Assert.assertThat(r.getId(),
+                            CoreMatchers.anyOf(CoreMatchers.equalTo(b.getId()), CoreMatchers.equalTo(d.getId())))
+                );
 
             } else {
+
                 Assert.fail();
             }
 
         });
 
+    }
+
+    private SmockinUser buildPathDuplicatesUser(final String username, final SmockinUserRoleEnum role) {
+
+        SmockinUser user = SmockinTestUtils.buildSmockinUser();
+        user.setUsername(username);
+        user.setRole(role);
+        user.setCtxPath(user.getUsername());
+        return smockinUserDAO.saveAndFlush(user);
     }
 
 }

@@ -9,6 +9,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.proxy.ProxyServer;
 import com.smockin.mockserver.service.*;
@@ -31,6 +32,7 @@ import spark.Spark;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by mgallina.
@@ -83,7 +85,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        final Map<String, List<RestMethodEnum>> activeMocks = buildRESTEndpoints(mocks);
+        final List<RestfulMock> activeMocks = buildRESTEndpoints(mocks);
 
         // Next handle all HTTP SSE web service routes
         buildSSEEndpoints(mocks);
@@ -164,7 +166,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.threadPool(config.getMaxThreads(), config.getMinThreads(), config.getTimeOutMillis());
     }
 
-    void initProxyServer(final Map<String, List<RestMethodEnum>> activeMocks, final MockedServerConfigDTO config) {
+    void initProxyServer(final List<RestfulMock> activeMocks, final MockedServerConfigDTO config) {
 
         if (!isProxyServerModeEnabled(config)) {
             return;
@@ -172,7 +174,27 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
 
-        proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeMocks);
+        final List<ProxyActiveMock> activeProxyMocks = new ArrayList<>();
+
+        activeMocks.stream()
+                .collect(Collectors.groupingBy(RestfulMock::getPath))
+                .entrySet()
+                .stream()
+                .forEach(g -> {
+
+                    final RestfulMock mock = (g.getValue().size() > 1)
+                            ? g.getValue()
+                                .stream()
+                                .filter(m -> m.isProxyPriority())
+                                .findFirst()
+                                .orElseThrow(() -> new IllegalArgumentException(GeneralUtils.PROXY_PATH_CONFLICT))
+                            : g.getValue()
+                                .get(0);
+
+                    activeProxyMocks.add(new ProxyActiveMock(mock.getPath(), mock.getCreatedBy().getCtxPath(), mock.getMethod()));
+                });
+
+        proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeProxyMocks);
     }
 
     public boolean isProxyServerModeEnabled(final MockedServerConfigDTO config) {
@@ -232,9 +254,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     // Expects RestfulMock to be detached
-    Map<String, List<RestMethodEnum>> buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+    List<RestfulMock> buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
 
-        final Map<String, List<RestMethodEnum>> activeMocks = new HashMap<>();
+        final List<RestfulMock> activeMocks = new ArrayList<>();
 
         mocks.stream().forEach( m -> {
 
@@ -246,11 +268,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 removeSuspendedResponses(m);
 
                 final String path = buildUserPath(m);
-
                 final RestMethodEnum method = m.getMethod();
 
-                activeMocks.putIfAbsent(path, new ArrayList<>());
-                activeMocks.get(path).add(method);
+                activeMocks.add(m);
 
                 switch (method) {
                     case GET:

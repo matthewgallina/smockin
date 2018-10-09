@@ -3,7 +3,6 @@ package com.smockin.admin.controller;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.RestfulMockService;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by mgallina.
@@ -57,14 +55,6 @@ public class RestfulMockController {
                                                                                 throws RecordNotFoundException {
         return new ResponseEntity<>(restfulMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
-
-    @RequestMapping(path="/pathduplicate/rest", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<Map<String, List<RestfulMockResponseDTO>>> get(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws RecordNotFoundException, AuthException {
-        return new ResponseEntity<>(restfulMockService.loadAllUserPathDuplicates(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
-    }
-
-
 
 }
 

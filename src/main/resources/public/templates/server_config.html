@@ -46,7 +46,7 @@
 
     <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
         <input id="enableProxyServer"  ng-model="serverConfig.enableProxyServer" type="checkbox" ng-disabled="readOnly" />
-        <label for="enableProxyServer" class="ng-binding">{{ enableProxyServer }}</label>
+        <label for="enableProxyServer" class="ng-binding">{{ enableProxyServerLabel }} <a href="" ng-click="doOpenProxyPathPriorityManager()">{{ manageProxyPriorityPathsLabel }}</a></label>
     </div>
 
     <br />

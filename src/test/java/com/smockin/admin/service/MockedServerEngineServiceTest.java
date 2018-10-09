@@ -9,7 +9,7 @@ import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.entity.SmockinUser;
-import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
@@ -27,6 +27,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
@@ -445,10 +446,10 @@ public class MockedServerEngineServiceTest {
         m5.setPath("/pets");
 
         Mockito.when(restfulMockDefinitionDAO.findAllActivePathDuplicates())
-                .thenReturn(new HashMap<String, List<RestfulMock>>() {
+                .thenReturn(new HashMap<Pair<String,RestMethodEnum>, List<RestfulMock>>() {
                     {
-                        put("/hello", Arrays.asList(m1, m2, m3));
-                        put("/pets", Arrays.asList(m4, m5));
+                        put(Pair.of("/hello", RestMethodEnum.GET), Arrays.asList(m1, m2, m3));
+                        put(Pair.of("/pets", RestMethodEnum.GET), Arrays.asList(m4, m5));
                     }
                 });
 
@@ -479,9 +480,9 @@ public class MockedServerEngineServiceTest {
         m3.setPath("/hello");
 
         Mockito.when(restfulMockDefinitionDAO.findAllActivePathDuplicates())
-                .thenReturn(new HashMap<String, List<RestfulMock>>() {
+                .thenReturn(new HashMap<Pair<String, RestMethodEnum>, List<RestfulMock>>() {
                     {
-                        put("/hello", Arrays.asList(m1, m2, m3));
+                        put(Pair.of("/hello", RestMethodEnum.GET), Arrays.asList(m1, m2, m3));
                     }
                 });
 

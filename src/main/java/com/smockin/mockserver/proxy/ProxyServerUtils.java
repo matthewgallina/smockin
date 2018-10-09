@@ -3,6 +3,7 @@ package com.smockin.mockserver.proxy;
 import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.utils.HttpClientUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -71,10 +71,10 @@ public class ProxyServerUtils {
         return dto;
     }
 
-    boolean doesPathMatch(final String inboundPath, final String mock) {
+    boolean doesPathMatch(final String inboundPath, final String path) {
 
-        String newMockPathRegex = mock;
-        String mockPath = mock;
+        String newMockPathRegex = path;
+        String mockPath = path;
         int mockPathVarIdx;
 
         while ((mockPathVarIdx = mockPath.indexOf(":")) > -1) {
@@ -91,12 +91,16 @@ public class ProxyServerUtils {
         return inboundPath.matches("^" + newMockPathRegex + "$");
     }
 
-    String buildMockUrl(final URL inboundUrl, final int mockServerPort) {
+    String buildMockUrl(final URL inboundUrl, final int mockServerPort, final String userCtx) {
         logger.debug("buildMockUrl called");
 
         final StringBuilder mockUrl = new StringBuilder();
         mockUrl.append(MOCK_SERVER_HOST);
         mockUrl.append(mockServerPort);
+        if (StringUtils.isNotBlank(userCtx)) {
+            mockUrl.append("/");
+            mockUrl.append(userCtx);
+        }
         mockUrl.append(inboundUrl.getPath());
 
         if (inboundUrl.getQuery() != null) {
@@ -107,32 +111,35 @@ public class ProxyServerUtils {
         return mockUrl.toString();
     }
 
-    Optional<Map.Entry<String, List<RestMethodEnum>>> checkForMockPathMatch(final String inboundPath, final Map<String, List<RestMethodEnum>> activeMocks) {
+    List<ProxyActiveMock> findMockPathMatches(final String inboundPath, final List<ProxyActiveMock> activeMocks) {
         logger.debug("checkForMockPathMatch called");
 
         // Need to think about order of paths which start with same value (i.e /house, /house/people/bob)
-        return activeMocks.entrySet()
+        return activeMocks
                 .stream()
-                .filter(e -> doesPathMatch(inboundPath, e.getKey()))
+                .filter(e -> doesPathMatch(inboundPath, e.getPath()))
+                .collect(Collectors.toList());
+    }
+
+    Optional<ProxyActiveMock> findMockMethodMatch(final String method, final List<ProxyActiveMock> pathMatches) {
+        logger.debug("findMockMethodMatch called");
+
+        if (pathMatches.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return pathMatches
+                .stream()
+                .filter(m -> m.getMethod().name().equalsIgnoreCase(method))
                 .findFirst();
     }
 
-    Optional<RestMethodEnum> checkForMockMethodMatch(final String method, final Map.Entry<String, List<RestMethodEnum>> pathMatch) {
-        logger.debug("checkForMockMethodMatch called");
+    Optional<ProxyActiveMock> findMockMatch(final HttpRequest originalRequest, final List<ProxyActiveMock> activeMocks) throws MalformedURLException {
 
-        return pathMatch.getValue()
-                .stream()
-                .filter(m -> m.name().equalsIgnoreCase(method))
-                .findFirst();
-    }
+        final List<ProxyActiveMock> pathMatches =
+                findMockPathMatches(new URL(fixProtocolWithDummyPrefix(originalRequest.getUri())).getPath(), activeMocks);
 
-    boolean mockMatchFound(final HttpRequest originalRequest, final Map<String, List<RestMethodEnum>> activeMocks) throws MalformedURLException {
-
-        final Optional<Map.Entry<String, List<RestMethodEnum>>> pathMatchOpt =
-                checkForMockPathMatch(new URL(fixProtocolWithDummyPrefix(originalRequest.getUri())).getPath(), activeMocks);
-
-        return (pathMatchOpt.isPresent()
-                && checkForMockMethodMatch(originalRequest.getMethod().name(), pathMatchOpt.get()).isPresent());
+        return findMockMethodMatch(originalRequest.getMethod().name(), pathMatches);
     }
 
     HttpClientResponseDTO callMock(final HttpClientCallDTO dto) throws IOException {
