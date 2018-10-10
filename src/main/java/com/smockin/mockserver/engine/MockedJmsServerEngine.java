@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.jms.*;
 import java.io.File;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -40,6 +40,8 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     private ActiveMQConnectionFactory connectionFactory = null; // NOTE this is thread safe
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
+    private Map<Long, Date> deployedMocks;
+
 
     @Override
     public void start(final MockedServerConfigDTO config, final List<JmsMock> data) throws MockServerException {
@@ -53,9 +55,16 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         // Define JMS queue and topic destinations
         buildDestinations(data);
 
+        setDeployedMocks(data);
+
         // Start JMS Broker
         initServer(config.getPort());
 
+    }
+
+    @Override
+    public Map<Long, Date> loadDeployedMocks() {
+        return deployedMocks;
     }
 
     public MockServerState getCurrentState() throws MockServerException {
@@ -81,6 +90,8 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
+        } finally {
+            clearDeployedMocks();
         }
 
     }
@@ -279,6 +290,22 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
             });
         }
 
+    }
+
+    private void setDeployedMocks(final List<JmsMock> mocks) {
+
+        final Map<Long, Date> tempMap = new HashMap<>();
+        mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
+
+        synchronized (monitor) {
+            deployedMocks = Collections.unmodifiableMap(tempMap);
+        }
+    }
+
+    private void clearDeployedMocks() {
+        synchronized (monitor) {
+            deployedMocks = new HashMap<>();
+        }
     }
 
     public String buildJmsUserPath(final JmsMock mock) {

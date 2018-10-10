@@ -1,6 +1,7 @@
 package com.smockin.admin.dto.response;
 
 import com.smockin.admin.dto.FtpMockDTO;
+import com.smockin.admin.enums.DeploymentStatusEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 
 import java.util.Date;
@@ -12,15 +13,17 @@ import java.util.Date;
 public class FtpMockResponseDTO extends FtpMockDTO {
 
     private String extId;
+    private DeploymentStatusEnum deploymentStatus;
     private Date dateCreated;
 
     public FtpMockResponseDTO() {
 
     }
 
-    public FtpMockResponseDTO(final String extId, final String name, final RecordStatusEnum status, final Date dateCreated) {
+    public FtpMockResponseDTO(final String extId, final String name, final RecordStatusEnum status, final DeploymentStatusEnum deploymentStatus, final Date dateCreated) {
         super(name,  status);
         this.extId = extId;
+        this.deploymentStatus = deploymentStatus;
         this.dateCreated = dateCreated;
     }
 
@@ -29,6 +32,13 @@ public class FtpMockResponseDTO extends FtpMockDTO {
     }
     public void setExtId(String extId) {
         this.extId = extId;
+    }
+
+    public DeploymentStatusEnum getDeploymentStatus() {
+        return deploymentStatus;
+    }
+    public void setDeploymentStatus(DeploymentStatusEnum deploymentStatus) {
+        this.deploymentStatus = deploymentStatus;
     }
 
     public Date getDateCreated() {

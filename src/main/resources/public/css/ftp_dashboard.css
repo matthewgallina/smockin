@@ -32,3 +32,15 @@
 #add-endpoint-button {
     margin-top: 15px;
 }
+
+.status-active {
+    color: #53c653;
+}
+
+.status-pending {
+    color: orange;
+}
+
+.status-inactive {
+    color: #ff8080;
+}

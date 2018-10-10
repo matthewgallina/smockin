@@ -1,5 +1,5 @@
 
-app.controller('ftpDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient) {
+app.controller('ftpDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient, auth) {
 
 
     //
@@ -23,7 +23,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     $scope.nameTableLabel = 'Username';
     $scope.dateCreatedTableLabel = 'Date Created';
-    $scope.statusTableLabel = 'Status';
+    $scope.statusTableLabel = 'Deployment Status';
     $scope.actionTableLabel = 'Action';
 
 
@@ -42,6 +42,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     //
     // Data
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.ftpServices = [];
     $scope.mockServerStatus = null;
 
@@ -63,7 +64,9 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
         });
 
         modalInstance.result.then(function (response) {
-            if (response != null && response.restartReq) {
+            if (response != null
+                    && response.restartReq
+                    && !$scope.readOnly) {
                 RestartServerRequired = true;
 
             }
@@ -81,6 +84,10 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     $scope.startFtpMockServer = function() {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         utils.showLoadingOverlay('Starting FTP Server');
 
         restClient.doPost($http, '/mockedserver/ftp/start', {}, function(status, data) {
@@ -90,6 +97,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
             if (status == 200) {
                 $scope.mockServerStatus = MockServerRunningStatus;
                 showAlert("FTP Server Started (on port " + String(data.port) + ")", "success");
+                loadTableData();
                 return;
             }
 
@@ -100,6 +108,10 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     $scope.stopFtpMockServer = function () {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         utils.showLoadingOverlay('Stopping FTP Server');
 
         restClient.doPost($http, '/mockedserver/ftp/stop', {}, function(status, data) {
@@ -109,6 +121,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
                 showAlert("FTP Server Stopped", "success");
+                loadTableData();
                 return;
             }
 

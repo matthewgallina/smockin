@@ -10,6 +10,7 @@ import com.smockin.admin.persistence.entity.FtpMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.engine.MockedFtpServerEngine;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,9 @@ public class FtpMockServiceImpl implements FtpMockService {
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Autowired
+    private MockedFtpServerEngine mockedFtpServerEngine;
 
     @Value("${smockin.ftp.root.dir}")
     private String ftpHomeDir;
@@ -75,7 +79,6 @@ public class FtpMockServiceImpl implements FtpMockService {
         // Rename user's ftp dir.
         // Any runtime exception will cause transaction (rename above) to rollback.
         new File(originalName).renameTo(new File(buildUserBaseDir(mock)));
-
     }
 
     @Override
@@ -107,7 +110,7 @@ public class FtpMockServiceImpl implements FtpMockService {
 
         return mocks
                 .stream()
-                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), e.getDateCreated()))
+                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), mockedFtpServerEngine.getDeploymentStatus(e), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 

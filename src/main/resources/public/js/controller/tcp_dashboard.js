@@ -62,7 +62,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.pathTableLabel = 'Path';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.createdByTableLabel = 'Created By';
-    $scope.statusTableLabel = 'Status';
+    $scope.statusTableLabel = 'Deployment Status';
     $scope.mockTypeTableLabel = 'HTTP Mock Type';
     $scope.actionTableLabel = 'Action';
 
@@ -84,7 +84,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         });
 
         modalInstance.result.then(function (response) {
-            if (response != null && response.restartReq) {
+            if (response != null
+                    && response.restartReq
+                    && !$scope.readOnly) {
                 RestartServerRequired = true;
                 loadTcpServerStatus();
             }
@@ -154,6 +156,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 }
 
                 showAlert(alertMsg, "success");
+                loadTableData(false);
                 return;
             }
 
@@ -192,6 +195,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
                 showAlert("HTTP Server Stopped", "success");
+                loadTableData(false);
                 return;
             }
 
@@ -339,6 +343,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     }
 
     function restartTcpMockServer(callback) {
+
+        if ($scope.readOnly) {
+            return;
+        }
 
         utils.showLoadingOverlay('Updating HTTP Server');
 

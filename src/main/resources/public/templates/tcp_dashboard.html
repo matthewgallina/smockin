@@ -75,8 +75,8 @@
                                 <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
-                                <td class="status-{{x.status | lowercase}}">
-                                    {{ x.status }}
+                                <td class="status-{{x.deploymentStatus | lowercase}}">
+                                    {{ x.deploymentStatus }}
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
@@ -131,8 +131,8 @@
                                 <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td ng-if="isLoggedIn">{{ x.createdBy }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
-                                <td class="status-{{x.status | lowercase}}">
-                                    {{ x.status }}
+                                <td class="status-{{x.deploymentStatus | lowercase}}">
+                                    {{ x.deploymentStatus }}
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>

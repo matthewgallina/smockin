@@ -4,6 +4,7 @@ import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,9 @@ public class RestfulMockServiceUtils {
     @Autowired
     private RestfulMockSortingUtils restfulMockSortingUtils;
 
+    @Autowired
+    private MockedRestServerEngine mockedRestServerEngine;
+
     @Transactional
     public List<RestfulMockResponseDTO> buildRestfulMockDefinitionDTO(final List<RestfulMock> restfulMockDefinitions) {
 
@@ -32,7 +36,7 @@ public class RestfulMockServiceUtils {
 
         for (RestfulMock rmd : restfulMockDefinitions) {
 
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(), rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isProxyPriority());
+            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), mockedRestServerEngine.getDeploymentStatus(rmd), rmd.getMethod(), rmd.getStatus(), rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(), rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isProxyPriority());
 
             // Definitions
             for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {

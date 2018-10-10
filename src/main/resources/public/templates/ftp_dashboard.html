@@ -17,8 +17,8 @@
                     </h3>
                 </div>
                 <div class="col-sm-4">
-                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startFtpMockServer()"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
-                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopFtpMockServer()"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startFtpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopFtpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
                 </div>
             </div>
         </div>
@@ -60,8 +60,8 @@
                 <tr ng-repeat="f in ftpServices">
                     <td>{{ f.name }}</td>
                     <th>{{ f.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                    <td class="status-{{f.status | lowercase}}">
-                        {{ f.status }}
+                    <td class="status-{{f.deploymentStatus | lowercase}}">
+                        {{ f.deploymentStatus }}
                     </td>
                     <td>
                         <button type="button" class="btn btn-primary" ng-click="doOpenFtpInfo(f)">{{ viewEndpointButtonLabel }}</button>

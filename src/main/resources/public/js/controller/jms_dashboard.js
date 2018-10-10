@@ -1,5 +1,5 @@
 
-app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient) {
+app.controller('jmsDashboardController', function($scope, $rootScope, $routeParams, $location, $http, $uibModal, utils, globalVars, restClient, auth) {
 
 
     //
@@ -24,7 +24,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     $scope.nameTableLabel = 'Name';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.mockTypeTableLabel = 'JMS Mock Type';
-    $scope.statusTableLabel = 'Status';
+    $scope.statusTableLabel = 'Deployment Status';
     $scope.actionTableLabel = 'Action';
 
 
@@ -43,6 +43,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     //
     // Data
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.jmsServices = [];
     $scope.mockServerStatus = null;
 
@@ -64,7 +65,9 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
         });
 
         modalInstance.result.then(function (response) {
-            if (response != null && response.restartReq) {
+            if (response != null
+                    && response.restartReq
+                    && !$scope.readOnly) {
                 RestartServerRequired = true;
 
             }
@@ -81,6 +84,10 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     $scope.startJmsMockServer = function() {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         utils.showLoadingOverlay('Starting JMS Server');
 
         restClient.doPost($http, '/mockedserver/jms/start', {}, function(status, data) {
@@ -90,6 +97,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
             if (status == 200) {
                 $scope.mockServerStatus = MockServerRunningStatus;
                 showAlert("JMS Server Started (on port " + String(data.port) + ")", "success");
+                loadTableData();
                 return;
             }
 
@@ -100,6 +108,10 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     $scope.stopJmsMockServer = function () {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         utils.showLoadingOverlay('Stopping JMS Server');
 
         restClient.doPost($http, '/mockedserver/jms/stop', {}, function(status, data) {
@@ -109,6 +121,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
                 showAlert("JMS Server Stopped", "success");
+                loadTableData();
                 return;
             }
 

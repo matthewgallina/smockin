@@ -9,6 +9,7 @@ import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.entity.JmsMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class JmsMockServiceImpl implements JmsMockService {
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Autowired
+    private MockedJmsServerEngine mockedJmsServerEngine;
 
     @Override
     public String createEndpoint(final JmsMockDTO dto, final String token) throws RecordNotFoundException {
@@ -82,7 +86,7 @@ public class JmsMockServiceImpl implements JmsMockService {
 
         return jmsMocks
                 .stream()
-                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
+                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), mockedJmsServerEngine.getDeploymentStatus(e), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 
