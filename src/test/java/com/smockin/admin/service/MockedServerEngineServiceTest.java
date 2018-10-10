@@ -289,7 +289,7 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void startRestTest() throws MockServerException {
+    public void startRestTest() throws MockServerException, AuthException, RecordNotFoundException {
 
         // Setup
         final ServerConfig serverConfig = new ServerConfig(ServerTypeEnum.RESTFUL);
@@ -304,7 +304,7 @@ public class MockedServerEngineServiceTest {
         Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
-        final MockedServerConfigDTO dto = mockedServerEngineService.startRest();
+        final MockedServerConfigDTO dto = mockedServerEngineService.startRest(token);
 
         // Assertions
         Assert.assertNotNull(dto);
@@ -321,19 +321,19 @@ public class MockedServerEngineServiceTest {
     }
 
     @Test
-    public void startRest_ConfigNotFound_Test() throws MockServerException {
+    public void startRest_ConfigNotFound_Test() throws MockServerException, AuthException, RecordNotFoundException {
 
         // Assertions
         thrown.expect(MockServerException.class);
         thrown.expectMessage("Missing mock REST server config");
 
         // Test
-        mockedServerEngineService.startRest();
+        mockedServerEngineService.startRest(token);
 
     }
 
     @Test
-    public void startRest_GeneralFailure_Test() throws MockServerException {
+    public void startRest_GeneralFailure_Test() throws MockServerException, AuthException, RecordNotFoundException {
 
         // Assertions
         thrown.expect(MockServerException.class);
@@ -345,19 +345,19 @@ public class MockedServerEngineServiceTest {
         Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Matchers.any(MockedServerConfigDTO.class), Matchers.anyListOf(RestfulMock.class));
 
         // Test
-        mockedServerEngineService.startRest();
+        mockedServerEngineService.startRest(token);
 
     }
 
     @Test
-    public void shutdownRestTest() throws MockServerException {
+    public void shutdownRestTest() throws MockServerException, AuthException, RecordNotFoundException {
 
-        mockedServerEngineService.shutdownRest();
+        mockedServerEngineService.shutdownRest(token);
 
     }
 
     @Test
-    public void shutdownRest_GeneralFailure_Test() throws MockServerException {
+    public void shutdownRest_GeneralFailure_Test() throws MockServerException, AuthException, RecordNotFoundException {
 
         // Assertions
         thrown.expect(MockServerException.class);
@@ -367,7 +367,7 @@ public class MockedServerEngineServiceTest {
         Mockito.doThrow(new MockServerException("Shutdown Boom")).when(mockedRestServerEngine).shutdown();
 
         // Test
-        mockedServerEngineService.shutdownRest();
+        mockedServerEngineService.shutdownRest(token);
 
     }
 
