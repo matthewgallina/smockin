@@ -140,8 +140,6 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     public List<ProxyRestDuplicateDTO> loadAllUserPathDuplicates(final String token) throws RecordNotFoundException, AuthException {
         logger.debug("loadAllUserPathDuplicates called");
 
-//        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
         return restfulMockDAO.findAllActivePathDuplicates()
                 .entrySet()
                 .stream()

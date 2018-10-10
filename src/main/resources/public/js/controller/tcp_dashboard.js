@@ -50,6 +50,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Data Objects
     $scope.isLoggedIn = auth.isLoggedIn();
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.mockServerStatus = '';
     $scope.restServices = [];
     $scope.otherUserRestServices = [];
@@ -132,6 +133,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     $scope.startTcpMockServer = function() {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
         utils.showLoadingOverlay('Starting HTTP Server');
 
         restClient.doPost($http, '/mockedserver/rest/start', {}, function(status, data) {
@@ -173,6 +178,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     };
 
     $scope.stopTcpMockServer = function () {
+
+        if ($scope.readOnly) {
+            return;
+        }
 
         utils.showLoadingOverlay('Stopping HTTP Server');
 
@@ -304,7 +313,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 return;
             }
 
-            if (RestartServerRequired && running) {
+            if (RestartServerRequired
+                    && running
+                    && !$scope.readOnly) {
 
                 $scope.mockServerStatus = MockServerRestartStatus;
 

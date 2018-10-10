@@ -10,6 +10,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.JmsServerType = globalVars.JmsServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
 
+
     //
     // Labels
     var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"HTTP":ServerType;

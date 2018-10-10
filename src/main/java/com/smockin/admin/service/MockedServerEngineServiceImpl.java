@@ -66,7 +66,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     //
     // Rest
     @Override
-    public MockedServerConfigDTO startRest() throws MockServerException {
+    public MockedServerConfigDTO startRest(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        return startRest();
+    }
+
+    private MockedServerConfigDTO startRest() throws MockServerException {
 
         try {
 
@@ -91,7 +98,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public MockedServerConfigDTO restartRest() throws MockServerException {
+    public MockedServerConfigDTO restartRest(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
         if (getRestServerState().isRunning()) {
             shutdownRest();
@@ -106,7 +115,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public void shutdownRest() throws MockServerException {
+    public void shutdownRest(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        shutdownRest();
+    }
+
+    private void shutdownRest() throws MockServerException {
 
         try {
             mockedRestServerEngine.shutdown();
@@ -121,7 +137,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     //
     // JMS
     @Override
-    public MockedServerConfigDTO startJms() throws MockServerException {
+    public MockedServerConfigDTO startJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        return startJms();
+    }
+
+    private MockedServerConfigDTO startJms() throws MockServerException {
 
         try {
 
@@ -146,7 +169,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public void shutdownJms() throws MockServerException {
+    public void shutdownJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        shutdownJms();
+    }
+
+    private void shutdownJms() throws MockServerException {
 
         try {
             mockedJmsServerEngine.shutdown();
@@ -158,14 +188,15 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public MockedServerConfigDTO restartJms() throws MockServerException {
+    public MockedServerConfigDTO restartJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
         if (getJmsServerState().isRunning()) {
             shutdownJms();
         }
 
         return startJms();
-
     }
 
     @Override
@@ -177,7 +208,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     //
     // FTP
     @Override
-    public MockedServerConfigDTO startFtp() throws MockServerException {
+    public MockedServerConfigDTO startFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        return startFtp();
+    }
+
+    private MockedServerConfigDTO startFtp() throws MockServerException {
 
         try {
 
@@ -202,7 +240,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public void shutdownFtp() throws MockServerException {
+    public void shutdownFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        shutdownFtp();
+    }
+
+    private void shutdownFtp() throws MockServerException {
 
         try {
             mockedFtpServerEngine.shutdown();
@@ -214,7 +259,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public MockedServerConfigDTO restartFtp() throws MockServerException {
+    public MockedServerConfigDTO restartFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
         if (getFtpServerState().isRunning()) {
             shutdownFtp();
@@ -281,6 +328,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfigDAO.saveAndFlush(serverConfig);
     }
 
+    @Override
     public void handleServerAutoStart() {
 
         serverConfigDAO.findAll().stream().forEach(sc -> {
