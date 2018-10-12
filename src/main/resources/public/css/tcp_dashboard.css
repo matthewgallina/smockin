@@ -83,3 +83,11 @@
 .show-all-toggle {
     font-size: 16px;
 }
+
+.mock-status-active {
+
+}
+
+.mock-status-inactive {
+    text-decoration: line-through;
+}

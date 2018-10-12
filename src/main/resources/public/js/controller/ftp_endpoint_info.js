@@ -19,6 +19,8 @@ app.controller('ftpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.uploadFTPMessageLabel = 'Upload File to Repository';
     $scope.selectFileLabel = 'Select File...';
     $scope.noFilesFoundLabel = 'No Files Found';
+    $scope.enabledLabel = "Enabled";
+    $scope.disabledLabel = "Disabled";
 
 
     //

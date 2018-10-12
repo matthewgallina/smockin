@@ -16,13 +16,13 @@
                     {{ endpointStatusLabel }}
                     <div id="endpoint-status" class="btn-group" uib-dropdown>
                         <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled || readOnly">
-                            <span>{{ endpoint.status }}</span>
+                            <span>{{ (endpoint.status == activeStatus) ? enabledLabel : disabledLabel }}</span>
                             <span class="caret"></span>
                         </button>
                         <ul id="endpoint-status-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
                             <li role="menuitem">
-                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ activeStatus }}</a>
-                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ inActiveStatus }}</a>
+                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ enabledLabel }}</a>
+                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ disabledLabel }}</a>
                             </li>
                         </ul>
                     </div>
