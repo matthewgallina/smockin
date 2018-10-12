@@ -43,7 +43,6 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
     //
     // Data
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
-    $scope.activeStatus = globalVars.ActiveStatus;
     $scope.ftpServices = [];
     $scope.mockServerStatus = null;
 

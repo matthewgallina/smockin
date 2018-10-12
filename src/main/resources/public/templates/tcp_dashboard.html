@@ -72,7 +72,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="x in rs.data">
-                                <td class="mock-status-{{(x.status == activeStatus)?'active':'inactive'}}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.deploymentStatus | lowercase}}">
@@ -128,7 +128,7 @@
                             </thead>
                             <tbody>
                             <tr ng-repeat="x in rs.data">
-                                <td class="mock-status-{{(x.status == activeStatus)?'active':'inactive'}}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td ng-if="isLoggedIn">{{ x.createdBy }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.deploymentStatus | lowercase}}">

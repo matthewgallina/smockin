@@ -44,7 +44,6 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     //
     // Data
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
-    $scope.activeStatus = globalVars.ActiveStatus;
     $scope.jmsServices = [];
     $scope.mockServerStatus = null;
 

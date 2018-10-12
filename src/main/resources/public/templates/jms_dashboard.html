@@ -59,7 +59,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="j in jmsServices">
-                    <td>{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
+                    <td class="mock-status-{{ j.status | lowercase }}">{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
                     <th>{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
                     <td>{{ j.jmsMockType }}</td>
                     <td class="status-{{j.deploymentStatus | lowercase}}">

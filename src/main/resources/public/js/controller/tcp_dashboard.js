@@ -51,7 +51,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     // Data Objects
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
-    $scope.activeStatus = globalVars.ActiveStatus;
     $scope.mockServerStatus = '';
     $scope.restServices = [];
     $scope.otherUserRestServices = [];

@@ -58,7 +58,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="f in ftpServices">
-                    <td>{{ f.name }}</td>
+                    <td class="mock-status-{{ f.status | lowercase }}">{{ f.name }}</td>
                     <th>{{ f.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
                     <td class="status-{{f.deploymentStatus | lowercase}}">
                         {{ f.deploymentStatus }}
