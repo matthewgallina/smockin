@@ -125,7 +125,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         modalInstance.result.then(function (response) {
             if (response != null
                     && response.uploadCompleted) {
-                loadTableData(false);
+                loadTableData($scope.showAllEndpoints);
             }
         }, function () {
 
@@ -156,7 +156,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 }
 
                 showAlert(alertMsg, "success");
-                loadTableData(false);
+                loadTableData($scope.showAllEndpoints);
                 return;
             }
 
@@ -195,7 +195,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
                 showAlert("HTTP Server Stopped", "success");
-                loadTableData(false);
+                loadTableData($scope.showAllEndpoints);
                 return;
             }
 
