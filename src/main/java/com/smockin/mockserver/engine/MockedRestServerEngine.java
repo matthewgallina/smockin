@@ -102,7 +102,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Override
     public Map<Long, Date> loadDeployedMocks() {
-        return deployedMocks;
+        return Collections.unmodifiableMap(deployedMocks);
     }
 
     @Override
@@ -313,10 +313,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private void setDeployedMocks(final List<RestfulMock> activeMocks) {
 
         final Map<Long, Date> tempMap = new HashMap<>();
-        activeMocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
+        activeMocks
+                .stream()
+                .forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
 
         synchronized (monitor) {
-            deployedMocks = Collections.unmodifiableMap(tempMap);
+            deployedMocks = tempMap;
         }
     }
 

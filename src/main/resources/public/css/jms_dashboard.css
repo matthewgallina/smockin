@@ -33,7 +33,7 @@
     margin-top: 15px;
 }
 
-.status-active {
+.status-deployed {
     color: #53c653;
 }
 
@@ -41,7 +41,7 @@
     color: orange;
 }
 
-.status-inactive {
+.status-offline {
     color: #ff8080;
 }
 

@@ -168,7 +168,7 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
 
         synchronized (monitor) {
-            deployedMocks = Collections.unmodifiableMap(tempMap);
+            deployedMocks = tempMap;
         }
     }
 

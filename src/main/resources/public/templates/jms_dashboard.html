@@ -49,26 +49,26 @@
 
             <table class="table table-striped">
                 <thead>
-                <tr>
-                    <th>{{ nameTableLabel }}</th>
-                    <th>{{ dateCreatedTableLabel }}</th>
-                    <th>{{ mockTypeTableLabel }}</th>
-                    <th>{{ statusTableLabel }}</th>
-                    <th>{{ actionTableLabel }}</th>
-                </tr>
+                    <tr>
+                        <th>{{ nameTableLabel }}</th>
+                        <th>{{ dateCreatedTableLabel }}</th>
+                        <th>{{ mockTypeTableLabel }}</th>
+                        <th>{{ statusTableLabel }}</th>
+                        <th>{{ actionTableLabel }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="j in jmsServices">
-                    <td class="mock-status-{{ j.status | lowercase }}">{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
-                    <th>{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                    <td>{{ j.jmsMockType }}</td>
-                    <td class="status-{{j.deploymentStatus | lowercase}}">
-                        {{ j.deploymentStatus }}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo(j)">{{ viewEndpointButtonLabel }}</button>
-                    </td>
-                </tr>
+                    <tr ng-repeat="j in jmsServices">
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ j.jmsMockType }}</td>
+                        <td class="status-{{j.deploymentStatus | lowercase}} mock-status-{{ j.status | lowercase }}">
+                            {{ j.deploymentStatus }}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo(j)">{{ viewEndpointButtonLabel }}</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 

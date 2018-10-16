@@ -49,24 +49,24 @@
 
             <table class="table table-striped">
                 <thead>
-                <tr>
-                    <th>{{ nameTableLabel }}</th>
-                    <th>{{ dateCreatedTableLabel }}</th>
-                    <th>{{ statusTableLabel }}</th>
-                    <th>{{ actionTableLabel }}</th>
-                </tr>
+                    <tr>
+                        <th>{{ nameTableLabel }}</th>
+                        <th>{{ dateCreatedTableLabel }}</th>
+                        <th>{{ statusTableLabel }}</th>
+                        <th>{{ actionTableLabel }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="f in ftpServices">
-                    <td class="mock-status-{{ f.status | lowercase }}">{{ f.name }}</td>
-                    <th>{{ f.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                    <td class="status-{{f.deploymentStatus | lowercase}}">
-                        {{ f.deploymentStatus }}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" ng-click="doOpenFtpInfo(f)">{{ viewEndpointButtonLabel }}</button>
-                    </td>
-                </tr>
+                    <tr ng-repeat="f in ftpServices">
+                        <td class="mock-status-{{ f.status | lowercase }}">{{ f.name }}</td>
+                        <td class="mock-status-{{ f.status | lowercase }}">{{ f.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td class="status-{{f.deploymentStatus | lowercase}} mock-status-{{ f.status | lowercase }}">
+                            {{ f.deploymentStatus }}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" ng-click="doOpenFtpInfo(f)">{{ viewEndpointButtonLabel }}</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 

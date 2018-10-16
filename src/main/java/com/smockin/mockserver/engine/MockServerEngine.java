@@ -2,10 +2,12 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.DeploymentStatusEnum;
 import com.smockin.admin.persistence.entity.Identifier;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -15,30 +17,40 @@ public interface MockServerEngine<C extends MockedServerConfigDTO, D> extends Ba
     void start(final C config, D data) throws MockServerException;
     Map<Long, Date> loadDeployedMocks();
 
-    default DeploymentStatusEnum getDeploymentStatus(final Identifier entityIdentifier) {
+    default DeploymentStatusEnum getDeploymentStatus(final Identifier entityIdentifier, final RecordStatusEnum status) {
 
-        // TODO fix this!
-
-        if (!loadDeployedMocks().containsKey(entityIdentifier.getId())) {
-            return DeploymentStatusEnum.INACTIVE;
+        // Mock Server is down so all mocks are in effect un-deployed so return OFFLINE
+        if (!getCurrentState().isRunning()) {
+            return DeploymentStatusEnum.OFFLINE;
         }
 
-        final Date lastUpdated = loadDeployedMocks().get(entityIdentifier.getId());
+        final boolean isPresent = loadDeployedMocks().containsKey(entityIdentifier.getId());
 
-        if (lastUpdated == null && entityIdentifier.getLastUpdated() == null) {
-            return DeploymentStatusEnum.ACTIVE;
-        }
+        // Mock Server is up...
 
-        if (lastUpdated != null && entityIdentifier.getLastUpdated() != null) {
+        if (!isPresent) {
 
-            if (lastUpdated.equals(entityIdentifier.getLastUpdated())) {
-                return DeploymentStatusEnum.ACTIVE;
+            // mock is not currently deployed...
+            switch (status) {
+                case ACTIVE:
+                    return DeploymentStatusEnum.PENDING;
+                case INACTIVE:
+                    return DeploymentStatusEnum.OFFLINE;
+                default:
+                    throw new MockServerException("Unable to determine deployment status of mock");
             }
+        }
 
+        final Optional<Date> lastUpdatedOpt = Optional.ofNullable(loadDeployedMocks().get(entityIdentifier.getId()));
+        final Optional<Date> latestLastUpdatedOpt = Optional.ofNullable(entityIdentifier.getLastUpdated());
+
+        // mock is deployed and has been updated, so display as PENDING
+        if (!lastUpdatedOpt.equals(latestLastUpdatedOpt)) {
             return DeploymentStatusEnum.PENDING;
         }
 
-        return DeploymentStatusEnum.INACTIVE;
+        // mock is deployed and has not been updated, so display as DEPLOYED
+        return DeploymentStatusEnum.DEPLOYED;
     }
 
 }

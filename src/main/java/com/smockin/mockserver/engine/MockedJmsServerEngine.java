@@ -64,7 +64,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
     @Override
     public Map<Long, Date> loadDeployedMocks() {
-        return deployedMocks;
+        return Collections.unmodifiableMap(deployedMocks);
     }
 
     public MockServerState getCurrentState() throws MockServerException {
@@ -298,7 +298,7 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
 
         synchronized (monitor) {
-            deployedMocks = Collections.unmodifiableMap(tempMap);
+            deployedMocks = tempMap;
         }
     }
 

@@ -118,26 +118,26 @@
 
                         <table class="table table-striped">
                             <thead>
-                            <tr>
-                                <th>{{ pathTableLabel }}</th>
-                                <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
-                                <th>{{ mockTypeTableLabel }}</th>
-                                <th>{{ statusTableLabel }}</th>
-                                <th>{{ actionTableLabel }}</th>
-                            </tr>
+                                <tr>
+                                    <th>{{ pathTableLabel }}</th>
+                                    <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
+                                    <th>{{ mockTypeTableLabel }}</th>
+                                    <th>{{ statusTableLabel }}</th>
+                                    <th>{{ actionTableLabel }}</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            <tr ng-repeat="x in rs.data">
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
-                                <td ng-if="isLoggedIn">{{ x.createdBy }}</td>
-                                <td>{{ translate(x.mockType) }}</td>
-                                <td class="status-{{x.deploymentStatus | lowercase}}">
-                                    {{ x.deploymentStatus }}
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
-                                </td>
-                            </tr>
+                                <tr ng-repeat="x in rs.data">
+                                    <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                    <td class="mock-status-{{ x.status | lowercase }}" ng-if="isLoggedIn">{{ x.createdBy }}</td>
+                                    <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
+                                    <td class="status-{{x.deploymentStatus | lowercase}} mock-status-{{ x.status | lowercase }}">
+                                        {{ x.deploymentStatus }}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
 
