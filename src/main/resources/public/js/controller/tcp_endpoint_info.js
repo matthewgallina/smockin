@@ -77,6 +77,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
     $scope.actualPathPrefixLabel = "actual path:";
     $scope.proxyPassThroughLabel = "Only intercept if rule matched";
+    $scope.enabledLabel = "Enabled";
+    $scope.disabledLabel = "Disabled";
 
 
     //

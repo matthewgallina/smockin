@@ -32,3 +32,23 @@
 #add-endpoint-button {
     margin-top: 15px;
 }
+
+.status-deployed {
+    color: #53c653;
+}
+
+.status-pending {
+    color: orange;
+}
+
+.status-offline {
+    color: #ff8080;
+}
+
+.mock-status-active {
+    text-decoration: none;
+}
+
+.mock-status-inactive {
+    text-decoration: line-through;
+}

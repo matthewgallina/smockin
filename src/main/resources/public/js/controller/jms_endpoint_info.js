@@ -27,6 +27,8 @@ app.controller('jmsEndpointInfoController', function($scope, $rootScope, $locati
     $scope.clientIdHeading = "Subscriber Id";
     $scope.clientJoinDateHeading = "Join Date";
     $scope.actualNamePrefixLabel = "actual name:";
+    $scope.enabledLabel = "Enabled";
+    $scope.disabledLabel = "Disabled";
 
 
     //

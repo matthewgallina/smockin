@@ -2,6 +2,7 @@ package com.smockin.admin.dto.response;
 
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RuleDTO;
+import com.smockin.admin.enums.DeploymentStatusEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -19,14 +20,18 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     private Date dateCreated;
     private String createdBy;
     private String userCtxPath;
-    private List<RuleDTO> rules = new ArrayList<RuleDTO>();
+    private DeploymentStatusEnum deploymentStatus;
+    private List<RuleDTO> rules = new ArrayList<>();
 
-    public RestfulMockResponseDTO(String extId, String path, String userCtxPath, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, Date dateCreated, String createdBy, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, boolean proxyPriority) {
+    public RestfulMockResponseDTO(final String extId, final String path, final String userCtxPath, final DeploymentStatusEnum deploymentStatus, final RestMethodEnum method, final RecordStatusEnum status,
+                                  final RestMockTypeEnum mockType, final Date dateCreated, final String createdBy, final long proxyTimeoutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
+                                  final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch, final boolean proxyPriority) {
         super(path, method, status, mockType, proxyTimeoutInMillis, webSocketTimeoutInMillis, sseHeartBeatInMillis, proxyPushIdOnConnect, randomiseDefinitions, proxyForwardWhenNoRuleMatch, proxyPriority);
         this.extId = extId;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
         this.userCtxPath = userCtxPath;
+        this.deploymentStatus = deploymentStatus;
     }
 
     public String getExtId() {
@@ -55,6 +60,13 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     }
     public void setUserCtxPath(String userCtxPath) {
         this.userCtxPath = userCtxPath;
+    }
+
+    public DeploymentStatusEnum getDeploymentStatus() {
+        return deploymentStatus;
+    }
+    public void setDeploymentStatus(DeploymentStatusEnum deploymentStatus) {
+        this.deploymentStatus = deploymentStatus;
     }
 
     public List<RuleDTO> getRules() {

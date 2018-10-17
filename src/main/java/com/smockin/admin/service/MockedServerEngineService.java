@@ -13,20 +13,20 @@ import com.smockin.mockserver.exception.MockServerException;
  */
 public interface MockedServerEngineService {
 
-    MockedServerConfigDTO startRest() throws MockServerException;
+    MockedServerConfigDTO startRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockServerState getRestServerState() throws MockServerException;
-    void shutdownRest() throws MockServerException;
-    MockedServerConfigDTO restartRest() throws MockServerException;
+    void shutdownRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
-    MockedServerConfigDTO startJms() throws MockServerException;
+    MockedServerConfigDTO startJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockServerState getJmsServerState() throws MockServerException;
-    void shutdownJms() throws MockServerException;
-    MockedServerConfigDTO restartJms() throws MockServerException;
+    void shutdownJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
-    MockedServerConfigDTO startFtp() throws MockServerException;
+    MockedServerConfigDTO startFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockServerState getFtpServerState() throws MockServerException;
-    void shutdownFtp() throws MockServerException;
-    MockedServerConfigDTO restartFtp() throws MockServerException;
+    void shutdownFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;

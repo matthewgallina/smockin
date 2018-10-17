@@ -1,7 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
 import com.smockin.utils.GeneralUtils;
-
 import javax.persistence.*;
 import java.util.Date;
 
@@ -22,6 +21,10 @@ public abstract class Identifier {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "DATE_CREATED", nullable = false)
     private Date dateCreated;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "LAST_UPDATED", nullable = true)
+    private Date lastUpdated;
 
     public long getId() {
         return id;
@@ -44,6 +47,13 @@ public abstract class Identifier {
         this.dateCreated = dateCreated;
     }
 
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
     @PrePersist
     public void onCreate() {
 
@@ -53,6 +63,11 @@ public abstract class Identifier {
         if (dateCreated == null)
             dateCreated = GeneralUtils.getCurrentDate();
 
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        lastUpdated = GeneralUtils.getCurrentDate();
     }
 
 }

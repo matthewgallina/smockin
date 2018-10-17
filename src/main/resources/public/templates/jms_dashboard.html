@@ -17,8 +17,8 @@
                     </h3>
                 </div>
                 <div class="col-sm-4">
-                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startJmsMockServer()"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
-                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopJmsMockServer()"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startJmsMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopJmsMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
                 </div>
             </div>
         </div>
@@ -49,26 +49,26 @@
 
             <table class="table table-striped">
                 <thead>
-                <tr>
-                    <th>{{ nameTableLabel }}</th>
-                    <th>{{ dateCreatedTableLabel }}</th>
-                    <th>{{ mockTypeTableLabel }}</th>
-                    <th>{{ statusTableLabel }}</th>
-                    <th>{{ actionTableLabel }}</th>
-                </tr>
+                    <tr>
+                        <th>{{ nameTableLabel }}</th>
+                        <th>{{ dateCreatedTableLabel }}</th>
+                        <th>{{ mockTypeTableLabel }}</th>
+                        <th>{{ statusTableLabel }}</th>
+                        <th>{{ actionTableLabel }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="j in jmsServices">
-                    <td>{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
-                    <th>{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
-                    <td>{{ j.jmsMockType }}</td>
-                    <td class="status-{{j.status | lowercase}}">
-                        {{ j.status }}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo(j)">{{ viewEndpointButtonLabel }}</button>
-                    </td>
-                </tr>
+                    <tr ng-repeat="j in jmsServices">
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ (j.userCtxPath.length > 0) ? (j.userCtxPath + '/') : '' }}<b>{{ j.name }}</b></td>
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ j.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td class="mock-status-{{ j.status | lowercase }}">{{ j.jmsMockType }}</td>
+                        <td class="status-{{j.deploymentStatus | lowercase}} mock-status-{{ j.status | lowercase }}">
+                            {{ j.deploymentStatus }}
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-primary" ng-click="doOpenJmsEndpointInfo(j)">{{ viewEndpointButtonLabel }}</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
 

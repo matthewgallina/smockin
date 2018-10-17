@@ -27,14 +27,6 @@
     text-align: right;
 }
 
-.status-active {
-    color: #53c653;
-}
-
-.status-inactive {
-    color: #ff8080;
-}
-
 .clear-jms-button {
     width: 100%;
 }

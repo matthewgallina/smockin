@@ -68,6 +68,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
+    private Map<Long, Date> deployedMocks;
+
 
     @Override
     public void start(final MockedServerConfigDTO config, final List<RestfulMock> mocks) throws MockServerException {
@@ -85,15 +87,22 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        final List<RestfulMock> activeMocks = buildRESTEndpoints(mocks);
+        final List<RestfulMock> activeRestfulMocks = buildRESTEndpoints(mocks);
+
+        setDeployedMocks(mocks);
 
         // Next handle all HTTP SSE web service routes
         buildSSEEndpoints(mocks);
 
         initServer(config.getPort());
 
-        initProxyServer(activeMocks, config);
+        initProxyServer(activeRestfulMocks, config);
 
+    }
+
+    @Override
+    public Map<Long, Date> loadDeployedMocks() {
+        return Collections.unmodifiableMap(deployedMocks);
     }
 
     @Override
@@ -129,6 +138,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
+        } finally {
+            clearDeployedMocks();
         }
 
     }
@@ -256,7 +267,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     // Expects RestfulMock to be detached
     List<RestfulMock> buildRESTEndpoints(final List<RestfulMock> mocks) throws MockServerException {
 
-        final List<RestfulMock> activeMocks = new ArrayList<>();
+        final List<RestfulMock> activeRestfulMocks = new ArrayList<>();
 
         mocks.stream().forEach( m -> {
 
@@ -270,7 +281,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 final String path = buildUserPath(m);
                 final RestMethodEnum method = m.getMethod();
 
-                activeMocks.add(m);
+                activeRestfulMocks.add(m);
 
                 switch (method) {
                     case GET:
@@ -296,7 +307,25 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         });
 
-        return activeMocks;
+        return activeRestfulMocks;
+    }
+
+    private void setDeployedMocks(final List<RestfulMock> activeMocks) {
+
+        final Map<Long, Date> tempMap = new HashMap<>();
+        activeMocks
+                .stream()
+                .forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
+
+        synchronized (monitor) {
+            deployedMocks = tempMap;
+        }
+    }
+
+    private void clearDeployedMocks() {
+        synchronized (monitor) {
+            deployedMocks = new HashMap<>();
+        }
     }
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {

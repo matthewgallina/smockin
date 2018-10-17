@@ -56,11 +56,15 @@
     font-size: 16px;
 }
 
-.status-active {
+.status-deployed {
     color: #53c653;
 }
 
-.status-inactive {
+.status-pending {
+    color: orange;
+}
+
+.status-offline {
     color: #ff8080;
 }
 
@@ -78,4 +82,12 @@
 
 .show-all-toggle {
     font-size: 16px;
+}
+
+.mock-status-active {
+
+}
+
+.mock-status-inactive {
+    text-decoration: line-through;
 }

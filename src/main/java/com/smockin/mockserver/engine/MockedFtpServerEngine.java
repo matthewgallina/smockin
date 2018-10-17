@@ -2,12 +2,10 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.entity.FtpMock;
-import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
-import org.apache.commons.io.FileUtils;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
@@ -26,8 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by mgallina.
@@ -42,27 +39,13 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
+    private Map<Long, Date> deployedMocks;
 
     @Autowired
     private FtpMockDAO ftpMockDAO;
 
     @Value("${smockin.ftp.root.dir}")
     private String ftpHomeDir;
-
-    /*
-    public static void main(String[] args) {
-
-        final MockedServerConfigDTO config = new MockedServerConfigDTO();
-        config.setPort(3550);
-
-        try {
-            new MockedFtpServerEngine().start(config, new ArrayList<FtpMock>());
-        } catch (MockServerException e) {
-            e.printStackTrace();
-        }
-
-    }
-    */
 
     @Override
     public void start(final MockedServerConfigDTO config, final List<FtpMock> data) throws MockServerException {
@@ -76,9 +59,16 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         // Define FTP users
         buildFTPUsers(data);
 
+        setDeployedMocks(data);
+
         // Start FTP Server
         initServer(config.getPort());
 
+    }
+
+    @Override
+    public Map<Long, Date> loadDeployedMocks() {
+        return Collections.unmodifiableMap(deployedMocks);
     }
 
     public MockServerState getCurrentState() throws MockServerException {
@@ -101,6 +91,8 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
+        } finally {
+            clearDeployedMocks();
         }
 
     }
@@ -168,6 +160,22 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         mocks.stream()
              .forEach(m ->
                 buildUser(m.getName(), m.getName(), buildUserHomeDir(m)));
+    }
+
+    private void setDeployedMocks(final List<FtpMock> mocks) {
+
+        final Map<Long, Date> tempMap = new HashMap<>();
+        mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
+
+        synchronized (monitor) {
+            deployedMocks = tempMap;
+        }
+    }
+
+    private void clearDeployedMocks() {
+        synchronized (monitor) {
+            deployedMocks = new HashMap<>();
+        }
     }
 
     String buildUserHomeDir(final FtpMock mock) {

@@ -14,6 +14,7 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,6 +104,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
         mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
         mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
+        mock.setLastUpdated(GeneralUtils.getCurrentDate()); // force update to lastUpdated, as changes to child records do not otherwise change this
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
@@ -139,8 +141,6 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Override
     public List<ProxyRestDuplicateDTO> loadAllUserPathDuplicates(final String token) throws RecordNotFoundException, AuthException {
         logger.debug("loadAllUserPathDuplicates called");
-
-//        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
         return restfulMockDAO.findAllActivePathDuplicates()
                 .entrySet()
