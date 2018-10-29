@@ -136,7 +136,7 @@ public class RestfulMockServiceUtils {
         restfulMockSortingUtils.autoOrderEndpointPaths(allRestfulMocks);
 
         // Save all
-        restfulMockDefinitionDAO.save(allRestfulMocks);
+        restfulMockDefinitionDAO.saveAll(allRestfulMocks);
     }
 
     public void amendPath(final RestfulMockDTO dto) {

@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="SMOCKIN"
-APP_VERSION="1.5.3-SNAPSHOT"
+APP_VERSION="1.5.4-SNAPSHOT"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"
@@ -132,7 +132,7 @@ echo "#"
 #
 # Prepare runtime args
 #
-VM_ARGS="-Dspring.datasource.url=$JDBC_URL -Dspring.datasource.username=$DB_USERNAME -Dspring.datasource.password=$DB_PASSWORD -Dspring.datasource.maximumPoolSize=$MAX_POOL_SIZE -Dspring.datasource.minimumIdle=$MIN_POOL_SIZE -Duser.timezone=UTC -Dapp.version=$APP_VERSION"
+VM_ARGS="--spring.datasource.url=$JDBC_URL,--spring.datasource.username=$DB_USERNAME,--spring.datasource.password=$DB_PASSWORD,--spring.datasource.maximumPoolSize=$MAX_POOL_SIZE,--spring.datasource.minimumIdle=$MIN_POOL_SIZE,--user.timezone=UTC,--app.version=$APP_VERSION"
 APP_PROFILE="production"
 RESET_SYS_ADMIN_ARG=""
 
@@ -141,7 +141,7 @@ if ( $USE_INMEM_DB ); then
 fi
 
 if ( $RESET_SYS_ADMIN ); then
-  RESET_SYS_ADMIN_ARG="-Dreset.sys.admin=true"
+  RESET_SYS_ADMIN_ARG="--reset.sys.admin=true"
 fi
 
 
@@ -178,10 +178,10 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 
 
 if ( $USE_DEBUG ); then
-  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
+  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
 else
   echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
-  mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
+  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
   echo "$!" > $SMOCKIN_PID_FILE
 fi
 

@@ -49,6 +49,7 @@ spring:
     active: production
   jpa:
     show-sql: false
+    open-in-view: false
     hibernate:
       ddl-auto: update
   datasource:
