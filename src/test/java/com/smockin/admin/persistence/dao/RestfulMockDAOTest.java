@@ -17,8 +17,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +30,8 @@ import java.util.Map;
  * Created by mgallina.
  */
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = SmockinTestConfig.class)
 @DataJpaTest
-@ContextConfiguration(classes = {SmockinTestConfig.class})
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 public class RestfulMockDAOTest {
 

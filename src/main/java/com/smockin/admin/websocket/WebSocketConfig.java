@@ -8,10 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.*;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.server.jetty.JettyRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
-
-import javax.annotation.PostConstruct;
 import javax.servlet.ServletContext;
 
 @Configuration
@@ -26,7 +25,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(mockLogFeedHandler, "/mockLogFeedHandler")
+        registry.addHandler(((TextWebSocketHandler)mockLogFeedHandler), "/httpMockLogFeed")
                 .setAllowedOrigins("*") // TODO MG temp for DEV remove this!!
                 .setHandshakeHandler(handshakeHandler());
     }
@@ -41,22 +40,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
                 new JettyRequestUpgradeStrategy(
                         new WebSocketServerFactory(servletContext,
                                 new WebSocketPolicy(WebSocketBehavior.SERVER))));
-    }
-
-    @PostConstruct
-    public void after() throws InterruptedException {
-
-        new Thread(() -> {
-            while(true) {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                mockLogFeedHandler.broadcast("foo @ " + System.nanoTime());
-            }
-        }).start();
-
     }
 
 }

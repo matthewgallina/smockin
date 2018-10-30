@@ -7,6 +7,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.websocket.MockLogFeedHandler;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyActiveMock;
@@ -31,6 +32,8 @@ import spark.Spark;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,6 +69,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private ProxyServer proxyServer;
 
+    @Autowired
+    private MockLogFeedHandler mockLogFeedHandler;
+
+
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
     private Map<Long, Date> deployedMocks;
@@ -93,6 +100,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         // Next handle all HTTP SSE web service routes
         buildSSEEndpoints(mocks);
+
+        applyFilters();
 
         initServer(config.getPort());
 
@@ -310,6 +319,23 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return activeRestfulMocks;
     }
 
+    private void applyFilters() {
+
+        final DateTimeFormatter df =
+                DateTimeFormatter.ofPattern(GeneralUtils.DISPLAY_TIME_FORMAT)
+                    .withZone(ZoneId.systemDefault());
+
+        // Live logging filter
+        Spark.before((request, response) -> {
+            mockLogFeedHandler.broadcast(df.format(GeneralUtils.getCurrentDateTime()) + " " + request.session().id() + " ---------> " + request.requestMethod() + " " + request.pathInfo());
+        });
+
+        Spark.after((request, response) -> {
+            mockLogFeedHandler.broadcast(df.format(GeneralUtils.getCurrentDateTime()) + " " + request.session().id() + " <--------- " + response.status() + " " + response.body());
+        });
+
+    }
+
     private void setDeployedMocks(final List<RestfulMock> activeMocks) {
 
         final Map<Long, Date> tempMap = new HashMap<>();
@@ -449,9 +475,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.before((request, response) -> {
             response.header("Access-Control-Allow-Origin", "*");
-            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
-            response.header("Access-Control-Allow-Headers", "*");
-            response.header("Access-Control-Allow-Credentials", "true");
+//            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
+//            response.header("Access-Control-Allow-Headers", "*");
+//            response.header("Access-Control-Allow-Credentials", "true");
         });
 
     }

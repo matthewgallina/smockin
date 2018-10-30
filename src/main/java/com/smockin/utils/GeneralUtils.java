@@ -27,6 +27,7 @@ public final class GeneralUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralUtils.class);
 
+    public static final String DISPLAY_TIME_FORMAT = "HH:mm:ss:SSS";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
     public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMddHHmmssSSS";
