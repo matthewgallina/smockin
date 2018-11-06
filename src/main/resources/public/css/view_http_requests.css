@@ -1,0 +1,20 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.modal-dialog {
+    width: 950px;
+}
+
+#remote-response-body {
+    height: 420px;
+}
+
+#clear-feed-button {
+    width: 100px;
+}
+

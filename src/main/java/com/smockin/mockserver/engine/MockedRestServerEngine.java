@@ -17,6 +17,7 @@ import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.LiveLoggingUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -29,11 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
 import java.io.File;
 import java.io.IOException;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -77,7 +75,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private MockServerState serverState = new MockServerState(false, 0);
     private Map<Long, Date> deployedMocks;
 
-
     @Override
     public void start(final MockedServerConfigDTO config, final List<RestfulMock> mocks) throws MockServerException {
         logger.debug("start called");
@@ -102,6 +99,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         buildSSEEndpoints(mocks);
 
         applyFilters();
+
+        applyDefaultRoutes404Hack();
 
         initServer(config.getPort());
 
@@ -321,17 +320,66 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     private void applyFilters() {
 
-        final DateTimeFormatter df =
-                DateTimeFormatter.ofPattern(GeneralUtils.DISPLAY_TIME_FORMAT)
-                    .withZone(ZoneId.systemDefault());
-
         // Live logging filter
         Spark.before((request, response) -> {
-            mockLogFeedHandler.broadcast(df.format(GeneralUtils.getCurrentDateTime()) + " " + request.session().id() + " ---------> " + request.requestMethod() + " " + request.pathInfo());
+
+            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)) {
+                return;
+            }
+
+            request.attribute(GeneralUtils.LOG_REQ_ID, GeneralUtils.generateUUID());
+            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), request.body(), false));
         });
 
-        Spark.after((request, response) -> {
-            mockLogFeedHandler.broadcast(df.format(GeneralUtils.getCurrentDateTime()) + " " + request.session().id() + " <--------- " + response.status() + " " + response.body());
+        Spark.afterAfter((request, response) -> {
+
+            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)) {
+                return;
+            }
+
+            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), response.body(), false, false));
+        });
+
+    }
+
+    /**
+     * HACK
+     *
+     * Spark.afterAfter does not handle 404 always returning a 200 for some reason.
+     * Also Spark.notFound is not working either, so defaulting all other routes to 404
+     * as a work around
+     *
+     */
+    private void applyDefaultRoutes404Hack() {
+
+        Spark.head("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
+        });
+
+        Spark.get("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
+        });
+
+        Spark.post("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
+        });
+
+        Spark.put("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
+        });
+
+        Spark.delete("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
+        });
+
+        Spark.patch("*", (request, response) -> {
+            response.status(404);
+            return "Mock not found";
         });
 
     }
@@ -475,9 +523,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.before((request, response) -> {
             response.header("Access-Control-Allow-Origin", "*");
-//            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
-//            response.header("Access-Control-Allow-Headers", "*");
-//            response.header("Access-Control-Allow-Credentials", "true");
+            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
+            response.header("Access-Control-Allow-Headers", "*");
+            response.header("Access-Control-Allow-Credentials", "true");
         });
 
     }

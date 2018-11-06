@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="../css/view_http_requests.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ viewRequestsHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group">
+        <textarea id="remote-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="remoteResponse" ng-readonly="true"></textarea>
+    </div>
+
+    <div class="pull-right">
+        <button id="clear-feed-button" class="btn btn-warning" type="button" ng-click="doClearFeed()">{{ clearFeedButtonLabel }}</button>
+    </div>
+
+    <br />
+    <br />
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

@@ -16,6 +16,7 @@ public interface RestfulMockDAOCustom {
 
     void detach(final RestfulMock restfulMock);
     List<RestfulMock> findAllByStatus(final RecordStatusEnum status);
+    List<RestfulMock> findAllByStatusAndUser(final RecordStatusEnum status, final long userId);
     Map<Pair<String, RestMethodEnum>, List<RestfulMock>> findAllActivePathDuplicates();
     List<RestfulMock> findAll();
     List<RestfulMock> findAllByUser(final long userId);

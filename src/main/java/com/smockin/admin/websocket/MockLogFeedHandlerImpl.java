@@ -1,11 +1,9 @@
 package com.smockin.admin.websocket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smockin.admin.dto.response.MockClientCallLogDTO;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -22,14 +20,9 @@ public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements Mock
     private final Logger logger = LoggerFactory.getLogger(MockLogFeedHandlerImpl.class);
     private final AtomicReference<List<WebSocketSession>> atomRef = new AtomicReference<>(new ArrayList<>());
 
-    @Autowired
-    private ObjectMapper jsonMapper;
-
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         atomRef.get().add(session);
-
-        session.sendMessage(buildOutboundMessage("Starting log feed..."));
     }
 
     @Override
@@ -39,6 +32,7 @@ public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements Mock
         atomRef.get().remove(session);
     }
 
+    @Override
     public void broadcast(final String msg) {
 
         final List<WebSocketSession> sessions = atomRef.get();
@@ -57,8 +51,8 @@ public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements Mock
 
     }
 
-    private TextMessage buildOutboundMessage(final String msg) throws JsonProcessingException {
-        return new TextMessage(jsonMapper.writeValueAsString(new MockClientCallLogDTO(msg)));
+    private TextMessage buildOutboundMessage(final String msg) {
+        return new TextMessage(GeneralUtils.serialiseJSON(new MockClientCallLogDTO(msg)));
     }
 
 }

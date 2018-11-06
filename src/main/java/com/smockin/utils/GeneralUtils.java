@@ -1,7 +1,7 @@
 package com.smockin.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -27,7 +27,6 @@ public final class GeneralUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralUtils.class);
 
-    public static final String DISPLAY_TIME_FORMAT = "HH:mm:ss:SSS";
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
     public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMddHHmmssSSS";
@@ -40,7 +39,10 @@ public final class GeneralUtils {
     public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
     public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
 
+    public static final String LOG_REQ_ID = "LOG_REQ_ID";
     public static final String PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";
+    public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
+
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
@@ -197,6 +199,17 @@ public final class GeneralUtils {
             } catch (IOException e) {
                 // fail silently
             }
+        }
+
+        return null;
+    }
+
+    public static <T> String serialiseJSON(final T t) {
+
+        try {
+            return JSON_MAPPER.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            // fail silently
         }
 
         return null;

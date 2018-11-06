@@ -26,6 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 /**
  * Created by mgallina.
  */
@@ -81,7 +83,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             checkForUnresolvedProxyUserPathMatchConflicts(configDTO);
 
-            mockedRestServerEngine.start(configDTO, restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
+            final List<RestfulMock> activeMocks =
+                    (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode()))
+                        ? restfulMockDefinitionDAO.findAllByStatusAndUser(RecordStatusEnum.ACTIVE, smockinUserService.loadDefaultUser().get().getId())
+                        : restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE);
+
+            mockedRestServerEngine.start(configDTO, activeMocks);
 
             return configDTO;
         } catch (IllegalArgumentException ex) {

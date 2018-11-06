@@ -11,6 +11,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
+    $scope.viewHttpRequestsLink = "View HTTP Mock Activity";
     $scope.myAccountLink = "Change Password";
     $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
@@ -69,6 +70,17 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
         modalInstance.result.then(function (state) {
             wsClientState = state;
         }, function () {
+        });
+
+    };
+
+    $scope.doOpenViewHttpRequests = function() {
+
+        $uibModal.open({
+            templateUrl: 'view_http_requests.html',
+            controller: 'viewHttpRequestsController',
+            backdrop  : 'static',
+            keyboard  : false
         });
 
     };
