@@ -244,6 +244,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         //
         // Define all web socket routes first as the Spark framework requires this
         mocks.stream().forEach(m -> {
+
             if (RestMockTypeEnum.PROXY_WS.equals(m.getMockType())) {
                 // Create an echo service instance per web socket route, as we need to hold the path as state within this.
                 final String path = buildUserPath(m);
@@ -358,6 +359,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         });
 
         Spark.get("*", (request, response) -> {
+
+            if (isWebSocketUpgradeRequest(request)) {
+                response.status(200);
+                return null;
+            }
+
             response.status(404);
             return "Mock not found";
         });
@@ -382,6 +389,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             return "Mock not found";
         });
 
+    }
+
+    private boolean isWebSocketUpgradeRequest(final Request request) {
+
+        final Set<String> headerNames = request.headers();
+
+        return headerNames.contains("Upgrade")
+                && headerNames.contains("Sec-WebSocket-Key")
+                && "websocket".equalsIgnoreCase(request.headers("Upgrade"));
     }
 
     private void setDeployedMocks(final List<RestfulMock> activeMocks) {
@@ -523,9 +539,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.before((request, response) -> {
             response.header("Access-Control-Allow-Origin", "*");
-            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
-            response.header("Access-Control-Allow-Headers", "*");
-            response.header("Access-Control-Allow-Credentials", "true");
+//            response.header("Access-Control-Request-Method", "GET,PUT,POST,DELETE,OPTIONS");
+//            response.header("Access-Control-Allow-Headers", "*");
+//            response.header("Access-Control-Allow-Credentials", "true");
         });
 
     }

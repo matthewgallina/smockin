@@ -124,9 +124,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         // Handle Native Server Properties
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
-                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
-            };
-            req.nativeProperties = {
+                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE",
                 "PROXY_SERVER_ENABLED" : ($scope.serverConfig.enableProxyServer)?"TRUE":"FALSE"
             };
         } else if (ServerType == globalVars.JmsServerType) {
