@@ -1,6 +1,6 @@
 package com.smockin.admin.websocket;
 
-import com.smockin.admin.dto.response.MockClientCallLogDTO;
+import com.smockin.admin.dto.response.LiveLoggingDTO;
 import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,27 +15,27 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
-public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements MockLogFeedHandler {
+public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements LiveLoggingHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(MockLogFeedHandlerImpl.class);
-    private final AtomicReference<List<WebSocketSession>> atomRef = new AtomicReference<>(new ArrayList<>());
+    private final Logger logger = LoggerFactory.getLogger(LiveLoggingHandlerImpl.class);
+    private final AtomicReference<List<WebSocketSession>> liveSessionsRef = new AtomicReference<>(new ArrayList<>());
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        atomRef.get().add(session);
+        liveSessionsRef.get().add(session);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
 
-        atomRef.get().remove(session);
+        liveSessionsRef.get().remove(session);
     }
 
     @Override
-    public void broadcast(final String msg) {
+    public void broadcast(final LiveLoggingDTO dto) {
 
-        final List<WebSocketSession> sessions = atomRef.get();
+        final List<WebSocketSession> sessions = liveSessionsRef.get();
 
         if (sessions.isEmpty()) {
             return;
@@ -43,7 +43,7 @@ public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements Mock
 
         sessions.stream().forEach(s -> {
             try {
-                s.sendMessage(buildOutboundMessage(msg));
+                s.sendMessage(serialiseMessage(dto));
             } catch (IOException e) {
                 logger.error("Error pushing message to connected web socket: " + s.getId(), e);
             }
@@ -51,8 +51,8 @@ public class MockLogFeedHandlerImpl extends TextWebSocketHandler implements Mock
 
     }
 
-    private TextMessage buildOutboundMessage(final String msg) {
-        return new TextMessage(GeneralUtils.serialiseJSON(new MockClientCallLogDTO(msg)));
+    private TextMessage serialiseMessage(final LiveLoggingDTO dto) {
+        return new TextMessage(GeneralUtils.serialiseJSON(dto));
     }
 
 }

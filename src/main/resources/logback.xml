@@ -1,0 +1,14 @@
+<configuration>
+
+    <appender name="mock_traffic_appender" class="ch.qos.logback.core.FileAppender">
+        <file>${user.home}/.smockin/log/mock_traffic.log</file>
+        <encoder>
+            <pattern>%date:%n%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="mock_traffic_logger" level="INFO">
+        <appender-ref ref="mock_traffic_appender" />
+    </logger>
+
+</configuration>

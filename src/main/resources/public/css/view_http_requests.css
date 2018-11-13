@@ -10,11 +10,27 @@
     width: 950px;
 }
 
-#remote-response-body {
-    height: 420px;
-}
-
 #clear-feed-button {
-    width: 100px;
+    width: 100%;
 }
 
+#no-activity-data {
+    font-size: 18px;
+    margin-top: 60px;
+    margin-bottom: 40px;
+    width: 100%;
+    text-align: center;
+}
+
+#log-search {
+    width: 100%;
+}
+
+.live-log-font {
+    font-size: 11px;
+}
+
+.activity-feed-table-wrapper {
+    max-height: 300px;
+    overflow-y : scroll;
+}

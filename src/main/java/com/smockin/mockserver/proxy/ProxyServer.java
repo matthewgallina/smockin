@@ -3,8 +3,9 @@ package com.smockin.mockserver.proxy;
 import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
-import com.smockin.admin.websocket.MockLogFeedHandler;
+import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.mockserver.engine.BaseServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
@@ -13,6 +14,7 @@ import com.smockin.utils.LiveLoggingUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpStatus;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
@@ -29,11 +31,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActiveMock>> {
+public class ProxyServer implements BaseServerEngine<MockedServerConfigDTO, List<ProxyActiveMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+    private final Logger mockTrafficLogger = LoggerFactory.getLogger("mock_traffic_logger");
 
     private HttpProxyServer httpProxyServer;
     private final Object monitor = new Object();
@@ -43,16 +47,18 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
     private ProxyServerUtils proxyServerUtils;
 
     @Autowired
-    private MockLogFeedHandler mockLogFeedHandler;
+    private LiveLoggingHandler mockLogFeedHandler;
 
 
     @Override
-    public void start(final Integer[] ports, final List<ProxyActiveMock> activeMocks) {
+    public void start(final MockedServerConfigDTO config, final List<ProxyActiveMock> activeMocks) {
 
         try {
 
-            final int proxyPort = ports[0];
-            final int mockServerPort = ports[1];
+            final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
+            final int mockServerPort = config.getPort();
+            final boolean logMockCalls =
+                    Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
 
             httpProxyServer = DefaultHttpProxyServer.bootstrap()
                     .withPort(proxyPort)
@@ -122,7 +128,13 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                     }
 
                                     if (!context.getLittleProxyLoggingDTO().isLoggingRequestReceived()) {
-                                        mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundEntry(context.getRequestId(), originalRequest.method().name(), originalRequest.uri(), originalRequest.headers().get("Content-Type"), context.getRequestBody(), true));
+
+                                        final Map<String, String> reqHeaders = proxyServerUtils.convertHeaders(originalRequest.headers());
+
+                                        if (logMockCalls)
+                                            mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(context.getRequestId(), originalRequest.method().name(), originalRequest.uri(), reqHeaders.get("Content-Type"), reqHeaders, context.getRequestBody(), true));
+
+                                        mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(context.getRequestId(), originalRequest.method().name(), originalRequest.uri(), reqHeaders.get("Content-Type"), reqHeaders, context.getRequestBody(), true));
                                         context.getLittleProxyLoggingDTO().setLoggingRequestReceived(true);
                                     }
 
@@ -131,7 +143,13 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                         final DefaultFullHttpResponse response = (DefaultFullHttpResponse) httpObject;
 
                                         if (response.status().code() == 502) {
-                                            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundEntry(context.getRequestId(), response.status().code(), response.headers().get("Content-Type"), null, true, false));
+
+                                            final Map<String, String> respHeaders = proxyServerUtils.convertHeaders(response.headers());
+
+                                            if (logMockCalls)
+                                                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), response.status().code(), respHeaders.get("Content-Type"), respHeaders, null, true, false));
+
+                                            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), response.status().code(), respHeaders.get("Content-Type"), respHeaders, null, true, false));
                                             return httpObject;
                                         }
 
@@ -146,12 +164,16 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                             final DefaultHttpResponse response = (DefaultHttpResponse)httpObject;
                                             context.getLittleProxyLoggingDTO().setLoggingResponseStatus(response.status().code());
                                             context.getLittleProxyLoggingDTO().setLoggingResponseContentType(response.headers().get("Content-Type"));
+                                            context.getLittleProxyLoggingDTO().setResponseHeaders(proxyServerUtils.convertHeaders(response.headers()));
 
                                         } else if (httpObject instanceof DefaultHttpContent) {
 
                                             final DefaultHttpContent response = (DefaultHttpContent)httpObject;
-                                            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundEntry(context.getRequestId(), context.getLittleProxyLoggingDTO().getLoggingResponseStatus(), context.getLittleProxyLoggingDTO().getLoggingResponseContentType(), response.content().toString(Charset.defaultCharset()), true, false));
 
+                                            if (logMockCalls)
+                                                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), context.getLittleProxyLoggingDTO().getLoggingResponseStatus(), context.getLittleProxyLoggingDTO().getLoggingResponseContentType(), context.getLittleProxyLoggingDTO().getResponseHeaders(), response.content().toString(Charset.defaultCharset()), true, false));
+
+                                            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), context.getLittleProxyLoggingDTO().getLoggingResponseStatus(), context.getLittleProxyLoggingDTO().getLoggingResponseContentType(), context.getLittleProxyLoggingDTO().getResponseHeaders(), response.content().toString(Charset.defaultCharset()), true, false));
                                         }
 
                                         return httpObject;
@@ -172,7 +194,10 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
 
                                         context.setMockedClientResponse(proxyServerUtils.buildResponse(response));
 
-                                        mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundEntry(context.getRequestId(), response.getStatus(), response.getContentType(), response.getBody(), true, true));
+                                        if (logMockCalls)
+                                            mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), response.getStatus(), response.getContentType(), response.getHeaders(), response.getBody(), true, true));
+
+                                        mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), response.getStatus(), response.getContentType(), response.getHeaders(), response.getBody(), true, true));
 
                                         return context.getMockedClientResponse();
 

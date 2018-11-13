@@ -75,6 +75,12 @@ public class ProxyServerUtils {
         return dto;
     }
 
+    Map<String, String> convertHeaders(final HttpHeaders httpHeaders) {
+        return httpHeaders.entries()
+                .stream()
+                .collect(Collectors.toMap(k -> k.getKey(), v -> v.getValue()));
+    }
+
     boolean doesPathMatch(final String inboundPath, final String path) {
 
         String newMockPathRegex = path;

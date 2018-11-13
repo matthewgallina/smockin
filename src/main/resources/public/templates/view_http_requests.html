@@ -9,15 +9,89 @@
     <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
     <div class="form-group">
-        <textarea id="remote-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="remoteResponse" ng-readonly="true"></textarea>
-    </div>
 
-    <div class="pull-right">
-        <button id="clear-feed-button" class="btn btn-warning" type="button" ng-click="doClearFeed()">{{ clearFeedButtonLabel }}</button>
-    </div>
+        <div id="no-activity-data" ng-if="activityFeed.length == 0 && wsEstablished">
+            {{ noActivityData }}
+        </div>
 
-    <br />
-    <br />
+        <form ng-show="activityFeed.length > 0">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-9">
+                        <input id="log-search" type="text" class="form-control" placeholder="{{ requestSearchPlaceholderText }}" ng-model="search">
+                    </div>
+                    <div class="col-sm-3">
+                        <button id="clear-feed-button" class="btn btn-warning" type="button" ng-click="doClearFeed()" ng-show="activityFeed.length > 0">{{ clearFeedButtonLabel }}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="activity-feed-table-wrapper">
+
+            <table class="table table-bordered table-striped" ng-show="activityFeed.length > 0">
+                <thead>
+                <tr>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'id'; sortReverse = !sortReverse">
+                            {{ requestIdLabel }}
+                            <span ng-show="sortType == 'id' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'id' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'direction'; sortReverse = !sortReverse">
+                            {{ directionLabel }}
+                            <span ng-show="sortType == 'direction' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'direction' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'proxy'; sortReverse = !sortReverse">
+                            {{ proxiedLabel }}
+                            <span ng-show="sortType == 'proxy' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'proxy' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'contentType'; sortReverse = !sortReverse">
+                            {{ contentTypeLabel }}
+                            <span ng-show="sortType == 'contentType' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'contentType' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'headers'; sortReverse = !sortReverse">
+                            {{ headersLabel }}
+                            <span ng-show="sortType == 'headers' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'headers' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td class="live-log-font">
+                        <a href="#" ng-click="sortType = 'details'; sortReverse = !sortReverse">
+                            {{ detailsLabel }}
+                            <span ng-show="sortType == 'details' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'details' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search" class="live-log-font">
+                    <td>{{ af.id }}</td>
+                    <td>{{ af.direction }}</td>
+                    <td>{{ af.proxied }}</td>
+                    <td>{{ af.content.contentType }}</td>
+                    <td><span ng-repeat="h in doConvertHttpHeaders(af.content.headers)">{{ h }}<br/></span></td>
+                    <td ng-if="af.direction == 'REQUEST'">{{ af.content.method }} {{ af.content.body }}</td>
+                    <td ng-if="af.direction == 'RESPONSE'">{{ af.content.status }} {{ af.content.body }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+    </div>
 
 </div>
 

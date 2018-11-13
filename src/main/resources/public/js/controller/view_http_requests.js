@@ -4,7 +4,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
     //
     // Constants / Vars
-    var LiveFeedUrl = "/httpMockLogFeed";
+    var LiveFeedUrl = "/liveLoggingFeed";
     var adminPort = 8000;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var InitPageTimeoutMillis = 1500;
@@ -12,17 +12,26 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
     //
     // Labels
-    $scope.viewRequestsHeading = "HTTP Mock Activity";
+    $scope.viewRequestsHeading = "HTTP Live Feed";
+    $scope.noActivityData = 'Listening for activity...';
+    $scope.requestIdLabel = 'Trace Id';
+    $scope.directionLabel = 'Direction';
+    $scope.proxiedLabel = 'Proxied';
+    $scope.contentTypeLabel = 'Content Type';
+    $scope.headersLabel = 'Headers';
+    $scope.detailsLabel = 'Details';
+    $scope.requestSearchPlaceholderText = 'Enter a filter keyword...';
 
 
     //
     // Buttons
     $scope.closeButtonLabel = 'Close';
-    $scope.clearFeedButtonLabel = "Clear";
+    $scope.clearFeedButtonLabel = "Clear Activity";
 
 
     //
     // Alerts
+    var timeOutPromise = null;
     $scope.alerts = [];
 
     var closeAlertFunc = function() {
@@ -31,14 +40,19 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
    function showAlert(msg, type) {
 
+        if (timeOutPromise != null) {
+            $timeout.cancel(timeOutPromise);
+        }
+
+        closeAlertFunc();
+
         if (type == null) {
             type = 'danger';
         }
 
-        $scope.alerts = [];
         $scope.alerts.push({ "type" : type, "msg" : msg });
 
-        $timeout(closeAlertFunc, AlertTimeoutMillis);
+        timeOutPromise = $timeout(closeAlertFunc, AlertTimeoutMillis);
     }
 
     $scope.closeAlert = closeAlertFunc;
@@ -47,14 +61,35 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     //
     // Data Objects
     var wsSocket = null;
-    $scope.remoteResponse = null;
+    $scope.wsEstablished = false;
+    $scope.activityFeed = [];
+
+    $scope.sortType = 'name';
+    $scope.sortReverse = false;
+    $scope.search = '';
 
 
     //
     // Scoped Functions
+    $scope.doConvertHttpHeaders = function(headers) {
+
+        var allHeaders = [];
+
+        if (headers == null || headers.length == 0) {
+            return allHeaders;
+        }
+
+        for (var h in headers) {
+            if (headers.hasOwnProperty(h)) {
+              allHeaders.push(h + ": " + headers[h]);
+            }
+        }
+
+        return allHeaders;
+    };
+
     $scope.doClearFeed = function() {
-        $scope.remoteResponse = null;
-        $scope.$digest();
+        $scope.activityFeed = [];
     };
 
     $scope.doClose = function() {
@@ -70,7 +105,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         // Check the mock server is running and the port no
         utils.checkRestServerStatus(function(running, port) {
 
-            $scope.remoteResponse = null;
+            $scope.activityFeed = [];
 
             if (running == null) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -113,52 +148,40 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function applyWSListeners() {
 
        wsSocket.onopen = function (event) {
-            $scope.remoteResponse = null;
-            appendResponseMsg("Connected...");
+            $scope.activityFeed = [];
+            showAlert("Connected...", "success");
+            $scope.wsEstablished = true;
         };
 
         wsSocket.onmessage = function (event) {
-            var json = JSON.parse(event.data)
-            appendResponseMsg(json.content);
+            appendResponseMsg(JSON.parse(event.data));
         };
 
         wsSocket.onerror = function (event) {
-            $scope.remoteResponse = null;
-            appendResponseMsg("Unable to establish connection to " + LiveFeedUrl);
+            $scope.activityFeed = [];
+            showAlert("Unable to establish connection to " + LiveFeedUrl);
             wsSocket = null;
+            $scope.wsEstablished = false;
         };
 
         wsSocket.onclose = function (event) {
-            appendResponseMsg("Connection closed");
+            showAlert("Connection closed", "warning");
             wsSocket = null;
+            $scope.wsEstablished = false;
         };
 
     }
 
-    function appendResponseMsg(msg) {
-
-        var res = $scope.remoteResponse;
-
-        if (res == null) {
-            res = "";
-        }
-
-        res = res.concat(msg);
-        res = res.concat("\n\n");
-
-        $scope.remoteResponse = res;
+    function appendResponseMsg(liveLog) {
+        $scope.activityFeed.push(liveLog);
         $scope.$digest();
 
-        var feedTextArea = jQuery('#remote-response-body');
-
-        if (feedTextArea.length)
-           feedTextArea.scrollTop(feedTextArea[0].scrollHeight - feedTextArea.height());
     }
 
 
     //
     // Init Page
-    $scope.remoteResponse = "Establishing connection...";
+    showAlert("Establishing connection...", "warning");
     $timeout(doConnectFunc, InitPageTimeoutMillis);
 
 });

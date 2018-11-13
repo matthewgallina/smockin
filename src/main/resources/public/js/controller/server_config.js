@@ -23,6 +23,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
     $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
+    $scope.logMockCallsLabel = 'Log mock calls';
     $scope.manageProxyPriorityPathsLabel = '(' + (($scope.readOnly) ? 'view' : 'manage') +  ' priority paths)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
@@ -73,7 +74,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "autoStart" : false,
         "autoRefresh" : false,
         "enableCors" : false,
-        "enableProxyServer" : false
+        "enableProxyServer" : false,
+        "logMockCalls" : false
     };
 
 
@@ -125,7 +127,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
                 "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE",
-                "PROXY_SERVER_ENABLED" : ($scope.serverConfig.enableProxyServer)?"TRUE":"FALSE"
+                "PROXY_SERVER_ENABLED" : ($scope.serverConfig.enableProxyServer)?"TRUE":"FALSE",
+                "LOG_MOCK_CALLS" : ($scope.serverConfig.logMockCalls)?"TRUE":"FALSE"
             };
         } else if (ServerType == globalVars.JmsServerType) {
             req.nativeProperties = {
@@ -189,7 +192,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "autoStart" : data.autoStart,
                     "autoRefresh" : data.autoRefresh,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
-                    "enableProxyServer" : (data.nativeProperties.PROXY_SERVER_ENABLED != null && data.nativeProperties.PROXY_SERVER_ENABLED.toUpperCase() == "TRUE")
+                    "enableProxyServer" : (data.nativeProperties.PROXY_SERVER_ENABLED != null && data.nativeProperties.PROXY_SERVER_ENABLED.toUpperCase() == "TRUE"),
+                    "logMockCalls" : (data.nativeProperties.LOG_MOCK_CALLS != null && data.nativeProperties.LOG_MOCK_CALLS.toUpperCase() == "TRUE")
                 };
 
                 return;

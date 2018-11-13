@@ -38,6 +38,7 @@ public final class GeneralUtils {
     public static final String BROKER_URL_PARAM = "BROKER_URL";
     public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
     public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
+    public static final String LOG_MOCK_CALLS_PARAM = "LOG_MOCK_CALLS";
 
     public static final String LOG_REQ_ID = "LOG_REQ_ID";
     public static final String PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";

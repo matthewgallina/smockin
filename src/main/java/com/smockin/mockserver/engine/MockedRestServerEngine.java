@@ -7,7 +7,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
-import com.smockin.admin.websocket.MockLogFeedHandler;
+import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyActiveMock;
@@ -20,7 +20,6 @@ import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +41,7 @@ import java.util.stream.Collectors;
 public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO, List<RestfulMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);
+    private final Logger mockTrafficLogger = LoggerFactory.getLogger("mock_traffic_logger");
 
     @Autowired
     private RestfulMockDAO restfulMockDAO;
@@ -68,7 +68,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private ProxyServer proxyServer;
 
     @Autowired
-    private MockLogFeedHandler mockLogFeedHandler;
+    private LiveLoggingHandler mockLogFeedHandler;
 
 
     private final Object monitor = new Object();
@@ -98,7 +98,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Next handle all HTTP SSE web service routes
         buildSSEEndpoints(mocks);
 
-        applyFilters();
+        applyTrafficLogging(config);
 
         applyDefaultRoutes404Hack();
 
@@ -191,8 +191,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             return;
         }
 
-        final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
-
         final List<ProxyActiveMock> activeProxyMocks = new ArrayList<>();
 
         activeMocks.stream()
@@ -213,7 +211,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     activeProxyMocks.add(new ProxyActiveMock(mock.getPath(), mock.getCreatedBy().getCtxPath(), mock.getMethod()));
                 });
 
-        proxyServer.start(new Integer[] { proxyPort, config.getPort() }, activeProxyMocks);
+        proxyServer.start(config, activeProxyMocks);
     }
 
     public boolean isProxyServerModeEnabled(final MockedServerConfigDTO config) {
@@ -319,7 +317,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return activeRestfulMocks;
     }
 
-    private void applyFilters() {
+    private void applyTrafficLogging(final MockedServerConfigDTO config) {
+
+        final boolean logMockCalls =
+                Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
 
         // Live logging filter
         Spark.before((request, response) -> {
@@ -329,7 +330,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             request.attribute(GeneralUtils.LOG_REQ_ID, GeneralUtils.generateUUID());
-            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), request.body(), false));
+
+            final Map<String, String> reqHeaders = request.headers()
+                    .stream()
+                    .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
+
+            if (logMockCalls)
+                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), reqHeaders, request.body(), false));
+
+            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), reqHeaders, request.body(), false));
         });
 
         Spark.afterAfter((request, response) -> {
@@ -338,7 +347,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return;
             }
 
-            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), response.body(), false, false));
+            final Map<String, String> respHeaders = response.raw().getHeaderNames()
+                    .stream()
+                    .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
+
+            if (logMockCalls)
+                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), respHeaders, response.body(), false, false));
+
+            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), respHeaders, response.body(), false, false));
         });
 
     }

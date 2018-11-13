@@ -19,11 +19,11 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private ServletContext servletContext;
 
     @Autowired
-    private MockLogFeedHandler mockLogFeedHandler;
+    private LiveLoggingHandler mockLogFeedHandler;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(((TextWebSocketHandler)mockLogFeedHandler), "/httpMockLogFeed")
+        registry.addHandler(((TextWebSocketHandler)mockLogFeedHandler), "/liveLoggingFeed")
                 .setHandshakeHandler(handshakeHandler());
     }
 

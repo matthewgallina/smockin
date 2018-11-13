@@ -11,7 +11,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
-    $scope.viewHttpRequestsLink = "View HTTP Mock Activity";
+    $scope.viewHttpRequestsLink = "HTTP Live Feed";
     $scope.myAccountLink = "Change Password";
     $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
