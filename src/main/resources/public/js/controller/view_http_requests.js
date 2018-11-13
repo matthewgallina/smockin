@@ -15,11 +15,9 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.viewRequestsHeading = "HTTP Live Feed";
     $scope.noActivityData = 'Listening for activity...';
     $scope.requestIdLabel = 'Trace Id';
-    $scope.directionLabel = 'Direction';
     $scope.proxiedLabel = 'Proxied';
-    $scope.contentTypeLabel = 'Content Type';
     $scope.headersLabel = 'Headers';
-    $scope.detailsLabel = 'Details';
+    $scope.bodyLabel = 'Body';
     $scope.requestSearchPlaceholderText = 'Enter a filter keyword...';
 
 

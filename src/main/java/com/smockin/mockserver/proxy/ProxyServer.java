@@ -73,7 +73,7 @@ public class ProxyServer implements BaseServerEngine<MockedServerConfigDTO, List
                         public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
                             logger.debug("filterRequest called");
 
-                            final LittleProxyContext context = new LittleProxyContext(GeneralUtils.generateUUID());
+                            final LittleProxyContext context = new LittleProxyContext(LiveLoggingUtils.getTraceId());
 
                             return new HttpFiltersAdapter(originalRequest) {
 

@@ -329,7 +329,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return;
             }
 
-            request.attribute(GeneralUtils.LOG_REQ_ID, GeneralUtils.generateUUID());
+            request.attribute(GeneralUtils.LOG_REQ_ID, LiveLoggingUtils.getTraceId());
 
             final Map<String, String> reqHeaders = request.headers()
                     .stream()

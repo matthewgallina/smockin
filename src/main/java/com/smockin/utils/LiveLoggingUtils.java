@@ -7,6 +7,7 @@ import com.smockin.admin.enums.LiveLoggingDirectionEnum;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +21,11 @@ public final class LiveLoggingUtils {
     private static final String CARRIAGE_RET = "\n";
     private static final String HEADER_DELIMITER = ",";
 
+    private static final AtomicInteger atomicTraceIdInt = new AtomicInteger(1);
+
+    public static String getTraceId() {
+        return String.valueOf("t-" + atomicTraceIdInt.getAndIncrement());
+    }
 
     public static String buildLiveLogInboundFileEntry(final String reqId, final String method, final String url, final String contentType, final Map<String, String> headers, final String reqBody, final boolean viaProxy) {
 
