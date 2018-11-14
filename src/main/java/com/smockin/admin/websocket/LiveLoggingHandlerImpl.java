@@ -52,7 +52,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     }
 
     private TextMessage serialiseMessage(final LiveLoggingDTO dto) {
-        return new TextMessage(GeneralUtils.serialiseJSON(dto));
+        return new TextMessage(GeneralUtils.serialiseJson(dto));
     }
 
 }

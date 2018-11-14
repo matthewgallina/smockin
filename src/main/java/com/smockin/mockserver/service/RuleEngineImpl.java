@@ -83,7 +83,7 @@ public class RuleEngineImpl implements RuleEngine {
                 return req.splat()[(argPosition - 1)];
             case REQUEST_BODY_JSON_ANY:
 
-                final Map<String, ?> json = GeneralUtils.deserialiseJSON(req.body());
+                final Map<String, ?> json = GeneralUtils.deserialiseJSONToMap(req.body());
 
                 return (json != null)?(String)json.get(fieldName):null;
             default:

@@ -15,10 +15,10 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.viewRequestsHeading = "HTTP Live Feed";
     $scope.noActivityData = 'Listening for activity...';
     $scope.requestIdLabel = 'Trace Id';
-    $scope.proxiedLabel = 'Proxied';
+    $scope.proxiedLabel = 'Via Proxy';
     $scope.headersLabel = 'Headers';
     $scope.bodyLabel = 'Body';
-    $scope.requestSearchPlaceholderText = 'Enter a filter keyword...';
+    $scope.requestSearchPlaceholderText = 'Enter a keyword to filter results below...';
 
 
     //

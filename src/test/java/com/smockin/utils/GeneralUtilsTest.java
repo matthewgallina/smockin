@@ -219,7 +219,7 @@ public class GeneralUtilsTest {
     public void deserialiseJSON_SimpleParse_Test() {
 
         // Test
-        final Map<String, ?> jsonObj = GeneralUtils.deserialiseJSON("{ \"name\" : \"bob\", \"age\" : 21 }");
+        final Map<String, ?> jsonObj = GeneralUtils.deserialiseJSONToMap("{ \"name\" : \"bob\", \"age\" : 21 }");
 
         // Assertions
         Assert.assertNotNull(jsonObj);
@@ -231,12 +231,12 @@ public class GeneralUtilsTest {
 
     @Test
     public void deserialiseJSON_InvalidJson_Test() {
-        Assert.assertNull(GeneralUtils.deserialiseJSON("{ \"name\" :, \"age\" : 21 }"));
+        Assert.assertNull(GeneralUtils.deserialiseJSONToMap("{ \"name\" :, \"age\" : 21 }"));
     }
 
     @Test
     public void deserialiseJSON_Null_Test() {
-        Assert.assertNull(GeneralUtils.deserialiseJSON(null));
+        Assert.assertNull(GeneralUtils.deserialiseJSONToMap(null));
     }
 
     @Test

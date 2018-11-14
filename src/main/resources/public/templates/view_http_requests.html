@@ -17,10 +17,10 @@
         <form ng-show="activityFeed.length > 0">
             <div class="form-group">
                 <div class="row">
-                    <div class="col-sm-9">
+                    <div class="col-sm-10">
                         <input id="log-search" type="text" class="form-control" placeholder="{{ requestSearchPlaceholderText }}" ng-model="search">
                     </div>
-                    <div class="col-sm-3">
+                    <div class="col-sm-2">
                         <button id="clear-feed-button" class="btn btn-warning" type="button" ng-click="doClearFeed()" ng-show="activityFeed.length > 0">{{ clearFeedButtonLabel }}</button>
                     </div>
                 </div>

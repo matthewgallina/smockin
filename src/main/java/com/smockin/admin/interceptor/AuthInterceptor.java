@@ -2,28 +2,27 @@ package com.smockin.admin.interceptor;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.service.AuthService;
-import com.smockin.admin.service.AuthServiceImpl;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
-
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Component
-@ConfigurationProperties(prefix = "auth")
 public class AuthInterceptor extends HandlerInterceptorAdapter {
 
-    private final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
+    private final Logger logger = LoggerFactory.getLogger(AuthInterceptor.class);
 
     @Autowired
     private SmockinUserService smockinUserService;
@@ -31,8 +30,12 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     private AuthService authService;
 
-    // Injected from application.yaml
-    private final Map<String, List<String>> exclusions = new HashMap<>();
+    // Resorted to using json, in place of defining the list structure in yaml, due to a bug introduced
+    // in Spring Boot v2 where forward slashes (& other characters) seem to be stripped out when injected in.
+    @Value("${smockin.auth.exclusions:#{null}}")
+    private String exclusionsJson;
+
+    private Map<String, List<String>> exclusions;
 
     /*
         For more info:
@@ -72,27 +75,34 @@ public class AuthInterceptor extends HandlerInterceptorAdapter {
         return true;
     }
 
-    private boolean matchExclusionUrl(final String exclusionKey, final String inboundUrl) {
+    boolean matchExclusionUrl(final String exclusionKey, final String inboundUrl) {
 
-        final int wildCardPos = exclusionKey.indexOf("*");
+        final int wildCardFilePos = exclusionKey.indexOf("*.");
+        final int wildCardPathPos = exclusionKey.indexOf("*");
 
-        if (wildCardPos > -1) {
-            return inboundUrl.startsWith(exclusionKey.substring(0, wildCardPos));
+        if (wildCardFilePos > -1) {
+            return inboundUrl.endsWith(exclusionKey.substring(wildCardFilePos + 1, exclusionKey.length()));
+        } else if (wildCardPathPos > -1) {
+            return inboundUrl.startsWith(exclusionKey.substring(0, wildCardPathPos));
         }
 
         return exclusionKey.equalsIgnoreCase(inboundUrl);
     }
 
-    public Map<String, List<String>> getExclusions() {
-        return exclusions;
-    }
-
     @PostConstruct
     public void after() {
 
+        final Map<String, List<String>> exclusionsMap =
+                (StringUtils.isNotBlank(exclusionsJson))
+                        ? GeneralUtils.deserialiseJson(exclusionsJson)
+                        : new HashMap<>();
+
+        exclusions = Collections.unmodifiableMap(exclusionsMap);
+
         if (logger.isDebugEnabled()) {
             logger.debug("Current Exclusions:");
-            exclusions.entrySet().forEach(e -> logger.debug("key: " + e.getKey() + ", value: " + e.getValue()));
+            exclusions.entrySet()
+                    .forEach(e -> logger.debug("exclusion path: " + e.getKey() + ", method: " + e.getValue()));
         }
 
     }

@@ -38,6 +38,7 @@ USE_DEBUG=false
 USE_INMEM_DB=false
 RESET_SYS_ADMIN=false
 MULTI_USER_MODE=false
+USE_CONSOLE=false
 
 if [ ! -d "${APP_DIR_PATH}" ]
 then
@@ -95,6 +96,9 @@ if ([ ! -z "$1" ] && [ $1 = "-RESET_SYS_ADMIN" ]) || ([ ! -z "$2" ] && [ $2 = "-
     RESET_SYS_ADMIN=true
 fi
 
+if ([ ! -z "$1" ] && [ $1 = "-CONSOLE" ]) || ([ ! -z "$2" ] && [ $2 = "-CONSOLE" ]); then
+    USE_CONSOLE=true
+fi
 
 echo "#####################################################################################"
 echo "# "
@@ -173,16 +177,25 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 # -DEBUG               Allows remote debugging.
 # -INMEM               Uses an in-memory DB.
 # -RESET_SYS_ADMIN     Resets the System Admin user's password back to factory default.
+# -CONSOLE             Runs in console view.
 #
 #
 
 
 if ( $USE_DEBUG ); then
+
   mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
+
 else
-  echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
-  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
-  echo "$!" > $SMOCKIN_PID_FILE
+
+  if ( $USE_CONSOLE ); then
+    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG"
+  else
+    echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
+    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
+    echo "$!" > $SMOCKIN_PID_FILE
+  fi
+
 fi
 
 echo "#"

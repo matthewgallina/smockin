@@ -31,6 +31,6 @@
 }
 
 .activity-feed-table-wrapper {
-    max-height: 300px;
+    max-height: 420px;
     overflow-y : scroll;
 }

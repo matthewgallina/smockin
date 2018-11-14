@@ -1,6 +1,7 @@
 package com.smockin.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -192,11 +193,15 @@ public final class GeneralUtils {
         return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
     }
 
-    public static Map<String, ?> deserialiseJSON(final String jsonStr) {
+    public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
+        return deserialiseJson(jsonStr);
+    }
+
+    public static <T> T deserialiseJson(final String jsonStr) {
 
         if (jsonStr != null) {
             try {
-                return JSON_MAPPER.readValue(jsonStr, Map.class);
+                return JSON_MAPPER.readValue(jsonStr, new TypeReference<T>() {});
             } catch (IOException e) {
                 // fail silently
             }
@@ -205,7 +210,7 @@ public final class GeneralUtils {
         return null;
     }
 
-    public static <T> String serialiseJSON(final T t) {
+    public static <T> String serialiseJson(final T t) {
 
         try {
             return JSON_MAPPER.writeValueAsString(t);
