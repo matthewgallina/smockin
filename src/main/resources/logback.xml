@@ -28,7 +28,7 @@
         <appender-ref ref="smockin_appender" />
     </logger>
 
-    <logger name="com.smockin" level="DEBUG">
+    <logger name="com.smockin" level="WARN">
         <appender-ref ref="smockin_appender" />
     </logger>
 
