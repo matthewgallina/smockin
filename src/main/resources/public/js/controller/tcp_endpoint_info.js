@@ -70,8 +70,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.noActiveSseClientsFound = 'No SSE Clients Found';
     $scope.clientIdHeading = 'Session Id';
     $scope.clientJoinDateHeading = 'Joining Date';
-    $scope.manageHttpProxyQueueLabel = 'HTTP Proxy Queue Tools';
-    $scope.sendProxiedResponseLabel = 'Post a proxied response';
+    $scope.manageHttpProxyQueueLabel = 'HTTP External Feed Tools';
+    $scope.sendProxiedResponseLabel = 'Feed in a response';
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
@@ -148,7 +148,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.mockTypes = [
        { "name" : "HTTP Sequenced Based", "value" : MockTypeDefinitions.MockTypeSeq },
        { "name" : "HTTP Rules Based", "value" : MockTypeDefinitions.MockTypeRule },
-       { "name" : "HTTP Proxied", "value" : MockTypeDefinitions.MockTypeProxyHttp },
+       { "name" : "HTTP External Feed", "value" : MockTypeDefinitions.MockTypeProxyHttp },
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse }
     ];
@@ -343,24 +343,24 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         // Validation
         if (utils.isBlank($scope.proxyEndpoint.path)) {
-            showAlert("'Path' for proxy response is required");
+            showAlert("'Path' for response is required");
             return false;
         }
         if ($scope.proxyEndpoint.path.indexOf("*") > -1) {
-            showAlert("'Path' for proxy response cannot contain any wildcard * path variables");
+            showAlert("'Path' for response cannot contain any wildcard * path variables");
             return false;
         }
         if (utils.isBlank($scope.proxyEndpoint.contentType)) {
-            showAlert("'Content Type' for proxy response is required");
+            showAlert("'Content Type' for response is required");
             return false;
         }
         if (utils.isBlank($scope.proxyEndpoint.httpStatusCode)
                 || !utils.isNumeric($scope.proxyEndpoint.httpStatusCode)) {
-            showAlert("'HTTP Status Code' for proxy response is required and must be numeric");
+            showAlert("'HTTP Status Code' for response is required and must be numeric");
             return false;
         }
 
-        // Send proxy response
+        // Send external feed response
         var reqData = {
             "path" : $scope.proxyEndpoint.path,
             "method" : $scope.endpoint.method,
@@ -369,14 +369,14 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "body" : $scope.proxyEndpoint.responseBody
         };
 
-        restClient.doPost($http, '/proxy', reqData, function(status, data) {
+        restClient.doPost($http, '/proxy/' + extId, reqData, function(status, data) {
 
             if (status != 204) {
                  showAlert(globalVars.GeneralErrorMessage);
                  return;
             }
 
-            showAlert("Proxy response successfully posted", "success");
+            showAlert("Response successfully posted", "success");
 
         });
 
@@ -395,7 +395,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
     $scope.doClearProxyQueue = function() {
 
-        utils.openDeleteConfirmation("Clear all unconsumed proxied responses?", function (alertResponse) {
+        utils.openDeleteConfirmation("Clear all unconsumed responses?", function (alertResponse) {
 
             if (alertResponse) {
 
@@ -403,7 +403,7 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
                     "path" : null
                 };
 
-                restClient.doPatch($http, '/proxy/clear', reqData, function(status, data) {
+                restClient.doPatch($http, '/proxy/' + extId + '/clear', reqData, function(status, data) {
 
                      if (status != 204) {
                          showAlert(globalVars.GeneralErrorMessage);

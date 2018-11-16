@@ -13,7 +13,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     var translations = [];
     translations.push({"k" : "SEQ", "v" : "HTTP Sequenced Based"});
     translations.push({ "k" : "RULE", "v" : "HTTP Rules Based" });
-    translations.push({ "k" : "PROXY_HTTP", "v" : "HTTP Proxied" });
+    translations.push({ "k" : "PROXY_HTTP", "v" : "HTTP External Feed" });
     translations.push({ "k" : "PROXY_WS", "v" : "WebSocket Proxied" });
     translations.push({ "k" : "PROXY_SSE", "v" : "SSE Proxied" });
 
