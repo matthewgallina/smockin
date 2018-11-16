@@ -15,11 +15,15 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.viewRequestsHeading = "HTTP Live Feed";
     $scope.noActivityData = 'Listening for activity...';
     $scope.requestIdLabel = 'Trace Id';
-    $scope.proxiedLabel = 'Via Proxy';
+    $scope.inboundArrowLabel = '----->';
+    $scope.outboundArrowLabel = '<-----';
+    $scope.proxyLabel = 'Proxy';
     $scope.headersLabel = 'Headers';
     $scope.bodyLabel = 'Body';
     $scope.requestSearchPlaceholderText = 'Enter a keyword to filter results below...';
-
+    $scope.connectionStatusLabel = 'Connection Status';
+    $scope.connectionStatusOfflineLabel = 'OFFLINE';
+    $scope.connectionStatusOnlineLabel = 'ONLINE';
 
     //
     // Buttons
@@ -59,9 +63,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     //
     // Data Objects
     var wsSocket = null;
-    $scope.wsEstablished = false;
     $scope.activityFeed = [];
-
+    $scope.wsEstablished = false;
     $scope.sortType = 'name';
     $scope.sortReverse = false;
     $scope.search = '';
@@ -147,8 +150,9 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
        wsSocket.onopen = function (event) {
             $scope.activityFeed = [];
-            showAlert("Connected...", "success");
+            $scope.noActivityData = 'Listening for activity...';
             $scope.wsEstablished = true;
+            $scope.$digest();
         };
 
         wsSocket.onmessage = function (event) {
@@ -156,16 +160,16 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         };
 
         wsSocket.onerror = function (event) {
-            $scope.activityFeed = [];
             showAlert("Unable to establish connection to " + LiveFeedUrl);
             wsSocket = null;
             $scope.wsEstablished = false;
+            $scope.$digest();
         };
 
         wsSocket.onclose = function (event) {
-            showAlert("Connection closed", "warning");
             wsSocket = null;
             $scope.wsEstablished = false;
+            $scope.$digest();
         };
 
     }
@@ -173,13 +177,12 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function appendResponseMsg(liveLog) {
         $scope.activityFeed.push(liveLog);
         $scope.$digest();
-
     }
 
 
     //
     // Init Page
-    showAlert("Establishing connection...", "warning");
+    $scope.noActivityData = 'Establishing connection...';
     $timeout(doConnectFunc, InitPageTimeoutMillis);
 
 });

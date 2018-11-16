@@ -34,3 +34,11 @@
     max-height: 420px;
     overflow-y : scroll;
 }
+
+.logging-status-online {
+    color: #53c653;
+}
+
+.logging-status-offline {
+    color: #ff8080;
+}
