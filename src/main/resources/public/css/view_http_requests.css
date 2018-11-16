@@ -42,3 +42,10 @@
 .logging-status-offline {
     color: #ff8080;
 }
+
+.live-log-tbl-header-col {
+    max-width: 200px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -4,16 +4,16 @@ import java.util.Map;
 
 public class LiveLoggingOutboundContentDTO extends LiveLoggingContentDTO {
 
-    private final int status;
+    private final Integer status;
     private final boolean proxyResponseMocked;
 
-    public LiveLoggingOutboundContentDTO(final String contentType, final Map<String, String> headers, final String body, final int status, final boolean proxyResponseMocked) {
-        super(contentType, headers, body);
+    public LiveLoggingOutboundContentDTO(final Map<String, String> headers, final String body, final Integer status, final boolean proxyResponseMocked) {
+        super(headers, body);
         this.status = status;
         this.proxyResponseMocked = proxyResponseMocked;
     }
 
-    public int getStatus() {
+    public Integer getStatus() {
         return status;
     }
     public boolean isProxyResponseMocked() {

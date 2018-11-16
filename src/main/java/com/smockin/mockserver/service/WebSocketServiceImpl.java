@@ -5,18 +5,19 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.LiveLoggingUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +41,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Autowired
+    private LiveLoggingHandler liveLoggingHandler;
 
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
@@ -65,10 +69,10 @@ public class WebSocketServiceImpl implements WebSocketService {
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
 
         final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<>());
-
         final String assignedId = GeneralUtils.generateUUID();
+        final String traceId = session.getUpgradeResponse().getHeader(GeneralUtils.LOG_REQ_ID);
 
-        sessions.add(new SessionIdWrapper(assignedId, session, GeneralUtils.getCurrentDate()));
+        sessions.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate()));
 
         sessionMap.put(path, sessions);
 
@@ -76,6 +80,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
         }
 
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
     }
 
     /**
@@ -93,6 +98,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             sessionSet.forEach( s -> {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.traceId, null, null, "Websocket closed", false, false));
                     return;
                 }
             })
@@ -118,6 +124,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             .ifPresent(s -> {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.traceId, null, null, dto.getBody(), false, false));
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }
@@ -169,17 +176,22 @@ public class WebSocketServiceImpl implements WebSocketService {
     private final class SessionIdWrapper {
 
         private final String id;
+        private final String traceId;
         private final Session session;
         private final Date dateJoined;
 
-        public SessionIdWrapper(final String id, final Session session, final Date dateJoined) {
+        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined) {
             this.id = id;
+            this.traceId = traceId;
             this.session = session;
             this.dateJoined = dateJoined;
         }
 
         public String getId() {
             return id;
+        }
+        public String getTraceId() {
+            return traceId;
         }
         public Session getSession() {
             return session;

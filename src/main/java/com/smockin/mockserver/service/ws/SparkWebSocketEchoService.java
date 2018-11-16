@@ -10,8 +10,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -37,13 +35,11 @@ public class SparkWebSocketEchoService {
 
     @OnWebSocketConnect
     public void connected(final Session session) {
-
         webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, proxyPushIdOnConnect, session);
     }
 
     @OnWebSocketClose
     public void closed(final Session session, final int statusCode, final String reason) {
-
         webSocketService.removeSession(session);
     }
 

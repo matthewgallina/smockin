@@ -31,24 +31,24 @@
 
             <table class="table table-bordered table-striped" ng-show="activityFeed.length > 0">
                 <thead>
-                <tr>
-                    <td class="live-log-font">
+                <tr class="live-log-font">
+                    <td>
                     </td>
-                    <td class="live-log-font">
+                    <td class="live-log-tbl-header-col">
                         <a href="#" ng-click="sortType = 'headers'; sortReverse = !sortReverse">
                             {{ headersLabel }}
                             <span ng-show="sortType == 'headers' && !sortReverse" class="fa fa-caret-down"></span>
                             <span ng-show="sortType == 'headers' && sortReverse" class="fa fa-caret-up"></span>
                         </a>
                     </td>
-                    <td class="live-log-font">
+                    <td>
                         <a href="#" ng-click="sortType = 'details'; sortReverse = !sortReverse">
                             {{ bodyLabel }}
                             <span ng-show="sortType == 'details' && !sortReverse" class="fa fa-caret-down"></span>
                             <span ng-show="sortType == 'details' && sortReverse" class="fa fa-caret-up"></span>
                         </a>
                     </td>
-                    <td class="live-log-font">
+                    <td>
                         <a href="#" ng-click="sortType = 'id'; sortReverse = !sortReverse">
                             {{ requestIdLabel }}
                             <span ng-show="sortType == 'id' && !sortReverse" class="fa fa-caret-down"></span>
@@ -78,7 +78,9 @@
                             {{ outboundArrowLabel }} {{ (af.content.proxyResponseMocked) ? 'MOCKED' : 'ORIGINAL' }} RESPONSE
                         </span>
                     </td>
-                    <td><span ng-repeat="h in doConvertHttpHeaders(af.content.headers)">{{ h }}<br/></span></td>
+                    <td class="live-log-tbl-header-col">
+                        <span ng-repeat="h in doConvertHttpHeaders(af.content.headers)">{{ h }}<br/></span>
+                    </td>
                     <td>{{ af.content.body }}</td>
                     <td>{{ af.id }}</td>
                 </tr>

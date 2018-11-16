@@ -34,7 +34,7 @@ public final class LiveLoggingUtils {
         headers:
         body: n/a
     */
-    public static String buildLiveLogInboundFileEntry(final String reqId, final String method, final String url, final String contentType, final Map<String, String> headers, final String reqBody, final boolean viaProxy) {
+    public static String buildLiveLogInboundFileEntry(final String reqId, final String method, final String url, final Map<String, String> headers, final String reqBody, final boolean viaProxy) {
 
         final StringBuilder sb = new StringBuilder();
 
@@ -62,18 +62,18 @@ public final class LiveLoggingUtils {
          headers:
          body: { "name" : "jane" }
      */
-    public static String buildLiveLogOutboundFileEntry(final String reqId, final int status, final String contentType, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxyMockedResponse) {
+    public static String buildLiveLogOutboundFileEntry(final String reqId, final Integer status, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxyMockedResponse) {
 
         final StringBuilder sb = new StringBuilder();
 
-        sb.append(status)
+        sb.append((status != null) ? status : "")
                 .append(" ")
                 .append(buildLiveLogFileHeader(LiveLoggingDirectionEnum.RESPONSE, viaProxy, isProxyMockedResponse));
         sb.append("trace id:")
                 .append(reqId)
                 .append(CARRIAGE_RET);
         sb.append("headers: ")
-                .append(headers.entrySet().stream().map(h -> h.getKey() + "=" + h.getValue()).collect(Collectors.joining(HEADER_DELIMITER)))
+                .append((headers != null) ? headers.entrySet().stream().map(h -> h.getKey() + "=" + h.getValue()).collect(Collectors.joining(HEADER_DELIMITER)) : "n/a")
                 .append(CARRIAGE_RET);
         sb.append("body: ")
             .append(StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE))
@@ -125,14 +125,14 @@ public final class LiveLoggingUtils {
         return sb.toString();
     }
 
-    public static LiveLoggingDTO buildLiveLogInboundDTO(final String reqId, final String method, final String url, final String contentType, final Map<String, String> headers, final String reqBody, final boolean viaProxy) {
+    public static LiveLoggingDTO buildLiveLogInboundDTO(final String reqId, final String method, final String url, final Map<String, String> headers, final String reqBody, final boolean viaProxy) {
 
-        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.REQUEST, viaProxy, new LiveLoggingInboundContentDTO(StringUtils.defaultIfBlank(contentType, NOT_AVAILABLE), headers, method, url, StringUtils.defaultIfBlank(reqBody, NOT_AVAILABLE)));
+        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.REQUEST, viaProxy, new LiveLoggingInboundContentDTO(headers, method, url, StringUtils.defaultIfBlank(reqBody, NOT_AVAILABLE)));
     }
 
-    public static LiveLoggingDTO buildLiveLogOutboundDTO(final String reqId, final int status, final String contentType, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxyMockedResponse) {
+    public static LiveLoggingDTO buildLiveLogOutboundDTO(final String reqId, final Integer status, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxyMockedResponse) {
 
-        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.RESPONSE, viaProxy, new LiveLoggingOutboundContentDTO(StringUtils.defaultIfBlank(contentType, NOT_AVAILABLE), headers, StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE), status, isProxyMockedResponse));
+        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.RESPONSE, viaProxy, new LiveLoggingOutboundContentDTO(headers, StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE), status, isProxyMockedResponse));
     }
 
     private static String getDirectionalArrow(final LiveLoggingDirectionEnum direction) {

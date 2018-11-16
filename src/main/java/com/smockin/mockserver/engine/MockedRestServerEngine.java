@@ -68,7 +68,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private ProxyServer proxyServer;
 
     @Autowired
-    private LiveLoggingHandler mockLogFeedHandler;
+    private LiveLoggingHandler liveLoggingHandler;
 
 
     private final Object monitor = new Object();
@@ -329,16 +329,22 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return;
             }
 
-            request.attribute(GeneralUtils.LOG_REQ_ID, LiveLoggingUtils.getTraceId());
+            final String traceId = LiveLoggingUtils.getTraceId();
+
+            request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
+
+            if (isWebSocketUpgradeRequest(request)) {
+                response.raw().addHeader(GeneralUtils.LOG_REQ_ID, traceId);
+            }
 
             final Map<String, String> reqHeaders = request.headers()
                     .stream()
                     .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
 
             if (logMockCalls)
-                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), reqHeaders, request.body(), false));
+                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
 
-            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), request.contentType(), reqHeaders, request.body(), false));
+            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
         });
 
         Spark.afterAfter((request, response) -> {
@@ -352,9 +358,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
 
             if (logMockCalls)
-                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), respHeaders, response.body(), false, false));
+                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
 
-            mockLogFeedHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), response.raw().getContentType(), respHeaders, response.body(), false, false));
+            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
         });
 
     }
