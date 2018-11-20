@@ -43,8 +43,11 @@ WHAT'S NEW IN VERSION 1.5
     LIVE LOGGING (New to 1.5.4)
 
         Monitor in real time all HTTP mock and proxy traffic heading in and out of the sMockin. 
-        This can be done both through the UI and/or to a seperate log file kept in the .smockin config 
-        directory (under your user home).
+
+        Useful for assesing the mock (or real, via proxy) data driving your client or application.
+
+        HTTP activity can be viewed both through the UI and/or from a seperate log file kept in 
+        the .smockin config directory (under your machine's user home).
 
 
 
