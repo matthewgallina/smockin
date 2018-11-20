@@ -23,7 +23,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
     $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
-    $scope.logMockCallsLabel = 'Log mock calls';
+    $scope.logMockCallsLabel = 'Record mock calls to log file';
     $scope.manageProxyPriorityPathsLabel = '(' + (($scope.readOnly) ? 'view' : 'manage') +  ' priority paths)';
 
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
