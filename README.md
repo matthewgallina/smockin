@@ -40,6 +40,12 @@ WHAT'S NEW IN VERSION 1.5
         Please note this specific feature is still in BETA and only will work with mocks served from the root 
         context path of the mock server.
 
+    LIVE LOGGING (New to 1.5.4)
+
+        Monitor in real time all HTTP mock and proxy traffic heading in and out of the sMockin. 
+        This can be done both through the UI and/or to a seperate log file kept in the .smockin config 
+        directory (under your user home).
+
 
 
 OVERVIEW
