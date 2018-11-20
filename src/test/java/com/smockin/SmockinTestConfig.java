@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 /**
  * Created by mgallina.
  */
-@ComponentScan({ "com.smockin.admin", "com.smockin.mockserver" })
+@ComponentScan(value = { "com.smockin.admin", "com.smockin.mockserver" })
 @EnableJpaRepositories("com.smockin.admin.persistence.dao")
 @EntityScan("com.smockin.admin.persistence.entity")
 public class SmockinTestConfig {

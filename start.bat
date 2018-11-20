@@ -6,7 +6,7 @@ REM   echo %jver%
 IF DEFINED %SMOCKIN_DIR_PATH% (set APP_DIR_PATH=%SMOCKIN_DIR_PATH%) ELSE (set APP_DIR_PATH=%userprofile%\.smockin)
 
 set APP_NAME=SMOCKIN
-set APP_VERSION=1.5.3-SNAPSHOT
+set APP_VERSION=1.5.4-SNAPSHOT
 
 set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
@@ -86,7 +86,7 @@ echo #
 
 REM   Prepare runtime args
 
-set VM_ARGS=-Dspring.datasource.url=%JDBC_URL% -Dspring.datasource.username=%DB_USERNAME% -Dspring.datasource.password=%DB_PASSWORD% -Dspring.datasource.maximumPoolSize=%MAX_POOL_SIZE% -Dspring.datasource.minimumIdle=%MIN_POOL_SIZE% -Duser.timezone=UTC -Dapp.version=%APP_VERSION%
+set VM_ARGS=--spring.datasource.url=%JDBC_URL%,--spring.datasource.username=%DB_USERNAME%,--spring.datasource.password=%DB_PASSWORD%,--spring.datasource.maximumPoolSize=%MAX_POOL_SIZE%,--spring.datasource.minimumIdle=%MIN_POOL_SIZE%,--user.timezone=UTC,--app.version=%APP_VERSION%
 set APP_PROFILE=production
 
 
@@ -99,7 +99,7 @@ echo #  Please Note:
 echo #  - Application logs are available from: .smockin/log (under the user.home directory)
 echo #  - Navigate to: 'http://localhost:%APP_PORT%/index.html' to access the Smockin Admin UI.
 
-mvn spring-boot:run -Drun.jvmArguments="-Dspring.profiles.active=%APP_PROFILE% -Dmulti.user.mode=%MULTI_USER_MODE% -Dserver.port=%APP_PORT% %VM_ARGS%"
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=%APP_PROFILE%,--multi.user.mode=%MULTI_USER_MODE%,--server.port=%APP_PORT%,%VM_ARGS%"
 echo #
 echo #####################################################################################
 

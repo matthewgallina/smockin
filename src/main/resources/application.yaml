@@ -11,34 +11,9 @@ datasource:
   username: sa
   password:
 
-logging:
-  file: ${user.home}/.smockin/log/smockin.log
-  pattern:
-    console: "%d %-5level %logger : %msg%n"
-    file: "%d %-5level [%thread] %logger : %msg%n"
-  level:
-    org.springframework: WARN
-    com.smockin: WARN
-    org.hibernate: WARN
-    ROOT: WARN
-
 smockin:
   ftp.root.dir: "${user.home}/.smockin/ftp/"
-
-auth.exclusions:
-  /auth:
-    - POST
-  /user/mode:
-    - GET
-  /mockedserver/rest/status:
-    - GET
-  /mockedserver/jms/status:
-    - GET
-  /mockedserver/ftp/status:
-    - GET
-  /password/reset/token/*:
-    - GET
-    - POST
+  auth.exclusions: '{"*.html":["GET"],"*.js":["GET"],"*.css":["GET"],"*.woff2":["GET"],"*.png":["GET"],"*.gif":["GET"],"/auth":["POST"],"/user/mode":["GET"],"/mockedserver/rest/status":["GET"],"/mockedserver/jms/status":["GET"],"/mockedserver/ftp/status":["GET"],"/password/reset/token/*":["GET","POST"]}'
 
 ---
 # NOTE
@@ -49,6 +24,7 @@ spring:
     active: production
   jpa:
     show-sql: false
+    open-in-view: false
     hibernate:
       ddl-auto: update
   datasource:

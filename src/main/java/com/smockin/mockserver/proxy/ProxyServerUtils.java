@@ -4,6 +4,7 @@ import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.dto.ProxyActiveMock;
+import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.HttpClientUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -65,10 +66,19 @@ public class ProxyServerUtils {
         }
 
         context.getRequestHeaders().stream().forEach(h ->
-                dto.getHeaders().put(h.getKey(), h.getValue())
+            dto.getHeaders().put(h.getKey(), h.getValue())
         );
 
+        // Used by mock server to hide live logging.
+        dto.getHeaders().put(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER, "true");
+
         return dto;
+    }
+
+    Map<String, String> convertHeaders(final HttpHeaders httpHeaders) {
+        return httpHeaders.entries()
+                .stream()
+                .collect(Collectors.toMap(k -> k.getKey(), v -> v.getValue()));
     }
 
     boolean doesPathMatch(final String inboundPath, final String path) {

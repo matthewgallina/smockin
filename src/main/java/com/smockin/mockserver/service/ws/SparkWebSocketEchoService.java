@@ -10,8 +10,6 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -26,24 +24,29 @@ public class SparkWebSocketEchoService {
     private final long idleTimeoutMillis;
     private final boolean proxyPushIdOnConnect;
     private final WebSocketService webSocketService;
+    private final boolean logMockCalls;
 
-    public SparkWebSocketEchoService(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final WebSocketService webSocketService) {
+    public SparkWebSocketEchoService(final String mockExtId,
+                                     final String path,
+                                     final long idleTimeoutMillis,
+                                     final boolean proxyPushIdOnConnect,
+                                     final WebSocketService webSocketService,
+                                     final boolean logMockCalls) {
         this.mockExtId = mockExtId;
         this.path = path;
         this.idleTimeoutMillis = idleTimeoutMillis;
         this.proxyPushIdOnConnect = proxyPushIdOnConnect;
         this.webSocketService = webSocketService;
+        this.logMockCalls = logMockCalls;
     }
 
     @OnWebSocketConnect
     public void connected(final Session session) {
-
-        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, proxyPushIdOnConnect, session);
+        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, proxyPushIdOnConnect, session, logMockCalls);
     }
 
     @OnWebSocketClose
     public void closed(final Session session, final int statusCode, final String reason) {
-
         webSocketService.removeSession(session);
     }
 

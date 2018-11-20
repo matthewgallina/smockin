@@ -21,12 +21,11 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,13 +34,12 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
-
 /**
  * Created by mgallina.
  */
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = SmockinTestConfig.class)
 @DataJpaTest
-@ContextConfiguration(classes = {SmockinTestConfig.class})
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class ApiImportRouterIntTest {
 
@@ -364,8 +362,8 @@ public class ApiImportRouterIntTest {
         Assert.assertEquals(3, restfulMockDAO.findAll().size());
 
         final Optional<RestfulMock> mock = mocks.stream()
-            .filter(m -> "/hello/:name".equals(m.getPath()))
-            .findFirst();
+                .filter(m -> "/hello/:name".equals(m.getPath()))
+                .findFirst();
 
         Assert.assertTrue(mock.isPresent());
         Assert.assertNotEquals(originalMockId, mock.get().getId());
@@ -386,3 +384,4 @@ public class ApiImportRouterIntTest {
     }
 
 }
+

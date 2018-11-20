@@ -1,0 +1,103 @@
+<link rel="stylesheet" href="../css/view_http_requests.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ viewRequestsHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group">
+
+        <div id="no-activity-data" ng-if="activityFeed.length == 0">
+            {{ noActivityData }}
+        </div>
+
+        <form ng-show="activityFeed.length > 0">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-10">
+                        <input id="log-search" type="text" class="form-control" placeholder="{{ requestSearchPlaceholderText }}" ng-model="search">
+                    </div>
+                    <div class="col-sm-2">
+                        <button id="clear-feed-button" class="btn btn-warning" type="button" ng-click="doClearFeed()" ng-show="activityFeed.length > 0">{{ clearFeedButtonLabel }}</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="activity-feed-table-wrapper">
+
+            <table class="table table-bordered table-striped" ng-show="activityFeed.length > 0">
+                <thead>
+                <tr class="live-log-font">
+                    <td>
+                    </td>
+                    <td class="live-log-tbl-header-col">
+                        <a href="#" ng-click="sortType = 'headers'; sortReverse = !sortReverse">
+                            {{ headersLabel }}
+                            <span ng-show="sortType == 'headers' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'headers' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" ng-click="sortType = 'details'; sortReverse = !sortReverse">
+                            {{ bodyLabel }}
+                            <span ng-show="sortType == 'details' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'details' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#" ng-click="sortType = 'id'; sortReverse = !sortReverse">
+                            {{ requestIdLabel }}
+                            <span ng-show="sortType == 'id' && !sortReverse" class="fa fa-caret-down"></span>
+                            <span ng-show="sortType == 'id' && sortReverse" class="fa fa-caret-up"></span>
+                        </a>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search" class="live-log-font">
+                    <td ng-if="af.direction == 'REQUEST'">
+                        {{ af.content.method }}<br />
+                        {{ af.content.url }}
+                        <span ng-if="af.proxied">
+                            <br />
+                            <br />
+                            {{ inboundArrowLabel }} {{ proxyLabel }}
+                        </span>
+                    </td>
+                    <td ng-if="af.direction == 'RESPONSE'">
+                        {{ af.content.status }} {{ af.direction }}
+                        <span ng-if="af.proxied">
+                            <br />
+                            <br />
+                            {{ outboundArrowLabel }} {{ proxyLabel }}
+                            <br />
+                            {{ outboundArrowLabel }} {{ (af.content.proxyResponseMocked) ? 'MOCKED' : 'ORIGINAL' }} RESPONSE
+                        </span>
+                    </td>
+                    <td class="live-log-tbl-header-col">
+                        <span ng-repeat="h in doConvertHttpHeaders(af.content.headers)">{{ h }}<br/></span>
+                    </td>
+                    <td>{{ af.content.body }}</td>
+                    <td>{{ af.id }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="live-log-font pull-right">
+                {{ connectionStatusLabel }}:
+                <span ng-class="(wsEstablished) ? 'logging-status-online' : 'logging-status-offline'">{{ wsEstablished ? connectionStatusOnlineLabel : connectionStatusOfflineLabel }}</span>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

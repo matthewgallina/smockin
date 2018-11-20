@@ -1,7 +1,8 @@
 package com.smockin.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
@@ -38,8 +39,12 @@ public final class GeneralUtils {
     public static final String BROKER_URL_PARAM = "BROKER_URL";
     public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
     public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
+    public static final String LOG_MOCK_CALLS_PARAM = "LOG_MOCK_CALLS";
 
+    public static final String LOG_REQ_ID = "LOG_REQ_ID";
     public static final String PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";
+    public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
+
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
@@ -188,14 +193,29 @@ public final class GeneralUtils {
         return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
     }
 
-    public static Map<String, ?> deserialiseJSON(final String jsonStr) {
+    public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
+        return deserialiseJson(jsonStr);
+    }
+
+    public static <T> T deserialiseJson(final String jsonStr) {
 
         if (jsonStr != null) {
             try {
-                return JSON_MAPPER.readValue(jsonStr, Map.class);
+                return JSON_MAPPER.readValue(jsonStr, new TypeReference<T>() {});
             } catch (IOException e) {
                 // fail silently
             }
+        }
+
+        return null;
+    }
+
+    public static <T> String serialiseJson(final T t) {
+
+        try {
+            return JSON_MAPPER.writeValueAsString(t);
+        } catch (JsonProcessingException e) {
+            // fail silently
         }
 
         return null;

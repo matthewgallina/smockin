@@ -3,13 +3,18 @@ package com.smockin.mockserver.proxy;
 import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.mockserver.engine.BaseServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.LiveLoggingUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpStatus;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
@@ -24,12 +29,14 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 
 @Service
-public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActiveMock>> {
+public class ProxyServer implements BaseServerEngine<MockedServerConfigDTO, List<ProxyActiveMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(ProxyServer.class);
+    private final Logger mockTrafficLogger = LoggerFactory.getLogger("mock_traffic_logger");
 
     private HttpProxyServer httpProxyServer;
     private final Object monitor = new Object();
@@ -38,13 +45,19 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
     @Autowired
     private ProxyServerUtils proxyServerUtils;
 
+    @Autowired
+    private LiveLoggingHandler liveLoggingHandler;
+
+
     @Override
-    public void start(final Integer[] ports, final List<ProxyActiveMock> activeMocks) {
+    public void start(final MockedServerConfigDTO config, final List<ProxyActiveMock> activeMocks) {
 
         try {
 
-            final int proxyPort = ports[0];
-            final int mockServerPort = ports[1];
+            final int proxyPort = NumberUtils.toInt(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_PORT_PARAM), 8010);
+            final int mockServerPort = config.getPort();
+            final boolean logMockCalls =
+                    Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
 
             httpProxyServer = DefaultHttpProxyServer.bootstrap()
                     .withPort(proxyPort)
@@ -59,7 +72,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                         public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
                             logger.debug("filterRequest called");
 
-                            final LittleProxyContext context = new LittleProxyContext();
+                            final LittleProxyContext context = new LittleProxyContext(LiveLoggingUtils.getTraceId());
 
                             return new HttpFiltersAdapter(originalRequest) {
 
@@ -78,7 +91,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
 
                                             proxyServerUtils.debugInboundRequest(originalRequest);
 
-                                            if (proxyServerUtils.excludeInboundMethod(originalRequest.getMethod().name()))
+                                            if (proxyServerUtils.excludeInboundMethod(originalRequest.method().name()))
                                                 return null;
 
                                             final Optional<ProxyActiveMock> mock = proxyServerUtils.findMockMatch(originalRequest, activeMocks);
@@ -90,7 +103,7 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                             context.setUserCtx(mock.get().getUserCtx());
                                             context.getRequestHeaders().addAll(originalRequest.headers().entries());
 
-                                            if (request.getMethod() == HttpMethod.POST)
+                                            if (request.method() == HttpMethod.POST)
                                                 context.setRequestBody(request.content().toString(CharsetUtil.UTF_8));
 
                                         } catch (MalformedURLException e) {
@@ -108,21 +121,67 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                 public HttpObject proxyToClientResponse(final HttpObject httpObject) {
                                     logger.debug("proxyToClientResponse called");
 
-                                    // Re-use response if already retreived from mock server
-                                    if (context.getClientResponse() != null) {
-                                        return context.getClientResponse();
+                                    // Re-use response if already retrieved from mock server
+                                    if (context.getMockedClientResponse() != null) {
+                                        return context.getMockedClientResponse();
+                                    }
+
+                                    if (!context.getLittleProxyLoggingDTO().isLoggingRequestReceived()) {
+
+                                        final Map<String, String> reqHeaders = proxyServerUtils.convertHeaders(originalRequest.headers());
+
+                                        if (logMockCalls)
+                                            mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(context.getRequestId(), originalRequest.method().name(), originalRequest.uri(), reqHeaders, context.getRequestBody(), true));
+
+                                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(context.getRequestId(), originalRequest.method().name(), originalRequest.uri(), reqHeaders, context.getRequestBody(), true));
+                                        context.getLittleProxyLoggingDTO().setLoggingRequestReceived(true);
+                                    }
+
+                                    if (httpObject instanceof DefaultFullHttpResponse) {
+
+                                        final DefaultFullHttpResponse response = (DefaultFullHttpResponse) httpObject;
+
+                                        if (response.status().code() == 502) {
+
+                                            final Map<String, String> respHeaders = proxyServerUtils.convertHeaders(response.headers());
+
+                                            if (logMockCalls)
+                                                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), response.status().code(), respHeaders, null, true, false));
+
+                                            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), response.status().code(), respHeaders, null, true, false));
+                                            return httpObject;
+                                        }
+
                                     }
 
                                     proxyServerUtils.debugInboundRequest(originalRequest);
 
                                     if (!context.isUseMock()) {
+
+                                        if (httpObject instanceof DefaultHttpResponse) {
+
+                                            final DefaultHttpResponse response = (DefaultHttpResponse)httpObject;
+                                            context.getLittleProxyLoggingDTO().setLoggingResponseStatus(response.status().code());
+                                            context.getLittleProxyLoggingDTO().setLoggingResponseContentType(response.headers().get("Content-Type"));
+                                            context.getLittleProxyLoggingDTO().setResponseHeaders(proxyServerUtils.convertHeaders(response.headers()));
+
+                                        } else if (httpObject instanceof DefaultHttpContent) {
+
+                                            final DefaultHttpContent response = (DefaultHttpContent)httpObject;
+
+                                            if (logMockCalls)
+                                                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), context.getLittleProxyLoggingDTO().getLoggingResponseStatus(), context.getLittleProxyLoggingDTO().getResponseHeaders(), response.content().toString(Charset.defaultCharset()), true, false));
+
+                                            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), context.getLittleProxyLoggingDTO().getLoggingResponseStatus(), context.getLittleProxyLoggingDTO().getResponseHeaders(), response.content().toString(Charset.defaultCharset()), true, false));
+                                        }
+
                                         return httpObject;
                                     }
 
                                     try {
 
-                                        final URL inboundUrl = new URL(proxyServerUtils.fixProtocolWithDummyPrefix(originalRequest.getUri()));
-                                        final RestMethodEnum inboundMethod = RestMethodEnum.findByName(originalRequest.getMethod().name());
+                                        final URL inboundUrl = new URL(proxyServerUtils.fixProtocolWithDummyPrefix(originalRequest.uri()));
+                                        final RestMethodEnum inboundMethod = RestMethodEnum.findByName(originalRequest.method().name());
                                         final HttpClientCallDTO dto = proxyServerUtils.buildRequestDTO(context, inboundMethod, proxyServerUtils.buildMockUrl(inboundUrl, mockServerPort, context.getUserCtx()));
 
                                         // Store response from mock server for re-use
@@ -132,9 +191,14 @@ public class ProxyServer implements BaseServerEngine<Integer[], List<ProxyActive
                                             return httpObject;
                                         }
 
-                                        context.setClientResponse(proxyServerUtils.buildResponse(response));
+                                        context.setMockedClientResponse(proxyServerUtils.buildResponse(response));
 
-                                        return context.getClientResponse();
+                                        if (logMockCalls)
+                                            mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(context.getRequestId(), response.getStatus(), response.getHeaders(), response.getBody(), true, true));
+
+                                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(context.getRequestId(), response.getStatus(), response.getHeaders(), response.getBody(), true, true));
+
+                                        return context.getMockedClientResponse();
 
                                     } catch (MalformedURLException e) {
                                         logger.error("Error parsing inbound URL", e);
