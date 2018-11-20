@@ -5,16 +5,19 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.service.dto.SseMessageDTO;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.LiveLoggingUtils;
 import org.eclipse.jetty.io.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import spark.Request;
 import spark.Response;
 
 import java.io.IOException;
@@ -48,18 +51,26 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
+    @Autowired
+    private LiveLoggingHandler liveLoggingHandler;
+
     @Override
-    public void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Response response) throws IOException {
+    public void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Request request, final Response response, final boolean logMockCalls) throws IOException {
         logger.debug("register called");
 
         final String clientId = GeneralUtils.generateUUID();
+        final String traceId = request.attribute(GeneralUtils.LOG_REQ_ID);
 
         applyHeaders(response);
 
         // Register client and build messages collection
         clients.put(clientId, new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
 
-        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, response);
+        if (logMockCalls)
+            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
+
+        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response, logMockCalls);
     }
 
     @Override
@@ -130,12 +141,12 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     void applyHeaders(final Response res) {
 
        // Set SSE related headers
-       res.header("Content-Type","text/event-stream;charset=UTF-8");
+       res.header("Content-Type", SSE_EVENT_STREAM_HEADER);
        res.header("Cache-Control", "no-cache");
 
     }
 
-    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Response response) throws IOException {
+    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final String traceId, final Response response, final boolean logMockCalls) throws IOException {
         logger.debug("initHeartBeat called");
 
         // Get raw response Start stream
@@ -156,8 +167,15 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                     final Iterator<String> messagesIterator = messages.iterator();
 
                     while (messagesIterator.hasNext()) {
-                        writer.write(messagePrefix + messagesIterator.next() + messageSuffix);
+                        final String body = messagePrefix + messagesIterator.next();
+                        writer.write(body + messageSuffix);
                         messagesIterator.remove();
+
+                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false, false));
+
+                        if (logMockCalls)
+                            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, null, null, body, false, false));
+
                     }
 
                 } else {
@@ -173,6 +191,11 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
                     writer.close();
                     clients.remove(clientId);
+
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false, false));
+
+                    if (logMockCalls)
+                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, null, null, "SSE client connection closed", false, false));
 
                     break;
                 }

@@ -63,7 +63,7 @@ public class WebSocketServiceImpl implements WebSocketService {
      * @param session
      *
      */
-    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final Session session) {
+    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final Session session, final boolean logMockCalls) {
         logger.debug("registerSession called");
 
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
@@ -72,7 +72,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         final String assignedId = GeneralUtils.generateUUID();
         final String traceId = session.getUpgradeResponse().getHeader(GeneralUtils.LOG_REQ_ID);
 
-        sessions.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate()));
+        sessions.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate(), logMockCalls));
 
         sessionMap.put(path, sessions);
 
@@ -81,6 +81,10 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
+
+        if (logMockCalls)
+            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
+
     }
 
     /**
@@ -98,7 +102,12 @@ public class WebSocketServiceImpl implements WebSocketService {
             sessionSet.forEach( s -> {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.traceId, null, null, "Websocket closed", false, false));
+
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false, false));
+
+                    if (s.isLogMockCalls())
+                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(s.getTraceId(), null, null, "Websocket closed", false, false));
+
                     return;
                 }
             })
@@ -124,7 +133,11 @@ public class WebSocketServiceImpl implements WebSocketService {
             .ifPresent(s -> {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.traceId, null, null, dto.getBody(), false, false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
+
+                    if (s.isLogMockCalls())
+                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(s.getTraceId(), null, null, dto.getBody(), false, false));
+
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }
@@ -179,12 +192,14 @@ public class WebSocketServiceImpl implements WebSocketService {
         private final String traceId;
         private final Session session;
         private final Date dateJoined;
+        private final boolean logMockCalls;
 
-        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined) {
+        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined, final boolean logMockCalls) {
             this.id = id;
             this.traceId = traceId;
             this.session = session;
             this.dateJoined = dateJoined;
+            this.logMockCalls = logMockCalls;
         }
 
         public String getId() {
@@ -198,6 +213,9 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
         public Date getDateJoined() {
             return dateJoined;
+        }
+        public boolean isLogMockCalls() {
+            return logMockCalls;
         }
     }
 

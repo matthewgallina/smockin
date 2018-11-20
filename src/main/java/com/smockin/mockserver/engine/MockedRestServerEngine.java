@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO, List<RestfulMock>> {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);
-    private final Logger mockTrafficLogger = LoggerFactory.getLogger("mock_traffic_logger");
+
 
     @Autowired
     private RestfulMockDAO restfulMockDAO;
@@ -81,11 +81,14 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
+        final boolean logMockCalls =
+                Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
+
         // Invoke all lazily loaded data and detach entity.
         invokeAndDetachData(mocks);
 
         // Define all web socket routes first as the Spark framework requires this
-        buildWebSocketEndpoints(mocks);
+        buildWebSocketEndpoints(mocks, logMockCalls);
 
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
@@ -96,9 +99,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         setDeployedMocks(mocks);
 
         // Next handle all HTTP SSE web service routes
-        buildSSEEndpoints(mocks);
+        buildSSEEndpoints(mocks, logMockCalls);
 
-        applyTrafficLogging(config);
+        applyTrafficLogging(logMockCalls);
 
         applyDefaultRoutes404Hack();
 
@@ -237,7 +240,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     // Expects RestfulMock to be detached
-    void buildWebSocketEndpoints(final List<RestfulMock> mocks) {
+    void buildWebSocketEndpoints(final List<RestfulMock> mocks, final boolean logMockCalls) {
 
         //
         // Define all web socket routes first as the Spark framework requires this
@@ -246,13 +249,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             if (RestMockTypeEnum.PROXY_WS.equals(m.getMockType())) {
                 // Create an echo service instance per web socket route, as we need to hold the path as state within this.
                 final String path = buildUserPath(m);
-                Spark.webSocket(path, new SparkWebSocketEchoService(m.getExtId(), path, m.getWebSocketTimeoutInMillis(), m.isProxyPushIdOnConnect(), webSocketService));
+                Spark.webSocket(path, new SparkWebSocketEchoService(m.getExtId(), path, m.getWebSocketTimeoutInMillis(), m.isProxyPushIdOnConnect(), webSocketService, logMockCalls));
             }
         });
     }
 
     // Expects RestfulMock to be detached
-    void buildSSEEndpoints(final List<RestfulMock> mocks) throws MockServerException {
+    void buildSSEEndpoints(final List<RestfulMock> mocks, final boolean logMockCalls) throws MockServerException {
 
         mocks.stream().forEach(m -> {
 
@@ -263,7 +266,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
                 // NOTE, Java Spark does not currently provide support for NIO SSE. This code therefore BLOCKS the request
                 // thread until the connection is closed by either party.
-                Spark.get(buildUserPath(m), (req, res) -> processSSERequest(m, req, res));
+                Spark.get(buildUserPath(m), (req, res) -> processSSERequest(m, req, res, logMockCalls));
 
             }
 
@@ -317,10 +320,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return activeRestfulMocks;
     }
 
-    private void applyTrafficLogging(final MockedServerConfigDTO config) {
-
-        final boolean logMockCalls =
-                Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
+    private void applyTrafficLogging(final boolean logMockCalls) {
 
         // Live logging filter
         Spark.before((request, response) -> {
@@ -342,14 +342,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
 
             if (logMockCalls)
-                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
+                LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
 
             liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
         });
 
         Spark.afterAfter((request, response) -> {
 
-            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)) {
+            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)
+                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader("Content-Type"))) {
                 return;
             }
 
@@ -358,7 +359,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
 
             if (logMockCalls)
-                mockTrafficLogger.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
+                LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
 
             liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
         });
@@ -476,9 +477,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return StringUtils.defaultIfBlank(response,"");
     }
 
-    String processSSERequest(final RestfulMock mock, final Request req, final Response res) throws IOException {
+    String processSSERequest(final RestfulMock mock, final Request req, final Response res, final boolean logMockCalls) throws IOException {
 
-        serverSideEventService.register(buildUserPath(mock), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), res);
+        serverSideEventService.register(buildUserPath(mock), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), req, res, logMockCalls);
 
         return null;
     }

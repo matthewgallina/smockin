@@ -5,6 +5,8 @@ import com.smockin.admin.dto.response.LiveLoggingInboundContentDTO;
 import com.smockin.admin.dto.response.LiveLoggingOutboundContentDTO;
 import com.smockin.admin.enums.LiveLoggingDirectionEnum;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +16,8 @@ import java.util.stream.Collectors;
  * Created by mgallina.
  */
 public final class LiveLoggingUtils {
+
+    public static final Logger MOCK_TRAFFIC_LOGGER = LoggerFactory.getLogger("mock_traffic_logger");
 
     private static final String INBOUND_ARROW = "------>";
     private static final String OUTBOUND_ARROW = "<------";
