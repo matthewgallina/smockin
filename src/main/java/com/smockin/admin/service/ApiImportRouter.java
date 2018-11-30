@@ -2,7 +2,7 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.enums.ApiImportTypeEnum;
-import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public class ApiImportRouter {
     @Qualifier("ramlApiImportService")
     private ApiImportService ramlApiImportService;
 
-    public void route(final String importType, final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
+    public void route(final String importType, final ApiImportDTO dto, final String token) throws MockImportException, ValidationException {
         logger.debug("route called");
 
         validate(importType, dto, token);

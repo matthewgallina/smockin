@@ -1,6 +1,6 @@
 package com.smockin.admin.enums;
 
-public enum ApiKeepStrategyEnum {
+public enum MockImportKeepStrategyEnum {
     RENAME_EXISTING,
-    RENAME_NEW;
+    RENAME_NEW
 }

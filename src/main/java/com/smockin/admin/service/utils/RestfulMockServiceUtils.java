@@ -21,7 +21,7 @@ import java.util.Map;
 public class RestfulMockServiceUtils {
 
     @Autowired
-    private RestfulMockDAO restfulMockDefinitionDAO;
+    private RestfulMockDAO restfulMockDAO;
 
     @Autowired
     private RestfulMockSortingUtils restfulMockSortingUtils;
@@ -130,17 +130,43 @@ public class RestfulMockServiceUtils {
     public void handleEndpointOrdering() {
 
         // Load all restful mocks
-        final List<RestfulMock> allRestfulMocks = restfulMockDefinitionDAO.findAll();
+        final List<RestfulMock> allRestfulMocks = restfulMockDAO.findAll();
 
         // Alphanumerically order the mocks by endpoint path. This also updates the initializationOrder field of each record.
         restfulMockSortingUtils.autoOrderEndpointPaths(allRestfulMocks);
 
         // Save all
-        restfulMockDefinitionDAO.saveAll(allRestfulMocks);
+        restfulMockDAO.saveAll(allRestfulMocks);
     }
 
     public void amendPath(final RestfulMockDTO dto) {
         dto.setPath(GeneralUtils.prefixPath(dto.getPath()));
+    }
+
+    public void preHandleExistingEndpoints(final RestfulMockDTO dto, final MockImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) {
+
+        final RestfulMock existingRestFulMock = restfulMockDAO.findByPathAndMethodAndUser(dto.getPath(), dto.getMethod(), user);
+
+        if (existingRestFulMock == null) {
+            return;
+        }
+
+        if (!apiImportConfig.isKeepExisting()) {
+            restfulMockDAO.delete(existingRestFulMock);
+            restfulMockDAO.flush();
+            return;
+        }
+
+        switch (apiImportConfig.getKeepStrategy()) {
+            case RENAME_EXISTING:
+                existingRestFulMock.setPath("/" + conflictCtxPath + existingRestFulMock.getPath());
+                restfulMockDAO.save(existingRestFulMock);
+                break;
+            case RENAME_NEW:
+                dto.setPath("/" + conflictCtxPath + dto.getPath());
+                break;
+        }
+
     }
 
 }

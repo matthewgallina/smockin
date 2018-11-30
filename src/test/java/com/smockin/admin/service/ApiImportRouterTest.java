@@ -1,9 +1,9 @@
 package com.smockin.admin.service;
 
-import com.smockin.admin.dto.ApiImportConfigDTO;
+import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.enums.ApiImportTypeEnum;
-import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.utils.GeneralUtils;
 import org.junit.Before;
@@ -34,16 +34,16 @@ public class ApiImportRouterTest {
     private ApiImportRouter apiImportRouter = new ApiImportRouter();
 
     @Before
-    public void setUp() throws ApiImportException, ValidationException {
+    public void setUp() throws MockImportException, ValidationException {
 
-        dto = new ApiImportDTO(multipartFile, new ApiImportConfigDTO());
+        dto = new ApiImportDTO(multipartFile, new MockImportConfigDTO());
 
         Mockito.doNothing().when(ramlApiImportService).importApiDoc(Matchers.any(ApiImportDTO.class), Matchers.anyString());
 
     }
 
     @Test
-    public void routePass() throws ApiImportException, ValidationException {
+    public void routePass() throws MockImportException, ValidationException {
 
         apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, GeneralUtils.generateUUID());
 
@@ -52,7 +52,7 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_nullDto_Fail() throws ApiImportException, ValidationException {
+    public void route_nullDto_Fail() throws MockImportException, ValidationException {
 
         // Assertions
         expected.expect(ValidationException.class);
@@ -65,10 +65,10 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_nullFile_Fail() throws ApiImportException, ValidationException {
+    public void route_nullFile_Fail() throws MockImportException, ValidationException {
 
         // Setup
-        dto = new ApiImportDTO(null, new ApiImportConfigDTO());
+        dto = new ApiImportDTO(null, new MockImportConfigDTO());
 
         // Assertions
         expected.expect(ValidationException.class);
@@ -81,7 +81,7 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_nullImportType_Fail() throws ApiImportException, ValidationException {
+    public void route_nullImportType_Fail() throws MockImportException, ValidationException {
 
         // Assertions
         expected.expect(ValidationException.class);
@@ -94,7 +94,7 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_invalidImportType_Fail() throws ApiImportException, ValidationException {
+    public void route_invalidImportType_Fail() throws MockImportException, ValidationException {
 
         // Assertions
         expected.expect(ValidationException.class);
@@ -107,7 +107,7 @@ public class ApiImportRouterTest {
     }
 
     @Test
-    public void route_nullConfig_Fail() throws ApiImportException, ValidationException {
+    public void route_nullConfig_Fail() throws MockImportException, ValidationException {
 
         // Setup
         dto = new ApiImportDTO(multipartFile, null);

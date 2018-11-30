@@ -1,7 +1,6 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.FtpMock;
-import com.smockin.admin.persistence.entity.JmsMock;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**

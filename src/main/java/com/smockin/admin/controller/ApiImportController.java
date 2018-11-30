@@ -1,9 +1,9 @@
 package com.smockin.admin.controller;
 
-import com.smockin.admin.dto.ApiImportConfigDTO;
+import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
-import com.smockin.admin.enums.ApiKeepStrategyEnum;
-import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.enums.MockImportKeepStrategyEnum;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.ApiImportRouter;
 import com.smockin.utils.GeneralUtils;
@@ -40,9 +40,9 @@ public class ApiImportController {
     public @ResponseBody ResponseEntity<Void> importApiFile(@PathVariable("type") final String importType,
                                                             @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
                                                             @RequestParam("file") final MultipartFile file)
-                                                                throws ValidationException, ApiImportException {
+                                                                throws ValidationException, MockImportException {
 
-        final ApiImportDTO dto = new ApiImportDTO(file, new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_NEW));
+        final ApiImportDTO dto = new ApiImportDTO(file, new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
 
         apiImportRouter.route(importType, dto, GeneralUtils.extractOAuthToken(bearerToken));
 

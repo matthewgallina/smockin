@@ -1,6 +1,7 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.FtpMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import org.springframework.stereotype.Repository;
 
@@ -34,6 +35,20 @@ public class FtpMockDAOImpl implements FtpMockDAOCustom {
         return entityManager.createQuery("FROM FtpMock fm WHERE fm.createdBy.id = :userId ORDER BY fm.name ASC")
                 .setParameter("userId", userId)
                 .getResultList();
+    }
+
+    @Override
+    public FtpMock findByNameAndUser(final String name, final SmockinUser user) {
+        try {
+            return entityManager.createQuery("FROM FtpMock fm "
+                    + " WHERE fm.name = :name "
+                    + " AND fm.createdBy.id = :userId", FtpMock.class)
+                    .setParameter("name", name)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+        } catch (Throwable ex) {
+            return null;
+        }
     }
 
 }

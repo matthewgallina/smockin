@@ -23,6 +23,10 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
     private DeploymentStatusEnum deploymentStatus;
     private List<RuleDTO> rules = new ArrayList<>();
 
+    public RestfulMockResponseDTO() {
+
+    }
+
     public RestfulMockResponseDTO(final String extId, final String path, final String userCtxPath, final DeploymentStatusEnum deploymentStatus, final RestMethodEnum method, final RecordStatusEnum status,
                                   final RestMockTypeEnum mockType, final Date dateCreated, final String createdBy, final long proxyTimeoutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
                                   final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch, final boolean proxyPriority) {

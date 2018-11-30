@@ -1,4 +1,4 @@
-# sMockin version 1.5.4
+# sMockin version 1.6.0
 
 Intelligent API simulation for application development and QA testing
 
@@ -40,7 +40,7 @@ WHAT'S NEW IN VERSION 1.5
         Please note this specific feature is still in BETA and only will work with mocks served from the root 
         context path of the mock server.
 
-    LIVE LOGGING (New to 1.5.4)
+    LIVE LOGGING
 
         Monitor in real time all HTTP mock and proxy traffic heading in and out of the sMockin. 
 

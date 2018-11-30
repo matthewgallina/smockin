@@ -1,6 +1,7 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.JmsMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +41,20 @@ public class JmsMockDAOImpl implements JmsMockDAOCustom {
         return entityManager.createQuery("FROM JmsMock jqm WHERE jqm.createdBy.id = :userId ORDER BY jqm.name ASC")
                 .setParameter("userId", userId)
                 .getResultList();
+    }
+
+    @Override
+    public JmsMock findByNameAndUser(final String name, final SmockinUser user) {
+        try {
+            return entityManager.createQuery("FROM JmsMock jqm "
+                    + " WHERE jqm.name = :name "
+                    + " AND jqm.createdBy.id = :userId", JmsMock.class)
+                    .setParameter("name", name)
+                    .setParameter("userId", user.getId())
+                    .getSingleResult();
+        } catch (Throwable ex) {
+            return null;
+        }
     }
 
 }

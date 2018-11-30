@@ -1,17 +1,17 @@
 package com.smockin.admin.dto;
 
-import com.smockin.admin.enums.ApiKeepStrategyEnum;
+import com.smockin.admin.enums.MockImportKeepStrategyEnum;
 
-public class ApiImportConfigDTO {
+public class MockImportConfigDTO {
 
     private boolean keepExisting;
-    private ApiKeepStrategyEnum keepStrategy;
+    private MockImportKeepStrategyEnum keepStrategy;
 
-    public ApiImportConfigDTO() {
+    public MockImportConfigDTO() {
 
     }
 
-    public ApiImportConfigDTO(ApiKeepStrategyEnum keepStrategy) {
+    public MockImportConfigDTO(MockImportKeepStrategyEnum keepStrategy) {
         this.keepExisting = true;
         this.keepStrategy = keepStrategy;
     }
@@ -23,10 +23,10 @@ public class ApiImportConfigDTO {
         this.keepExisting = keepExisting;
     }
 
-    public ApiKeepStrategyEnum getKeepStrategy() {
+    public MockImportKeepStrategyEnum getKeepStrategy() {
         return keepStrategy;
     }
-    public void setKeepStrategy(ApiKeepStrategyEnum keepStrategy) {
+    public void setKeepStrategy(MockImportKeepStrategyEnum keepStrategy) {
         this.keepStrategy = keepStrategy;
     }
 
