@@ -74,7 +74,7 @@ public class RamlApiImportServiceTest {
     public void importApiDocPass() throws MockImportException, ValidationException, RecordNotFoundException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml_100.raml"), new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_EXISTING));
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/raml_100.raml"), new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_EXISTING));
 
         // Test
         apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
@@ -188,7 +188,7 @@ public class RamlApiImportServiceTest {
     public void importApiDoc_NullConfig_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml_100.raml"), null);
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/raml_100.raml"), null);
 
         // Assertions
         expected.expect(ValidationException.class);
@@ -203,7 +203,7 @@ public class RamlApiImportServiceTest {
     public void importApiDoc_InvalidContent_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("bad_raml_100.raml"), new MockImportConfigDTO());
+        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/bad_raml_100.raml"), new MockImportConfigDTO());
 
         // Assertions
         expected.expect(MockImportException.class);

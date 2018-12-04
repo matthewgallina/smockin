@@ -27,7 +27,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated HTTP Endpoints';
+    $scope.endpointsHeading = 'HTTP Mocks';
     $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
     $scope.showAllEndpointsHeading = 'display other user endpoints';
     $scope.hideAllEndpointsHeading = 'hide';
@@ -36,7 +36,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Buttons
     $scope.addEndpointButtonLabel = 'New HTTP Endpoint';
-    $scope.importEndpointButtonLabel = 'Import RAML API';
+    $scope.importExportEndpointButtonLabel = 'Import / Export';
     $scope.viewEndpointButtonLabel = 'View';
 
 
@@ -112,14 +112,15 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         $location.path("/tcp_endpoint");
     };
 
-    $scope.doOpenTcpRamlImport = function() {
+    $scope.doOpenImportExport = function() {
+
         $rootScope.endpointData = null;
 
-     var modalInstance = $uibModal.open({
-          templateUrl: 'api_import.html',
-          controller: 'apiImportController',
-          backdrop  : 'static',
-          keyboard  : false
+        var modalInstance = $uibModal.open({
+            templateUrl: 'http_import_export.html',
+            controller: 'httpImportExportController',
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (response) {

@@ -1,0 +1,69 @@
+<link rel="stylesheet" href="../css/http_import_export.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ importExportHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <form>
+
+        <div class="btn-group import-export-mode">
+            <label class="btn btn-default import-mode-button" ng-model="mode" uib-btn-radio="'IMPORT'">{{ importLabel }}</label>
+            <label class="btn btn-default export-mode-button" ng-model="mode" uib-btn-radio="'EXPORT'">{{ exportLabel }}</label>
+        </div>
+
+        <br />
+        <br />
+
+        <div ng-show="mode == ImportType">
+
+            <label for="apiUploadFile" class="upload-select-file-button btn btn-default">
+                <span ng-if="apiUploadFile.data == null">{{ selectFileLabel }}</span>
+                <span ng-if="apiUploadFile.data != null">{{ apiUploadFile.data.name }}</span>
+            </label>
+            <input id="apiUploadFile" type="file" form-file-model="apiUploadFile.data" />
+
+            <br />
+            <br />
+
+            <button class="btn btn-success upload-button" type="button" ng-click="doUploadApiFile()" ng-disabled="disableForm">
+                <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ importButtonLabel }}
+            </button>
+
+            <br />
+            <br />
+
+            <div class="form-group">
+                <label for="import-feedback" class="ng-binding">{{ importFeedbackLabel }}</label>
+                <textarea id="import-feedback" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="importFeedback" readonly></textarea>
+            </div>
+
+            <div class="import-info">
+                {{ pleaseNoteLabel }}
+                <br />
+                <div class="import-info-details">
+                    <i>- {{ existingEndpointsInfo }}</i>
+                    <br />
+                    <i>- {{ ramlVersionInfo }}</i>
+                </div>
+            </div>
+
+        </div>
+
+        <div ng-show="mode == ExportType">
+
+            TODO
+
+        </div>
+
+    </form>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

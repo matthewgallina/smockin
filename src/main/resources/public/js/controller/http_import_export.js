@@ -1,20 +1,24 @@
 
-app.controller('apiImportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient) {
+app.controller('httpImportExportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient) {
 
 
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    $scope.ImportType = "IMPORT";
+    $scope.ExportType = "EXPORT";
 
 
     //
     // Labels
-    $scope.apiImportHeading = 'RAML API Importer';
+    $scope.importExportHeading = 'Import / Export';
     $scope.selectFileLabel = 'Select API RAML File...';
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
     $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';
     $scope.ramlVersionInfo = "This facility supports most common RAML features, based on the 'RAML 100 & 200 Tutorials' at raml.org";
+    $scope.importLabel = "Import";
+    $scope.exportLabel = "Export";
 
 
     //
@@ -48,6 +52,7 @@ app.controller('apiImportController', function($scope, $uibModalInstance, $timeo
 
     //
     // Data Objects
+    $scope.mode = $scope.ImportType;
     $scope.disableForm = false;
     $scope.uploadCompleted = false;
 

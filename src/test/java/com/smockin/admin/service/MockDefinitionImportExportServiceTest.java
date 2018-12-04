@@ -6,9 +6,18 @@ import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.enums.DeploymentStatusEnum;
+import com.smockin.admin.exception.MockImportException;
+import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.FtpMockDAO;
+import com.smockin.admin.persistence.dao.JmsMockDAO;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.*;
+import com.smockin.admin.service.utils.RestfulMockServiceUtils;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,9 +27,12 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
-
+import org.springframework.mock.web.MockMultipartFile;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.stream.Stream;
@@ -39,6 +51,19 @@ public class MockDefinitionImportExportServiceTest {
 
     @Mock
     private FtpMockService ftpMockService;
+
+    @Mock
+    private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Mock
+    private JmsMockDAO jmsMockDAO;
+
+    @Mock
+    private FtpMockDAO ftpMockDAO;
+
+    @Mock
+    private RestfulMockServiceUtils restfulMockServiceUtils;
+
 
     @Spy
     @InjectMocks
@@ -125,24 +150,19 @@ public class MockDefinitionImportExportServiceTest {
     }
 
     @Test
-    public void mockDefinitionImportExportService_All_Pass() throws IOException {
+    public void export_allRestful_Pass() throws IOException {
 
         // Test
-        final String base64EncodedZipFile = mockDefinitionImportExportService.export(Optional.empty(), "ABC");
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles()).forEach(f -> {
+        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles())
+                .forEach(f -> {
 
             try {
 
-                final String json = readFileToString(f);
-
                 if (f.getName().indexOf(MockDefinitionImportExportService.restExportFileName) > -1) {
-                    Assert.assertEquals(allRestfulMocks.size(), ((List)GeneralUtils.deserialiseJson(json)).size());
-                } else if (f.getName().indexOf(MockDefinitionImportExportService.jmsExportFileName) > -1) {
-                    Assert.assertEquals(allJmsMocks.size(), ((List)GeneralUtils.deserialiseJson(json)).size());
-                } else if (f.getName().indexOf(MockDefinitionImportExportService.ftpExportFileName) > -1) {
-                    Assert.assertEquals(allFtpMocks.size(), ((List)GeneralUtils.deserialiseJson(json)).size());
+                    Assert.assertEquals(allRestfulMocks.size(), ((List)GeneralUtils.deserialiseJson(readFileToString(f))).size());
                 } else {
                     Assert.fail();
                 }
@@ -156,38 +176,133 @@ public class MockDefinitionImportExportServiceTest {
     }
 
     @Test
-    public void mockDefinitionImportExportService_Selected_Pass() throws IOException {
+    public void export_allJms_Pass() throws IOException {
+
+        // Test
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(), "ABC");
+
+        // Assertions
+        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles())
+                .forEach(f -> {
+
+                    try {
+
+                        if (f.getName().indexOf(MockDefinitionImportExportService.jmsExportFileName) > -1) {
+                            Assert.assertEquals(allJmsMocks.size(), ((List)GeneralUtils.deserialiseJson(readFileToString(f))).size());
+                        } else {
+                            Assert.fail();
+                        }
+
+                    } catch (IOException e) {
+                        Assert.fail();
+                    }
+
+                });
+
+    }
+
+    @Test
+    public void export_allFtp_Pass() throws IOException {
+
+        // Test
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(), "ABC");
+
+        // Assertions
+        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles())
+                .forEach(f -> {
+
+                    try {
+
+                        if (f.getName().indexOf(MockDefinitionImportExportService.ftpExportFileName) > -1) {
+                            Assert.assertEquals(allFtpMocks.size(), ((List)GeneralUtils.deserialiseJson(readFileToString(f))).size());
+                        } else {
+                            Assert.fail();
+                        }
+
+                    } catch (IOException e) {
+                        Assert.fail();
+                    }
+
+                });
+
+    }
+
+    @Test
+    public void export_selectedRestful_Pass() throws IOException {
 
         // Setup
         final RestfulMockResponseDTO restfulDTO = allRestfulMocks.get(1);
-        final JmsMockResponseDTO jmsDTO = allJmsMocks.get(0);
-        final FtpMockResponseDTO ftpDTO = allFtpMocks.get(1);
-
-        final Optional<List<ExportMockDTO>> selectedExports = Optional.of(Arrays.asList(
-            new ExportMockDTO(restfulDTO.getExtId(), ServerTypeEnum.RESTFUL),
-            new ExportMockDTO(jmsDTO.getExtId(), ServerTypeEnum.JMS),
-            new ExportMockDTO(ftpDTO.getExtId(), ServerTypeEnum.FTP)
-        ));
 
         // Test
-        final String base64EncodedZipFile = mockDefinitionImportExportService.export(selectedExports, "ABC");
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(restfulDTO.getExtId()), "ABC");
 
         // Assertions
         Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles()).forEach(f -> {
 
             try {
-                final String json = readFileToString(f);
 
                 if (f.getName().indexOf(MockDefinitionImportExportService.restExportFileName) > -1) {
-                    final List<RestfulMockResponseDTO> restfulMocks = GeneralUtils.deserialiseJson(json, new TypeReference<List<RestfulMockResponseDTO>>() {});
+                    final List<RestfulMockResponseDTO> restfulMocks = GeneralUtils.deserialiseJson(readFileToString(f), new TypeReference<List<RestfulMockResponseDTO>>() {});
                     Assert.assertEquals(1, restfulMocks.size());
                     Assert.assertEquals(restfulDTO.getExtId(), restfulMocks.get(0).getExtId());
-                } else if (f.getName().indexOf(MockDefinitionImportExportService.jmsExportFileName) > -1) {
-                    final List<JmsMockResponseDTO> jmsMocks = GeneralUtils.deserialiseJson(json, new TypeReference<List<JmsMockResponseDTO>>() {});
+                } else {
+                    Assert.fail();
+                }
+
+            } catch (IOException e) {
+                Assert.fail();
+            }
+
+        });
+
+    }
+
+    @Test
+    public void export_selectedJms_Pass() throws IOException {
+
+        // Setup
+        final JmsMockResponseDTO jmsDTO = allJmsMocks.get(0);
+
+        // Test
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(jmsDTO.getExtId()), "ABC");
+
+        // Assertions
+        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles()).forEach(f -> {
+
+            try {
+
+                if (f.getName().indexOf(MockDefinitionImportExportService.jmsExportFileName) > -1) {
+                    final List<JmsMockResponseDTO> jmsMocks = GeneralUtils.deserialiseJson(readFileToString(f), new TypeReference<List<JmsMockResponseDTO>>() {});
                     Assert.assertEquals(1, jmsMocks.size());
                     Assert.assertEquals(jmsDTO.getExtId(), jmsMocks.get(0).getExtId());
-                } else if (f.getName().indexOf(MockDefinitionImportExportService.ftpExportFileName) > -1) {
-                    final List<FtpMockResponseDTO> ftpMocks = GeneralUtils.deserialiseJson(json, new TypeReference<List<FtpMockResponseDTO>>() {});
+                } else {
+                    Assert.fail();
+                }
+
+            } catch (IOException e) {
+                Assert.fail();
+            }
+
+        });
+
+    }
+
+    @Test
+    public void export_selectedFtp_Pass() throws IOException {
+
+        // Setup
+        final FtpMockResponseDTO ftpDTO = allFtpMocks.get(1);
+
+        // Test
+        final String base64EncodedZipFile = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(ftpDTO.getExtId()), "ABC");
+
+        // Assertions
+        Stream.of(unpackZipToTempArchive(base64EncodedZipFile).listFiles()).forEach(f -> {
+
+            try {
+
+                if (f.getName().indexOf(MockDefinitionImportExportService.ftpExportFileName) > -1) {
+                    final List<FtpMockResponseDTO> ftpMocks = GeneralUtils.deserialiseJson(readFileToString(f), new TypeReference<List<FtpMockResponseDTO>>() {});
                     Assert.assertEquals(1, ftpMocks.size());
                     Assert.assertEquals(ftpDTO.getExtId(), ftpMocks.get(0).getExtId());
                 } else {
@@ -200,6 +315,50 @@ public class MockDefinitionImportExportServiceTest {
 
         });
 
+    }
+
+    @Test
+    public void importFile_restful_Pass()
+            throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
+
+        // Setup
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+
+        // Test
+        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+
+        // Assertions (NOTE: smockin_export_rest.zip file contains 5 records)
+        Mockito.verify(restfulMockServiceUtils, Mockito.times(5))
+                .preHandleExistingEndpoints(Matchers.any(RestfulMockDTO.class), Matchers.any(MockImportConfigDTO.class), Matchers.any(SmockinUser.class), Matchers.anyString());
+        Mockito.verify(restfulMockService, Mockito.times(5)).createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString());
+    }
+
+    @Test
+    public void importFile_jms_Pass()
+            throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
+
+        // Setup
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+
+        // Test
+        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "jms" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+
+        // Assertions (NOTE: smockin_export_jms.zip file contains 2 records)
+        Mockito.verify(jmsMockService, Mockito.times(2)).createEndpoint(Matchers.any(JmsMockDTO.class), Matchers.anyString());
+    }
+
+    @Test
+    public void importFile_ftp_Pass()
+            throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
+
+        // Setup
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+
+        // Test
+        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "ftp" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+
+        // Assertions (NOTE: smockin_export_ftp.zip file contains 2 records)
+        Mockito.verify(ftpMockService, Mockito.times(2)).createEndpoint(Matchers.any(FtpMockDTO.class), Matchers.anyString());
     }
 
     private File unpackZipToTempArchive(final String base64EncodedZipFile) throws IOException {
@@ -227,6 +386,15 @@ public class MockDefinitionImportExportServiceTest {
         Assert.assertTrue(json.length() > 0);
 
         return json;
+    }
+
+    private MockMultipartFile buildMockMultiPartFile(final String fileName) throws URISyntaxException, IOException {
+
+        final URL importFileUrl = this.getClass().getClassLoader().getResource(fileName);
+        final File archiveFile = new File(importFileUrl.toURI());
+        final FileInputStream importFileStream = new FileInputStream(archiveFile);
+
+        return new MockMultipartFile(fileName, archiveFile.getName(), "text/plain", IOUtils.toByteArray(importFileStream));
     }
 
 }

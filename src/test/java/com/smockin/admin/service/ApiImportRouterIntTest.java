@@ -77,7 +77,7 @@ public class ApiImportRouterIntTest {
     public void route_Raml100_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"),
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_100.raml"),
                 new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
@@ -164,7 +164,7 @@ public class ApiImportRouterIntTest {
     public void route_Raml200_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_200.zip"),
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_200.zip"),
                 new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
@@ -344,7 +344,7 @@ public class ApiImportRouterIntTest {
     public void route_RemoveExisting_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"), new MockImportConfigDTO());
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_100.raml"), new MockImportConfigDTO());
 
         // Pre-test Assertions
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());

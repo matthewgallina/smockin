@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.FtpMockDTO;
 import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.MockImportConfigDTO;
-import com.smockin.admin.dto.ExportMockDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
@@ -72,10 +71,11 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         logger.debug("importFile called");
 
         final SmockinUser currentUser = userTokenServiceUtils.loadCurrentUser(token);
+        File tempDir = null;
 
         try {
 
-            final File tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
+            tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
             final File uploadedFile = new File(tempDir + File.separator + file.getOriginalFilename());
             FileUtils.copyInputStreamToFile(file.getInputStream(), uploadedFile);
 
@@ -89,70 +89,113 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
         } catch (IOException ex) {
             throw new MockExportException("Error importing mock file");
+        } finally {
+            if (tempDir != null) {
+                try {
+                    FileUtils.deleteDirectory(tempDir);
+                } catch (IOException ex) {
+                    logger.error("Error deleting temp directory used for mock def import", ex);
+                }
+            }
         }
 
     }
 
     @Override
-    public String export(final Optional<List<ExportMockDTO>> selectedExportsOpt, final String token) throws MockExportException, RecordNotFoundException {
+    public String export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token)
+            throws MockExportException, RecordNotFoundException {
         logger.debug("export called");
 
-        final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(SearchFilterEnum.ALL.name(), token);
-        final List<JmsMockResponseDTO> allJmsMocks = jmsMockService.loadAll(SearchFilterEnum.ALL.name(), token);
-        final List<FtpMockResponseDTO> allFtpMocks = ftpMockService.loadAll(SearchFilterEnum.ALL.name(), token);
-
-        final List<RestfulMockResponseDTO> restfulMocksToExport = (selectedExportsOpt.isPresent())
-                ?
-                    selectedExportsOpt.get()
-                    .stream()
-                    .filter(e -> ServerTypeEnum.RESTFUL.equals(e.getMockType()))
-                    .map(r -> findRestByExternalId(r.getExternalId(), allRestfulMocks))
-                    .collect(Collectors.toList())
-                :
-                    allRestfulMocks;
-
-        final List<JmsMockResponseDTO> jmsMocksToExport = (selectedExportsOpt.isPresent())
-                ?
-                    selectedExportsOpt.get()
-                    .stream()
-                    .filter(e -> ServerTypeEnum.JMS.equals(e.getMockType()))
-                    .map(r -> findJmsByExternalId(r.getExternalId(), allJmsMocks))
-                    .collect(Collectors.toList())
-                :
-                    allJmsMocks;
-
-        final List<FtpMockResponseDTO> ftpMocksToExport = (selectedExportsOpt.isPresent())
-                ?
-                    selectedExportsOpt.get()
-                    .stream()
-                    .filter(e -> ServerTypeEnum.FTP.equals(e.getMockType()))
-                    .map(r -> findFtpByExternalId(r.getExternalId(), allFtpMocks))
-                    .collect(Collectors.toList())
-                :
-                    allFtpMocks;
+        final File exportFile;
 
         try {
 
-            final File restTempFile = File.createTempFile(restExportFileName, exportFileNameExt);
-            final File jmsTempFile = File.createTempFile(jmsExportFileName, exportFileNameExt);
-            final File ftpTempFile = File.createTempFile(ftpExportFileName, exportFileNameExt);
-
-            FileUtils.writeStringToFile(restTempFile, GeneralUtils.serialiseJson(restfulMocksToExport), Charset.defaultCharset());
-            FileUtils.writeStringToFile(jmsTempFile, GeneralUtils.serialiseJson(jmsMocksToExport), Charset.defaultCharset());
-            FileUtils.writeStringToFile(ftpTempFile, GeneralUtils.serialiseJson(ftpMocksToExport), Charset.defaultCharset());
+            switch (serverType) {
+                case RESTFUL:
+                    exportFile = handleHTTPExport(selectedExports, token);
+                    break;
+                case JMS:
+                    exportFile = handleJMSExport(selectedExports, token);
+                    break;
+                case FTP:
+                    exportFile = handleFTPExport(selectedExports, token);
+                    break;
+                default:
+                    throw new MockImportException("Unsupported server type: " + serverType);
+            }
 
             final byte[] archiveBytes = GeneralUtils.createArchive(new File[] {
-                    restTempFile,
-                    jmsTempFile,
-                    ftpTempFile
+                exportFile
             });
 
             return Base64.getEncoder().encodeToString(archiveBytes);
 
         } catch (IOException ex) {
-            throw new MockExportException("Error generating export temp files");
+            throw new MockExportException("Error generating export file");
         }
 
+    }
+
+    //
+    // Export related functions
+    private File handleHTTPExport(final List<String> selectedExports, final String token) throws IOException {
+
+        final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+
+        final List<RestfulMockResponseDTO> restfulMocksToExport = (!selectedExports.isEmpty())
+                ?
+                selectedExports
+                        .stream()
+                        .map(r -> findRestByExternalId(r, allRestfulMocks))
+                        .collect(Collectors.toList())
+                :
+                allRestfulMocks;
+
+        final File restTempFile = File.createTempFile(restExportFileName, exportFileNameExt);
+
+        FileUtils.writeStringToFile(restTempFile, GeneralUtils.serialiseJson(restfulMocksToExport), Charset.defaultCharset());
+
+        return restTempFile;
+    }
+
+    private File handleJMSExport(final List<String> selectedExports, final String token) throws IOException {
+
+        final List<JmsMockResponseDTO> allJmsMocks = jmsMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+
+        final List<JmsMockResponseDTO> jmsMocksToExport = (!selectedExports.isEmpty())
+                ?
+                selectedExports
+                        .stream()
+                        .map(r -> findJmsByExternalId(r, allJmsMocks))
+                        .collect(Collectors.toList())
+                :
+                allJmsMocks;
+
+        final File jmsTempFile = File.createTempFile(jmsExportFileName, exportFileNameExt);
+
+        FileUtils.writeStringToFile(jmsTempFile, GeneralUtils.serialiseJson(jmsMocksToExport), Charset.defaultCharset());
+
+        return jmsTempFile;
+    }
+
+    private File handleFTPExport(final List<String> selectedExports, final String token) throws IOException {
+
+        final List<FtpMockResponseDTO> allFtpMocks = ftpMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+
+        final List<FtpMockResponseDTO> ftpMocksToExport = (!selectedExports.isEmpty())
+                ?
+                selectedExports
+                        .stream()
+                        .map(r -> findFtpByExternalId(r, allFtpMocks))
+                        .collect(Collectors.toList())
+                :
+                allFtpMocks;
+
+        final File ftpTempFile = File.createTempFile(ftpExportFileName, exportFileNameExt);
+
+        FileUtils.writeStringToFile(ftpTempFile, GeneralUtils.serialiseJson(ftpMocksToExport), Charset.defaultCharset());
+
+        return ftpTempFile;
     }
 
     private RestfulMockResponseDTO findRestByExternalId(final String externalId, final List<RestfulMockResponseDTO> allRestfulMocks) throws RecordNotFoundException {
@@ -179,6 +222,8 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 .orElseThrow(() -> new RecordNotFoundException());
     }
 
+    //
+    // Import related functions
     private Map<ServerTypeEnum, String> readImportArchiveFile(final File zipFile) throws MockImportException, ValidationException {
 
         if (zipFile == null || !zipFile.exists()) {

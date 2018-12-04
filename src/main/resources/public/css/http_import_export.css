@@ -33,3 +33,15 @@ input[type="file"] {
 .import-info-details {
     margin-left: 20px;
 }
+
+.import-export-mode {
+    width: 100%;
+}
+
+.import-mode-button {
+    width: 50%;
+}
+
+.export-mode-button {
+    width: 50%;
+}
