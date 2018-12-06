@@ -2,7 +2,7 @@
 
 Intelligent API simulation for application development and QA testing
 
-    Visit us: http://www.smockin.com
+    Visit us: https://www.smockin.com
 
     Contact: info@smockin.com
 
