@@ -98,8 +98,8 @@ public class RuleEngineImpl implements RuleEngine {
         // Java Spark does not provide a convenient way of extracting form based request parameters,
         // so have to parse these manually.
         if (req.contentType() != null
-                && ("application/x-www-form-urlencoded".equals(req.contentType())
-                || "multipart/form-data".equals(req.contentType()))) {
+                && (req.contentType().contains("application/x-www-form-urlencoded")
+                    ||  req.contentType().contains("multipart/form-data"))) {
             return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                     .stream()
                     .filter(k -> k.getName().equals(fieldName))
