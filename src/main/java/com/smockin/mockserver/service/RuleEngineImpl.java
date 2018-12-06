@@ -7,12 +7,13 @@ import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import spark.Request;
-
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +67,7 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_HEADER:
                 return req.headers(fieldName);
             case REQUEST_PARAM:
-                return req.queryParams(fieldName);
+                return extractRequestParam(req, fieldName);
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
@@ -90,6 +91,24 @@ public class RuleEngineImpl implements RuleEngine {
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }
 
+    }
+
+    String extractRequestParam(final Request req, final String fieldName) {
+
+        // Java Spark does not provide a convenient way of extracting form based request parameters,
+        // so have to parse these manually.
+        if (req.contentType() != null
+                && (req.contentType().contains("application/x-www-form-urlencoded")
+                    ||  req.contentType().contains("multipart/form-data"))) {
+            return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
+                    .stream()
+                    .filter(k -> k.getName().equals(fieldName))
+                    .findFirst()
+                    .get()
+                    .getValue();
+        }
+
+        return req.queryParams(fieldName);
     }
 
 }

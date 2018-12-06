@@ -184,7 +184,7 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 
 if ( $USE_DEBUG ); then
 
-  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
+  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS" -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
 
 else
 
