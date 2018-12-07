@@ -103,9 +103,9 @@ public class RuleEngineImpl implements RuleEngine {
             return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                     .stream()
                     .filter(k -> k.getName().equals(fieldName))
+                    .map(k -> k.getValue())
                     .findFirst()
-                    .get()
-                    .getValue();
+                    .orElse(null);
         }
 
         return req.queryParams(fieldName);

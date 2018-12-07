@@ -62,7 +62,7 @@ public class RuleResolverImpl implements RuleResolver {
     // Always handled as TEXT!
     boolean handleIsMissing(RestfulMockDefinitionRuleGroupCondition condition, final String inboundValue) {
 
-        if (inboundValue != null) {
+        if (StringUtils.isNotBlank(inboundValue)) {
 
             if (condition.isCaseSensitive() != null
                     && condition.isCaseSensitive()
