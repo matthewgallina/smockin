@@ -31,6 +31,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
     $scope.showAllEndpointsHeading = 'display other user endpoints';
     $scope.hideAllEndpointsHeading = 'hide';
+    $scope.cancelExportSelectionButtonLabel = 'Cancel Export Selection';
+    $scope.completeExportSelectionButtonLabel = 'Finish Export Selection';
 
 
     //
@@ -55,6 +57,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.restServices = [];
     $scope.otherUserRestServices = [];
     $scope.showAllEndpoints = false;
+    $scope.initExportSelection = false;
+    $scope.exportSelection = [];
 
 
     //
@@ -112,7 +116,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         $location.path("/tcp_endpoint");
     };
 
-    $scope.doOpenImportExport = function() {
+    $scope.doOpenImportExport = function(mode) {
 
         $rootScope.endpointData = null;
 
@@ -120,14 +124,43 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             templateUrl: 'http_import_export.html',
             controller: 'httpImportExportController',
             backdrop  : 'static',
-            keyboard  : false
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                  return {
+                            "exportSelection" : $scope.exportSelection,
+                            "mode" : mode
+                         };
+                }
+            }
         });
 
         modalInstance.result.then(function (response) {
-            if (response != null
-                    && response.uploadCompleted) {
-                loadTableData($scope.showAllEndpoints);
+
+            $scope.initExportSelection = false;
+
+            if (response != null) {
+
+                if (response.uploadCompleted != null
+                        && response.uploadCompleted) {
+
+                    loadTableData($scope.showAllEndpoints);
+
+                } else if (response.initExportSelection != null
+                            && response.initExportSelection) {
+
+                    $scope.showAllEndpoints = true;
+                    loadTableData($scope.showAllEndpoints);
+                    $scope.initExportSelection = true;
+
+                } else if (response.generatedExportData != null) {
+
+                    console.log(response.generatedExportData.contentType);
+                    console.log(response.generatedExportData.content);
+
+                }
             }
+
         }, function () {
 
         });
@@ -203,6 +236,38 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             showAlert(globalVars.GeneralErrorMessage);
         });
 
+    };
+
+    $scope.toggleExportSelection = function (externalId) {
+
+        var exportIdx = $scope.exportSelection.indexOf(externalId);
+
+        if (exportIdx > -1) {
+            $scope.selection.splice(exportIdx, 1);
+            return;
+        }
+
+        $scope.exportSelection.push(externalId);
+    };
+
+    $scope.doCancelExportSelection = function() {
+
+        $scope.exportSelection = [];
+        $scope.initExportSelection = false;
+
+        $scope.doOpenImportExport('EXPORT');
+    };
+
+    $scope.doCompleteExportSelection = function() {
+
+        if ($scope.exportSelection.length == 0) {
+            showAlert("Please select at 1 mock to export");
+            return;
+        }
+
+        $scope.initExportSelection = false;
+
+        $scope.doOpenImportExport('EXPORT');
     };
 
 

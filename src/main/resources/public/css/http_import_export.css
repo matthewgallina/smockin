@@ -45,3 +45,17 @@ input[type="file"] {
 .export-mode-button {
     width: 50%;
 }
+
+.export-button-width {
+    width: 220px;
+}
+
+.export-button-grp-div {
+    width: 100%;
+    text-align: center;
+}
+
+.export-instructions {
+    width: 100%;
+    font-weight: 600;
+}

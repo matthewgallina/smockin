@@ -1,6 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.MockImportConfigDTO;
+import com.smockin.admin.dto.response.ExportResponseDTO;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -38,15 +39,13 @@ public class MockDefinitionImportExportController {
     }
 
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<String> exportMocks(@PathVariable("serverType") final String serverType,
-                                                            @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
-                                                            @RequestBody final List<String> exports)
+    public @ResponseBody ResponseEntity<ExportResponseDTO> exportMocks(@PathVariable("serverType") final String serverType,
+                                                                       @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                                       @RequestBody final List<String> exports)
                                                                 throws MockExportException, RecordNotFoundException {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
-        final String zipArchiveBase64 = mockDefinitionImportExportService.export(ServerTypeEnum.valueOf(serverType), exports, token);
-
-        return ResponseEntity.ok(zipArchiveBase64);
+        return ResponseEntity.ok(mockDefinitionImportExportService.export(ServerTypeEnum.valueOf(serverType), exports, token));
     }
 
 }

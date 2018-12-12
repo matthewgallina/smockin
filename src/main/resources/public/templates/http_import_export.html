@@ -56,7 +56,38 @@
 
         <div ng-show="mode == ExportType">
 
-            TODO
+            <br />
+            <br />
+            <br />
+
+            <div ng-if="exportSelection.length == 0" class="export-instructions">
+                {{ exportInstructions }}
+            </div>
+
+            <div ng-if="exportSelection.length > 0">
+TODO
+            </div>
+
+            <br />
+            <br />
+            <br />
+            <br />
+
+            <div class="row export-button-grp-div" ng-if="exportSelection.length == 0">
+                <div class="col-sm-5">
+                    <button class="btn btn-default export-button-width" type="button" ng-click="doSelectExports()">{{ exportSelectButtonLabel }}</button>
+                </div>
+                <div class="col-sm-2">
+                    {{ orLabel }}
+                </div>
+                <div class="col-sm-5">
+                    <button class="btn btn-primary export-button-width" type="button" ng-click="doInitExport()">{{ downloadAllButtonLabel }}</button>
+                </div>
+            </div>
+
+            <div class="row export-button-grp-div" ng-if="exportSelection.length > 0">
+                <button class="btn btn-primary export-button-width" type="button" ng-click="doInitExport()">{{ downloadSelectionButtonLabel }}</button>
+            </div>
 
         </div>
 

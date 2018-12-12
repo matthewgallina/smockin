@@ -1,5 +1,5 @@
 
-app.controller('httpImportExportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient) {
+app.controller('httpImportExportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient, restClient, utils, data) {
 
 
     //
@@ -17,14 +17,19 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     $scope.pleaseNoteLabel = 'Please note';
     $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';
     $scope.ramlVersionInfo = "This facility supports most common RAML features, based on the 'RAML 100 & 200 Tutorials' at raml.org";
-    $scope.importLabel = "Import";
-    $scope.exportLabel = "Export";
+    $scope.importLabel = 'Import';
+    $scope.exportLabel = 'Export';
+    $scope.exportInstructions = "Please select how you wish to export your HTTP mocks...";
+    $scope.orLabel = 'OR';
 
 
     //
     // Buttons
     $scope.closeButtonLabel = 'Close';
     $scope.importButtonLabel = 'Run Import';
+    $scope.exportSelectButtonLabel = 'Select Mocks To Export...';
+    $scope.downloadAllButtonLabel = 'Download All Mocks';
+    $scope.downloadSelectionButtonLabel = 'Download Selection';
 
 
     //
@@ -55,6 +60,7 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     $scope.mode = $scope.ImportType;
     $scope.disableForm = false;
     $scope.uploadCompleted = false;
+    $scope.exportSelection = [];
 
     $scope.apiUploadFile = {
         data : null
@@ -63,12 +69,58 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     $scope.importFeedback = "Awaiting import...";
 
 
+    if (data != null) {
+
+        if (data.mode != null) {
+            $scope.mode = data.mode;
+        }
+
+        if (data.exportSelection != null) {
+            $scope.exportSelection = data.exportSelection;
+        }
+
+    }
+
+
     //
     // Scoped Functions
     $scope.doClose = function() {
 
         $uibModalInstance.close({
             "uploadCompleted" : $scope.uploadCompleted
+        });
+
+    };
+
+    $scope.doInitExport = function() {
+
+        utils.openWarningConfirmation("Are you sure you wish to create this export?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doPost($http, '/mock/export/RESTFUL', $scope.exportSelection, function(status, data) {
+
+                    if (status != 200) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    $uibModalInstance.close({
+                        "generatedExportData" : data
+                    });
+
+                });
+
+            }
+
+        });
+
+    };
+
+    $scope.doSelectExports = function() {
+
+        $uibModalInstance.close({
+            "initExportSelection" : true
         });
 
     };

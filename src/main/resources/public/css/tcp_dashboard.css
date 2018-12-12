@@ -91,3 +91,7 @@
 .mock-status-inactive {
     text-decoration: line-through;
 }
+
+.export-sel-button {
+    margin-top: 10px;
+}
