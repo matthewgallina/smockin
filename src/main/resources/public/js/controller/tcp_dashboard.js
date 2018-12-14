@@ -152,16 +152,30 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                     $scope.showAllEndpoints = true;
                     loadTableData($scope.showAllEndpoints);
                     $scope.initExportSelection = true;
+                    $scope.exportSelection = [];
 
                 } else if (response.generatedExportData != null) {
 
-                    handleExportDownload(response.generatedExportData);
+                    handleExportDownload(response.generatedExportData, response.type);
+                    $scope.exportSelection = [];
+
+                } else if (response.amendExportSelection != null) {
+
+                    $scope.showAllEndpoints = true;
+                    loadTableData($scope.showAllEndpoints);
+                    $scope.initExportSelection = true;
+                    $scope.exportSelection = response.amendExportSelection;
 
                 }
+
+            } else {
+
+                $scope.exportSelection = [];
+
             }
 
         }, function () {
-
+            $scope.exportSelection = [];
         });
 
     };
@@ -237,16 +251,27 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     };
 
-    $scope.toggleExportSelection = function (externalId) {
+    $scope.doesExportSelectionContain = function(extId) {
 
-        var exportIdx = $scope.exportSelection.indexOf(externalId);
-
-        if (exportIdx > -1) {
-            $scope.selection.splice(exportIdx, 1);
-            return;
+        for (var m=0; m < $scope.exportSelection.length; m++) {
+            if ($scope.exportSelection[m].extId == extId) {
+                return true;
+            }
         }
 
-        $scope.exportSelection.push(externalId);
+        return false;
+    };
+
+    $scope.toggleExportSelection = function (mock) {
+
+        for (var m=0; m < $scope.exportSelection.length; m++) {
+            if ($scope.exportSelection[m].extId == mock.extId) {
+                $scope.selection.splice(m, 1);
+                return;
+            }
+        }
+
+        $scope.exportSelection.push(mock);
     };
 
     $scope.doCancelExportSelection = function() {
@@ -260,7 +285,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doCompleteExportSelection = function() {
 
         if ($scope.exportSelection.length == 0) {
-            showAlert("Please select at 1 mock to export");
+            showAlert("No mocks have been selected for export");
             return;
         }
 
@@ -272,13 +297,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Internal Functions
-    function handleExportDownload(exportData) {
+    function handleExportDownload(exportData, type) {
 
         var iFrame = jQuery('#export-download-frame');
         var iFrameDoc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
 
         var a = iFrameDoc.createElement('a');
-        a.download = "smockin_export.zip";
+        a.download = "smockin_export_" + type + ".zip";
         a.text = "";
         a.href = "data:application/zip;base64," + exportData;
 

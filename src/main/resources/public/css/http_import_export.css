@@ -34,14 +34,6 @@ input[type="file"] {
     margin-left: 20px;
 }
 
-.import-export-mode {
-    width: 100%;
-}
-
-.import-mode-button {
-    width: 50%;
-}
-
 .export-mode-button {
     width: 50%;
 }
@@ -81,4 +73,8 @@ input[type="file"] {
     height: 250px;
     overflow-x : hidden;
     overflow-y : scroll;
+}
+
+.export-button-grp-div {
+    margin: 0px;
 }

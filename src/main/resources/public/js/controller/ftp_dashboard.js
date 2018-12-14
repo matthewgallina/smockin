@@ -19,7 +19,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated FTP Repositories';
+    $scope.endpointsHeading = 'FTP Repos';
 
     $scope.nameTableLabel = 'Username';
     $scope.dateCreatedTableLabel = 'Date Created';
