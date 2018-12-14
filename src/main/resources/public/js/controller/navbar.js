@@ -132,7 +132,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     };
 
     $scope.doOpenHelp = function() {
-        $window.open('http://help.smockin.com', '_blank');
+        $window.open('https://github.com/mgtechsoftware/smockin/wiki', '_blank');
     };
 
 });
