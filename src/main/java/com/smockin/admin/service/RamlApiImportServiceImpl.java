@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,8 +65,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
             final Api api = readContent(loadRamlFileFromUpload(dto.getFile(), tempDir));
             final MockImportConfigDTO apiImportConfig = dto.getConfig();
-            final String conflictCtxPath = "raml_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
-                    .format(GeneralUtils.getCurrentDate());
+            final String conflictCtxPath = "raml_" + GeneralUtils.createFileNameUniqueTimeStamp();
 
             debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
             debug("Keep strategy: " + apiImportConfig.getKeepStrategy());

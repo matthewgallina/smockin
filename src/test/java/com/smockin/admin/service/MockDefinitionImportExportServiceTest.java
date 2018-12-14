@@ -2,7 +2,6 @@ package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.*;
-import com.smockin.admin.dto.response.ExportResponseDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
@@ -154,10 +153,10 @@ public class MockDefinitionImportExportServiceTest {
     public void export_allRestful_Pass() throws IOException {
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles())
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles())
                 .forEach(f -> {
 
             try {
@@ -180,10 +179,10 @@ public class MockDefinitionImportExportServiceTest {
     public void export_allJms_Pass() throws IOException {
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles())
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles())
                 .forEach(f -> {
 
                     try {
@@ -206,10 +205,10 @@ public class MockDefinitionImportExportServiceTest {
     public void export_allFtp_Pass() throws IOException {
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles())
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles())
                 .forEach(f -> {
 
                     try {
@@ -235,10 +234,10 @@ public class MockDefinitionImportExportServiceTest {
         final RestfulMockResponseDTO restfulDTO = allRestfulMocks.get(1);
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(restfulDTO.getExtId()), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.RESTFUL, Arrays.asList(restfulDTO.getExtId()), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles()).forEach(f -> {
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles()).forEach(f -> {
 
             try {
 
@@ -265,10 +264,10 @@ public class MockDefinitionImportExportServiceTest {
         final JmsMockResponseDTO jmsDTO = allJmsMocks.get(0);
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(jmsDTO.getExtId()), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.JMS, Arrays.asList(jmsDTO.getExtId()), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles()).forEach(f -> {
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles()).forEach(f -> {
 
             try {
 
@@ -295,10 +294,10 @@ public class MockDefinitionImportExportServiceTest {
         final FtpMockResponseDTO ftpDTO = allFtpMocks.get(1);
 
         // Test
-        final ExportResponseDTO dto = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(ftpDTO.getExtId()), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ServerTypeEnum.FTP, Arrays.asList(ftpDTO.getExtId()), "ABC");
 
         // Assertions
-        Stream.of(unpackZipToTempArchive(dto.getContent()).listFiles()).forEach(f -> {
+        Stream.of(unpackZipToTempArchive(base64Content).listFiles()).forEach(f -> {
 
             try {
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -66,6 +67,11 @@ public final class GeneralUtils {
 
     public final static LocalDateTime getCurrentDateTime() {
         return LocalDateTime.now();
+    }
+
+    public final static String createFileNameUniqueTimeStamp() {
+        return new SimpleDateFormat(UNIQUE_TIMESTAMP_FORMAT)
+                .format(getCurrentDate());
     }
 
     // NOTE It is important that this preserves any whitespaces around the token

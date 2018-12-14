@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.FtpMockDTO;
 import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.MockImportConfigDTO;
-import com.smockin.admin.dto.response.ExportResponseDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
@@ -103,7 +102,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     }
 
     @Override
-    public ExportResponseDTO export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token)
+    public String export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token)
             throws MockExportException, RecordNotFoundException {
         logger.debug("export called");
 
@@ -129,7 +128,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 exportFile
             });
 
-            return new ExportResponseDTO("application/zip", Base64.getEncoder().encodeToString(archiveBytes));
+            return Base64.getEncoder().encodeToString(archiveBytes);
 
         } catch (IOException ex) {
             throw new MockExportException("Error generating export file");
@@ -259,11 +258,16 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     private ServerTypeEnum getServerTypeForFile(final File f) {
 
-        if (f.getName().equals(restExportFileName + exportFileNameExt)) {
+        final String fileName = f.getName();
+
+        if (fileName.startsWith(restExportFileName)
+                && fileName.endsWith(exportFileNameExt)) {
             return ServerTypeEnum.RESTFUL;
-        } else if (f.getName().equals(jmsExportFileName + exportFileNameExt)) {
+        } else if (fileName.startsWith(jmsExportFileName)
+                && fileName.endsWith(exportFileNameExt)) {
             return ServerTypeEnum.JMS;
-        } else if (f.getName().equals(ftpExportFileName + exportFileNameExt)) {
+        } else if (fileName.startsWith(ftpExportFileName)
+                && fileName.endsWith(exportFileNameExt)) {
             return ServerTypeEnum.FTP;
         }
 

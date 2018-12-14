@@ -5,14 +5,18 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+
     $scope.ImportType = "IMPORT";
+    $scope.RamlImportType = "RAML";
+    $scope.StandardImportType = "STANDARD";
     $scope.ExportType = "EXPORT";
+    $scope.ImportTypes = [ $scope.StandardImportType, $scope.RamlImportType ];
 
 
     //
     // Labels
     $scope.importExportHeading = 'Import / Export';
-    $scope.selectFileLabel = 'Select API RAML File...';
+    $scope.selectFileLabel = 'Select File...';
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
     $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';
@@ -21,6 +25,8 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     $scope.exportLabel = 'Export';
     $scope.exportInstructions = "Please select how you wish to export your HTTP mocks...";
     $scope.orLabel = 'OR';
+    $scope.importTypeLabel = 'Import Type:';
+    $scope.exportSelectionLabel = 'Mocks to export:';
 
 
     //
@@ -58,6 +64,7 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     //
     // Data Objects
     $scope.mode = $scope.ImportType;
+    $scope.importType = $scope.StandardImportType;
     $scope.disableForm = false;
     $scope.uploadCompleted = false;
     $scope.exportSelection = [];
@@ -90,6 +97,10 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
             "uploadCompleted" : $scope.uploadCompleted
         });
 
+    };
+
+    $scope.doSelectImportType = function(it) {
+        $scope.importType = it;
     };
 
     $scope.doInitExport = function() {
@@ -125,10 +136,66 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
 
     };
 
-    $scope.doUploadApiFile = function() {
+    $scope.doUploadFile = function() {
+
+        if ($scope.importType == $scope.RamlImportType) {
+            doUploadApiRamlFile();
+        } else if ($scope.importType == $scope.StandardImportType) {
+            doUploadStandardFile();
+        }
+
+    };
+
+    function doUploadStandardFile() {
 
         $scope.importFeedback = "Awaiting import...";
 
+        // Validation
+        if ($scope.apiUploadFile.data == null
+                || $scope.apiUploadFile.data.name.toLowerCase().indexOf(".zip") == -1) {
+            showAlert("Please select a .zip based file to import");
+            return;
+        }
+
+        $scope.disableForm = true;
+
+        // Send data
+        var fd = new FormData();
+        fd.append('file', $scope.apiUploadFile.data);
+
+       uploadClient.doPost($http, '/mock/import', fd, function(status, data) {
+
+            $scope.apiUploadFile = {
+                data : null
+            }
+
+            if (status != 201) {
+
+                if (status == 400) {
+                    $scope.importFeedback = data.message;
+                    showAlert("There is an issue with importing this file");
+                } else {
+                    showAlert(globalVars.GeneralErrorMessage);
+                }
+
+                $scope.disableForm = false;
+                return;
+            }
+
+            showAlert("File successfully imported", "success");
+            $scope.importFeedback = "All endpoints imported";
+
+            $scope.uploadCompleted = true;
+            $scope.disableForm = false;
+        });
+
+    }
+
+    function doUploadApiRamlFile() {
+
+        $scope.importFeedback = "Awaiting import...";
+
+        // Validation
         if ($scope.apiUploadFile.data == null) {
             showAlert("Please select a .raml based file to import");
             return;

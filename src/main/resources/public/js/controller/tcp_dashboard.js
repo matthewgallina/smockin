@@ -155,8 +155,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
                 } else if (response.generatedExportData != null) {
 
-                    console.log(response.generatedExportData.contentType);
-                    console.log(response.generatedExportData.content);
+                    handleExportDownload(response.generatedExportData);
 
                 }
             }
@@ -273,6 +272,27 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Internal Functions
+    function handleExportDownload(exportData) {
+
+        var iFrame = jQuery('#export-download-frame');
+        var iFrameDoc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+
+        var a = iFrameDoc.createElement('a');
+        a.download = "smockin_export.zip";
+        a.text = "";
+        a.href = "data:application/zip;base64," + exportData;
+
+        iFrame.contents().find("body").append(a);
+        iFrameDoc.close();
+
+        iFrame.contents().find("body").append(a);
+
+        var clickEvent = iFrameDoc.createEvent("MouseEvent");
+        clickEvent.initEvent("click", true, true);
+        a.dispatchEvent(clickEvent);
+
+    }
+
     function loadTableData(showAll) {
 
         $scope.restServices = [];

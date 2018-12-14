@@ -50,6 +50,10 @@ input[type="file"] {
     width: 220px;
 }
 
+.execute-export-button-width {
+    width: 100%;
+}
+
 .export-button-grp-div {
     width: 100%;
     text-align: center;
@@ -58,4 +62,23 @@ input[type="file"] {
 .export-instructions {
     width: 100%;
     font-weight: 600;
+    text-align: center;
+}
+
+#import-type {
+    width: 100%;
+}
+
+#import-type-button {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+.export-selection {
+    height: 250px;
+    overflow-x : hidden;
+    overflow-y : scroll;
 }
