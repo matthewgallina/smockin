@@ -110,7 +110,9 @@
                         {{ orLabel }}
                     </div>
                     <div class="col-sm-5">
-                        <button class="btn btn-primary export-button-width" type="button" ng-click="doInitExport()">{{ downloadAllButtonLabel }}</button>
+                        <button class="btn btn-success export-button-width" type="button" ng-click="doInitExport()">
+                            <span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span> {{ downloadAllButtonLabel }}
+                        </button>
                     </div>
                 </div>
 
@@ -119,7 +121,9 @@
                         <button class="btn btn-warning export-button-width" type="button" ng-click="doReselectExports()">{{ exportReselectButtonLabel }}</button>
                     </div>
                     <div class="col-sm-6">
-                        <button class="btn btn-primary export-button-width" type="button" ng-click="doInitExport()">{{ downloadSelectionButtonLabel }}</button>
+                        <button class="btn btn-success export-button-width" type="button" ng-click="doInitExport()">
+                            <span class="glyphicon glyphicon-cloud-download" aria-hidden="true"></span> {{ downloadSelectionButtonLabel }}
+                        </button>
                     </div>
                 </div>
 

@@ -18,6 +18,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -325,9 +326,15 @@ public class MockDefinitionImportExportServiceTest {
         Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
 
         // Test
-        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+        final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
 
         // Assertions (NOTE: smockin_export_rest.zip file contains 5 records)
+        Assert.assertNotNull(result);
+        Assert.assertThat(result, CoreMatchers.is("RESTFUL mock: GET /hello successfully imported\n"
+                + "RESTFUL mock: GET /hello successfully imported\n"
+                + "RESTFUL mock: GET /ws successfully imported\n"
+                + "RESTFUL mock: GET /sse successfully imported\n"
+                + "RESTFUL mock: POST /remotefeed successfully imported\n"));
         Mockito.verify(restfulMockServiceUtils, Mockito.times(5))
                 .preHandleExistingEndpoints(Matchers.any(RestfulMockDTO.class), Matchers.any(MockImportConfigDTO.class), Matchers.any(SmockinUser.class), Matchers.anyString());
         Mockito.verify(restfulMockService, Mockito.times(5)).createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString());
@@ -341,9 +348,12 @@ public class MockDefinitionImportExportServiceTest {
         Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
 
         // Test
-        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "jms" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+        final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "jms" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
 
         // Assertions (NOTE: smockin_export_jms.zip file contains 2 records)
+        Assert.assertNotNull(result);
+        Assert.assertThat(result, CoreMatchers.is("JMS mock: foo-queue successfully imported\n"
+                                                        + "JMS mock: foo-topic successfully imported\n"));
         Mockito.verify(jmsMockService, Mockito.times(2)).createEndpoint(Matchers.any(JmsMockDTO.class), Matchers.anyString());
     }
 
@@ -355,9 +365,12 @@ public class MockDefinitionImportExportServiceTest {
         Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
 
         // Test
-        mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "ftp" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
+        final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "ftp" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
 
         // Assertions (NOTE: smockin_export_ftp.zip file contains 2 records)
+        Assert.assertNotNull(result);
+        Assert.assertThat(result, CoreMatchers.is("FTP mock: pets successfully imported\n"
+                                                        + "FTP mock: homes successfully imported\n"));
         Mockito.verify(ftpMockService, Mockito.times(2)).createEndpoint(Matchers.any(FtpMockDTO.class), Matchers.anyString());
     }
 

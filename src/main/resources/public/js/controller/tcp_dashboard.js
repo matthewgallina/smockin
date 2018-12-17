@@ -266,7 +266,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
         for (var m=0; m < $scope.exportSelection.length; m++) {
             if ($scope.exportSelection[m].extId == mock.extId) {
-                $scope.selection.splice(m, 1);
+                $scope.exportSelection.splice(m, 1);
                 return;
             }
         }

@@ -1,6 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.MockImportConfigDTO;
+import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -9,7 +10,6 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockDefinitionImportExportService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,14 +27,14 @@ public class MockDefinitionImportExportController {
     private MockDefinitionImportExportService mockDefinitionImportExportService;
 
     @RequestMapping(path="/mock/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public @ResponseBody ResponseEntity<Void> importMocks(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
-                                                          @RequestParam("file") final MultipartFile file)
+    public @ResponseBody ResponseEntity<SimpleMessageResponseDTO> importMocks(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                                              @RequestParam("file") final MultipartFile file)
                                                             throws ValidationException, MockImportException, RecordNotFoundException {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
-        mockDefinitionImportExportService.importFile(file, new MockImportConfigDTO(), token);
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        return ResponseEntity.ok(new SimpleMessageResponseDTO(mockDefinitionImportExportService
+                .importFile(file, new MockImportConfigDTO(), token)));
     }
 
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,

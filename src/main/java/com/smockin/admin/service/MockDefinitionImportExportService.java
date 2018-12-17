@@ -19,7 +19,7 @@ public interface MockDefinitionImportExportService {
     String ftpExportFileName = "ftp_export";
     String exportFileNameExt = ".json";
 
-    void importFile(final MultipartFile file, final MockImportConfigDTO config, final String token) throws MockImportException, ValidationException, RecordNotFoundException;
+    String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token) throws MockImportException, ValidationException, RecordNotFoundException;
     String export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token) throws MockExportException, RecordNotFoundException;
 
 }

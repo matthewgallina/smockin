@@ -66,7 +66,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     private RestfulMockServiceUtils restfulMockServiceUtils;
 
     @Override
-    public void importFile(final MultipartFile file, final MockImportConfigDTO config, final String token)
+    public String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token)
             throws MockImportException, ValidationException, RecordNotFoundException {
         logger.debug("importFile called");
 
@@ -82,10 +82,11 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             final String conflictCtxPath = "import_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
                     .format(GeneralUtils.getCurrentDate());
 
-            readImportArchiveFile(uploadedFile)
+            return readImportArchiveFile(uploadedFile)
                     .entrySet()
                     .stream()
-                    .forEach(m -> handleMockImport(m.getKey(), m.getValue(), config, currentUser, conflictCtxPath));
+                    .map(m -> handleMockImport(m.getKey(), m.getValue(), config, currentUser, conflictCtxPath))
+                    .collect(Collectors.joining());
 
         } catch (IOException ex) {
             throw new MockExportException("Error importing mock file");
@@ -274,7 +275,9 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
     }
 
-    private void handleMockImport(final ServerTypeEnum type, final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
+    private String handleMockImport(final ServerTypeEnum type, final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
+
+        final StringBuilder outcome = new StringBuilder();
 
         switch (type) {
 
@@ -283,7 +286,12 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                         .stream()
                         .forEach(rm -> {
                             restfulMockServiceUtils.preHandleExistingEndpoints(rm, config, currentUser, conflictCtxPath);
-                            restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
+                            try {
+                                restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
+                                outcome.append(handleImportPass(type, rm.getMethod() + " " + rm.getPath()));
+                            } catch (Throwable ex) {
+                                outcome.append(handleImportFail(type, rm.getMethod() + " " + rm.getPath(), ex));
+                            }
                         });
                 break;
 
@@ -292,7 +300,12 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                         .stream()
                         .forEach(qm -> {
                             preHandleExistingJmsEndpoint(qm, config, currentUser, conflictCtxPath);
-                            jmsMockService.createEndpoint(qm, currentUser.getSessionToken());
+                            try {
+                                jmsMockService.createEndpoint(qm, currentUser.getSessionToken());
+                                outcome.append(handleImportPass(type, qm.getName()));
+                            } catch (Throwable ex) {
+                                outcome.append(handleImportFail(type, qm.getName(), ex));
+                            }
                         });
                 break;
 
@@ -301,7 +314,12 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                         .stream()
                         .forEach(fm -> {
                             preHandleExistingFtpEndpoint(fm, config, currentUser, conflictCtxPath);
-                            ftpMockService.createEndpoint(fm, currentUser.getSessionToken());
+                            try {
+                                ftpMockService.createEndpoint(fm, currentUser.getSessionToken());
+                                outcome.append(handleImportPass(type, fm.getName()));
+                            } catch (Throwable ex) {
+                                outcome.append(handleImportFail(type, fm.getName(), ex));
+                            }
                         });
                 break;
 
@@ -309,6 +327,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 throw new MockImportException("Unsupported server type: " + type);
         }
 
+        return outcome.toString();
     }
 
     public void preHandleExistingJmsEndpoint(final JmsMockDTO dto, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
@@ -371,6 +390,20 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 break;
         }
 
+    }
+
+    private String handleImportPass(final ServerTypeEnum type, final String name) {
+
+        return type.name() + " mock: " + name + " successfully imported\n";
+    }
+
+    private String handleImportFail(final ServerTypeEnum type, final String info, final Throwable cause) {
+
+        final String msg = "Error importing " + type.name() + " mock: " + info;
+
+        logger.error(msg, cause);
+
+        return msg + "\n";
     }
 
 }

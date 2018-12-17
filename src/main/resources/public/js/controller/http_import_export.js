@@ -18,7 +18,7 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
 
     //
     // Labels
-    $scope.importExportHeading = 'Import / Export';
+    $scope.importExportHeading = 'HTTP Import / Export Manager';
     $scope.selectFileLabel = 'Select sMockin File...';
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
@@ -37,9 +37,9 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
     $scope.closeButtonLabel = 'Close';
     $scope.importButtonLabel = 'Start Import';
     $scope.exportSelectButtonLabel = 'Select Mocks To Export...';
-    $scope.downloadAllButtonLabel = 'Download All Mocks';
+    $scope.downloadAllButtonLabel = 'Download All';
     $scope.downloadSelectionButtonLabel = 'Download Selection';
-    $scope.exportReselectButtonLabel = 'Change Selection...';
+    $scope.exportReselectButtonLabel = 'Amend Selection...';
 
 
     //
@@ -189,21 +189,22 @@ app.controller('httpImportExportController', function($scope, $uibModalInstance,
                 data : null
             }
 
-            if (status != 201) {
+            if (status != 200) {
+
+                $scope.disableForm = false;
 
                 if (status == 400) {
                     $scope.importFeedback = data.message;
                     showAlert("There is an issue with importing this file");
-                } else {
-                    showAlert(globalVars.GeneralErrorMessage);
+                    return;
                 }
 
-                $scope.disableForm = false;
+                showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
             showAlert("File successfully imported", "success");
-            $scope.importFeedback = "All endpoints imported";
+            $scope.importFeedback = "Endpoints imported:\n\n" + data.message;
 
             $scope.uploadCompleted = true;
             $scope.disableForm = false;
