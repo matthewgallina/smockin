@@ -28,7 +28,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'HTTP Mocks';
-    $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
+    $scope.endpointsOtherUsersHeading = 'HTTP Mocks By Other Users';
     $scope.showAllEndpointsHeading = 'display all';
     $scope.expandAllEndpointsHeading = 'expand all';
     $scope.collapseAllEndpointsHeading = 'collapse all';
@@ -61,7 +61,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.restServices = [];
     $scope.otherUserRestServices = [];
     $scope.showAllEndpoints = false;
-    $scope.expandAllEndpoints = false;
     $scope.mockSelection = [];
     var deletionErrorOccurrence = false;
     var deletionAttemptCount = 0;
@@ -237,8 +236,12 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         loadTableData($scope.showAllEndpoints);
     };
 
-    $scope.doToggleExpandCollapseEndpoints = function() {
-        $scope.expandAllEndpoints = !$scope.expandAllEndpoints;
+    $scope.doExpandAllEndpoints = function() {
+        doToggleAccordion(true);
+    };
+
+    $scope.doCollapseAllEndpoints = function() {
+        doToggleAccordion(false);
     };
 
     $scope.doSelectAllEndpoints = function() {
@@ -357,6 +360,18 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         var clickEvent = iFrameDoc.createEvent("MouseEvent");
         clickEvent.initEvent("click", true, true);
         a.dispatchEvent(clickEvent);
+
+    }
+
+    function doToggleAccordion(isOpen) {
+
+        for (var rs=0; rs < $scope.restServices.length; rs++) {
+            $scope.restServices[rs].isOpen = isOpen;
+        }
+
+        for (var ors=0; ors < $scope.otherUserRestServices.length; ors++) {
+            $scope.otherUserRestServices[ors].isOpen = isOpen;
+        }
 
     }
 

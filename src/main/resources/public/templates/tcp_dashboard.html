@@ -38,10 +38,8 @@
                     <span class="batch-actions-group" ng-if="isLoggedIn">
                         (
                             <a href ng-click="doShowAllEndpoints(true)" ng-if="!showAllEndpoints">{{ showAllEndpointsHeading }} |</a>
-                            <a href ng-click="doToggleExpandCollapseEndpoints()">
-                                <span ng-if="!expandAllEndpoints">{{ expandAllEndpointsHeading }}</span>
-                                <span ng-if="expandAllEndpoints">{{ collapseAllEndpointsHeading }}</span>
-                            </a> |
+                            <a href ng-click="doExpandAllEndpoints()">{{ expandAllEndpointsHeading }}</a> |
+                            <a href ng-click="doCollapseAllEndpoints()">{{ collapseAllEndpointsHeading }}</a> |
                             <a href ng-click="doSelectAllEndpoints()">{{ selectAllEndpointsHeading }}</a> |
                             <a href ng-click="doClearAllEndpoints()">{{ deselectAllEndpointsHeading }}</a>
                         )
@@ -63,11 +61,11 @@
         </h4>
 
         <uib-accordion close-others="false" class="table">
-            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}" is-open="expandAllEndpoints">
+            <div uib-accordion-group ng-repeat="rs in restServices" is-open="rs.isOpen" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
                 <uib-accordion-heading>
-                    <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
+                    <span class="batched-endpoint-path">{{ rs.basePath }}</span>
                     <span class="pull-right">({{ rs.data.length }})
-                        <i class="glyphicon" ng-click="rs.isOpen = !rs.isOpen" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
+                        <i class="glyphicon" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
                     </span>
                 </uib-accordion-heading>
                 <div>
@@ -121,11 +119,11 @@
             </h4>
 
             <uib-accordion close-others="false" class="table">
-                <div uib-accordion-group ng-repeat="rs in otherUserRestServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}" is-open="expandAllEndpoints">
+                <div uib-accordion-group ng-repeat="rs in otherUserRestServices" is-open="rs.isOpen" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
                     <uib-accordion-heading>
-                        <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
+                        <span class="batched-endpoint-path">{{ rs.basePath }}</span>
                         <span class="pull-right">({{ rs.data.length }})
-                            <i class="glyphicon" ng-click="rs.isOpen = !rs.isOpen" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
+                            <i class="glyphicon" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
                         </span>
                     </uib-accordion-heading>
                     <div>

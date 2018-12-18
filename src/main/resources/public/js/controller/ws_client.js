@@ -203,7 +203,7 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
         res = res.concat("\n\n");
 
         $scope.remoteResponse = res;
-        $scope.$digest()
+        $scope.$digest();
     }
 
 });
