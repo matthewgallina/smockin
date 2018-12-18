@@ -321,6 +321,18 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             return;
         }
 
+        // Check and warn user that they cannot delete another's user's mocks.
+        for (var m=0; m < $scope.mockSelection.length; m++) {
+            for (var rs=0; rs < $scope.otherUserRestServices.length; rs++) {
+                for (var rsd=0; rsd < $scope.otherUserRestServices[rs].data.length; rsd++) {
+                    if ($scope.mockSelection[m].extId == $scope.otherUserRestServices[rs].data[rsd].extId) {
+                        showAlert("You have selected mocks belonging to another user! Please uncheck these first to proceed.");
+                        return;
+                    }
+                }
+            }
+        }
+
         utils.openDeleteConfirmation("Are you sure wish to delete these " + $scope.mockSelection.length + " mocks?", function (alertResponse) {
 
             if (alertResponse) {
