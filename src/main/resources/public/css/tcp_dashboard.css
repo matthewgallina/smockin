@@ -48,7 +48,7 @@
     margin-top: 15px;
 }
 
-#import-endpoints-button {
+.import-export-button {
     margin-top: 15px;
 }
 
@@ -80,7 +80,7 @@
     text-align: right;
 }
 
-.show-all-toggle {
+.batch-actions-group {
     font-size: 16px;
 }
 
@@ -92,6 +92,7 @@
     text-decoration: line-through;
 }
 
-.export-sel-button {
-    margin-top: 10px;
+#bulk-delete-endpoints-button {
+    margin-top: 15px;
+    width: 85px;
 }

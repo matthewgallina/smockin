@@ -13,12 +13,12 @@
                         <span id="server-status-running" ng-show="mockServerStatus == mockServerRunning">{{ mockServerRunning }}</span>
                         <span id="server-status-restarting" ng-show="mockServerStatus == mockServerRestarting">{{ mockServerRestarting }}</span>
                         <br />
-                        <a id="server-config" href="" ng-click="doOpenServerConfig()" ng-hide="initExportSelection">{{ serverConfigLabel }}</a>
+                        <a id="server-config" href="" ng-click="doOpenServerConfig()">{{ serverConfigLabel }}</a>
                     </h3>
                 </div>
                 <div class="col-sm-4">
-                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startTcpMockServer()" ng-disabled="readOnly || initExportSelection"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
-                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopTcpMockServer()" ng-disabled="readOnly || initExportSelection"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startTcpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopTcpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
                 </div>
            </div>
         </div>
@@ -35,15 +35,24 @@
                 <h3>
                     {{ endpointsHeading }}
                     <br />
-                    <span class="show-all-toggle" ng-if="isLoggedIn && !showAllEndpoints">(<a href ng-click="doShowAllEndpoints(true)">{{ showAllEndpointsHeading }}</a>)</span>
+                    <span class="batch-actions-group" ng-if="isLoggedIn">
+                        (
+                            <a href ng-click="doShowAllEndpoints(true)" ng-if="!showAllEndpoints">{{ showAllEndpointsHeading }} |</a>
+                            <a href ng-click="doToggleExpandCollapseEndpoints()">
+                                <span ng-if="!expandAllEndpoints">{{ expandAllEndpointsHeading }}</span>
+                                <span ng-if="expandAllEndpoints">{{ collapseAllEndpointsHeading }}</span>
+                            </a> |
+                            <a href ng-click="doSelectAllEndpoints()">{{ selectAllEndpointsHeading }}</a> |
+                            <a href ng-click="doClearAllEndpoints()">{{ deselectAllEndpointsHeading }}</a>
+                        )
+                    </span>
                 </h3>
             </div>
             <div class="col-sm-6 add-endpoint-button-div">
-                <button id="import-endpoints-button" type="button" class="btn btn-primary" ng-click="doOpenImportExport()" ng-hide="initExportSelection"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> {{ importExportEndpointButtonLabel }}</button>
-                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo()" ng-hide="initExportSelection"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointButtonLabel }}</button>
-
-                <button id="cancel-export-sel-button" type="button" class="btn btn-danger export-sel-button" ng-click="doCancelExportSelection()" ng-show="initExportSelection">{{ cancelExportSelectionButtonLabel }}</button>
-                <button id="complete-export-sel-button" type="button" class="btn btn-success export-sel-button" ng-click="doCompleteExportSelection()" ng-show="initExportSelection">{{ completeExportSelectionButtonLabel }}</button>
+                <button id="bulk-delete-endpoints-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()" ng-disabled="mockSelection.length == 0">{{ bulkDeleteEndpointsButtonLabel }}</button>
+                <button type="button" class="btn btn-primary import-export-button" ng-click="doExport()" ng-disabled="mockSelection.length == 0"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> {{ exportEndpointButtonLabel }}</button>
+                <button type="button" class="btn btn-primary import-export-button" ng-click="doOpenImport()"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> {{ importEndpointButtonLabel }}</button>
+                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addEndpointButtonLabel }}</button>
             </div>
         </div>
 
@@ -54,7 +63,7 @@
         </h4>
 
         <uib-accordion close-others="false" class="table">
-            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
+            <div uib-accordion-group  ng-repeat="rs in restServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}" is-open="expandAllEndpoints">
                 <uib-accordion-heading>
                     <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
                     <span class="pull-right">({{ rs.data.length }})
@@ -66,7 +75,7 @@
                     <table class="table table-striped">
                         <thead>
                         <tr>
-                            <th ng-if="initExportSelection"></th>
+                            <th></th>
                             <th>{{ pathTableLabel }}</th>
                             <th>{{ dateCreatedTableLabel }}</th>
                             <th>{{ mockTypeTableLabel }}</th>
@@ -76,9 +85,7 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="x in rs.data">
-                                <td ng-if="initExportSelection">
-                                    <input type="checkbox" ng-checked="doesExportSelectionContain(x.extId)" ng-click="toggleExportSelection(x)" />
-                                </td>
+                                <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
                                 <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td class="mock-status-{{ x.status | lowercase }}">{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                                 <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
@@ -86,7 +93,7 @@
                                     {{ x.deploymentStatus }}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)" ng-disabled="initExportSelection">{{ viewEndpointButtonLabel }}</button>
+                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -104,7 +111,7 @@
             <h3>
                 {{ endpointsOtherUsersHeading }}
                 <br />
-                <span class="show-all-toggle" ng-if="isLoggedIn && showAllEndpoints">(<a href ng-click="doShowAllEndpoints(false)">{{ hideAllEndpointsHeading }}</a>)</span>
+                <span class="batch-actions-group" ng-if="isLoggedIn && showAllEndpoints">(<a href ng-click="doShowAllEndpoints(false)">{{ hideAllEndpointsHeading }}</a>)</span>
             </h3>
 
             <br />
@@ -114,7 +121,7 @@
             </h4>
 
             <uib-accordion close-others="false" class="table">
-                <div uib-accordion-group  ng-repeat="rs in otherUserRestServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
+                <div uib-accordion-group ng-repeat="rs in otherUserRestServices" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}" is-open="expandAllEndpoints">
                     <uib-accordion-heading>
                         <span class="batched-endpoint-path" ng-click="rs.isOpen = !rs.isOpen">{{ rs.basePath }}</span>
                         <span class="pull-right">({{ rs.data.length }})
@@ -126,7 +133,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th ng-if="initExportSelection"></th>
+                                    <th></th>
                                     <th>{{ pathTableLabel }}</th>
                                     <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
                                     <th>{{ mockTypeTableLabel }}</th>
@@ -136,9 +143,7 @@
                             </thead>
                             <tbody>
                                 <tr ng-repeat="x in rs.data">
-                                    <td ng-if="initExportSelection">
-                                        <input type="checkbox" ng-checked="doesExportSelectionContain(x.extId)" ng-click="toggleExportSelection(x)" />
-                                    </td>
+                                    <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
                                     <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                     <td class="mock-status-{{ x.status | lowercase }}" ng-if="isLoggedIn">{{ x.createdBy }}</td>
                                     <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
@@ -146,7 +151,7 @@
                                         {{ x.deploymentStatus }}
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)" ng-disabled="initExportSelection">{{ viewEndpointButtonLabel }}</button>
+                                        <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
                                     </td>
                                 </tr>
                             </tbody>
