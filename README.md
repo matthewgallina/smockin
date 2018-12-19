@@ -6,15 +6,15 @@
 
    - Contact: info@smockin.com
 
-
+<br/>
 
 ### WHAT'S NEW IN VERSION 1.6
 
-   IMPORT & EXPORT MOCKS 
+IMPORT & EXPORT MOCKS 
 
-      HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions. The new Import / Export manager supports both bulk and selective exporting, giving you full control of what goes in and out.
+HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions. The new Import / Export manager supports both bulk and selective exporting, giving you full control of what goes in and out.
 
-
+<br/>
 
 ### OVERVIEW
 
@@ -26,7 +26,7 @@ With the ability to vary content using easy to set up sequences and rules, sMock
 
 sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
 
-
+<br/>
 
 ### REQUIREMENTS
 
@@ -37,19 +37,19 @@ sMockin runs as a small web app which can be either installed locally to a devel
       -   All bash scripts were written and tested on GNU Bash version 3.2.57(1)-release.
       -   All BAT files were were written and tested on Windows 7.
 
-
+<br/>
 
 ### QUICK START
 
 Please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
 
-
+<br/>
 
 ### TROUBLESHOOTING
 
 Please consult the [Configuration & Troubleshooting](https://github.com/mgtechsoftware/smockin/wiki/Configuration-&-Troubleshooting) guide.
 
-
+<br/>
 
 ### LICENCE
 
@@ -58,7 +58,7 @@ sMockin is licensed according to the terms of the Apache License, Version 2.0.
 
 The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 
-
+<br/>
 
 ### ACKNOWLEDGEMENTS / THIRD PARTIES
 
@@ -87,7 +87,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         JQuery                      -       https://jquery.com/
         Little Proxy                -       https://github.com/adamfisk/LittleProxy
 
-
+<br/>
 
 ### ABOUT
 
