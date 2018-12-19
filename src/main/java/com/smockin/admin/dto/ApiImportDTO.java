@@ -5,9 +5,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class ApiImportDTO {
 
     private MultipartFile file;
-    private ApiImportConfigDTO config;
+    private MockImportConfigDTO config;
 
-    public ApiImportDTO(final MultipartFile file, final ApiImportConfigDTO config) {
+    public ApiImportDTO(final MultipartFile file, final MockImportConfigDTO config) {
         this.file = file;
         this.config = config;
     }
@@ -15,7 +15,7 @@ public class ApiImportDTO {
     public MultipartFile getFile() {
         return file;
     }
-    public ApiImportConfigDTO getConfig() {
+    public MockImportConfigDTO getConfig() {
         return config;
     }
 

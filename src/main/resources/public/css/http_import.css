@@ -1,0 +1,80 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-select-file-button {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.upload-button {
+    width: 100%;
+}
+
+#import-feedback {
+    height: 200px;
+}
+
+.import-info {
+    font-size: 12px;
+}
+
+.import-info-details {
+    margin-left: 20px;
+}
+
+.export-mode-button {
+    width: 50%;
+}
+
+.export-button-width {
+    width: 220px;
+}
+
+.execute-export-button-width {
+    width: 100%;
+}
+
+.export-button-grp-div {
+    width: 100%;
+    text-align: center;
+}
+
+.export-instructions {
+    width: 100%;
+    font-weight: 600;
+    text-align: center;
+}
+
+#import-type {
+    width: 100%;
+}
+
+#import-type-button {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+.export-selection {
+    height: 250px;
+    overflow-x : hidden;
+    overflow-y : scroll;
+}
+
+.export-button-grp-div {
+    margin: 0px;
+}

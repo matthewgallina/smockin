@@ -27,17 +27,23 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated HTTP Endpoints';
-    $scope.endpointsOtherUsersHeading = 'Other User Endpoints';
-    $scope.showAllEndpointsHeading = 'display other user endpoints';
+    $scope.endpointsHeading = 'HTTP Mocks';
+    $scope.endpointsOtherUsersHeading = 'HTTP Mocks By Other Users';
+    $scope.showAllEndpointsHeading = 'display all';
+    $scope.expandAllEndpointsHeading = 'expand all';
+    $scope.collapseAllEndpointsHeading = 'collapse all';
+    $scope.selectAllEndpointsHeading = 'select all';
+    $scope.deselectAllEndpointsHeading = 'clear selection';
     $scope.hideAllEndpointsHeading = 'hide';
 
 
     //
     // Buttons
     $scope.addEndpointButtonLabel = 'New HTTP Endpoint';
-    $scope.importEndpointButtonLabel = 'Import RAML API';
+    $scope.importEndpointButtonLabel = 'Import...';
+    $scope.exportEndpointButtonLabel = 'Export';
     $scope.viewEndpointButtonLabel = 'View';
+    $scope.bulkDeleteEndpointsButtonLabel = 'Delete';
 
 
     //
@@ -55,6 +61,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.restServices = [];
     $scope.otherUserRestServices = [];
     $scope.showAllEndpoints = false;
+    $scope.mockSelection = [];
+    var deletionErrorOccurrence = false;
+    var deletionAttemptCount = 0;
 
 
     //
@@ -112,23 +121,70 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         $location.path("/tcp_endpoint");
     };
 
-    $scope.doOpenTcpRamlImport = function() {
+    $scope.doExport = function(mode) {
+
+        if ($scope.mockSelection.length == 0) {
+            showAlert("No mocks have been selected for export");
+            return;
+        }
+
+         utils.openWarningConfirmation("Are you sure you wish to export these " + $scope.mockSelection.length + " mocks?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                var req = [];
+
+                for (var m=0; m < $scope.mockSelection.length; m++) {
+                    req.push($scope.mockSelection[m].extId);
+                }
+
+                restClient.doPost($http, '/mock/export/RESTFUL', req, function(status, data) {
+
+                    if (status != 200) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    handleExportDownload(data);
+                    $scope.mockSelection = [];
+
+                });
+
+            }
+
+        });
+
+    };
+
+    $scope.doOpenImport = function() {
+
         $rootScope.endpointData = null;
 
-     var modalInstance = $uibModal.open({
-          templateUrl: 'api_import.html',
-          controller: 'apiImportController',
-          backdrop  : 'static',
-          keyboard  : false
+        var modalInstance = $uibModal.open({
+            templateUrl: 'http_import.html',
+            controller: 'httpImportController',
+            backdrop  : 'static',
+            keyboard  : false
         });
 
         modalInstance.result.then(function (response) {
-            if (response != null
-                    && response.uploadCompleted) {
-                loadTableData($scope.showAllEndpoints);
+
+            if (response != null) {
+
+                if (response.uploadCompleted != null
+                        && response.uploadCompleted) {
+
+                    loadTableData($scope.showAllEndpoints);
+                }
+
+            } else {
+
+                $scope.mockSelection = [];
             }
+
         }, function () {
 
+            $scope.mockSelection = [];
         });
 
     };
@@ -180,6 +236,37 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         loadTableData($scope.showAllEndpoints);
     };
 
+    $scope.doExpandAllEndpoints = function() {
+        doToggleAccordion(true);
+    };
+
+    $scope.doCollapseAllEndpoints = function() {
+        doToggleAccordion(false);
+    };
+
+    $scope.doSelectAllEndpoints = function() {
+
+       $scope.mockSelection = [];
+
+        for (var rs=0; rs < $scope.restServices.length; rs++) {
+            for (var rsd=0; rsd < $scope.restServices[rs].data.length; rsd++) {
+                $scope.mockSelection.push($scope.restServices[rs].data[rsd]);
+            }
+        }
+
+        for (var rs=0; rs < $scope.otherUserRestServices.length; rs++) {
+            for (var rsd=0; rsd < $scope.otherUserRestServices[rs].data.length; rsd++) {
+                $scope.mockSelection.push($scope.otherUserRestServices[rs].data[rsd]);
+            }
+        }
+
+    }
+
+    $scope.doClearAllEndpoints = function() {
+
+        $scope.mockSelection = [];
+    };
+
     $scope.stopTcpMockServer = function () {
 
         if ($scope.readOnly) {
@@ -204,9 +291,127 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     };
 
+    $scope.doesSelectionContain = function(extId) {
+
+        for (var m=0; m < $scope.mockSelection.length; m++) {
+            if ($scope.mockSelection[m].extId == extId) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    $scope.toggleSelection = function (mock) {
+
+        for (var m=0; m < $scope.mockSelection.length; m++) {
+            if ($scope.mockSelection[m].extId == mock.extId) {
+                $scope.mockSelection.splice(m, 1);
+                return;
+            }
+        }
+
+        $scope.mockSelection.push(mock);
+    };
+
+    $scope.doDeleteSelection = function() {
+
+        if ($scope.mockSelection.length == 0) {
+            showAlert("No mocks have been selected to delete");
+            return;
+        }
+
+        // Check and warn user that they cannot delete another's user's mocks.
+        for (var m=0; m < $scope.mockSelection.length; m++) {
+            for (var rs=0; rs < $scope.otherUserRestServices.length; rs++) {
+                for (var rsd=0; rsd < $scope.otherUserRestServices[rs].data.length; rsd++) {
+                    if ($scope.mockSelection[m].extId == $scope.otherUserRestServices[rs].data[rsd].extId) {
+                        showAlert("You have selected mocks belonging to another user! Please uncheck these first to proceed.");
+                        return;
+                    }
+                }
+            }
+        }
+
+        utils.openDeleteConfirmation("Are you sure wish to delete these " + $scope.mockSelection.length + " mocks?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                deletionAttemptCount = 0;
+                utils.showBlockingOverlay();
+
+                for (var m=0; m < $scope.mockSelection.length; m++) {
+                    restClient.doDelete($http, '/restmock/' + $scope.mockSelection[m].extId, bulkDeleteCallbackFunc);
+                }
+
+            }
+
+        });
+
+    };
+
 
     //
     // Internal Functions
+    function handleExportDownload(exportData) {
+
+        var mockExportCount = $scope.mockSelection.length;
+        var iFrame = jQuery('#export-download-frame');
+        var iFrameDoc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+
+        var a = iFrameDoc.createElement('a');
+        a.download = "smockin_export_" + mockExportCount + "_mocks.zip";
+        a.text = "";
+        a.href = "data:application/zip;base64," + exportData;
+
+        iFrame.contents().find("body").append(a);
+        iFrameDoc.close();
+
+        iFrame.contents().find("body").append(a);
+
+        var clickEvent = iFrameDoc.createEvent("MouseEvent");
+        clickEvent.initEvent("click", true, true);
+        a.dispatchEvent(clickEvent);
+
+    }
+
+    function doToggleAccordion(isOpen) {
+
+        for (var rs=0; rs < $scope.restServices.length; rs++) {
+            $scope.restServices[rs].isOpen = isOpen;
+        }
+
+        for (var ors=0; ors < $scope.otherUserRestServices.length; ors++) {
+            $scope.otherUserRestServices[ors].isOpen = isOpen;
+        }
+
+    }
+
+    var bulkDeleteCallbackFunc = function (status, data) {
+
+        if (status != 204) {
+            deletionErrorOccurrence = true;
+        }
+
+        deletionAttemptCount++;
+
+        if ($scope.mockSelection.length == deletionAttemptCount) {
+
+            utils.hideBlockingOverlay();
+            loadTableData($scope.showAllEndpoints = true);
+
+            showAlert("The selected mocks were successfully deleted", "success");
+            $scope.mockSelection = [];
+
+            if (deletionErrorOccurrence) {
+                showAlert("An error occurred. Not all mocks were deleted");
+            }
+
+            deletionAttemptCount = 0;
+        }
+
+    };
+
     function loadTableData(showAll) {
 
         $scope.restServices = [];

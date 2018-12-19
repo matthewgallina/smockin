@@ -19,7 +19,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
-    $scope.endpointsHeading = 'Simulated JMS Queues';
+    $scope.endpointsHeading = 'JMS Mocks';
 
     $scope.nameTableLabel = 'Name';
     $scope.dateCreatedTableLabel = 'Date Created';

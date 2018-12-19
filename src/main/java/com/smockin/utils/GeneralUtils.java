@@ -10,16 +10,16 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Created by mgallina.
@@ -67,6 +67,11 @@ public final class GeneralUtils {
 
     public final static LocalDateTime getCurrentDateTime() {
         return LocalDateTime.now();
+    }
+
+    public final static String createFileNameUniqueTimeStamp() {
+        return new SimpleDateFormat(UNIQUE_TIMESTAMP_FORMAT)
+                .format(getCurrentDate());
     }
 
     // NOTE It is important that this preserves any whitespaces around the token
@@ -210,6 +215,19 @@ public final class GeneralUtils {
         return null;
     }
 
+    public static <T> T deserialiseJson(final String jsonStr, final TypeReference<T> type) {
+
+        if (jsonStr != null) {
+            try {
+                return JSON_MAPPER.readValue(jsonStr, type);
+            } catch (IOException e) {
+                // fail silently
+            }
+        }
+
+        return null;
+    }
+
     public static <T> String serialiseJson(final T t) {
 
         try {
@@ -243,6 +261,66 @@ public final class GeneralUtils {
         }
 
         return fileName.substring(extPos);
+    }
+
+    public static byte[] createArchive(final File[] files) {
+
+        ByteArrayOutputStream bos = null;
+        ZipOutputStream zipOut = null;
+
+        final byte[] buffer = new byte[1024];
+
+        try {
+
+            bos = new ByteArrayOutputStream();
+            zipOut = new ZipOutputStream(bos);
+
+            for (File fileToZip : files) {
+
+                FileInputStream fis = null;
+
+                try {
+
+                    fis = new FileInputStream(fileToZip);
+                    final ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+
+                    zipOut.putNextEntry(zipEntry);
+
+                    int length;
+                    while ((length = fis.read(buffer)) >= 0) {
+                        zipOut.write(buffer, 0, length);
+                    }
+
+                    zipOut.closeEntry();
+
+                } catch (IOException e) {
+                    throw e;
+                } finally {
+                    if (fis != null) {
+                        fis.close();
+                    }
+                }
+
+            }
+
+            return bos.toByteArray();
+
+        } catch (IOException e) {
+            logger.error("Error creating archive file", e);
+        } finally {
+            if (zipOut != null) {
+                try {
+                zipOut.close();
+                } catch (IOException e) {}
+            }
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {}
+            }
+        }
+
+        return null;
     }
 
     public static void unpackArchive(final String zipFilePath, final String destDir) {

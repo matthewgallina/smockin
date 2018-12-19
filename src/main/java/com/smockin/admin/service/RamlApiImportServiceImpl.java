@@ -1,18 +1,18 @@
 package com.smockin.admin.service;
 
-import com.smockin.admin.dto.ApiImportConfigDTO;
+import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RestfulMockDefinitionDTO;
-import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,8 +49,11 @@ public class RamlApiImportServiceImpl implements ApiImportService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
+    @Autowired
+    private RestfulMockServiceUtils restfulMockServiceUtils;
+
     @Override
-    public void importApiDoc(final ApiImportDTO dto, final String token) throws ApiImportException, ValidationException {
+    public void importApiDoc(final ApiImportDTO dto, final String token) throws MockImportException, ValidationException {
         logger.debug("importApiDoc (RAML) called");
 
         validate(dto);
@@ -62,9 +64,8 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
             final Api api = readContent(loadRamlFileFromUpload(dto.getFile(), tempDir));
-            final ApiImportConfigDTO apiImportConfig = dto.getConfig();
-            final String conflictCtxPath = "raml_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
-                    .format(GeneralUtils.getCurrentDate());
+            final MockImportConfigDTO apiImportConfig = dto.getConfig();
+            final String conflictCtxPath = "raml_" + GeneralUtils.createFileNameUniqueTimeStamp();
 
             debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
             debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
@@ -77,12 +78,12 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath, defaultMimeType);
         } catch (RecordNotFoundException ex) {
-            throw new ApiImportException("Unauthorized user access");
-        } catch (ApiImportException ex) {
+            throw new MockImportException("Unauthorized user access");
+        } catch (MockImportException ex) {
             throw ex;
         } catch (Throwable ex) {
             logger.error("Unexpected error whilst importing RAML API", ex);
-            throw new ApiImportException("Unexpected error whilst importing RAML API");
+            throw new MockImportException("Unexpected error whilst importing RAML API");
         } finally {
             if (!FileUtils.deleteQuietly(tempDir)) {
                 logger.error("Error deleting temp dir");
@@ -104,7 +105,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
     }
 
-    Api readContent(final File ramlFile) throws ApiImportException {
+    Api readContent(final File ramlFile) throws MockImportException {
 
         final RamlModelResult ramlModelResult = new RamlModelBuilder().buildApi(ramlFile);
 
@@ -114,18 +115,18 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                     .getValidationResults().stream().map(vr -> vr.getPath() + " " + vr.getMessage())
                     .collect(Collectors.joining("\n"));
 
-            throw new ApiImportException(allErrors);
+            throw new MockImportException(allErrors);
         }
 
         return ramlModelResult.getApiV10();
     }
 
-    void loadInResources(final List<Resource> resources, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws ApiImportException {
+    void loadInResources(final List<Resource> resources, final MockImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws MockImportException {
         resources.stream()
                 .forEach(r -> parseResource(r, apiImportConfig, user, conflictCtxPath, defaultMimeType));
     }
 
-    void parseResource(final Resource resource, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws ApiImportException {
+    void parseResource(final Resource resource, final MockImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath, final String defaultMimeType) throws MockImportException {
         debug("Importing Endpoint...");
 
         // path
@@ -226,40 +227,14 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             });
 
             try {
-                handleExistingEndpoints(dto, apiImportConfig, user, conflictCtxPath);
+                restfulMockServiceUtils.preHandleExistingEndpoints(dto, apiImportConfig, user, conflictCtxPath);
                 restfulMockService.createEndpoint(dto, user.getSessionToken());
             } catch (RecordNotFoundException e) {
-                throw new ApiImportException("Unauthorized user access");
+                throw new MockImportException("Unauthorized user access");
             }
         });
 
         loadInResources(resource.resources(), apiImportConfig, user, conflictCtxPath, defaultMimeType);
-    }
-
-    void handleExistingEndpoints(final RestfulMockDTO dto, final ApiImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) {
-
-        final RestfulMock existingRestFulMock = restfulMockDAO.findByPathAndMethodAndUser(dto.getPath(), dto.getMethod(), user);
-
-        if (existingRestFulMock == null) {
-            return;
-        }
-
-        if (!apiImportConfig.isKeepExisting()) {
-            restfulMockDAO.delete(existingRestFulMock);
-            restfulMockDAO.flush();
-            return;
-        }
-
-        switch (apiImportConfig.getKeepStrategy()) {
-            case RENAME_EXISTING:
-                existingRestFulMock.setPath("/" + conflictCtxPath + existingRestFulMock.getPath());
-                restfulMockDAO.save(existingRestFulMock);
-                break;
-            case RENAME_NEW:
-                dto.setPath("/" + conflictCtxPath + dto.getPath());
-                break;
-        }
-
     }
 
     String formatPath(final String resourcePath) {
@@ -300,18 +275,18 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 return Files.find(Paths.get(parent), 5, (path, attr)
                         -> path.getFileName().toString().toLowerCase().indexOf(".raml") > -1)
                     .findFirst()
-                    .orElseThrow(() -> new ApiImportException("Error locating raml file within uploaded archive"))
+                    .orElseThrow(() -> new MockImportException("Error locating raml file within uploaded archive"))
                     .toFile();
 
             } else if (".raml".equalsIgnoreCase(fileTypeExtension)) {
                 return uploadedFile;
             } else {
-                throw new ApiImportException("Unsupported file extension: " + fileName);
+                throw new MockImportException("Unsupported file extension: " + fileName);
             }
 
         } catch (IOException e) {
             logger.error("Error reading uploaded RAML file: " + fileName, e);
-            throw new ApiImportException("Error reading uploaded RAML file: " + fileName);
+            throw new MockImportException("Error reading uploaded RAML file: " + fileName);
         }
 
     }

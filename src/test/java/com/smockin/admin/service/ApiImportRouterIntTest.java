@@ -2,11 +2,11 @@ package com.smockin.admin.service;
 
 import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
-import com.smockin.admin.dto.ApiImportConfigDTO;
+import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.enums.ApiImportTypeEnum;
-import com.smockin.admin.enums.ApiKeepStrategyEnum;
-import com.smockin.admin.exception.ApiImportException;
+import com.smockin.admin.enums.MockImportKeepStrategyEnum;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.SmockinUserDAO;
@@ -74,11 +74,11 @@ public class ApiImportRouterIntTest {
     }
 
     @Test
-    public void route_Raml100_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+    public void route_Raml100_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"),
-                new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_NEW));
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_100.raml"),
+                new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
@@ -161,11 +161,11 @@ public class ApiImportRouterIntTest {
     }
 
     @Test
-    public void route_Raml200_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+    public void route_Raml200_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_200.zip"),
-                new ApiImportConfigDTO(ApiKeepStrategyEnum.RENAME_NEW));
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_200.zip"),
+                new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
 
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());
 
@@ -341,10 +341,10 @@ public class ApiImportRouterIntTest {
     }
 
     @Test
-    public void route_RemoveExisting_Pass() throws ApiImportException, ValidationException, URISyntaxException, IOException {
+    public void route_RemoveExisting_Pass() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml_100.raml"), new ApiImportConfigDTO());
+        final ApiImportDTO dto = new ApiImportDTO(buildMockMultipartFile("raml/raml_100.raml"), new MockImportConfigDTO());
 
         // Pre-test Assertions
         Assert.assertTrue(restfulMockDAO.findAll().isEmpty());

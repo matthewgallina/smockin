@@ -1,8 +1,8 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
-import com.smockin.admin.exception.ApiImportException;
 import com.smockin.admin.exception.AuthException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.exception.MockServerException;
@@ -73,8 +73,8 @@ public class ExceptionHandlerController {
                 .build();
     }
 
-    @ExceptionHandler(ApiImportException.class)
-    public ResponseEntity<SimpleMessageResponseDTO<String>> handleApiImportException(ApiImportException ex) {
+    @ExceptionHandler(MockImportException.class)
+    public ResponseEntity<SimpleMessageResponseDTO<String>> handleApiImportException(MockImportException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new SimpleMessageResponseDTO(ex.getMessage()));
