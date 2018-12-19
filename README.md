@@ -1,65 +1,66 @@
 # sMockin version 1.6.0
 
-### Intelligent API simulation for application development and QA testing
+## Intelligent API simulation for application development and QA testing
 
-   Visit us: https://www.smockin.com
+   - Visit us: https://www.smockin.com
 
-   Contact: info@smockin.com
+   - Contact: info@smockin.com
 
 
 
-### WHAT'S NEW IN VERSION 1.6
+#### WHAT'S NEW IN VERSION 1.6
 
    IMPORT & EXPORT MOCKS 
 
-      TODO
-
-
-### OVERVIEW
-
-   sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid development and QA  testing in the ever growing realm of the 'Internet of Things'.
-
-   Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that would be otherwise too difficult or time consuming to set up.
-
-   With the ability to vary content using easy to set up sequences and rules, sMockin can help simulate all of your use case scenarios.
-
-   sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
+      HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions.
 
 
 
-### REQUIREMENTS
+#### OVERVIEW
+
+sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid development and QA  testing in the ever growing realm of the 'Internet of Things'.
+
+Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that would be otherwise too difficult or time consuming to set up.
+
+With the ability to vary content using easy to set up sequences and rules, sMockin can help simulate all of your use case scenarios.
+
+sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
+
+
+
+#### REQUIREMENTS
 
    - Java 8
    - Maven 3
 
-Please Note
-   -   All bash scripts were written and tested on GNU Bash version 3.2.57(1)-release.
-   -   All BAT files were were written and tested on Windows 7.
+   Please Note
+      -   All bash scripts were written and tested on GNU Bash version 3.2.57(1)-release.
+      -   All BAT files were were written and tested on Windows 7.
 
 
 
-### QUICK START
+#### QUICK START
 
 Please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
 
 
 
-### TROUBLESHOOTING
+#### TROUBLESHOOTING
 
 Please consult the [Configuration & Troubleshooting](https://github.com/mgtechsoftware/smockin/wiki/Configuration-&-Troubleshooting) guide.
 
 
 
-### LICENCE
+#### LICENCE
 
 
-   sMockin is licensed according to the terms of the Apache License, Version 2.0.
+sMockin is licensed according to the terms of the Apache License, Version 2.0.
 
-   The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
+The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 
 
 
-### ACKNOWLEDGEMENTS / THIRD PARTIES
+#### ACKNOWLEDGEMENTS / THIRD PARTIES
 
    sMockin is built upon the following open source frameworks:
 
@@ -88,10 +89,10 @@ Please consult the [Configuration & Troubleshooting](https://github.com/mgtechso
 
 
 
-### ABOUT
+#### ABOUT
 
-   sMockin is designed and actively maintained by MG Tech Software Ltd.
+sMockin is designed and actively maintained by MG Tech Software Ltd.
 
-   Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra letter to play on the concept of software mocking and there you have it. 
+Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra letter to play on the concept of software mocking and there you have it. 
 
-   Yes, way too much thought went into that...
+Yes, way too much thought went into that...
