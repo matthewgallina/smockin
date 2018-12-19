@@ -35,9 +35,9 @@
                 <h3>
                     {{ endpointsHeading }}
                     <br />
-                    <span class="batch-actions-group" ng-if="isLoggedIn">
+                    <span class="batch-actions-group">
                         (
-                            <a href ng-click="doShowAllEndpoints(true)" ng-if="!showAllEndpoints">{{ showAllEndpointsHeading }} |</a>
+                            <a href ng-click="doShowAllEndpoints(true)" ng-if="!showAllEndpoints && isLoggedIn">{{ showAllEndpointsHeading }} |</a>
                             <a href ng-click="doExpandAllEndpoints()">{{ expandAllEndpointsHeading }}</a> |
                             <a href ng-click="doCollapseAllEndpoints()">{{ collapseAllEndpointsHeading }}</a> |
                             <a href ng-click="doSelectAllEndpoints()">{{ selectAllEndpointsHeading }}</a> |
