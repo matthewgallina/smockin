@@ -1,6 +1,6 @@
 # sMockin version 1.6.0
 
-## Intelligent API simulation for application development and QA testing
+#### Intelligent API simulation for application development and QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -8,15 +8,15 @@
 
 
 
-#### WHAT'S NEW IN VERSION 1.6
+### WHAT'S NEW IN VERSION 1.6
 
    IMPORT & EXPORT MOCKS 
 
-      HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions.
+      HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions. The new Import / Export manager supports both bulk and selective exporting, giving you full control of what goes in and out.
 
 
 
-#### OVERVIEW
+### OVERVIEW
 
 sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid development and QA  testing in the ever growing realm of the 'Internet of Things'.
 
@@ -28,7 +28,7 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 
 
-#### REQUIREMENTS
+### REQUIREMENTS
 
    - Java 8
    - Maven 3
@@ -39,19 +39,19 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 
 
-#### QUICK START
+### QUICK START
 
 Please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
 
 
 
-#### TROUBLESHOOTING
+### TROUBLESHOOTING
 
 Please consult the [Configuration & Troubleshooting](https://github.com/mgtechsoftware/smockin/wiki/Configuration-&-Troubleshooting) guide.
 
 
 
-#### LICENCE
+### LICENCE
 
 
 sMockin is licensed according to the terms of the Apache License, Version 2.0.
@@ -60,7 +60,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 
 
-#### ACKNOWLEDGEMENTS / THIRD PARTIES
+### ACKNOWLEDGEMENTS / THIRD PARTIES
 
    sMockin is built upon the following open source frameworks:
 
@@ -89,7 +89,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 
 
-#### ABOUT
+### ABOUT
 
 sMockin is designed and actively maintained by MG Tech Software Ltd.
 
