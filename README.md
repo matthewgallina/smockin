@@ -35,8 +35,8 @@ sMockin runs as a small web app which can be either installed locally to a devel
 * Run sMockin as a proxy server and substitute existing or missing endpoints with mocks.
 * Run sMockin centrally and create user accounts for your team.
 * Import / Export mocks to share between your team when running sMockin on individual machines.
-* Monitor and log traffic going to the mock server or proxy.
-* sMockin is a pure UI solution requiring zero coding skills.
+* Monitor and log traffic going to the mock server or via the proxy.
+* A complete UI solution requiring zero coding.
 
 
 <br/>
