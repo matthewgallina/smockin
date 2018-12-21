@@ -28,6 +28,19 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 <br/>
 
+
+### KEY FEATURES
+
+* Create dynamic API mocks to mimic real world application behaviour.
+* Run sMockin as a proxy server and substitute existing or missing endpoints with mocks.
+* Run sMockin centrally and create user accounts for your team.
+* Import / Export mocks to share between your team when running sMockin on individual machines.
+* Monitor and log traffic going to the mock server or proxy.
+* sMockin is a pure UI solution requiring zero coding skills.
+
+
+<br/>
+
 ### REQUIREMENTS
 
    - Java 8
@@ -39,7 +52,7 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 <br/>
 
-### QUICK START
+### GETTING STARTED
 
 Please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
 
