@@ -20,7 +20,11 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'JMS Mocks';
+    $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
 
+
+    //
+    // Table Labels
     $scope.nameTableLabel = 'Name';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.mockTypeTableLabel = 'JMS Mock Type';
@@ -44,8 +48,10 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
     //
     // Data
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
+    var allJmsServices = [];
     $scope.jmsServices = [];
     $scope.mockServerStatus = null;
+    $scope.searchFilter = null;
 
 
     //
@@ -130,6 +136,25 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     }
 
+    $scope.filterJmsMocks = function() {
+
+        $scope.jmsServices = [];
+
+        if ($scope.searchFilter == null
+                || $scope.searchFilter.trim() == 0) {
+
+            $scope.jmsServices = allJmsServices;
+            return;
+        }
+
+        for (var rs=0; rs < allJmsServices.length; rs++) {
+            if (allJmsServices[rs].name.indexOf($scope.searchFilter) > -1) {
+                $scope.jmsServices.push(allJmsServices[rs]);
+            }
+        }
+
+    };
+
 
     //
     // Internal Functions
@@ -167,6 +192,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
 
     function loadTableData() {
 
+        allJmsServices = [];
         $scope.jmsServices = [];
 
         restClient.doGet($http, '/jmsmock', function(status, data) {
@@ -179,6 +205,7 @@ app.controller('jmsDashboardController', function($scope, $rootScope, $routePara
                 return;
             }
 
+            allJmsServices = data;
             $scope.jmsServices = data;
         });
 

@@ -5,8 +5,8 @@ REM   for /f tokens^=2-5^ delims^=.-_^" %j in ('java -fullversion 2^>^&1') do @s
 REM   echo %jver%
 IF DEFINED %SMOCKIN_DIR_PATH% (set APP_DIR_PATH=%SMOCKIN_DIR_PATH%) ELSE (set APP_DIR_PATH=%userprofile%\.smockin)
 
-set APP_NAME=SMOCKIN
-set APP_VERSION=1.6.0-SNAPSHOT
+set APP_NAME=sMockin
+set APP_VERSION=1.6.1-SNAPSHOT
 
 set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
