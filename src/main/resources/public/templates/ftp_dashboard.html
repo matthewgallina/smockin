@@ -41,6 +41,10 @@
 
         <br />
 
+        <div class="form-group">
+            <input id="searchFilter" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="searchFilter" placeholder="{{ searchFilterPlaceHolderTxt }}" type="text" ng-keyup="filterFtpMocks()" />
+        </div>
+
         <h4 class="no-data-label" ng-if="ftpServices.length == 0">
             {{ noDataFoundMsg }}
         </h4>

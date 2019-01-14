@@ -20,7 +20,11 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'FTP Repos';
+    $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
 
+
+    //
+    // Table Labels
     $scope.nameTableLabel = 'Username';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.statusTableLabel = 'Deployment Status';
@@ -43,8 +47,10 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
     //
     // Data
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
+    var allFtpServices = [];
     $scope.ftpServices = [];
     $scope.mockServerStatus = null;
+    $scope.searchFilter = null;
 
 
     //
@@ -130,6 +136,25 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     }
 
+    $scope.filterFtpMocks = function() {
+
+        $scope.ftpServices = [];
+
+        if ($scope.searchFilter == null
+                || $scope.searchFilter.trim() == 0) {
+
+            $scope.ftpServices = allFtpServices;
+            return;
+        }
+
+        for (var rs=0; rs < allFtpServices.length; rs++) {
+            if (allFtpServices[rs].name.indexOf($scope.searchFilter) > -1) {
+                $scope.ftpServices.push(allFtpServices[rs]);
+            }
+        }
+
+    };
+
 
     //
     // Internal Functions
@@ -167,6 +192,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
 
     function loadTableData() {
 
+        allFtpServices = [];
         $scope.ftpServices = [];
 
         restClient.doGet($http, '/ftpmock', function(status, data) {
@@ -179,6 +205,7 @@ app.controller('ftpDashboardController', function($scope, $rootScope, $routePara
                 return;
             }
 
+            allFtpServices = data;
             $scope.ftpServices = data;
         });
 

@@ -41,6 +41,10 @@
 
         <br />
 
+        <div class="form-group">
+            <input id="searchFilter" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="searchFilter" placeholder="{{ searchFilterPlaceHolderTxt }}" type="text" ng-keyup="filterJmsMocks()" />
+        </div>
+
         <h4 class="no-data-label" ng-if="jmsServices.length == 0">
             {{ noDataFoundMsg }}
         </h4>
