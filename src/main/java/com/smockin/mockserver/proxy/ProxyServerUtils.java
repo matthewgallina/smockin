@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 @Component
@@ -98,7 +99,12 @@ public class ProxyServerUtils {
             mockPath = mockPath.substring(pathVarEndIdx, mockPath.length());
         }
 
-        return inboundPath.matches("^" + newMockPathRegex + "$");
+        try {
+            return inboundPath.matches("^" + newMockPathRegex + "$");
+        } catch (PatternSyntaxException ex) {
+            logger.error("Error whilst matching inbound path " + inboundPath, ex);
+            return false;
+        }
     }
 
     String buildMockUrl(final URL inboundUrl, final int mockServerPort, final String userCtx) {

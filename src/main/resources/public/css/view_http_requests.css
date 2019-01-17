@@ -10,16 +10,27 @@
     width: 950px;
 }
 
+.activity-feed-container {
+    height: 490px;
+    margin-bottom: 0px;
+    overflow: hidden;
+}
+
+.activity-feed-details-panel {
+    min-height: 405px;
+    margin-bottom: 0px;
+}
+
 #clear-feed-button {
     width: 100%;
 }
 
 #no-activity-data {
     font-size: 18px;
-    margin-top: 60px;
-    margin-bottom: 40px;
     width: 100%;
     text-align: center;
+    margin-top: 230px;
+    margin-bottom: 200px;
 }
 
 #log-search {
@@ -30,9 +41,30 @@
     font-size: 11px;
 }
 
-.activity-feed-table-wrapper {
-    max-height: 420px;
+.activity-feed-details {
+    height: 440px;
+}
+
+.activity-feed-table-row {
+    cursor: pointer;
+}
+
+.activity-feed-details-row {
+    height: 405px;
+    margin: 0px;
     overflow-y : scroll;
+}
+
+.activity-feed-details-header {
+    font-size: 20px;
+}
+
+.activity-feed-details-subheader {
+    font-size: 16px;
+}
+
+.activity-feed-details-well {
+    overflow-wrap: break-word;
 }
 
 .logging-status-online {
@@ -48,4 +80,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.nothing-selected {
+    text-align: center;
+    margin-top: 165px;
+    font-size: 20px;
 }
