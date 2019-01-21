@@ -11,6 +11,7 @@ import spark.Request;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -67,6 +68,10 @@ public final class GeneralUtils {
 
     public final static LocalDateTime getCurrentDateTime() {
         return LocalDateTime.now();
+    }
+
+    public final static Instant getCurrentDateTimeInstant() {
+        return getCurrentDateTime().toInstant(ZoneOffset.UTC);
     }
 
     public final static String createFileNameUniqueTimeStamp() {
