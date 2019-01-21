@@ -16,7 +16,7 @@ Featuring a rich UI and inbuilt mock servers, mocking your existing or new API m
 
 Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
 
-sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
+Open source and completely free, sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
 
 <br/>
 
