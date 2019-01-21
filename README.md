@@ -8,21 +8,13 @@
 
 <br/>
 
-### WHAT'S NEW IN VERSION 1.6
-
-IMPORT & EXPORT MOCKS 
-
-HTTP Mocks can how be easily exported and imported into other instances of sMockin, allowing teams to quickly share their mocked API definitions. The new Import / Export manager supports both bulk and selective exporting, giving you full control of what goes in and out.
-
-<br/>
-
 ### OVERVIEW
 
-sMockin is a framework with a rich UI used for setting up API simulations and mocks in a bid to aid development and QA  testing in the ever growing realm of the 'Internet of Things'.
+sMockin is a tool used to build dynamic mocks of your API.
 
-Whether you are a mobile developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that would be otherwise too difficult or time consuming to set up.
+Featuring a rich UI and inbuilt mock servers, mocking your existing or new API model can be done quickly and without any coding or scripting.
 
-With the ability to vary content using easy to set up sequences and rules, sMockin can help simulate all of your use case scenarios.
+Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
 
 sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
 
