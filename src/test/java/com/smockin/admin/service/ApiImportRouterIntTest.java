@@ -37,6 +37,7 @@ import java.util.Optional;
 /**
  * Created by mgallina.
  */
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SmockinTestConfig.class)
 @DataJpaTest
