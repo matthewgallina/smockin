@@ -102,7 +102,9 @@ fi
 
 echo "#####################################################################################"
 echo "# "
-echo "#  $APP_NAME v$APP_VERSION"
+echo "#  $APP_NAME"
+echo "# "
+echo "#  v$APP_VERSION"
 echo "#  "
 
 
