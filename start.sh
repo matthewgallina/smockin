@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="1.6.2-SNAPSHOT"
+APP_VERSION="1.6.4-SNAPSHOT"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"
@@ -120,7 +120,7 @@ then
     echo "#  H2 TCP Database is already running..."
   else
     echo "#  Starting H2 TCP Database..."
-    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
+    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -DSmockinDB -tcpPort $H2_PORT > /dev/null 2>&1 &
     echo "$!" > $H2_DB_PID_FILE
   fi
 

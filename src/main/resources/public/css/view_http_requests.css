@@ -7,11 +7,11 @@
 }
 
 .modal-dialog {
-    width: 950px;
+    width: 80%;
 }
 
 .activity-feed-container {
-    height: 490px;
+    /* height: 490px; */
     margin-bottom: 0px;
     overflow: hidden;
 }
@@ -40,17 +40,17 @@
 .live-log-font {
     font-size: 11px;
 }
-
+/*
 .activity-feed-details {
     height: 440px;
 }
-
+*/
 .activity-feed-table-row {
     cursor: pointer;
 }
 
 .activity-feed-details-row {
-    height: 405px;
+/*    height: 405px; */
     margin: 0px;
     overflow-y : scroll;
 }
