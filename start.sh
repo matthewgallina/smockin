@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="1.6.2-SNAPSHOT"
+APP_VERSION="1.6.3-SNAPSHOT"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"
@@ -102,7 +102,9 @@ fi
 
 echo "#####################################################################################"
 echo "# "
-echo "#  $APP_NAME v$APP_VERSION"
+echo "#  $APP_NAME"
+echo "# "
+echo "#  v$APP_VERSION"
 echo "#  "
 
 
@@ -112,7 +114,7 @@ echo "#  "
 if ([ $DRIVER_CLASS = "org.h2.Driver" ] && [ !$USE_INMEM_DB ]);
 then
 
-  H2_PID=$(ps aux | grep h2 | grep -v grep | awk '{print $2}')
+  H2_PID=$(ps aux | grep SmockinH2DB | grep -v grep | awk '{print $2}')
   JDBC_URL=$(echo $JDBC_URL | sed "s/{H2.PORT}/$H2_PORT/g")
 
   if [ ! -z "$H2_PID" ] 
@@ -120,7 +122,7 @@ then
     echo "#  H2 TCP Database is already running..."
   else
     echo "#  Starting H2 TCP Database..."
-    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
+    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME -DSmockinH2DB org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
     echo "$!" > $H2_DB_PID_FILE
   fi
 
