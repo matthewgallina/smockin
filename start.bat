@@ -8,6 +8,7 @@ IF DEFINED %SMOCKIN_DIR_PATH% (set APP_DIR_PATH=%SMOCKIN_DIR_PATH%) ELSE (set AP
 set APP_NAME=sMockin
 set APP_VERSION=1.6.4-SNAPSHOT
 
+
 set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
 set DB_DATA_DIR_PATH=%DB_DIR_PATH%\data
@@ -63,8 +64,10 @@ call set JDBC_URL=%%JDBC_URL:{USER.HOME}=%MOD_DB_PATH2%%%
 
 echo #####################################################################################
 echo # 
-echo #  %APP_NAME% v%APP_VERSION%
-echo #  
+echo #  %APP_NAME%
+echo #
+echo #  v%APP_VERSION%
+echo #
 
 
 REM   Check for H2 DB Server driver and start it up (in TCP server mode) if not already running

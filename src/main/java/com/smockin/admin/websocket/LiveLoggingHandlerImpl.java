@@ -34,7 +34,6 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
     @Override
     public void broadcast(final LiveLoggingDTO dto) {
-
         final List<WebSocketSession> sessions = liveSessionsRef.get();
 
         if (sessions.isEmpty()) {
