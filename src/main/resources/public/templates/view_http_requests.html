@@ -8,10 +8,12 @@
 
     <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
-    <div class="form-group activity-feed-container" style="height: {{ (height - 200) }}px;">
+    <div class="form-group activity-feed-container" style="height: {{ (height - 225) }}px;">
 
-        <div id="no-activity-data" ng-if="activityFeed.length == 0">
-            <b>{{ noActivityData }}</b>
+        <div id="no-activity-data" ng-if="activityFeed.length == 0" style="height: {{ (height - 265) }}px;">
+            <div style="position: relative; top: {{ ((height  / 2) - 130) }}px;">
+                <b>{{ noActivityData }}</b>
+            </div>
         </div>
 
         <form ng-show="activityFeed.length > 0">
@@ -74,82 +76,101 @@
                                 <br />
                                 <br />
 
-                                <div class="row activity-feed-details">
-                                    <div class="col-sm-6">
+                                <div class="activity-feed-details">
+                                    <div class="row">
 
-                                        <b class="activity-feed-details-subheader">{{ requestLabel }}</b>
-                                        <br />
-                                        {{ selectedFeedData.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
-                                        <hr />
+                                        <div class="col-sm-6">
 
-                                        <b>{{ headersLabel }}</b>
-                                        <br />
-                                        <br />
+                                            <b class="activity-feed-details-subheader">{{ requestLabel }}</b>
+                                            <br />
+                                            {{ selectedFeedData.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
+                                            <hr />
 
-                                        <div class="well activity-feed-details-well">
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <b class="activity-feed-details-subheader">
+                                                <i ng-if="selectedFeedData.proxied">
+                                                    <span ng-if="selectedFeedData.response.proxyResponseMocked">{{ mockedResponseLabel }}</span>
+                                                    <span ng-if="!selectedFeedData.response.proxyResponseMocked">{{ originalResponseLabel }}</span>
+                                                </i>
+                                                {{ selectedFeedData.response.status }} {{ responseLabel }}
+                                            </b>
+                                            <br />
+                                            {{ selectedFeedData.response.date | date: 'HH:mm:ss.sss' : 'UTC' }}
+                                            <hr />
+
+                                        </div>
+
+
+                                        <div class="col-sm-6">
+
+                                            <b>{{ headersLabel }}</b>
+                                            <br />
+                                            <br />
+
+                                            <div class="well activity-feed-details-well">
                                             <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.request.headers)">
                                                 {{ h }}
                                                 <br/>
                                             </span>
+                                            </div>
+
                                         </div>
+                                        <div class="col-sm-6">
 
-                                        <br />
-                                        <b>{{ bodyLabel }}</b>
-                                        <br />
-                                        <br />
+                                            <b>{{ headersLabel }}</b>
+                                            <br />
+                                            <br />
 
-                                        <div class="well activity-feed-details-well">
-                                            {{ selectedFeedData.request.body }}
-                                        </div>
-
-                                    </div>
-                                    <div class="col-sm-6">
-
-                                        <b class="activity-feed-details-subheader">
-                                            <i ng-if="selectedFeedData.proxied">
-                                                <span ng-if="selectedFeedData.response.proxyResponseMocked">{{ mockedResponseLabel }}</span>
-                                                <span ng-if="!selectedFeedData.response.proxyResponseMocked">{{ originalResponseLabel }}</span>
-                                            </i>
-                                            {{ responseLabel }}
-                                        </b>
-                                        <br />
-                                        {{ selectedFeedData.response.date | date: 'HH:mm:ss.sss' : 'UTC' }}
-                                        <hr />
-
-                                        <b>{{ headersLabel }}</b>
-                                        <br />
-                                        <br />
-
-                                        <div class="well activity-feed-details-well">
+                                            <div class="well activity-feed-details-well">
                                             <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.response.headers)">
                                                 {{ h }}
                                                 <br/>
                                             </span>
+                                            </div>
+
                                         </div>
 
-                                        <br />
-                                        <b>{{ bodyLabel }}</b>
-                                        <br />
-                                        <br />
 
-                                        <div class="well activity-feed-details-well">
-                                            {{ selectedFeedData.response.body }}
+                                        <div class="col-sm-6">
+
+                                            <br />
+                                            <b>{{ bodyLabel }}</b>
+                                            <br />
+                                            <br />
+
+                                            <div class="well activity-feed-details-well">
+                                                {{ selectedFeedData.request.body }}
+                                            </div>
+
+                                        </div>
+                                        <div class="col-sm-6">
+
+                                            <br />
+                                            <b>{{ bodyLabel }}</b>
+                                            <br />
+                                            <br />
+
+                                            <div class="well activity-feed-details-well">
+                                                {{ selectedFeedData.response.body }}
+                                            </div>
+
                                         </div>
 
                                     </div>
                                 </div>
 
+                                <div ng-show="selectedFeedData == null" class="nothing-selected">
+                                    <b>{{ noFeedRecordSelected }}</b>
+                                </div>
 
                             </div>
-
-                            <div ng-show="selectedFeedData == null" class="nothing-selected">
-                                <b>{{ noFeedRecordSelected }}</b>
-                            </div>
-
                         </div>
-                    </div>
 
+                    </div>
                 </div>
+
             </div>
 
             <br />
