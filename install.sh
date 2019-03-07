@@ -6,7 +6,7 @@ SMOCKIN_JAVA_VERSION=$(java -version 2>&1 | grep -i version | sed 's/.*version "
 if [ "${SMOCKIN_JAVA_VERSION}" \< 8 ]
 then
   echo ""
-  echo "Smockin requires Java 8 or later to run"
+  echo "sMockin requires Java 8 or later to run"
   echo ""
   echo "Please visit 'http://www.java.com/en/download' to install the latest Java Runtime Environment (JRE)"
   echo ""
@@ -63,15 +63,15 @@ then
   echo ""
   echo "The default H2 DB has been installed"
   echo ""
-  echo "  Please run start.sh to launch the Smockin Application"
-  echo ""
+#  echo "Please run start.sh to launch the sMockin Application"
+#  echo ""
   echo ""
 
 
 else
 
   echo ""
-  echo "Smockin is already installed : '$APP_DIR_PATH'"
+  echo "sMockin is already installed : '$APP_DIR_PATH'"
   echo ""
 
 fi
