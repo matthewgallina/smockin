@@ -78,8 +78,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.actualPathPrefixLabel = "actual path:";
     $scope.proxyPassThroughLabel = "Only intercept if rule matched";
     $scope.enableRandomLatencyLabel = "Delay responses";
-    $scope.latencyRangeLabel = "Latency Range";
-    $scope.latencyRangeMillisLabel = "millis";
+    $scope.latencyRangeLabel = "Latency Range (in millis)";
+    $scope.latencyRangeMinLabel = "min";
+    $scope.latencyRangeMaxLabel = "max";
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
 

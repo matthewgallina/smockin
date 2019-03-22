@@ -58,9 +58,11 @@ public class RestfulMock extends Identifier {
     @Column(name = "RANDOM_LAT", nullable = false)
     private boolean randomiseLatency;
 
+    @ColumnDefault("0")
     @Column(name = "RDM_LAT_RANGE_MIN", nullable = false)
     private long randomiseLatencyRangeMinMillis;
 
+    @ColumnDefault("0")
     @Column(name = "RDM_LAT_RANGE_MAX", nullable = false)
     private long randomiseLatencyRangeMaxMillis;
 

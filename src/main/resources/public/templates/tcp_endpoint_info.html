@@ -458,12 +458,27 @@
             <label for="random-response-latency" class="ng-binding">{{ enableRandomLatencyLabel }}</label>
         </div>
 
-        <div ng-if="endpoint.randomiseLatency">
-            {{ latencyRangeLabel }}
-            <input type="text" ng-model="endpoint.randomiseLatencyRangeMinMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
-            -
-            <input type="text" ng-model="endpoint.randomiseLatencyRangeMaxMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
-            {{ latencyRangeMillisLabel }}
+        <div ng-if="endpoint.randomiseLatency" class="latency-range-div">
+
+            <b>{{ latencyRangeLabel }}</b>
+
+            <br />
+            <br />
+
+            <div class="row">
+                <div class="col-sm-1 latency-range-label">
+                    {{ latencyRangeMinLabel }}
+                </div>
+                <div class="col-sm-5">
+                    <input type="text" ng-model="endpoint.randomiseLatencyRangeMinMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                </div>
+                <div class="col-sm-1 latency-range-label">
+                    {{ latencyRangeMaxLabel }}
+                </div>
+                <div class="col-sm-5">
+                    <input type="text" ng-model="endpoint.randomiseLatencyRangeMaxMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                </div>
+            </div>
         </div>
 
         <hr />
