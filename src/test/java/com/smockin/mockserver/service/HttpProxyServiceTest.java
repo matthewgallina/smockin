@@ -65,7 +65,7 @@ public class HttpProxyServiceTest {
         ReflectionTestUtils.setField(proxyService, "mockedRestServerEngine", mockedRestServerEngine);
 
         pxKey = new ProxiedKey("/helloworld", RestMethodEnum.GET);
-        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, false, user);
+        mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, false, user, false, 0,0);
         pxDto = new HttpProxiedDTO(pxKey.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld\" }");
 
         Mockito.when(restfulMockDAO.findByExtId(Matchers.anyString())).thenReturn(mockReq);

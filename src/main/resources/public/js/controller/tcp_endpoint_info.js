@@ -77,6 +77,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
     $scope.actualPathPrefixLabel = "actual path:";
     $scope.proxyPassThroughLabel = "Only intercept if rule matched";
+    $scope.enableRandomLatencyLabel = "Delay responses";
+    $scope.latencyRangeLabel = "Latency Range";
+    $scope.latencyRangeMillisLabel = "millis";
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
 
@@ -177,6 +180,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         "mockType" : lookupMockType(MockTypeDefinitions.MockTypeSeq),
         "randomiseDefinitions" : false,
         "proxyForwardWhenNoRuleMatch" : false,
+        "randomiseLatency" : false,
+        "randomiseLatencyRangeMinMillis" : 0,
+        "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
         "rules" : []
     };
@@ -219,6 +225,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "mockType" : lookupMockType(endpoint.mockType),
             "randomiseDefinitions" : endpoint.randomiseDefinitions,
             "proxyForwardWhenNoRuleMatch" : endpoint.proxyForwardWhenNoRuleMatch,
+            "randomiseLatency" : endpoint.randomiseLatency,
+            "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
+            "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : endpoint.definitions,
             "rules" : endpoint.rules,
             "createdBy" : endpoint.createdBy
@@ -724,6 +733,27 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             return;
         }
 
+        if ($scope.endpoint.randomiseLatency) {
+
+            if ($scope.endpoint.randomiseLatencyRangeMinMillis < 0) {
+                showAlert("Latency 'min' value cannot be smaller then zero");
+                return;
+            }
+            if ($scope.endpoint.randomiseLatencyRangeMaxMillis < 100) {
+                showAlert("Latency 'max' value cannot be shorter than 100 milliseconds");
+                return;
+            }
+            if ($scope.endpoint.randomiseLatencyRangeMinMillis > $scope.endpoint.randomiseLatencyRangeMaxMillis) {
+                showAlert("Latency 'min' value cannot be greater than 'max' value");
+                return;
+            }
+
+        } else {
+
+            $scope.endpoint.randomiseLatencyRangeMinMillis = 0;
+            $scope.endpoint.randomiseLatencyRangeMaxMillis = 0;
+        }
+
         // Send to Server
         utils.showBlockingOverlay();
 
@@ -738,6 +768,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             "proxyPushIdOnConnect" : false,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
             "proxyForwardWhenNoRuleMatch" : $scope.endpoint.proxyForwardWhenNoRuleMatch,
+            "randomiseLatency" : $scope.endpoint.randomiseLatency,
+            "randomiseLatencyRangeMinMillis" : $scope.endpoint.randomiseLatencyRangeMinMillis,
+            "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
             "rules" : []
         };

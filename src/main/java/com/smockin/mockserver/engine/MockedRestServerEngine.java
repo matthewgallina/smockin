@@ -19,6 +19,7 @@ import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -474,6 +475,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
 
+        handleLatency(mock);
+
         return StringUtils.defaultIfBlank(response,"");
     }
 
@@ -576,6 +579,23 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         }
 
         return mock.getPath();
+    }
+
+    private void handleLatency(final RestfulMock mock) {
+
+        if (!mock.isRandomiseLatency()) {
+            return;
+        }
+
+        long min = (mock.getRandomiseLatencyRangeMinMillis() > 0) ? mock.getRandomiseLatencyRangeMinMillis() : 1000;
+        long max = (mock.getRandomiseLatencyRangeMaxMillis() > 0) ? mock.getRandomiseLatencyRangeMaxMillis() : 5000;
+
+        try {
+            Thread.sleep(RandomUtils.nextLong(min, (max + 1)));
+        } catch (InterruptedException ex) {
+            logger.error("Failed to apply randomised latency and prolong current thread execution", ex);
+        }
+
     }
 
 }

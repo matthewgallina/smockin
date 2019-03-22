@@ -56,7 +56,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
-        RestfulMock mock = new RestfulMock(dto.getPath(),
+        RestfulMock mock = new RestfulMock(
+                dto.getPath(),
                 dto.getMethod(),
                 dto.getStatus(),
                 dto.getMockType(),
@@ -66,7 +67,10 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 dto.isProxyPushIdOnConnect(),
                 dto.isRandomiseDefinitions(),
                 dto.isProxyForwardWhenNoRuleMatch(),
-                smockinUser);
+                smockinUser,
+                dto.isRandomiseLatency(),
+                dto.getRandomiseLatencyRangeMinMillis(),
+                dto.getRandomiseLatencyRangeMaxMillis());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
@@ -105,6 +109,9 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
         mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
         mock.setLastUpdated(GeneralUtils.getCurrentDate()); // force update to lastUpdated, as changes to child records do not otherwise change this
+        mock.setRandomiseLatency(dto.isRandomiseLatency());
+        mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
+        mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 

@@ -3,7 +3,6 @@ package com.smockin.admin.dto;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +22,9 @@ public class RestfulMockDTO {
     private boolean randomiseDefinitions;
     private boolean proxyForwardWhenNoRuleMatch;
     private boolean proxyPriority;
+    private boolean randomiseLatency;
+    private long randomiseLatencyRangeMinMillis;
+    private long randomiseLatencyRangeMaxMillis;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<>();
 
@@ -30,7 +32,9 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, boolean proxyPriority) {
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
+                          long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, boolean proxyPriority,
+                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -42,6 +46,10 @@ public class RestfulMockDTO {
         this.randomiseDefinitions = randomiseDefinitions;
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
         this.proxyPriority = proxyPriority;
+        this.randomiseLatency = randomiseLatency;
+        this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
+        this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
+
     }
 
     public String getPath() {
@@ -119,6 +127,27 @@ public class RestfulMockDTO {
     }
     public void setProxyPriority(boolean proxyPriority) {
         this.proxyPriority = proxyPriority;
+    }
+
+    public boolean isRandomiseLatency() {
+        return randomiseLatency;
+    }
+    public void setRandomiseLatency(boolean randomiseLatency) {
+        this.randomiseLatency = randomiseLatency;
+    }
+
+    public long getRandomiseLatencyRangeMinMillis() {
+        return randomiseLatencyRangeMinMillis;
+    }
+    public void setRandomiseLatencyRangeMinMillis(long randomiseLatencyRangeMinMillis) {
+        this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
+    }
+
+    public long getRandomiseLatencyRangeMaxMillis() {
+        return randomiseLatencyRangeMaxMillis;
+    }
+    public void setRandomiseLatencyRangeMaxMillis(long randomiseLatencyRangeMaxMillis) {
+        this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
     }
 
     public List<RestfulMockDefinitionDTO> getDefinitions() {
