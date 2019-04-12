@@ -122,7 +122,7 @@ then
     echo "#  H2 TCP Database is already running..."
   else
     echo "#  Starting H2 TCP Database..."
-    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME -DSmockinH2DB org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
+    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME -DSmockinH2DB org.h2.tools.Server -tcp -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
     echo "$!" > $H2_DB_PID_FILE
   fi
 

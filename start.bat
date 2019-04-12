@@ -76,7 +76,7 @@ if "%DRIVER_CLASS%"=="org.h2.Driver" (
   call set JDBC_URL=%%JDBC_URL:{H2.PORT}=%H2_PORT%%%
 
   echo #  Starting H2 TCP Database...
-  start java -cp %DB_DRIVER_DIR_PATH%\%H2_JAR_NAME% org.h2.tools.Server -tcp -web -webAllowOthers -tcpAllowOthers -tcpPort %H2_PORT%
+  start java -cp %DB_DRIVER_DIR_PATH%\%H2_JAR_NAME% org.h2.tools.Server -tcp -tcpAllowOthers -tcpPort %H2_PORT%
 
 )
 
