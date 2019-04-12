@@ -29,6 +29,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.mockedResponseLabel = 'Substituted (mock)';
     $scope.originalResponseLabel = 'Original';
     $scope.usingOverrideLabel = "using override!";
+    $scope.overrideResponseLabel = "Override Response";
 
 
     //
