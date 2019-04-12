@@ -63,6 +63,7 @@
 
 .activity-feed-details-well {
     overflow-wrap: break-word;
+    flex: 1;
 }
 
 .logging-status-online {
@@ -84,4 +85,14 @@
     text-align: center;
     margin-top: 165px;
     font-size: 20px;
+}
+
+.row.display-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.row.display-flex > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
 }
