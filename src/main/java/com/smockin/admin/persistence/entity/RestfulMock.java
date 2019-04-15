@@ -54,6 +54,18 @@ public class RestfulMock extends Identifier {
     @Column(name = "RANDOM_DEF", nullable = false)
     private boolean randomiseDefinitions;
 
+    @ColumnDefault("false")
+    @Column(name = "RANDOM_LAT", nullable = false)
+    private boolean randomiseLatency;
+
+    @ColumnDefault("0")
+    @Column(name = "RDM_LAT_RANGE_MIN", nullable = false)
+    private long randomiseLatencyRangeMinMillis;
+
+    @ColumnDefault("0")
+    @Column(name = "RDM_LAT_RANGE_MAX", nullable = false)
+    private long randomiseLatencyRangeMaxMillis;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
     @OrderBy("orderNo ASC")
     private List<RestfulMockDefinitionRule> rules = new ArrayList<RestfulMockDefinitionRule>();
@@ -74,14 +86,12 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
 
-    @ColumnDefault("false")
-    @Column(name = "PROXY_PRTY", nullable = false)
-    private boolean proxyPriority;
-
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, SmockinUser createdBy) {
+    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis,
+                       boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, SmockinUser createdBy, boolean randomiseLatency, long randomiseLatencyRangeMinMillis,
+                       long randomiseLatencyRangeMaxMillis) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -93,6 +103,9 @@ public class RestfulMock extends Identifier {
         this.randomiseDefinitions = randomiseDefinitions;
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
         this.createdBy = createdBy;
+        this.randomiseLatency = randomiseLatency;
+        this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
+        this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
     }
 
     public String getPath() {
@@ -165,6 +178,27 @@ public class RestfulMock extends Identifier {
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
+    public boolean isRandomiseLatency() {
+        return randomiseLatency;
+    }
+    public void setRandomiseLatency(boolean randomiseLatency) {
+        this.randomiseLatency = randomiseLatency;
+    }
+
+    public long getRandomiseLatencyRangeMinMillis() {
+        return randomiseLatencyRangeMinMillis;
+    }
+    public void setRandomiseLatencyRangeMinMillis(long randomiseLatencyRangeMinMillis) {
+        this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
+    }
+
+    public long getRandomiseLatencyRangeMaxMillis() {
+        return randomiseLatencyRangeMaxMillis;
+    }
+    public void setRandomiseLatencyRangeMaxMillis(long randomiseLatencyRangeMaxMillis) {
+        this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
+    }
+
     public List<RestfulMockDefinitionRule> getRules() {
         return rules;
     }
@@ -198,13 +232,6 @@ public class RestfulMock extends Identifier {
     }
     public void setCreatedBy(SmockinUser createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public boolean isProxyPriority() {
-        return proxyPriority;
-    }
-    public void setProxyPriority(boolean proxyPriority) {
-        this.proxyPriority = proxyPriority;
     }
 
 }

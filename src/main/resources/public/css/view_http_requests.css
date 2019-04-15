@@ -7,11 +7,11 @@
 }
 
 .modal-dialog {
-    width: 950px;
+    width: 80%;
 }
 
 .activity-feed-container {
-    height: 490px;
+    /* height: 490px; */
     margin-bottom: 0px;
     overflow: hidden;
 }
@@ -29,8 +29,6 @@
     font-size: 18px;
     width: 100%;
     text-align: center;
-    margin-top: 230px;
-    margin-bottom: 200px;
 }
 
 #log-search {
@@ -40,17 +38,17 @@
 .live-log-font {
     font-size: 11px;
 }
-
+/*
 .activity-feed-details {
     height: 440px;
 }
-
+*/
 .activity-feed-table-row {
     cursor: pointer;
 }
 
 .activity-feed-details-row {
-    height: 405px;
+/*    height: 405px; */
     margin: 0px;
     overflow-y : scroll;
 }
@@ -65,6 +63,7 @@
 
 .activity-feed-details-well {
     overflow-wrap: break-word;
+    flex: 1;
 }
 
 .logging-status-online {
@@ -86,4 +85,18 @@
     text-align: center;
     margin-top: 165px;
     font-size: 20px;
+}
+
+@media only screen and (min-width: 767px) {
+
+    .row.display-flex {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .row.display-flex > [class*='col-'] {
+      display: flex;
+      flex-direction: column;
+    }
+
 }

@@ -19,7 +19,6 @@ import com.smockin.mockserver.engine.MockedFtpServerEngine;
 import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
-import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,8 +79,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         try {
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.RESTFUL);
-
-            checkForUnresolvedProxyUserPathMatchConflicts(configDTO);
 
             final List<RestfulMock> activeMocks =
                     (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode()))
@@ -387,27 +384,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
         }
-
-    }
-
-    void checkForUnresolvedProxyUserPathMatchConflicts(final MockedServerConfigDTO config) {
-
-        if (!mockedRestServerEngine.isProxyServerModeEnabled(config)
-                || UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode())) {
-            return;
-        }
-
-        restfulMockDefinitionDAO.findAllActivePathDuplicates()
-                .entrySet()
-                .stream()
-                .forEach(d -> {
-
-                    if (!d.getValue()
-                            .stream()
-                            .anyMatch(RestfulMock::isProxyPriority)) {
-                        throw new IllegalArgumentException(GeneralUtils.PROXY_PATH_CONFLICT);
-                    }
-                });
 
     }
 

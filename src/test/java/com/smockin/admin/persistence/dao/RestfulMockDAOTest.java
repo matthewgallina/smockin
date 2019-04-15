@@ -8,8 +8,6 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
-import org.apache.commons.lang3.tuple.Pair;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,9 +20,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by mgallina.
@@ -187,57 +183,6 @@ public class RestfulMockDAOTest {
         i = restfulMockDAO.saveAndFlush(i);
         j = restfulMockDAO.saveAndFlush(j);
         k = restfulMockDAO.saveAndFlush(k);
-
-        final Map<Pair<String, RestMethodEnum>, List<RestfulMock>> activeDuplicateMocks
-                = restfulMockDAO.findAllActivePathDuplicates();
-
-        Assert.assertNotNull(activeDuplicateMocks);
-        Assert.assertEquals(3, activeDuplicateMocks.size());
-
-        activeDuplicateMocks.entrySet()
-                .stream()
-                .forEach(m -> {
-
-            if ("/a".equals(m.getKey().getLeft())) {
-
-                if (RestMethodEnum.GET.equals(m.getKey().getRight())) {
-
-                    Assert.assertEquals(2, m.getValue().size());
-
-                    m.getValue().stream().forEach(r ->
-                            Assert.assertThat(r.getId(),
-                                    CoreMatchers.anyOf(CoreMatchers.equalTo(a.getId()), CoreMatchers.equalTo(c.getId())))
-                    );
-
-                } else if (RestMethodEnum.PATCH.equals(m.getKey().getRight())) {
-
-                    Assert.assertEquals(3, m.getValue().size());
-
-                    m.getValue().stream().forEach(r ->
-                            Assert.assertThat(r.getId(),
-                                    CoreMatchers.anyOf(CoreMatchers.equalTo(i.getId()), CoreMatchers.equalTo(j.getId()), CoreMatchers.equalTo(k.getId())))
-                    );
-
-                } else {
-
-                    Assert.fail();
-                }
-
-            } else if ("/b".equals(m.getKey().getLeft())) {
-
-                Assert.assertEquals(2, m.getValue().size());
-
-                m.getValue().stream().forEach(r ->
-                    Assert.assertThat(r.getId(),
-                            CoreMatchers.anyOf(CoreMatchers.equalTo(b.getId()), CoreMatchers.equalTo(d.getId())))
-                );
-
-            } else {
-
-                Assert.fail();
-            }
-
-        });
 
     }
 

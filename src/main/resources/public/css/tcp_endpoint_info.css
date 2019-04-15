@@ -174,3 +174,13 @@
 .actual-path {
     font-size: 12px;
 }
+
+.latency-range-div {
+    max-width: 350px;
+    margin-left: 15px;
+}
+
+.latency-range-label {
+    margin-top: 7px;
+    font-weight: bold;
+}

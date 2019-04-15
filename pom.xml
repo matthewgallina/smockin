@@ -6,7 +6,7 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>1.6.3-SNAPSHOT</version>
+    <version>1.6.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -210,7 +210,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
@@ -232,7 +231,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 

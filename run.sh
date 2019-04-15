@@ -40,14 +40,12 @@ RESET_SYS_ADMIN=false
 MULTI_USER_MODE=false
 USE_CONSOLE=false
 
+
 if [ ! -d "${APP_DIR_PATH}" ]
 then
-  echo ""
-  echo "Please run the install.sh script first to install required .smockin config to your user home"
-  echo ""
-  exit
+  ./install.sh
+  sleep 3
 fi
-
 
 
 

@@ -2,6 +2,7 @@ package com.smockin.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -43,15 +44,19 @@ public final class GeneralUtils {
     public static final String LOG_MOCK_CALLS_PARAM = "LOG_MOCK_CALLS";
 
     public static final String LOG_REQ_ID = "LOG_REQ_ID";
-    public static final String PROXY_PATH_CONFLICT = "PROXY_PATH_CONFLICT";
     public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
-
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
     static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
 
     // Thread safe class, provided all config is defined before it's use.
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
+
+    static {
+
+        JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    }
 
     public final static String generateUUID() {
         return UUID.randomUUID().toString();
@@ -213,6 +218,7 @@ public final class GeneralUtils {
             try {
                 return JSON_MAPPER.readValue(jsonStr, new TypeReference<T>() {});
             } catch (IOException e) {
+                logger.error("Error de-serialising json", e);
                 // fail silently
             }
         }
@@ -226,6 +232,7 @@ public final class GeneralUtils {
             try {
                 return JSON_MAPPER.readValue(jsonStr, type);
             } catch (IOException e) {
+                logger.error("Error de-serialising json", e);
                 // fail silently
             }
         }
@@ -238,6 +245,7 @@ public final class GeneralUtils {
         try {
             return JSON_MAPPER.writeValueAsString(t);
         } catch (JsonProcessingException e) {
+            logger.error("Error serialising json", e);
             // fail silently
         }
 
