@@ -32,6 +32,10 @@
         <appender-ref ref="smockin_appender" />
     </logger>
 
+    <logger name="com.smockin.admin.persistence.migration" level="INFO">
+        <appender-ref ref="smockin_appender" />
+    </logger>
+
     <root level="DEBUG">
         <appender-ref ref="STDOUT" />
     </root>

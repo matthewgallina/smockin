@@ -1,4 +1,4 @@
-# sMockin version 1.6.5
+# sMockin version 1.6.7
 
 
 #### Intelligent API simulation for application development and QA testing

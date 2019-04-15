@@ -24,8 +24,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
     $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
     $scope.logMockCallsLabel = 'Record mock calls to log file';
-    $scope.manageProxyPriorityPathsLabel = '(' + (($scope.readOnly) ? 'view' : 'manage') +  ' priority paths)';
-
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
@@ -148,23 +146,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             }
 
             showAlert(globalVars.GeneralErrorMessage);
-        });
-
-    };
-
-    $scope.doOpenProxyPathPriorityManager = function() {
-
-        var modalInstance = $uibModal.open({
-            templateUrl: 'proxy_path_conflict_manager.html',
-            controller: 'proxyPathConflictManagerController',
-            backdrop  : 'static',
-            keyboard  : false
-        });
-
-        modalInstance.result.then(function (response) {
-
-        }, function () {
-
         });
 
     };

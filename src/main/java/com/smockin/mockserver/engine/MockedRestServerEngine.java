@@ -195,25 +195,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             return;
         }
 
-        final List<ProxyActiveMock> activeProxyMocks = new ArrayList<>();
-
-        activeMocks.stream()
-                .collect(Collectors.groupingBy(RestfulMock::getPath))
-                .entrySet()
-                .stream()
-                .forEach(g -> {
-
-                    final RestfulMock mock = (g.getValue().size() > 1)
-                            ? g.getValue()
-                                .stream()
-                                .filter(m -> m.isProxyPriority())
-                                .findFirst()
-                                .orElseThrow(() -> new IllegalArgumentException(GeneralUtils.PROXY_PATH_CONFLICT))
-                            : g.getValue()
-                                .get(0);
-
-                    activeProxyMocks.add(new ProxyActiveMock(mock.getPath(), mock.getCreatedBy().getCtxPath(), mock.getMethod()));
-                });
+        final List<ProxyActiveMock> activeProxyMocks = activeMocks.stream()
+                .map(m -> new ProxyActiveMock(m.getPath(), m.getCreatedBy().getCtxPath(), m.getMethod()))
+                .collect(Collectors.toList());
 
         proxyServer.start(config, activeProxyMocks);
     }
