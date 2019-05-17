@@ -2,7 +2,9 @@
   <img src="/public/image/logo.png" />
 </p>
 
-## version 1.6.7
+<p align="right">
+version 1.6.7
+</p>
 
 #### Intelligent API simulation for application development and QA testing
 
