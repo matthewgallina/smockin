@@ -9,9 +9,9 @@
 
 <br/>
 
-![alt text](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/dashboard.png)
+![dashboard](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/dashboard.png)
 
-![alt text](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/client-call.png)
+![client call](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/client-call.png)
 
 <br />
 
