@@ -1,5 +1,6 @@
-# sMockin version 1.6.7
+![dashboard](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/logo.png) 
 
+## version 1.6.7
 
 #### Intelligent API simulation for application development and QA testing
 
