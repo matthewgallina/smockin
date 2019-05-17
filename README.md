@@ -9,12 +9,6 @@
 
 <br/>
 
-![dashboard](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/dashboard.png)
-
-![client call](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/client-call.png)
-
-<br />
-
 ### OVERVIEW
 
 sMockin is a tool used to build dynamic mocks of your API.
@@ -27,6 +21,11 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 <br/>
 
+![dashboard](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/dashboard.png)
+
+![client call](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/client-call.png)
+
+<br/>
 
 ### KEY FEATURES
 
