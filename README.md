@@ -1,4 +1,6 @@
-![dashboard](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/logo.png) 
+<p align="center">
+  <img src="/public/image/logo.png" />
+</p>
 
 ## version 1.6.7
 
