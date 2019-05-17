@@ -2,11 +2,13 @@
   <img src="/public/image/logo.png" />
 </p>
 
-<p align="right">
-version 1.6.7
+<p align="center">
+  version 1.6.7
 </p>
 
-#### Intelligent API simulation for application development and QA testing
+<br />
+
+Intelligent API simulation for application development and QA testing
 
    - Visit us: https://www.smockin.com
 
