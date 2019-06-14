@@ -68,13 +68,17 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
 
-        final Set<SessionIdWrapper> sessions = sessionMap.getOrDefault(path, new HashSet<>());
+        final Set<SessionIdWrapper> sessions = sessionMap.computeIfAbsent(path, k -> new HashSet<>());
         final String assignedId = GeneralUtils.generateUUID();
         final String traceId = session.getUpgradeResponse().getHeader(GeneralUtils.LOG_REQ_ID);
 
-        sessions.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate(), logMockCalls));
-
-        sessionMap.put(path, sessions);
+        sessionMap.merge(
+                path,
+                sessions,
+                (k, v) -> {
+                    v.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate(), logMockCalls));
+                    return v;
+                });
 
         if (proxyPushIdOnConnect) {
             sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));

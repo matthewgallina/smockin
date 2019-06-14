@@ -64,7 +64,8 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         applyHeaders(response);
 
         // Register client and build messages collection
-        clients.put(clientId, new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
+        clients.computeIfAbsent(clientId, k -> new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
+
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
 
         if (logMockCalls)
