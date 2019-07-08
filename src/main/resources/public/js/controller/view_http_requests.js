@@ -4,12 +4,13 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
     //
     // Constants / Vars
-    var LiveFeedUrl = "/liveLoggingFeed";
-    var adminPort = 8000;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var InitPageTimeoutMillis = 1500;
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
+    var LiveFeedUrl = "ws://"
+        + location.host
+        + "/liveLoggingFeed";
 
 
     //
@@ -169,7 +170,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
             try {
 
                 // Establish connection to WS endpoint
-                wsSocket = new WebSocket("ws://localhost:" + adminPort + LiveFeedUrl);
+                wsSocket = new WebSocket(LiveFeedUrl);
 
                 applyWSListeners();
 
