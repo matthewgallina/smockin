@@ -8,17 +8,16 @@
 
 <br />
 
+**NEW!** sMockin mocks can now be embedded directly within your Java unit tests with ![sMockin-express](https://github.com/mgtechsoftware/smockin-express).
+
+<br/>
+
 ### Intelligent API simulation for application development and QA testing
 
    - Visit us: https://www.smockin.com
 
    - Contact: info@smockin.com
 
-<br/>
-
-**NEW!** sMockin mocks can now be embedded directly within your Java unit tests with ![sMockin-express](https://github.com/mgtechsoftware/smockin-express).
-
-<br/>
 
 ### OVERVIEW
 
