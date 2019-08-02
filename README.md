@@ -16,6 +16,10 @@
 
 <br/>
 
+**NEW!** sMockin mocks can now be embedded directly within your Java unit tests with ![sMockin-express](https://github.com/mgtechsoftware/smockin-express).
+
+<br/>
+
 ### OVERVIEW
 
 sMockin is a tool used to build dynamic mocks of your API.
