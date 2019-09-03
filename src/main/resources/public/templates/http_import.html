@@ -44,6 +44,11 @@
         <br />
 
         <div class="form-group">
+            <input id="keepExisting" type="checkbox" ng-model="keepExisting" />
+            <label for="keepExisting" class="ng-binding">{{ keepExistingLabel }}</label>
+        </div>
+
+        <div class="form-group">
             <label for="import-feedback" class="ng-binding">{{ importFeedbackLabel }}</label>
             <textarea id="import-feedback" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="importFeedback" readonly></textarea>
         </div>

@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -79,8 +78,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             final File uploadedFile = new File(tempDir + File.separator + file.getOriginalFilename());
             FileUtils.copyInputStreamToFile(file.getInputStream(), uploadedFile);
 
-            final String conflictCtxPath = "import_" + new SimpleDateFormat(GeneralUtils.UNIQUE_TIMESTAMP_FORMAT)
-                    .format(GeneralUtils.getCurrentDate());
+            final String conflictCtxPath = "import_" + GeneralUtils.createFileNameUniqueTimeStamp();
 
             return readImportArchiveFile(uploadedFile)
                     .entrySet()
@@ -275,6 +273,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
     }
 
+    // TODO Ensure existing exports are backwards compatible with new projects field...
     private String handleMockImport(final ServerTypeEnum type, final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
 
         final StringBuilder outcome = new StringBuilder();

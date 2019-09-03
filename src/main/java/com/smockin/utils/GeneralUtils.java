@@ -32,10 +32,11 @@ public final class GeneralUtils {
 
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
-    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMddHHmmssSSS";
+    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMdd_HHmmss";
 
     public static final String OAUTH_HEADER_VALUE_PREFIX = "Bearer";
     public static final String OAUTH_HEADER_NAME = "Authorization";
+    public static final String KEEP_EXISTING_HEADER_NAME = "KeepExisting";
 
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
     public static final String BROKER_URL_PARAM = "BROKER_URL";

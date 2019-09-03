@@ -43,6 +43,9 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Autowired
     private SmockinUserService smockinUserService;
 
+    @Autowired
+    private ProjectService projectService;
+
     @Override
     public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
         logger.debug("createEndpoint called");
@@ -65,7 +68,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 smockinUser,
                 dto.isRandomiseLatency(),
                 dto.getRandomiseLatencyRangeMinMillis(),
-                dto.getRandomiseLatencyRangeMaxMillis());
+                dto.getRandomiseLatencyRangeMaxMillis(),
+                (dto.getProjectId() != null) ? projectService.loadByExtId(dto.getProjectId()) : null);
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
@@ -107,6 +111,9 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setRandomiseLatency(dto.isRandomiseLatency());
         mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
         mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
+
+        if (dto.getProjectId() != null)
+            mock.setProject(projectService.loadByExtId(dto.getProjectId()));
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 

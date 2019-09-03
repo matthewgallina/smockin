@@ -22,6 +22,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
     $scope.importLabel = 'Import';
     $scope.orLabel = 'OR';
     $scope.importTypeLabel = 'Import Type:';
+    $scope.keepExistingLabel = 'Keep existing versions (if present)';
 
 
     //
@@ -56,6 +57,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
     //
     // Data Objects
     $scope.importType = $scope.StandardImportType;
+    $scope.keepExisting = false;
     $scope.disableForm = false;
     $scope.uploadCompleted = false;
 
@@ -108,7 +110,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
         var fd = new FormData();
         fd.append('file', $scope.apiUploadFile.data);
 
-       uploadClient.doPost($http, '/mock/import', fd, function(status, data) {
+       uploadClient.doPostWithHeaders($http, '/mock/import', fd, { 'KeepExisting' : $scope.keepExisting }, function(status, data) {
 
             $scope.apiUploadFile = {
                 data : null
@@ -164,7 +166,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
         var fd = new FormData();
         fd.append('file', $scope.apiUploadFile.data);
 
-        uploadClient.doPost($http, '/api/RAML/import', fd, function(status, data) {
+        uploadClient.doPostWithHeaders($http, '/api/RAML/import', fd, { 'KeepExisting' : $scope.keepExisting }, function(status, data) {
 
             $scope.apiUploadFile = {
                 data : null

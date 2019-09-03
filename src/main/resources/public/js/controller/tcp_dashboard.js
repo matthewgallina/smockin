@@ -432,7 +432,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         if ($scope.mockSelection.length == deletionAttemptCount) {
 
             utils.hideBlockingOverlay();
-            loadTableData($scope.showAllEndpoints = true);
+
+            $scope.showAllEndpoints = (auth.isLoggedIn());
+            loadTableData($scope.showAllEndpoints);
 
             showAlert("The selected mocks were successfully deleted", "success");
             $scope.mockSelection = [];

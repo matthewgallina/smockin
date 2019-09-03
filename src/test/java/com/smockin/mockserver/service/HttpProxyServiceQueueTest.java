@@ -64,13 +64,13 @@ public class HttpProxyServiceQueueTest {
         helloKeyDelete = new ProxiedKey("/helloworld", RestMethodEnum.DELETE);
         fooKeyGet = new ProxiedKey("/foo", RestMethodEnum.GET);
 
-        mockReqHelloGet = new RestfulMock(helloKeyGet.getPath(), helloKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0,0);
+        mockReqHelloGet = new RestfulMock(helloKeyGet.getPath(), helloKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0, 0, null);
         mockReqHelloGet.setExtId(GeneralUtils.generateUUID());
-        mockReqHelloPost = new RestfulMock(helloKeyPost.getPath(), helloKeyPost.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0,0);
+        mockReqHelloPost = new RestfulMock(helloKeyPost.getPath(), helloKeyPost.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0, 0, null);
         mockReqHelloPost.setExtId(GeneralUtils.generateUUID());
-        mockReqHelloDelete = new RestfulMock(helloKeyDelete.getPath(), helloKeyDelete.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0,0);
+        mockReqHelloDelete = new RestfulMock(helloKeyDelete.getPath(), helloKeyDelete.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0, 0, null);
         mockReqHelloDelete.setExtId(GeneralUtils.generateUUID());
-        mockReqFooGet = new RestfulMock(fooKeyGet.getPath(), fooKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0,0);
+        mockReqFooGet = new RestfulMock(fooKeyGet.getPath(), fooKeyGet.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 500, 0, 0, false, false, false, user, false, 0, 0, null);
         mockReqFooGet.setExtId(GeneralUtils.generateUUID());
 
         helloGetDTO = new HttpProxiedDTO(helloKeyGet.getMethod(), 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"helloworld 1\" }");

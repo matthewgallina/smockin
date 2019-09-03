@@ -6,7 +6,7 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>1.6.9-SNAPSHOT</version>
+    <version>1.7.0</version>
     <packaging>jar</packaging>
 
     <parent>
