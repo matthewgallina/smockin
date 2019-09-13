@@ -193,7 +193,7 @@ public class HttpProxyServiceVolumeTest {
     }
 
     private RestfulMock buildRestfulMock(final ProxiedKey pk) {
-        final RestfulMock mockReq = new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 3000, 0, 0, false, false, false, user, false, 0,0);
+        final RestfulMock mockReq = new RestfulMock(pk.getPath(), pk.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 3000, 0, 0, false, false, false, user, false, 0, 0, null);
         mockReq.setExtId(GeneralUtils.generateUUID());
         return mockReq;
     }

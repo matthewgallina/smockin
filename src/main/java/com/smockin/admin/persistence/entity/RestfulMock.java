@@ -75,8 +75,8 @@ public class RestfulMock extends Identifier {
     private List<RestfulMockDefinitionOrder> definitions = new ArrayList<RestfulMockDefinitionOrder>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="REST_CATGY_ID", nullable = true)
-    private RestfulCategory category;
+    @JoinColumn(name="PROJ_ID", nullable = true)
+    private RestfulProject project;
 
     @ColumnDefault("false")
     @Column(name = "PROXY_FW_NO_RULE_MATCH", nullable = false)
@@ -91,7 +91,7 @@ public class RestfulMock extends Identifier {
 
     public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis,
                        boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, SmockinUser createdBy, boolean randomiseLatency, long randomiseLatencyRangeMinMillis,
-                       long randomiseLatencyRangeMaxMillis) {
+                       long randomiseLatencyRangeMaxMillis, RestfulProject project) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -106,6 +106,7 @@ public class RestfulMock extends Identifier {
         this.randomiseLatency = randomiseLatency;
         this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
+        this.project = project;
     }
 
     public String getPath() {
@@ -213,11 +214,11 @@ public class RestfulMock extends Identifier {
         this.definitions = definitions;
     }
 
-    public RestfulCategory getCategory() {
-        return category;
+    public RestfulProject getProject() {
+        return project;
     }
-    public void setCategory(RestfulCategory category) {
-        this.category = category;
+    public void setProject(RestfulProject project) {
+        this.project = project;
     }
 
     public boolean isProxyForwardWhenNoRuleMatch() {

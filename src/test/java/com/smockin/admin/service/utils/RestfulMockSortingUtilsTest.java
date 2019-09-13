@@ -29,21 +29,21 @@ public class RestfulMockSortingUtilsTest {
         // Setup
         final List<RestfulMock> mockList = new ArrayList<RestfulMock>() {
             {
-                add(new RestfulMock("/a/1/b/1/c/1/d/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/*/b/4", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/1/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/*/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/1/b/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/2", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/b/*/c/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/8/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/1/b/1/c/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/b/2", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/2/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
-                add(new RestfulMock("/a/3/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0));
+                add(new RestfulMock("/a/1/b/1/c/1/d/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/*/b/4", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/1/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/*/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/1/b/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/2", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/b/*/c/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/8/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/1/b/1/c/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/b/2", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/2/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
+                add(new RestfulMock("/a/3/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0, 0, null));
             }
         };
 
@@ -79,14 +79,14 @@ public class RestfulMockSortingUtilsTest {
         // Setup
         final List<RestfulMock> mockList = new ArrayList<RestfulMock>() {
             {
-                add(new RestfulMock("/a/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/a/1/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/a/*/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/b/*/c/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/a/2/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/a/3/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
-                add(new RestfulMock("/b/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0));
+                add(new RestfulMock("/a/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/a/1/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/a/*/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/b/*/c/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/a/2/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/a/3/b/*", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
+                add(new RestfulMock("/b/1", RestMethodEnum.GET, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, null, false, 0,0, null));
             }
         };
 

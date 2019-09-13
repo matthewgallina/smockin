@@ -2,6 +2,7 @@ package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
+import com.smockin.admin.enums.MockImportKeepStrategyEnum;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -28,13 +29,18 @@ public class MockDefinitionImportExportController {
 
     @RequestMapping(path="/mock/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public @ResponseBody ResponseEntity<SimpleMessageResponseDTO> importMocks(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                                              @RequestHeader(value = GeneralUtils.KEEP_EXISTING_HEADER_NAME) final boolean keepExisting,
                                                                               @RequestParam("file") final MultipartFile file)
                                                             throws ValidationException, MockImportException, RecordNotFoundException {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
+        final MockImportConfigDTO configDTO = (keepExisting)
+                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW )
+                : new MockImportConfigDTO();
+
         return ResponseEntity.ok(new SimpleMessageResponseDTO(mockDefinitionImportExportService
-                .importFile(file, new MockImportConfigDTO(), token)));
+                .importFile(file, configDTO, token)));
     }
 
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,

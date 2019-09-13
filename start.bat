@@ -6,7 +6,7 @@ REM   echo %jver%
 IF DEFINED %SMOCKIN_DIR_PATH% (set APP_DIR_PATH=%SMOCKIN_DIR_PATH%) ELSE (set APP_DIR_PATH=%userprofile%\.smockin)
 
 set APP_NAME=sMockin
-set APP_VERSION=1.6.9-SNAPSHOT
+set APP_VERSION=1.7.0
 
 
 set DB_DIR_PATH=%APP_DIR_PATH%\db

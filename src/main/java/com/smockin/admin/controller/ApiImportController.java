@@ -39,10 +39,13 @@ public class ApiImportController {
     @RequestMapping(path="/api/{type}/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public @ResponseBody ResponseEntity<Void> importApiFile(@PathVariable("type") final String importType,
                                                             @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                            @RequestHeader(value = GeneralUtils.KEEP_EXISTING_HEADER_NAME) final boolean keepExisting,
                                                             @RequestParam("file") final MultipartFile file)
                                                                 throws ValidationException, MockImportException {
 
-        final ApiImportDTO dto = new ApiImportDTO(file, new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW));
+        final ApiImportDTO dto = new ApiImportDTO(file, (keepExisting)
+                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW)
+                : new MockImportConfigDTO());
 
         apiImportRouter.route(importType, dto, GeneralUtils.extractOAuthToken(bearerToken));
 

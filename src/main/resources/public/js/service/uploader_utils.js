@@ -68,4 +68,23 @@ app.service('uploadClient', function(auth) {
 
     };
 
+    this.doPostWithHeaders = function (http, url, formData, headers, callback) {
+
+        var reqHeaders = applyAuthHeader(headers);
+        reqHeaders['Content-Type'] = undefined;
+
+        http({
+          method: 'POST',
+          url: url,
+          data: formData,
+          headers: reqHeaders,
+           timeout: HttpRequestTimeoutMillis
+        }).then(function successCallback(response) {
+            callback(response.status, response.data);
+        }, function errorCallback(response) {
+            callback(response.status, response.data);
+        });
+
+    };
+
 });

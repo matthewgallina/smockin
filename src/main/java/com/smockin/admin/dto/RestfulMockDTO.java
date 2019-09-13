@@ -24,6 +24,7 @@ public class RestfulMockDTO {
     private boolean randomiseLatency;
     private long randomiseLatencyRangeMinMillis;
     private long randomiseLatencyRangeMaxMillis;
+    private String projectId;
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
     private List<RuleDTO> rules = new ArrayList<>();
 
@@ -33,7 +34,7 @@ public class RestfulMockDTO {
 
     public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
-                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis) {
+                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -47,6 +48,7 @@ public class RestfulMockDTO {
         this.randomiseLatency = randomiseLatency;
         this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
+        this.projectId = projectId;
 
     }
 
@@ -139,6 +141,13 @@ public class RestfulMockDTO {
     }
     public void setRandomiseLatencyRangeMaxMillis(long randomiseLatencyRangeMaxMillis) {
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
     }
 
     public List<RestfulMockDefinitionDTO> getDefinitions() {
