@@ -46,19 +46,19 @@ GETTING STARTED
 
     Running:
 
-        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9092 (used by H2 TCP DB) are all available on the local machine.
+        - Ensure ports 8000 (used by Admin UI), 8001 (used by Mock Server) and 9095 (used by H2 TCP DB) are all available on the local machine.
 
           (If required the 'Admin UI' and 'H2 DB' ports can be changed by editing the ''.smockin/app.properties' file. The 'Mock Server' port can
           be changed from within the application from the Dashboard.)
 
         Linux / OSX
 
-            - Once installed, ensure the scripts 'start.sh' and 'shutdown.sh' are both executable:
+            - Once installed, ensure the scripts 'run.sh' and 'shutdown.sh' are both executable:
 
-                chmod +x start.sh
+                chmod +x run.sh
                 chmod +x shutdown.sh
 
-            - Run the script 'start.sh' to build and run sMockin like so (this also launches the default H2 database in TCP mode.):
+            - Run the script 'run.sh' to build and run sMockin like so (this also launches the default H2 database in TCP mode.):
 
         Windows
 
@@ -68,10 +68,6 @@ GETTING STARTED
         sMockin runs off port 8000 by default and accessible from this address:
 
             http://localhost:8000/index.html
-
-        For those who simply want to see sMockin in action, there is a script available which will add a small
-        data set of predefined mocked endpoints and rules to the DB. To install this, please see the section
-        'DEVELOPMENT SCRIPTS > Sample Data' below.
 
 
     Stopping:
@@ -106,51 +102,19 @@ GETTING STARTED
 
     Development Modes (Linux & OSX & running from source only):
 
-        By default 'start.sh' starts sMockin asynchronously (in the background) using a H2 DB (in TCP mode).
+        By default 'run.sh' starts sMockin asynchronously (in the background) using a H2 DB (in TCP mode).
 
         To aid development, sMockin can also be started in the following modes:
 
             DEBUG        Allows remote debugging on port 8008.
-                e.g:     ./start.sh -DEBUG
+                e.g:     ./run.sh -DEBUG
+
+            CONSOLE      Runs sMockin in the foreground of your terminal window.
+                e.g:     ./run.sh -CONSOLE
 
             INMEM        Uses an in-memory DB, instead of TCP.
-                e.g:     ./start.sh -INMEM
+                e.g:     ./run.sh -INMEM
 
-        These commands can also be combined.
-
-            e.g.
-
-                ./start.sh -DEBUG             will enable the debug port and use the main DB.
-                ./start.sh -DEBUG -INMEM      will enable the debug port and use an in-memory DB.
-
-
-
-DEVELOPMENT SCRIPTS (Linux & OSX only)
-
-    A few utility scripts can be found under the 'client_scripts' dir.
-
-    (these scripts all assume sMockin, is running locally from port 8000.)
-
-
-    Sample Data:
-
-        To install the sample data set to the sMockin DB:
-
-            -  Navigate to the 'client_scripts' dir.
-
-            - Ensure the the script is executable:
-
-                chmod +x apply_sample_data.sh
-
-            - Assuming both sMockin (and the H2 DB if applicable) are running, execute the script:
-
-                ./apply_sample_data.sh
-
-            - To put these changes into effect, restart the RESTFul mock server. You can do this from
-               either the Admin UI or using via the following scripts:
-
-                ./shutdown_rest_mock_server.sh
-                ./start_rest_mock_server.sh
 
 
 
