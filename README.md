@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/public/image/logo.png" />
+  <img src="/public/image/smockin_logo.png" width=400 />
 </p>
 
 <p align="center">
