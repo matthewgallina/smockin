@@ -8,7 +8,7 @@
 
 <br />
 
-Looking for an online hosted solution instead? Checkout sMockin Cloud at https://www.smockin.com and sign up for free!
+Looking for an online hosted solution instead? Check out <b>sMockin Cloud</b> at www.smockin.com and sign up for free!
 
 <br />
 
