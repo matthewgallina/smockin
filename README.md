@@ -8,7 +8,7 @@
 
 <br />
 
-  **NEW!** sMockin mocks can now be embedded directly within your Java unit tests with ![sMockin-Express](https://github.com/mgtechsoftware/smockin-express)!
+Looking for an online hosted solution instead? Checkout sMockin Cloud at https://www.smockin.com and sign up for free!
 
 <br />
 
