@@ -184,3 +184,7 @@
     margin-top: 7px;
     font-weight: bold;
 }
+
+.alert-format {
+    white-space: pre-line;
+}

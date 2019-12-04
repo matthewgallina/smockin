@@ -4,8 +4,13 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     //
     // Constants
-    var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var isNew = (data.rule == null);
+    var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    var FormatValidationTimeoutMillis = globalVars.FormatValidationTimeoutMillis;
+
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
+
 
     //
     // Labels
@@ -19,6 +24,8 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
     $scope.responseHeadersLabel = 'Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
 
 
     //
@@ -85,6 +92,47 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     //
     // Scoped Functions
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.ruleResponse.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.ruleResponse.responseBody);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome, 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.ruleResponse.responseBody = utils.formatJson($scope.ruleResponse.responseBody);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.ruleResponse.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.ruleResponse.responseBody);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax", 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1], 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.ruleResponse.responseBody = validationOutcome[1];
+    };
+
     $scope.doAddResponseHeaderRow = function() {
         $scope.responseHeaderList.push({ "name" : null, "value" : null });
     };

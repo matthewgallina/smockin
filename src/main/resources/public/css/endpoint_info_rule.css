@@ -63,3 +63,7 @@
 .condition-arg-buttons a:hover {
     text-decoration: none;
 }
+
+.alert-format {
+    white-space: pre-line;
+}

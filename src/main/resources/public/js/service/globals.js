@@ -2,6 +2,7 @@
 app.service('globalVars', function() {
 
     this.AlertTimeoutMillis = 5000;
+    this.FormatValidationTimeoutMillis = 10000;
 
     this.GeneralErrorMessage = "Oops looks like something went wrong!";
     this.AuthRequiredMessage = "Please login to access this service";
@@ -37,12 +38,15 @@ app.service('globalVars', function() {
     this.MockServerStoppedStatus = 'Stopped';
     this.MockServerRestartStatus = 'Restarting';
 
+    this.JsonContentType = 'application/json';
+    this.XmlContentType = 'application/xml';
+
     this.ContentMimeTypes = [
-        'application/json',
+        this.JsonContentType,
         'text/html',
         'text/plain',
         'text/css',
-        'application/xml'
+        this.XmlContentType
     ];
 
     this.RuleComparators = [

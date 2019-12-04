@@ -16,7 +16,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         AlertTimeoutMillis : globalVars.AlertTimeoutMillis,
         MinTimeoutInMillis : 10000, // 10 secs
         MaxProxyTimeoutInMillis : 1800000, // 30 mins
-        MaxWebSocketTimeoutInMillis : 3600000 // 1 hour
+        MaxWebSocketTimeoutInMillis : 3600000, // 1 hour
+        FormatValidationTimeoutMillis: globalVars.FormatValidationTimeoutMillis
     };
 
     var isNew = ($rootScope.endpointData == null);
@@ -25,6 +26,9 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     var HttpPathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
     var WebSocketPathPlaceHolderTxt = 'e.g. (/hello/connect)';
     var SsePathPlaceHolderTxt = 'e.g. (/hello)';
+
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
 
 
     //
@@ -83,6 +87,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.latencyRangeMaxLabel = "max";
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
 
 
     //
@@ -851,6 +857,88 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         });
 
         clearEndpointData();
+    };
+
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.endpoint.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.endpoint.responseBody);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome, 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.endpoint.responseBody = utils.formatJson($scope.endpoint.responseBody);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.endpoint.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.endpoint.responseBody);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax", 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1], 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.endpoint.responseBody = validationOutcome[1];
+    };
+
+    $scope.doFormatProxyJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.proxyEndpoint.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.proxyEndpoint.responseBody);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome, 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.proxyEndpoint.responseBody = utils.formatJson($scope.proxyEndpoint.responseBody);
+    };
+
+    $scope.doFormatProxyXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.proxyEndpoint.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.proxyEndpoint.responseBody);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax", 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1], 'danger', TimeoutDefinitions.FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.proxyEndpoint.responseBody = validationOutcome[1];
     };
 
 
