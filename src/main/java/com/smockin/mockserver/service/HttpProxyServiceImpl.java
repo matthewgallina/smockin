@@ -32,7 +32,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     private final Logger logger = LoggerFactory.getLogger(HttpProxyServiceImpl.class);
 
     // TODO Should add TTL and scheduled sweeper to stop the synchronizedProxyResponsesMap from building up.
-    private Map<ProxiedKey, List<HttpProxiedDTO>> synchronizedProxyResponsesMap = new HashMap<ProxiedKey, List<HttpProxiedDTO>>();
+    private Map<ProxiedKey, List<HttpProxiedDTO>> synchronizedProxyResponsesMap = new HashMap<>();
 
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();

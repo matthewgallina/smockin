@@ -1,6 +1,5 @@
 package com.smockin.admin.service;
 
-import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
@@ -20,8 +19,11 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Propagation;
@@ -39,8 +41,11 @@ import java.util.Optional;
  */
 @Ignore
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = SmockinTestConfig.class)
-@DataJpaTest
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(value = { "com.smockin.admin", "com.smockin.mockserver" })
+@EnableJpaRepositories("com.smockin.admin.persistence.dao")
+@EntityScan("com.smockin.admin.persistence.entity")
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class ApiImportRouterIntTest {
 

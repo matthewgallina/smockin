@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import java.io.File;
@@ -130,7 +130,7 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(remoteFeedBasedDTO);
 
-        Mockito.when(restfulMockService.loadAll(Matchers.anyString(), Matchers.anyString())).thenReturn(allRestfulMocks);
+        Mockito.when(restfulMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allRestfulMocks);
 
         // JMS Mocks
         allJmsMocks = new ArrayList<>();
@@ -138,7 +138,7 @@ public class MockDefinitionImportExportServiceTest {
         allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), "mike", DeploymentStatusEnum.OFFLINE, "foo-queue", RecordStatusEnum.INACTIVE, JmsMockTypeEnum.QUEUE, GeneralUtils.getCurrentDate()));
         allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), null, DeploymentStatusEnum.OFFLINE, "foo-topic", RecordStatusEnum.ACTIVE, JmsMockTypeEnum.TOPIC, GeneralUtils.getCurrentDate()));
 
-        Mockito.when(jmsMockService.loadAll(Matchers.anyString(), Matchers.anyString())).thenReturn(allJmsMocks);
+        Mockito.when(jmsMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allJmsMocks);
 
         // FTP Mocks
         allFtpMocks = new ArrayList<>();
@@ -146,7 +146,7 @@ public class MockDefinitionImportExportServiceTest {
         allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "pets", RecordStatusEnum.ACTIVE, DeploymentStatusEnum.DEPLOYED, GeneralUtils.getCurrentDate()));
         allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "homes", RecordStatusEnum.ACTIVE, DeploymentStatusEnum.DEPLOYED, GeneralUtils.getCurrentDate()));
 
-        Mockito.when(ftpMockService.loadAll(Matchers.anyString(), Matchers.anyString())).thenReturn(allFtpMocks);
+        Mockito.when(ftpMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allFtpMocks);
 
     }
 
@@ -323,7 +323,9 @@ public class MockDefinitionImportExportServiceTest {
             throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
 
         // Setup
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+        final SmockinUser smockinUser = new SmockinUser();
+        smockinUser.setSessionToken(GeneralUtils.generateUUID());
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(smockinUser);
 
         // Test
         final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
@@ -336,8 +338,8 @@ public class MockDefinitionImportExportServiceTest {
                 + "RESTFUL mock: GET /sse successfully imported\n"
                 + "RESTFUL mock: POST /remotefeed successfully imported\n"));
         Mockito.verify(restfulMockServiceUtils, Mockito.times(5))
-                .preHandleExistingEndpoints(Matchers.any(RestfulMockDTO.class), Matchers.any(MockImportConfigDTO.class), Matchers.any(SmockinUser.class), Matchers.anyString());
-        Mockito.verify(restfulMockService, Mockito.times(5)).createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString());
+                .preHandleExistingEndpoints(Mockito.any(RestfulMockDTO.class), Mockito.any(MockImportConfigDTO.class), Mockito.any(SmockinUser.class), Mockito.anyString());
+        Mockito.verify(restfulMockService, Mockito.times(5)).createEndpoint(Mockito.any(RestfulMockResponseDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -345,7 +347,9 @@ public class MockDefinitionImportExportServiceTest {
             throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
 
         // Setup
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+        final SmockinUser smockinUser = new SmockinUser();
+        smockinUser.setSessionToken(GeneralUtils.generateUUID());
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(smockinUser);
 
         // Test
         final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "jms" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
@@ -354,7 +358,7 @@ public class MockDefinitionImportExportServiceTest {
         Assert.assertNotNull(result);
         Assert.assertThat(result, CoreMatchers.is("JMS mock: foo-queue successfully imported\n"
                                                         + "JMS mock: foo-topic successfully imported\n"));
-        Mockito.verify(jmsMockService, Mockito.times(2)).createEndpoint(Matchers.any(JmsMockDTO.class), Matchers.anyString());
+        Mockito.verify(jmsMockService, Mockito.times(2)).createEndpoint(Mockito.any(JmsMockResponseDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -362,7 +366,9 @@ public class MockDefinitionImportExportServiceTest {
             throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
 
         // Setup
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(new SmockinUser());
+        final SmockinUser smockinUser = new SmockinUser();
+        smockinUser.setSessionToken(GeneralUtils.generateUUID());
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(smockinUser);
 
         // Test
         final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "ftp" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");
@@ -371,7 +377,7 @@ public class MockDefinitionImportExportServiceTest {
         Assert.assertNotNull(result);
         Assert.assertThat(result, CoreMatchers.is("FTP mock: pets successfully imported\n"
                                                         + "FTP mock: homes successfully imported\n"));
-        Mockito.verify(ftpMockService, Mockito.times(2)).createEndpoint(Matchers.any(FtpMockDTO.class), Matchers.anyString());
+        Mockito.verify(ftpMockService, Mockito.times(2)).createEndpoint(Mockito.any(FtpMockResponseDTO.class), Mockito.anyString());
     }
 
     private File unpackZipToTempArchive(final String base64EncodedZipFile) throws IOException {

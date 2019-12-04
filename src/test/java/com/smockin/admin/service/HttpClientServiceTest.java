@@ -19,7 +19,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -129,7 +129,7 @@ public class HttpClientServiceTest {
         httpClientServiceImpl.applyRequestHeaders(request, null);
 
         // Assertions
-        Mockito.verify(request, Mockito.never()).addHeader(Matchers.anyString(), Matchers.anyString());
+        Mockito.verify(request, Mockito.never()).addHeader(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test

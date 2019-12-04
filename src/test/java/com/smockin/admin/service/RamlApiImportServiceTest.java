@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.mock.web.MockMultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,13 +61,13 @@ public class RamlApiImportServiceTest {
     @Before
     public void setUp() throws RecordNotFoundException {
 
-        Mockito.when(restfulMockService.createEndpoint(Matchers.any(RestfulMockDTO.class), Matchers.anyString())).thenReturn("1");
+        Mockito.when(restfulMockService.createEndpoint(Mockito.any(RestfulMockDTO.class), Mockito.anyString())).thenReturn("1");
 
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(user);
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(user);
         Mockito.when(user.getSessionToken()).thenReturn(GeneralUtils.generateUUID());
 
         Mockito.doNothing().when(restfulMockServiceUtils)
-                .preHandleExistingEndpoints(Matchers.any(RestfulMockDTO.class), Matchers.any(MockImportConfigDTO.class), Matchers.any(SmockinUser.class), Matchers.anyString());
+                .preHandleExistingEndpoints(Mockito.any(RestfulMockDTO.class), Mockito.any(MockImportConfigDTO.class), Mockito.any(SmockinUser.class), Mockito.anyString());
     }
 
     @Test
@@ -80,7 +80,7 @@ public class RamlApiImportServiceTest {
         apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
 
         // Assertions
-        Mockito.verify(restfulMockService, Mockito.times(3)).createEndpoint(argCaptor.capture(), Matchers.anyString());
+        Mockito.verify(restfulMockService, Mockito.times(3)).createEndpoint(argCaptor.capture(), Mockito.anyString());
 
         final List<RestfulMockDTO> restfulMockDTOs = argCaptor.getAllValues();
 

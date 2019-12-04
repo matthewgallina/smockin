@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import spark.Request;
 
@@ -85,7 +85,7 @@ public class RuleEngineTest {
         rules.add(rule);
 
         Mockito.when(req.body()).thenReturn("{ \"name\" : \"joe\" }");
-        Mockito.when(ruleResolver.processRuleComparison(Matchers.any(RestfulMockDefinitionRuleGroupCondition.class), Matchers.anyString())).thenReturn(true);
+        Mockito.when(ruleResolver.processRuleComparison(Mockito.any(RestfulMockDefinitionRuleGroupCondition.class), Mockito.anyString())).thenReturn(true);
 
         // Test
         final RestfulResponseDTO result = ruleEngine.process(req, rules);

@@ -18,7 +18,6 @@ import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -71,7 +70,7 @@ public class HttpProxyServiceVolumeTest {
         ReflectionTestUtils.setField(proxyService, "userTokenServiceUtils", userTokenServiceUtils);
         ReflectionTestUtils.setField(proxyService, "mockedRestServerEngine", mockedRestServerEngine);
 
-        Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Matchers.any(SmockinUser.class), Matchers.anyString());
+        Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Mockito.any(SmockinUser.class), Mockito.anyString());
 
         keys = generateKeys();
         mocks = buildRestfulMocks(keys);
