@@ -20,8 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 
 import java.io.File;
@@ -83,7 +82,7 @@ public class HttpProxyServiceQueueTest {
         Mockito.when(restfulMockDAO.findByExtId(mockReqHelloDelete.getExtId())).thenReturn(mockReqHelloDelete);
         Mockito.when(restfulMockDAO.findByExtId(mockReqFooGet.getExtId())).thenReturn(mockReqFooGet);
 
-        Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Matchers.any(SmockinUser.class), Matchers.anyString());
+        Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Mockito.any(SmockinUser.class), Mockito.anyString());
 
         Mockito.when(mockedRestServerEngine.buildUserPath(mockReqHelloGet)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloGet.getPath());
         Mockito.when(mockedRestServerEngine.buildUserPath(mockReqHelloPost)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloPost.getPath());

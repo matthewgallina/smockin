@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Created by mgallina on 21/07/17.
@@ -67,8 +67,8 @@ public class MockedServerEngineServiceTest {
         smockinUser = new SmockinUser();
         smockinUser.setRole(SmockinUserRoleEnum.ADMIN);
 
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Matchers.anyString())).thenReturn(smockinUser);
-        Mockito.doNothing().when(smockinUserService).assertCurrentUserIsAdmin(Matchers.any(SmockinUser.class));
+        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(smockinUser);
+        Mockito.doNothing().when(smockinUserService).assertCurrentUserIsAdmin(Mockito.any(SmockinUser.class));
 
     }
 
@@ -92,7 +92,7 @@ public class MockedServerEngineServiceTest {
         serverConfig.setAutoRefresh(true);
         serverConfig.getNativeProperties().put("serverName", "foo");
 
-        Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
+        Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
         final MockedServerConfigDTO dto = mockedServerEngineService.loadServerConfig(ServerTypeEnum.RESTFUL);
@@ -160,7 +160,7 @@ public class MockedServerEngineServiceTest {
         dto.getNativeProperties().put("serverName", "foo");
 
         final ServerConfig serverConfig = new ServerConfig();
-        Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
+        Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
         mockedServerEngineService.saveServerConfig(ServerTypeEnum.RESTFUL, dto, token);
@@ -295,7 +295,7 @@ public class MockedServerEngineServiceTest {
         serverConfig.setAutoRefresh(true);
         serverConfig.getNativeProperties().put("serverName", "foo");
 
-        Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
+        Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
         final MockedServerConfigDTO dto = mockedServerEngineService.startRest(token);
@@ -335,8 +335,8 @@ public class MockedServerEngineServiceTest {
 
         // Setup
         final ServerConfig serverConfig = Mockito.mock(ServerConfig.class);
-        Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
-        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Matchers.any(MockedServerConfigDTO.class), Matchers.anyListOf(RestfulMock.class));
+        Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
+        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
 
         // Test
         mockedServerEngineService.startRest(token);
@@ -370,13 +370,13 @@ public class MockedServerEngineServiceTest {
 
         // Setup
         final ServerConfig serverConfig = Mockito.mock(ServerConfig.class);
-        Mockito.when(serverConfigDAO.findByServerType(Matchers.any(ServerTypeEnum.class))).thenReturn(serverConfig);
+        Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
 
         // Test
         mockedServerEngineServiceImpl.autoStartManager(ServerTypeEnum.RESTFUL);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Matchers.any(MockedServerConfigDTO.class), Matchers.anyListOf(RestfulMock.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
 
     }
 
@@ -387,7 +387,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(null);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Matchers.any(MockedServerConfigDTO.class), Matchers.anyListOf(RestfulMock.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
     }
 
     @Test

@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="1.7.0"
+APP_VERSION="1.8.0"
 DEBUG_PORT=8008
 
 APP_DIR_PATH="${HOME}/.smockin"

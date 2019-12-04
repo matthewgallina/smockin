@@ -7,7 +7,7 @@
 
 <div class="modal-body" id="modal-body">
 
-    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
 
     <div class="row">
         <div class="col-sm-6">
@@ -23,7 +23,15 @@
             </div>
 
             <div class="form-group">
-                <label for="rule-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="rule-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href ng-click="doFormatJson()" class="pull-right" ng-if="ruleResponse.responseContentType == JsonContentType">{{ formatJsonLabel }}</a>
+                        <a href ng-click="doFormatXml()" class="pull-right" ng-if="ruleResponse.responseContentType == XmlContentType">{{ formatXmlLabel }}</a>
+                    </div>
+                </div>
                 <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody" ng-disabled="readOnly"></textarea>
             </div>
 

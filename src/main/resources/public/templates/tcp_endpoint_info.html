@@ -33,7 +33,7 @@
 
         <br />
 
-        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
 
         <div class="row">
             <div class="col-sm-6">
@@ -71,7 +71,15 @@
                 </div>
 
                 <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+                        </div>
+                        <div class="col-sm-6">
+                            <a href ng-click="doFormatJson()" class="pull-right" ng-if="endpoint.contentType == JsonContentType">{{ formatJsonLabel }}</a>
+                            <a href ng-click="doFormatXml()" class="pull-right" ng-if="endpoint.contentType == XmlContentType">{{ formatXmlLabel }}</a>
+                        </div>
+                    </div>
                     <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"></textarea>
                 </div>
 
@@ -294,7 +302,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="proxy-default-response-body" class="ng-binding">{{ proxyResponseBodyLabel }}</label>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <label for="proxy-default-response-body" class="ng-binding">{{ proxyResponseBodyLabel }}</label>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <a href ng-click="doFormatProxyJson()" class="pull-right" ng-if="proxyEndpoint.contentType == JsonContentType">{{ formatJsonLabel }}</a>
+                                        <a href ng-click="doFormatProxyXml()" class="pull-right" ng-if="proxyEndpoint.contentType == XmlContentType">{{ formatXmlLabel }}</a>
+                                    </div>
+                                </div>
                                 <textarea id="proxy-default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyEndpoint.responseBody"></textarea>
                             </div>
 

@@ -30,6 +30,41 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
         return uuid;
     };
 
+    this.validateJson = function(jsonString) {
+        try {
+            jsonlint.parse(jsonString)
+            return null;
+        } catch (e) {
+            return e.message;
+        }
+    };
+
+    this.formatJson = function(jsonString) {
+        return JSON.stringify(JSON.parse(jsonString), null, 2);
+    };
+
+    this.validateAndFormatXml = function(srcXmlText) {
+
+        var beautifiedXmlText = new XmlBeautify().beautify(srcXmlText, {
+            indent: "  ",
+            useSelfClosingElement: true
+        });
+
+        if (beautifiedXmlText.indexOf("parsererror") > -1) {
+
+            var errorStartPos = beautifiedXmlText.indexOf("error on line");
+
+            if (errorStartPos > -1) {
+                var errorEndPos = beautifiedXmlText.indexOf("</div>", errorStartPos);
+                return [ 'ERROR', beautifiedXmlText.substring(errorStartPos, errorEndPos) ];
+            }
+
+            return [ 'ERROR', 'Unable to format XML. Invalid syntax' ];
+        }
+
+        return [ 'OK', beautifiedXmlText ];
+    };
+
 
     //
     // Confirmation Modal

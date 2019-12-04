@@ -6,7 +6,10 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     // Constants
     var isNew = (data.seq == null);
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    var FormatValidationTimeoutMillis = globalVars.FormatValidationTimeoutMillis;
 
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
 
     //
     // Labels
@@ -22,6 +25,8 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
     $scope.orderNoLabel = 'Order';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
 
 
     //
@@ -88,6 +93,47 @@ app.controller('endpointInfoSeqController', function($scope, $location, $uibModa
 
     //
     // Scoped Functions
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.seqResponse.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.seqResponse.responseBody);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome, 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.seqResponse.responseBody = utils.formatJson($scope.seqResponse.responseBody);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.seqResponse.responseBody == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.seqResponse.responseBody);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax", 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1], 'danger', FormatValidationTimeoutMillis);
+            return;
+        }
+
+        $scope.seqResponse.responseBody = validationOutcome[1];
+    };
+
     $scope.doAddResponseHeaderRow = function() {
         $scope.responseHeaderList.push({ "name" : null, "value" : null });
     };

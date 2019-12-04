@@ -1,6 +1,5 @@
 package com.smockin.admin.persistence.dao;
 
-import com.smockin.SmockinTestConfig;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
@@ -14,21 +13,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
  * Created by mgallina.
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = SmockinTestConfig.class)
-@DataJpaTest
-@Transactional(propagation = Propagation.NOT_SUPPORTED)
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@EnableJpaRepositories("com.smockin.admin.persistence.dao")
+@EntityScan("com.smockin.admin.persistence.entity")
 public class RestfulMockDAOTest {
 
     @Autowired
