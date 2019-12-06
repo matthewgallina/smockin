@@ -6,19 +6,14 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
-
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Random;
-import java.util.UUID;
+
 
 /**
  * Created by mgallina on 09/08/17.
  */
 @Service
-@Transactional
 public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
     @Override
@@ -105,13 +100,13 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
             final String range = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.RANDOM_NUMBER.name() + "="));
 
-            return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(generateRandomforRange(range)), 1);
+            return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(generateRandomForRange(range)), 1);
         }
 
         throw new IllegalArgumentException("Unsupported token : " + matchResult);
     }
 
-    private int generateRandomforRange(final String range) {
+    private int generateRandomForRange(final String range) {
 
         String arg = null;
 
