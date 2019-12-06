@@ -6,7 +6,7 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>1.8.0</version>
+    <version>1.9.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -194,6 +194,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -201,6 +202,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <!-- For hot loading during development  -->
+                <!--
+                <configuration>
+                    <addResources>true</addResources>
+                </configuration>
+                -->
             </plugin>
 
             <plugin>
@@ -236,25 +243,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- For hot loading during development  -->
-            <!--
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <addResources>true</addResources>
-                </configuration>
-            </plugin>
-            -->
 
         </plugins>
     </build>

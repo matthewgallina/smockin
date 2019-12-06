@@ -20,7 +20,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.minThreadsLabel = 'Min Threads';
     $scope.timeOutMillisLabel = 'Idle Time out';
     $scope.autoStartLabel = 'Auto start on application launch';
-    $scope.autoRefreshLabel = 'Auto restart after endpoint updates';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
     $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
     $scope.logMockCallsLabel = 'Record mock calls to log file';
@@ -70,7 +69,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "minThreads" : 0,
         "timeOutMillis" : 0,
         "autoStart" : false,
-        "autoRefresh" : false,
         "enableCors" : false,
         "enableProxyServer" : false,
         "logMockCalls" : false
@@ -117,7 +115,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             "minThreads" : $scope.serverConfig.minThreads,
             "timeOutMillis" : $scope.serverConfig.timeOutMillis,
             "autoStart" : $scope.serverConfig.autoStart,
-            "autoRefresh" : $scope.serverConfig.autoRefresh,
             "nativeProperties" : {}
         }
 
@@ -171,7 +168,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
-                    "autoRefresh" : data.autoRefresh,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
                     "enableProxyServer" : (data.nativeProperties.PROXY_SERVER_ENABLED != null && data.nativeProperties.PROXY_SERVER_ENABLED.toUpperCase() == "TRUE"),
                     "logMockCalls" : (data.nativeProperties.LOG_MOCK_CALLS != null && data.nativeProperties.LOG_MOCK_CALLS.toUpperCase() == "TRUE")

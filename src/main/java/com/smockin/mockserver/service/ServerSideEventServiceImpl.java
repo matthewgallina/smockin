@@ -37,7 +37,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
     private final Logger logger = LoggerFactory.getLogger(ServerSideEventServiceImpl.class);
 
-    private final ConcurrentHashMap<String, ClientSseData> clients = new ConcurrentHashMap<String, ClientSseData>(0);
+    private final ConcurrentHashMap<String, ClientSseData> clients = new ConcurrentHashMap<>(0);
 
     private final String messagePrefix = "data: ";
     private final String messageSuffix = "\n\n";

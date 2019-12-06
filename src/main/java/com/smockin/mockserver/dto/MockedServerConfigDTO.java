@@ -1,7 +1,6 @@
 package com.smockin.mockserver.dto;
 
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,20 +15,18 @@ public class MockedServerConfigDTO {
     private Integer minThreads;
     private Integer timeOutMillis;
     private boolean autoStart;
-    private boolean autoRefresh;
     private Map<String, String> nativeProperties = new HashMap<>();
 
     public MockedServerConfigDTO() {
     }
 
-    public MockedServerConfigDTO(final ServerTypeEnum serverType, Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, boolean autoRefresh, Map<String, String> nativeProperties) {
+    public MockedServerConfigDTO(final ServerTypeEnum serverType, Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis, boolean autoStart, Map<String, String> nativeProperties) {
         this.serverType = serverType;
         this.port = port;
         this.maxThreads = maxThreads;
         this.minThreads = minThreads;
         this.timeOutMillis = timeOutMillis;
         this.autoStart = autoStart;
-        this.autoRefresh = autoRefresh;
         this.nativeProperties = nativeProperties;
     }
 
@@ -75,13 +72,6 @@ public class MockedServerConfigDTO {
         this.autoStart = autoStart;
     }
 
-    public boolean isAutoRefresh() {
-        return autoRefresh;
-    }
-    public void setAutoRefresh(boolean autoRefresh) {
-        this.autoRefresh = autoRefresh;
-    }
-
     public Map<String, String> getNativeProperties() {
         return nativeProperties;
     }
@@ -97,7 +87,6 @@ public class MockedServerConfigDTO {
                 + ", MaxThreads : " + maxThreads
                 + ", MinThreads : " + minThreads
                 + ", TimeOutMillis : " + timeOutMillis
-                + ", AutoStart : " + autoStart
-                + ", AutoRefresh : " + autoRefresh;
+                + ", AutoStart : " + autoStart;
     }
 }

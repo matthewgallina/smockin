@@ -6,6 +6,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 
 import java.text.SimpleDateFormat;
@@ -17,6 +18,7 @@ import java.util.UUID;
  * Created by mgallina on 09/08/17.
  */
 @Service
+@Transactional
 public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
     @Override

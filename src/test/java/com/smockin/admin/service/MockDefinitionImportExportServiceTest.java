@@ -5,7 +5,6 @@ import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.enums.DeploymentStatusEnum;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -81,7 +80,7 @@ public class MockDefinitionImportExportServiceTest {
         allRestfulMocks = new ArrayList<>();
 
         // Seq based HTTP mock
-        final RestfulMockResponseDTO seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, DeploymentStatusEnum.DEPLOYED, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+        final RestfulMockResponseDTO seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.SEQ, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null);
 
@@ -93,7 +92,7 @@ public class MockDefinitionImportExportServiceTest {
         allRestfulMocks.add(seqBasedDTO);
 
         // Rule based HTTP mock
-        final RestfulMockResponseDTO ruleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, DeploymentStatusEnum.PENDING, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+        final RestfulMockResponseDTO ruleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.RULE, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null);
 
@@ -110,21 +109,21 @@ public class MockDefinitionImportExportServiceTest {
         allRestfulMocks.add(ruleBasedDTO);
 
         // WS based HTTP mock
-        final RestfulMockResponseDTO wsBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/ws", "mike", DeploymentStatusEnum.OFFLINE, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+        final RestfulMockResponseDTO wsBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/ws", "mike", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_WS, GeneralUtils.getCurrentDate(), "mike", 0, 50000, 0,
                 true, false, false, false, 0,0, null);
 
         allRestfulMocks.add(wsBasedDTO);
 
         // SSE based HTTP mock
-        final RestfulMockResponseDTO sseBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/sse", "paul", DeploymentStatusEnum.DEPLOYED, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+        final RestfulMockResponseDTO sseBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/sse", "paul", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_SSE, GeneralUtils.getCurrentDate(), "paul", 0, 0, 40000,
                 false, false, false, false, 0,0, null);
 
         allRestfulMocks.add(sseBasedDTO);
 
         // Remote Feed based HTTP mock
-        final RestfulMockResponseDTO remoteFeedBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/remotefeed", null, DeploymentStatusEnum.DEPLOYED, RestMethodEnum.POST, RecordStatusEnum.ACTIVE,
+        final RestfulMockResponseDTO remoteFeedBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/remotefeed", null, RestMethodEnum.POST, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_HTTP, GeneralUtils.getCurrentDate(), "howard", 60000, 0, 0,
                 false, false, false, false, 0, 0, null);
 
@@ -135,16 +134,16 @@ public class MockDefinitionImportExportServiceTest {
         // JMS Mocks
         allJmsMocks = new ArrayList<>();
 
-        allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), "mike", DeploymentStatusEnum.OFFLINE, "foo-queue", RecordStatusEnum.INACTIVE, JmsMockTypeEnum.QUEUE, GeneralUtils.getCurrentDate()));
-        allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), null, DeploymentStatusEnum.OFFLINE, "foo-topic", RecordStatusEnum.ACTIVE, JmsMockTypeEnum.TOPIC, GeneralUtils.getCurrentDate()));
+        allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), "mike", "foo-queue", RecordStatusEnum.INACTIVE, JmsMockTypeEnum.QUEUE, GeneralUtils.getCurrentDate()));
+        allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), null, "foo-topic", RecordStatusEnum.ACTIVE, JmsMockTypeEnum.TOPIC, GeneralUtils.getCurrentDate()));
 
         Mockito.when(jmsMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allJmsMocks);
 
         // FTP Mocks
         allFtpMocks = new ArrayList<>();
 
-        allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "pets", RecordStatusEnum.ACTIVE, DeploymentStatusEnum.DEPLOYED, GeneralUtils.getCurrentDate()));
-        allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "homes", RecordStatusEnum.ACTIVE, DeploymentStatusEnum.DEPLOYED, GeneralUtils.getCurrentDate()));
+        allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "pets", RecordStatusEnum.ACTIVE, GeneralUtils.getCurrentDate()));
+        allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "homes", RecordStatusEnum.ACTIVE, GeneralUtils.getCurrentDate()));
 
         Mockito.when(ftpMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allFtpMocks);
 

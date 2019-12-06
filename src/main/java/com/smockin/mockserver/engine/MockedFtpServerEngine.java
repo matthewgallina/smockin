@@ -39,7 +39,6 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
-    private Map<Long, Date> deployedMocks;
 
     @Autowired
     private FtpMockDAO ftpMockDAO;
@@ -59,16 +58,9 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         // Define FTP users
         buildFTPUsers(data);
 
-        setDeployedMocks(data);
-
         // Start FTP Server
         initServer(config.getPort());
 
-    }
-
-    @Override
-    public Map<Long, Date> loadDeployedMocks() {
-        return Collections.unmodifiableMap(deployedMocks);
     }
 
     public MockServerState getCurrentState() throws MockServerException {
@@ -91,8 +83,6 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
-        } finally {
-            clearDeployedMocks();
         }
 
     }
@@ -160,22 +150,6 @@ public class MockedFtpServerEngine implements MockServerEngine<MockedServerConfi
         mocks.stream()
              .forEach(m ->
                 buildUser(m.getName(), m.getName(), buildUserHomeDir(m)));
-    }
-
-    private void setDeployedMocks(final List<FtpMock> mocks) {
-
-        final Map<Long, Date> tempMap = new HashMap<>();
-        mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
-
-        synchronized (monitor) {
-            deployedMocks = tempMap;
-        }
-    }
-
-    private void clearDeployedMocks() {
-        synchronized (monitor) {
-            deployedMocks = new HashMap<>();
-        }
     }
 
     String buildUserHomeDir(final FtpMock mock) {

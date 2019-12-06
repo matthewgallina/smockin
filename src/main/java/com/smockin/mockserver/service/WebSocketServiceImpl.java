@@ -4,6 +4,8 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
@@ -56,17 +58,28 @@ public class WebSocketServiceImpl implements WebSocketService {
      * Note sessions are 'internally' identified using the encrypted handshake 'Sec-WebSocket-Accept' value and
      * 'externally' identified using an allocated UUID.
      *
-     *
-     * @param mockExtId
-     * @param path
-     * @param idleTimeoutMillis
-     * @param session
-     *
      */
-    public void registerSession(final String mockExtId, final String path, final long idleTimeoutMillis, final boolean proxyPushIdOnConnect, final Session session, final boolean logMockCalls) {
+    public void registerSession(final Session session, final boolean logMockCalls) {
         logger.debug("registerSession called");
 
-        session.setIdleTimeout((idleTimeoutMillis > 0) ? idleTimeoutMillis : MAX_IDLE_TIMEOUT_MILLIS );
+        final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
+        final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndType(RestMethodEnum.GET, wsPath, RestMockTypeEnum.PROXY_WS);
+
+        if (wsMock == null) {
+            if (session.isOpen()) {
+                try {
+                    session.getRemote().sendString("No suitable mock found for " + wsPath);
+                    session.disconnect();
+                } catch(IOException e){
+                    logger.error("Error closing non mock matching web socket client connection", e);
+                }
+            }
+            return;
+        }
+
+        final String path = wsMock.getPath();
+
+        session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS );
 
         final Set<SessionIdWrapper> sessions = sessionMap.computeIfAbsent(path, k -> new HashSet<>());
         final String assignedId = GeneralUtils.generateUUID();
@@ -80,7 +93,7 @@ public class WebSocketServiceImpl implements WebSocketService {
                     return v;
                 });
 
-        if (proxyPushIdOnConnect) {
+        if (wsMock.isProxyPushIdOnConnect()) {
             sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
         }
 
@@ -171,11 +184,12 @@ public class WebSocketServiceImpl implements WebSocketService {
         return sessionHandshakeIds;
     }
 
-    public String getExternalId(final String path, final Session session) {
+    public String getExternalId(final Session session) {
 
+        final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
         final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
 
-        for (SessionIdWrapper sw : sessionMap.get(path)) {
+        for (SessionIdWrapper sw : sessionMap.get(wsPath)) {
             if (sw.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                 return sw.getId();
             }

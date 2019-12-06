@@ -4,8 +4,10 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
-
+import org.springframework.util.AntPathMatcher;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -18,11 +20,6 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @Override
-    public void detach(final RestfulMock restfulMock) {
-        entityManager.detach(restfulMock);
-    }
 
     @Override
     public List<RestfulMock> findAllByStatus(final RecordStatusEnum status) {
@@ -76,15 +73,54 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
         }
     }
 
-    private List<RestfulMock> findAllActiveByPathAndMethod(final String path, final RestMethodEnum method) {
-        return entityManager.createQuery("FROM RestfulMock rm "
-                + " WHERE rm.path = :path "
-                + " AND rm.method = :method "
-                + " AND rm.status = :status", RestfulMock.class)
-                .setParameter("path", path)
+    @Override
+    public RestfulMock findActiveByMethodAndPathPattern(final RestMethodEnum method, final String path) {
+
+        final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
+
+        final List<RestfulMock> mocks = entityManager.createQuery("FROM RestfulMock rm "
+                + " WHERE rm.method = :method "
+                + " AND (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%')"
+                + " AND rm.status = 'ACTIVE'", RestfulMock.class)
                 .setParameter("method", method)
-                .setParameter("status", RecordStatusEnum.ACTIVE)
+                .setParameter("path1", path)
+                .setParameter("path2", part1)
                 .getResultList();
+
+        return matchPath(mocks, path);
+    }
+
+    @Override
+    public RestfulMock findActiveByMethodAndPathPatternAndType(final RestMethodEnum method, final String path, final RestMockTypeEnum mockType) {
+
+        final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
+
+        final List<RestfulMock> mocks = entityManager.createQuery("FROM RestfulMock rm "
+                + " WHERE rm.method = :method "
+                + " AND rm.mockType = :mockType "
+                + " AND (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%')"
+                + " AND rm.status = 'ACTIVE'", RestfulMock.class)
+                .setParameter("method", method)
+                .setParameter("mockType", mockType)
+                .setParameter("path1", path)
+                .setParameter("path2", part1)
+                .getResultList();
+
+        return matchPath(mocks, path);
+    }
+
+    private RestfulMock matchPath(final List<RestfulMock> mocks, final String path) {
+
+        if (mocks.isEmpty()) {
+            return null;
+        }
+
+        final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
+
+        return mocks.stream()
+                .filter(m -> matcher.match(m.getPath(), path))
+                .findFirst().orElse(null);
+
     }
 
 }

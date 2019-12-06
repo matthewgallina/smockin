@@ -40,7 +40,6 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
     private ActiveMQConnectionFactory connectionFactory = null; // NOTE this is thread safe
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
-    private Map<Long, Date> deployedMocks;
 
 
     @Override
@@ -55,16 +54,9 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
         // Define JMS queue and topic destinations
         buildDestinations(data);
 
-        setDeployedMocks(data);
-
         // Start JMS Broker
         initServer(config.getPort());
 
-    }
-
-    @Override
-    public Map<Long, Date> loadDeployedMocks() {
-        return Collections.unmodifiableMap(deployedMocks);
     }
 
     public MockServerState getCurrentState() throws MockServerException {
@@ -90,8 +82,6 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
-        } finally {
-            clearDeployedMocks();
         }
 
     }
@@ -290,22 +280,6 @@ public class MockedJmsServerEngine implements MockServerEngine<MockedServerConfi
             });
         }
 
-    }
-
-    private void setDeployedMocks(final List<JmsMock> mocks) {
-
-        final Map<Long, Date> tempMap = new HashMap<>();
-        mocks.stream().forEach(m -> tempMap.put(m.getId(), m.getLastUpdated()));
-
-        synchronized (monitor) {
-            deployedMocks = tempMap;
-        }
-    }
-
-    private void clearDeployedMocks() {
-        synchronized (monitor) {
-            deployedMocks = new HashMap<>();
-        }
     }
 
     public String buildJmsUserPath(final JmsMock mock) {

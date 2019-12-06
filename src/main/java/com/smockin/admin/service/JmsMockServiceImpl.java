@@ -86,7 +86,7 @@ public class JmsMockServiceImpl implements JmsMockService {
 
         return jmsMocks
                 .stream()
-                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), mockedJmsServerEngine.getDeploymentStatus(e, e.getStatus()), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
+                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 

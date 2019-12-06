@@ -110,7 +110,7 @@ public class FtpMockServiceImpl implements FtpMockService {
 
         return mocks
                 .stream()
-                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), mockedFtpServerEngine.getDeploymentStatus(e, e.getStatus()), e.getDateCreated()))
+                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 
