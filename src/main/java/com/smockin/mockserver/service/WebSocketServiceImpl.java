@@ -59,7 +59,7 @@ public class WebSocketServiceImpl implements WebSocketService {
      * 'externally' identified using an allocated UUID.
      *
      */
-    public void registerSession(final Session session, final boolean logMockCalls) {
+    public void registerSession(final Session session) {
         logger.debug("registerSession called");
 
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
@@ -89,7 +89,7 @@ public class WebSocketServiceImpl implements WebSocketService {
                 path,
                 sessions,
                 (k, v) -> {
-                    v.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate(), logMockCalls));
+                    v.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate()));
                     return v;
                 });
 
@@ -98,9 +98,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
-
-        if (logMockCalls)
-            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
 
     }
 
@@ -121,9 +118,6 @@ public class WebSocketServiceImpl implements WebSocketService {
                     sessionSet.remove(s);
 
                     liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false, false));
-
-                    if (s.isLogMockCalls())
-                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(s.getTraceId(), null, null, "Websocket closed", false, false));
 
                     return;
                 }
@@ -151,10 +145,6 @@ public class WebSocketServiceImpl implements WebSocketService {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
                     liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
-
-                    if (s.isLogMockCalls())
-                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(s.getTraceId(), null, null, dto.getBody(), false, false));
-
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }
@@ -210,14 +200,12 @@ public class WebSocketServiceImpl implements WebSocketService {
         private final String traceId;
         private final Session session;
         private final Date dateJoined;
-        private final boolean logMockCalls;
 
-        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined, final boolean logMockCalls) {
+        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined) {
             this.id = id;
             this.traceId = traceId;
             this.session = session;
             this.dateJoined = dateJoined;
-            this.logMockCalls = logMockCalls;
         }
 
         public String getId() {
@@ -231,9 +219,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
         public Date getDateJoined() {
             return dateJoined;
-        }
-        public boolean isLogMockCalls() {
-            return logMockCalls;
         }
     }
 

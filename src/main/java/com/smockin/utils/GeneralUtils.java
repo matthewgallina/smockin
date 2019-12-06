@@ -42,9 +42,8 @@ public final class GeneralUtils {
     public static final String BROKER_URL_PARAM = "BROKER_URL";
     public static final String PROXY_SERVER_PORT_PARAM = "PROXY_SERVER_PORT";
     public static final String PROXY_SERVER_ENABLED_PARAM = "PROXY_SERVER_ENABLED";
-    public static final String LOG_MOCK_CALLS_PARAM = "LOG_MOCK_CALLS";
 
-    public static final String LOG_REQ_ID = "LOG_REQ_ID";
+    public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
 
     // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.

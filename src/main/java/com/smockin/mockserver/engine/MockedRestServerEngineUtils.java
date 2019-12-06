@@ -48,7 +48,7 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private ServerSideEventService serverSideEventService;
 
-    public Optional<String> loadMockedResponse(final Request request, final Response response, final boolean logMockCalls) {
+    public Optional<String> loadMockedResponse(final Request request, final Response response) {
         logger.debug("loadMockedResponse called");
 
         try {
@@ -61,7 +61,7 @@ public class MockedRestServerEngineUtils {
             }
 
             if (RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
-                return Optional.of(processSSERequest(mock, request, response, logMockCalls));
+                return Optional.of(processSSERequest(mock, request, response));
             }
 
             if (RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
@@ -184,10 +184,10 @@ public class MockedRestServerEngineUtils {
     }
     */
 
-    String processSSERequest(final RestfulMock mock, final Request req, final Response res, final boolean logMockCalls) {
+    String processSSERequest(final RestfulMock mock, final Request req, final Response res) {
 
         try {
-            serverSideEventService.register(mock.getPath(), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), req, res, logMockCalls);
+            serverSideEventService.register(mock.getPath(), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), req, res);
         } catch (IOException e) {
             logger.error("Error registering SEE client", e);
         }

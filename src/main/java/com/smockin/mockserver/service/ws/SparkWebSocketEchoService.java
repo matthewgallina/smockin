@@ -17,16 +17,14 @@ import java.io.IOException;
 public class SparkWebSocketEchoService {
 
     private final WebSocketService webSocketService;
-    private final boolean logMockCalls;
 
-    public SparkWebSocketEchoService(final WebSocketService webSocketService, final boolean logMockCalls) {
+    public SparkWebSocketEchoService(final WebSocketService webSocketService) {
         this.webSocketService = webSocketService;
-        this.logMockCalls = logMockCalls;
     }
 
     @OnWebSocketConnect
     public void connected(final Session session) {
-        webSocketService.registerSession(session, logMockCalls);
+        webSocketService.registerSession(session);
     }
 
     @OnWebSocketClose

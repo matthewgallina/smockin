@@ -16,7 +16,7 @@ public interface ServerSideEventService {
 
     String SSE_EVENT_STREAM_HEADER = "text/event-stream;charset=UTF-8";
 
-    void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Request request, final Response response, final boolean logMockCalls) throws IOException;
+    void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Request request, final Response response) throws IOException;
     List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
     void addMessage(final String id, final SseMessageDTO dto);
     void interruptAndClearAllHeartBeatThreads();

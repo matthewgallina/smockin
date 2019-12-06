@@ -68,11 +68,11 @@ public class RestfulMock extends Identifier {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
     @OrderBy("orderNo ASC")
-    private List<RestfulMockDefinitionRule> rules = new ArrayList<RestfulMockDefinitionRule>();
+    private List<RestfulMockDefinitionRule> rules = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
     @OrderBy("orderNo ASC")
-    private List<RestfulMockDefinitionOrder> definitions = new ArrayList<RestfulMockDefinitionOrder>();
+    private List<RestfulMockDefinitionOrder> definitions = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="PROJ_ID", nullable = true)

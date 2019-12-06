@@ -75,19 +75,16 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
-        final boolean logMockCalls =
-                Boolean.valueOf(config.getNativeProperties().getOrDefault(GeneralUtils.LOG_MOCK_CALLS_PARAM, Boolean.FALSE.toString()));
-
         // Define all web socket routes first as the Spark framework requires this
-        buildWebSocketEndpoints(logMockCalls);
+        buildWebSocketEndpoints();
 
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler(logMockCalls);
+        buildGlobalHttpEndpointsHandler();
 
-        applyTrafficLogging(logMockCalls);
+        applyTrafficLogging();
 
         initServer(config.getPort());
 
@@ -182,12 +179,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM));
     }
 
-    void buildWebSocketEndpoints(final boolean logMockCalls) {
+    void buildWebSocketEndpoints() {
 
-        Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService, logMockCalls));
+        Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService));
     }
 
-    private void applyTrafficLogging(final boolean logMockCalls) {
+    private void applyTrafficLogging() {
 
         // Live logging filter
         Spark.before((request, response) -> {
@@ -196,20 +193,16 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return;
             }
 
-            final String traceId = LiveLoggingUtils.getTraceId();
+            final String traceId = GeneralUtils.generateUUID();
 
             request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
-
-            if (isWebSocketUpgradeRequest(request)) {
-                response.raw().addHeader(GeneralUtils.LOG_REQ_ID, traceId);
-            }
+            response.raw().addHeader(GeneralUtils.LOG_REQ_ID, traceId);
 
             final Map<String, String> reqHeaders = request.headers()
                     .stream()
                     .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
 
-            if (logMockCalls)
-                LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogInboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
+            reqHeaders.put(GeneralUtils.LOG_REQ_ID, traceId);
 
             liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
         });
@@ -225,21 +218,20 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     .stream()
                     .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
 
-            if (logMockCalls)
-                LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
+            respHeaders.put(GeneralUtils.LOG_REQ_ID, request.attribute(GeneralUtils.LOG_REQ_ID));
 
             liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
         });
 
     }
 
-    void buildGlobalHttpEndpointsHandler(final boolean logMockCalls) {
+    void buildGlobalHttpEndpointsHandler() {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
         final String wildcardPath = "*";
 
         Spark.head(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.get(wildcardPath, (request, response) -> {
@@ -249,24 +241,24 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+            return mockedRestServerEngineUtils.loadMockedResponse(request, response)
                     .orElseGet(() -> handleNotFoundResponse(response));
         });
 
         Spark.post(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.put(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.delete(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.patch(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, logMockCalls)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
     }

@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     private LiveLoggingHandler liveLoggingHandler;
 
     @Override
-    public void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Request request, final Response response, final boolean logMockCalls) throws IOException {
+    public void register(final String path, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final Request request, final Response response) throws IOException {
         logger.debug("register called");
 
         final String clientId = GeneralUtils.generateUUID();
@@ -68,10 +67,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
 
-        if (logMockCalls)
-            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
-
-        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response, logMockCalls);
+        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response);
     }
 
     @Override
@@ -147,7 +143,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
     }
 
-    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final String traceId, final Response response, final boolean logMockCalls) throws IOException {
+    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final String traceId, final Response response) throws IOException {
         logger.debug("initHeartBeat called");
 
         // Get raw response Start stream
@@ -173,10 +169,6 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                         messagesIterator.remove();
 
                         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false, false));
-
-                        if (logMockCalls)
-                            LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, null, null, body, false, false));
-
                     }
 
                 } else {
@@ -194,9 +186,6 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                     clients.remove(clientId);
 
                     liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false, false));
-
-                    if (logMockCalls)
-                        LiveLoggingUtils.MOCK_TRAFFIC_LOGGER.info(LiveLoggingUtils.buildLiveLogOutboundFileEntry(traceId, null, null, "SSE client connection closed", false, false));
 
                     break;
                 }
