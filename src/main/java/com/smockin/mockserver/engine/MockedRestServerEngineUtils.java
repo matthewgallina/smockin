@@ -51,27 +51,36 @@ public class MockedRestServerEngineUtils {
     public Optional<String> loadMockedResponse(final Request request, final Response response, final boolean logMockCalls) {
         logger.debug("loadMockedResponse called");
 
-        final RestfulMock mock =
-                restfulMockDAO.findActiveByMethodAndPathPattern(RestMethodEnum.findByName(request.requestMethod()), request.pathInfo());
+        try {
 
-        if (mock == null) {
+            final RestfulMock mock =
+                    restfulMockDAO.findActiveByMethodAndPathPattern(RestMethodEnum.findByName(request.requestMethod()), request.pathInfo());
+
+            if (mock == null) {
+                return Optional.empty();
+            }
+
+            if (RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
+                return Optional.of(processSSERequest(mock, request, response, logMockCalls));
+            }
+
+            if (RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
+                    || RestMockTypeEnum.SEQ.equals(mock.getMockType())
+                    || RestMockTypeEnum.RULE.equals(mock.getMockType())) {
+
+                removeSuspendedResponses(mock);
+
+                return Optional.of(processRequest(mock, request, response));
+            }
+
             return Optional.empty();
+
+        } catch (Exception ex) {
+            logger.error("Error processing mock request", ex);
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return Optional.of("Oops, looks like something went wrong with this mock!");
         }
 
-        if (RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
-            return Optional.of(processSSERequest(mock, request, response, logMockCalls));
-        }
-
-        if (RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
-                || RestMockTypeEnum.SEQ.equals(mock.getMockType())
-                || RestMockTypeEnum.RULE.equals(mock.getMockType())) {
-
-            removeSuspendedResponses(mock);
-
-            return Optional.of(processRequest(mock, request, response));
-        }
-
-        return Optional.empty();
     }
 
     String processRequest(final RestfulMock mock, final Request req, final Response res) {

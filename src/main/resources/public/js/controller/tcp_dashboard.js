@@ -36,6 +36,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.deselectAllEndpointsHeading = 'clear selection';
     $scope.hideAllEndpointsHeading = 'hide';
     $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
+    $scope.enabledLabel = "Enabled";
+    $scope.disabledLabel = "Disabled";
 
 
     //
@@ -76,6 +78,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.showAllEndpoints = false;
     $scope.mockSelection = [];
     $scope.searchFilter = null;
+    $scope.activeStatus = globalVars.ActiveStatus;
     var deletionErrorOccurrence = false;
     var deletionAttemptCount = 0;
 

@@ -9,6 +9,7 @@ import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 public interface MockOrderingCounterService {
 
     RestfulResponseDTO process(final RestfulMock restfulMockDefinition);
+    void clearMockStateById(final String mockExtId);
     void clearState();
 
 }

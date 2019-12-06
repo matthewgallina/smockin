@@ -6,6 +6,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     // Constants / Vars
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var InitPageTimeoutMillis = 1500;
+    var WebSocketHeartBeatMillis = 30000;
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
     var LiveFeedUrl = "ws://"
@@ -202,6 +203,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
             $scope.noActivityData = 'Listening for activity...';
             $scope.wsEstablished = true;
             $scope.$digest();
+
+            keepWsAlive();
         };
 
         wsSocket.onmessage = function (event) {
@@ -219,8 +222,31 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
             wsSocket = null;
             $scope.wsEstablished = false;
             $scope.$digest();
+
+            cancelKeepAlive();
         };
 
+    }
+
+    var wsHbTimerPromise = null;
+
+    var keepWsAlive = function() {
+
+        if (wsSocket != null
+                && wsSocket.readyState == wsSocket.OPEN) {
+            wsSocket.send('');
+        } else {
+            cancelKeepAlive();
+        }
+
+        wsHbTimerPromise = $timeout(keepWsAlive, WebSocketHeartBeatMillis);
+    };
+
+    function cancelKeepAlive() {
+
+        if (wsHbTimerPromise != null) {
+            $timeout.cancel(wsHbTimerPromise);
+        }
     }
 
     function handleResponseMsg(liveLog) {

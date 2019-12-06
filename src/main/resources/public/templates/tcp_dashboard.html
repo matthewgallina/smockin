@@ -88,11 +88,11 @@
                         <tbody>
                             <tr ng-repeat="x in rs.data">
                                 <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
-                                <td class="status-{{x.deploymentStatus | lowercase}} mock-status-{{ x.status | lowercase }}">
-                                    {{ x.deploymentStatus }}
+                                <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                                <td>{{ translate(x.mockType) }}</td>
+                                <td class="status-{{x.status | lowercase}}">
+                                    {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                                 </td>
                                 <td>
                                     <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
@@ -146,11 +146,11 @@
                             <tbody>
                                 <tr ng-repeat="x in rs.data">
                                     <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
-                                    <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
-                                    <td class="mock-status-{{ x.status | lowercase }}" ng-if="isLoggedIn">{{ x.createdBy }}</td>
-                                    <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
-                                    <td class="status-{{x.deploymentStatus | lowercase}} mock-status-{{ x.status | lowercase }}">
-                                        {{ x.deploymentStatus }}
+                                    <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                    <td ng-if="isLoggedIn">{{ x.createdBy }}</td>
+                                    <td>{{ translate(x.mockType) }}</td>
+                                    <td class="status-{{x.status | lowercase}}">
+                                        {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                                     </td>
                                     <td>
                                         <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>

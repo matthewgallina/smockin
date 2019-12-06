@@ -15,7 +15,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.http.HttpStatus;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -24,8 +23,8 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -141,7 +140,7 @@ public class ProxyServer implements BaseServerEngine<MockedServerConfigDTO, List
 
                                         final DefaultFullHttpResponse response = (DefaultFullHttpResponse) httpObject;
 
-                                        if (response.status().code() == 502) {
+                                        if (response.status().code() == HttpStatus.BAD_GATEWAY.value()) {
 
                                             final Map<String, String> respHeaders = proxyServerUtils.convertHeaders(response.headers());
 
@@ -187,7 +186,7 @@ public class ProxyServer implements BaseServerEngine<MockedServerConfigDTO, List
                                         // Store response from mock server for re-use
                                         final HttpClientResponseDTO response = proxyServerUtils.callMock(dto);
 
-                                        if (response.getStatus() == HttpStatus.SC_TEMPORARY_REDIRECT) {
+                                        if (response.getStatus() == HttpStatus.TEMPORARY_REDIRECT.value()) {
                                             return httpObject;
                                         }
 

@@ -87,7 +87,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Next handle all HTTP RESTFul web service routes
         buildGlobalHttpEndpointsHandler(logMockCalls);
 
-//        applyTrafficLogging(logMockCalls);
+        applyTrafficLogging(logMockCalls);
 
         initServer(config.getPort());
 
@@ -245,7 +245,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.get(wildcardPath, (request, response) -> {
 
             if (isWebSocketUpgradeRequest(request)) {
-                response.status(200);
+                response.status(HttpStatus.OK.value());
                 return null;
             }
 

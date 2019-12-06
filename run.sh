@@ -148,13 +148,12 @@ fi
 # (JPA WILL CREATE THE ACTUAL SMOCKIN DB AUTOMATICALLY IF IT DOES NOT ALREADY EXIST)
 #
 echo "#"
-echo "#  Starting Main Application..."
-echo "#"
-
 if ( $MULTI_USER_MODE ); then
-  echo "#  The application is running in 'Multi User Mode'"
-  echo "#"
+  echo "#  Starting Main Application in 'MULTI USER MODE'..."
+else
+  echo "#  Starting Main Application..."
 fi
+echo "#"
 
 echo "#  Please Note:"
 echo "#  - Application logs are available from: .smockin/log (under the user.home directory)"

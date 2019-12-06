@@ -9,8 +9,10 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDefinitionRuleDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +47,10 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private MockOrderingCounterService mockOrderingCounterService;
+
 
     @Override
     public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
@@ -117,7 +123,11 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
-        restfulMockDAO.save(mock).getId();
+        restfulMockDAO.save(mock);
+
+        if (RestMockTypeEnum.SEQ.equals(mock.getMockType())) {
+            mockOrderingCounterService.clearMockStateById(mock.getExtId());
+        }
 
         if (pathChanged) {
             restfulMockServiceUtils.handleEndpointOrdering();
