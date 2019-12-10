@@ -123,9 +123,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         return null;
     };
 
-    $scope.doOpenTcpEndpointInfo = function(endpointData) {
-        $rootScope.endpointData = endpointData;
-        $location.path("/tcp_endpoint");
+    $scope.doOpenTcpEndpointInfo = function(endpointDataExtId) {
+        $location.path("/tcp_endpoint").search({"eid" : endpointDataExtId});
     };
 
     $scope.doExport = function(mode) {
@@ -168,8 +167,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     };
 
     $scope.doOpenImport = function() {
-
-        $rootScope.endpointData = null;
 
         var modalInstance = $uibModal.open({
             templateUrl: 'http_import.html',

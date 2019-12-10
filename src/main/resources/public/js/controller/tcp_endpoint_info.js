@@ -1,5 +1,5 @@
 
-app.controller('tcpEndpointInfoController', function($scope, $rootScope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
+app.controller('tcpEndpointInfoController', function($scope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
 
 
     //
@@ -20,7 +20,8 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
         FormatValidationTimeoutMillis: globalVars.FormatValidationTimeoutMillis
     };
 
-    var isNew = ($rootScope.endpointData == null);
+    var extId = $location.search()["eid"];
+    var isNew = (extId == null);
 
     var RestfulServerType = globalVars.RestfulServerType;
     var HttpPathPlaceHolderTxt = 'e.g. (/hello) (path vars: /hello/:name/greeting) (wildcards: /hello/*/greeting)';
@@ -62,7 +63,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
-    $scope.serverRestartInstruction = '(Please note, the tcp mock server will need to be restarted for changes to take effect)';
     $scope.endpointStatusLabel = 'Status:';
     $scope.proxyTimeoutLabel = 'Long Polling Timeout (in millis)';
     $scope.webSocketTimeoutLabel = 'Idle Timeout (in millis)';
@@ -163,8 +163,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse }
     ];
 
-    var extId = null;
-
     $scope.isNew = isNew;
 
     $scope.responseHeaderList = [];
@@ -206,60 +204,64 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
     // Populate form if viewing existing record...
     if (!isNew) {
 
-        var endpoint = $rootScope.endpointData;
+        var handleLoadedMock = function(endpoint) {
 
-        extId = endpoint.extId;
+            extId = endpoint.extId;
 
-        // Convert all rule arg DTOs to local enriched arg objects
-        for (var r=0; r < endpoint.rules.length; r++) {
-            for (var g=0; g < endpoint.rules[r].groups.length; g++) {
-                endpoint.rules[r].groups[g].conditions = utils.convertFromDTO(endpoint.rules[r].groups[g].conditions);
+            // Convert all rule arg DTOs to local enriched arg objects
+            for (var r=0; r < endpoint.rules.length; r++) {
+                for (var g=0; g < endpoint.rules[r].groups.length; g++) {
+                    endpoint.rules[r].groups[g].conditions = utils.convertFromDTO(endpoint.rules[r].groups[g].conditions);
+                }
             }
-        }
 
-        $scope.endpoint = {
-            "path" : endpoint.path,
-            "method" : endpoint.method,
-            "contentType" : null,
-            "httpStatusCode" : null,
-            "responseBody" : null,
-            "status" : endpoint.status,
-            "proxyTimeout" : endpoint.proxyTimeoutInMillis,
-            "webSocketTimeout" : endpoint.webSocketTimeoutInMillis,
-            "sseHeartbeat" : endpoint.sseHeartBeatInMillis,
-            "wsPushIdOnConnect" : endpoint.proxyPushIdOnConnect,
-            "ssePushIdOnConnect" : endpoint.proxyPushIdOnConnect,
-            "mockType" : lookupMockType(endpoint.mockType),
-            "randomiseDefinitions" : endpoint.randomiseDefinitions,
-            "proxyForwardWhenNoRuleMatch" : endpoint.proxyForwardWhenNoRuleMatch,
-            "randomiseLatency" : endpoint.randomiseLatency,
-            "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
-            "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
-            "definitions" : endpoint.definitions,
-            "rules" : endpoint.rules,
-            "createdBy" : endpoint.createdBy
+            $scope.endpoint = {
+                "path" : endpoint.path,
+                "method" : endpoint.method,
+                "contentType" : null,
+                "httpStatusCode" : null,
+                "responseBody" : null,
+                "status" : endpoint.status,
+                "proxyTimeout" : endpoint.proxyTimeoutInMillis,
+                "webSocketTimeout" : endpoint.webSocketTimeoutInMillis,
+                "sseHeartbeat" : endpoint.sseHeartBeatInMillis,
+                "wsPushIdOnConnect" : endpoint.proxyPushIdOnConnect,
+                "ssePushIdOnConnect" : endpoint.proxyPushIdOnConnect,
+                "mockType" : lookupMockType(endpoint.mockType),
+                "randomiseDefinitions" : endpoint.randomiseDefinitions,
+                "proxyForwardWhenNoRuleMatch" : endpoint.proxyForwardWhenNoRuleMatch,
+                "randomiseLatency" : endpoint.randomiseLatency,
+                "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
+                "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
+                "definitions" : endpoint.definitions,
+                "rules" : endpoint.rules,
+                "createdBy" : endpoint.createdBy
+            };
+
+            $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
+
+            if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
+                    || (endpoint.mockType == MockTypeDefinitions.MockTypeRule
+                            && !endpoint.proxyForwardWhenNoRuleMatch)) {
+
+                $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
+                $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
+                $scope.endpoint.responseBody = endpoint.definitions[0].responseBody;
+
+                angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
+                    $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
+                });
+
+            }
+
+            if (endpoint.mockType == MockTypeDefinitions.MockTypeProxyHttp) {
+                $scope.proxyEndpoint.path = $scope.endpoint.path;
+            }
+
+            $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
         };
 
-        $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
-
-        if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
-                || (endpoint.mockType == MockTypeDefinitions.MockTypeRule
-                        && !endpoint.proxyForwardWhenNoRuleMatch)) {
-
-            $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
-            $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
-            $scope.endpoint.responseBody = endpoint.definitions[0].responseBody;
-
-            angular.forEach(endpoint.definitions[0].responseHeaders, function(v, k) {
-                $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
-            });
-
-        }
-
-        if (endpoint.mockType == MockTypeDefinitions.MockTypeProxyHttp) {
-            $scope.proxyEndpoint.path = $scope.endpoint.path;
-        }
-
+        loadMockData(extId, handleLoadedMock);
     }
 
     $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
@@ -856,7 +858,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
             'tab' : 'HTTP'
         });
 
-        clearEndpointData();
     };
 
     $scope.doFormatJson = function() {
@@ -1125,7 +1126,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
                 utils.hideBlockingOverlay();
                 $location.path("/dashboard").search(locParams);
-                clearEndpointData();
             });
 
             return;
@@ -1143,10 +1143,6 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
 
         showAlert(globalVars.GeneralErrorMessage);
     };
-
-    function clearEndpointData() {
-        $rootScope.endpointData = null;
-    }
 
     function checkAutoRefreshStatus(callback) {
 
@@ -1225,6 +1221,20 @@ app.controller('tcpEndpointInfoController', function($scope, $rootScope, $locati
                 $scope.$apply();
             }
         }
+
+    }
+
+    function loadMockData(extId, callback) {
+
+        restClient.doGet($http, '/restmock/' + extId, function(status, data) {
+
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            callback(data);
+        });
 
     }
 
