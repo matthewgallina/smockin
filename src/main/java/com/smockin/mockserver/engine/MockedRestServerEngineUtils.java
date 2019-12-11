@@ -48,13 +48,28 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private ServerSideEventService serverSideEventService;
 
-    public Optional<String> loadMockedResponse(final Request request, final Response response) {
+    public Optional<String> loadMockedResponse(final Request request,
+                                               final Response response,
+                                               final boolean isMultiUserMode) {
         logger.debug("loadMockedResponse called");
 
         try {
 
-            final RestfulMock mock =
-                    restfulMockDAO.findActiveByMethodAndPathPattern(RestMethodEnum.findByName(request.requestMethod()), request.pathInfo());
+            final RestfulMock mock = (isMultiUserMode)
+                    ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesAndUserCtxPath(
+                            RestMethodEnum.findByName(request.requestMethod()),
+                            request.pathInfo(),
+                            Arrays.asList(RestMockTypeEnum.PROXY_SSE,
+                                    RestMockTypeEnum.PROXY_HTTP,
+                                    RestMockTypeEnum.SEQ,
+                                    RestMockTypeEnum.RULE))
+                    : restfulMockDAO.findActiveByMethodAndPathPatternAndTypes(
+                            RestMethodEnum.findByName(request.requestMethod()),
+                            request.pathInfo(),
+                            Arrays.asList(RestMockTypeEnum.PROXY_SSE,
+                                          RestMockTypeEnum.PROXY_HTTP,
+                                          RestMockTypeEnum.SEQ,
+                                          RestMockTypeEnum.RULE));
 
             if (mock == null) {
                 return Optional.empty();
@@ -64,16 +79,9 @@ public class MockedRestServerEngineUtils {
                 return Optional.of(processSSERequest(mock, request, response));
             }
 
-            if (RestMockTypeEnum.PROXY_HTTP.equals(mock.getMockType())
-                    || RestMockTypeEnum.SEQ.equals(mock.getMockType())
-                    || RestMockTypeEnum.RULE.equals(mock.getMockType())) {
+            removeSuspendedResponses(mock);
 
-                removeSuspendedResponses(mock);
-
-                return Optional.of(processRequest(mock, request, response));
-            }
-
-            return Optional.empty();
+            return Optional.of(processRequest(mock, request, response));
 
         } catch (Exception ex) {
             logger.error("Error processing mock request", ex);
@@ -173,17 +181,6 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    /*
-    public String buildUserPath(final RestfulMock mock) {
-
-        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
-            return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();
-        }
-
-        return mock.getPath();
-    }
-    */
-
     String processSSERequest(final RestfulMock mock, final Request req, final Response res) {
 
         try {
@@ -192,7 +189,7 @@ public class MockedRestServerEngineUtils {
             logger.error("Error registering SEE client", e);
         }
 
-        return null;
+        return "";
     }
 
     private void handleLatency(final RestfulMock mock) {

@@ -2,7 +2,6 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -157,12 +156,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     }
 
     @Override
-    public List<RestfulMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
+    public List<RestfulMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
-
-        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
-            return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAll());
-        }
 
         return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
     }

@@ -15,6 +15,6 @@ public interface JmsMockService {
     String createEndpoint(final JmsMockDTO dto, final String token) throws RecordNotFoundException;
     void updateEndpoint(final String mockExtId, final JmsMockDTO dto, final String token) throws RecordNotFoundException, ValidationException;
     void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
-    List<JmsMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException;
+    List<JmsMockResponseDTO> loadAll(final String token) throws RecordNotFoundException;
 
 }

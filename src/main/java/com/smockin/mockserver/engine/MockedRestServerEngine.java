@@ -1,8 +1,10 @@
 package com.smockin.mockserver.engine;
 
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
@@ -66,6 +68,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private LiveLoggingHandler liveLoggingHandler;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
+
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
@@ -81,8 +87,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
+        final boolean isMultiUserMode = UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode());
+
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler();
+        buildGlobalHttpEndpointsHandler(isMultiUserMode);
 
         applyTrafficLogging();
 
@@ -225,13 +233,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    void buildGlobalHttpEndpointsHandler() {
+    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
         final String wildcardPath = "*";
 
         Spark.head(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.get(wildcardPath, (request, response) -> {
@@ -241,24 +249,24 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response)
+            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                     .orElseGet(() -> handleNotFoundResponse(response));
         });
 
         Spark.post(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.put(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.delete(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.patch(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
     }

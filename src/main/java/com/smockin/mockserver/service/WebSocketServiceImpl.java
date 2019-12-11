@@ -63,7 +63,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         logger.debug("registerSession called");
 
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
-        final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndType(RestMethodEnum.GET, wsPath, RestMockTypeEnum.PROXY_WS);
+        final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndTypes(RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS));
 
         if (wsMock == null) {
             if (session.isOpen()) {

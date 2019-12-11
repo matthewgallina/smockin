@@ -129,7 +129,7 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(remoteFeedBasedDTO);
 
-        Mockito.when(restfulMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allRestfulMocks);
+        Mockito.when(restfulMockService.loadAll(Mockito.anyString())).thenReturn(allRestfulMocks);
 
         // JMS Mocks
         allJmsMocks = new ArrayList<>();
@@ -137,7 +137,7 @@ public class MockDefinitionImportExportServiceTest {
         allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), "mike", "foo-queue", RecordStatusEnum.INACTIVE, JmsMockTypeEnum.QUEUE, GeneralUtils.getCurrentDate()));
         allJmsMocks.add(new JmsMockResponseDTO(GeneralUtils.generateUUID(), null, "foo-topic", RecordStatusEnum.ACTIVE, JmsMockTypeEnum.TOPIC, GeneralUtils.getCurrentDate()));
 
-        Mockito.when(jmsMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allJmsMocks);
+        Mockito.when(jmsMockService.loadAll(Mockito.anyString())).thenReturn(allJmsMocks);
 
         // FTP Mocks
         allFtpMocks = new ArrayList<>();
@@ -145,7 +145,7 @@ public class MockDefinitionImportExportServiceTest {
         allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "pets", RecordStatusEnum.ACTIVE, GeneralUtils.getCurrentDate()));
         allFtpMocks.add(new FtpMockResponseDTO(GeneralUtils.generateUUID(), "homes", RecordStatusEnum.ACTIVE, GeneralUtils.getCurrentDate()));
 
-        Mockito.when(ftpMockService.loadAll(Mockito.anyString(), Mockito.anyString())).thenReturn(allFtpMocks);
+        Mockito.when(ftpMockService.loadAll(Mockito.anyString())).thenReturn(allFtpMocks);
 
     }
 

@@ -29,7 +29,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.mockServerRestarting = MockServerRestartStatus;
     $scope.endpointsHeading = 'HTTP Mocks';
     $scope.endpointsOtherUsersHeading = 'HTTP Mocks By Other Users';
-    $scope.showAllEndpointsHeading = 'display all';
     $scope.expandAllEndpointsHeading = 'expand all';
     $scope.collapseAllEndpointsHeading = 'collapse all';
     $scope.selectAllEndpointsHeading = 'select all';
@@ -69,13 +68,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Data Objects
     var allRestServices = [];
-    var allOtherUserRestServices = [];
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.mockServerStatus = '';
     $scope.restServices = [];
-    $scope.otherUserRestServices = [];
-    $scope.showAllEndpoints = false;
     $scope.mockSelection = [];
     $scope.searchFilter = null;
     $scope.activeStatus = globalVars.ActiveStatus;
@@ -182,7 +178,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 if (response.uploadCompleted != null
                         && response.uploadCompleted) {
 
-                    loadTableData($scope.showAllEndpoints);
+                    loadTableData();
                 }
 
             } else {
@@ -220,18 +216,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 }
 
                 showAlert(alertMsg, "success");
-                loadTableData($scope.showAllEndpoints);
+                loadTableData();
                 return;
             }
 
             showAlert(globalVars.GeneralErrorMessage);
         });
 
-    };
-
-    $scope.doShowAllEndpoints = function(show) {
-        $scope.showAllEndpoints = show;
-        loadTableData($scope.showAllEndpoints);
     };
 
     $scope.doExpandAllEndpoints = function() {
@@ -249,12 +240,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
         for (var rs=0; rs < $scope.restServices.length; rs++) {
             for (var rsd=0; rsd < $scope.restServices[rs].data.length; rsd++) {
                 $scope.mockSelection.push($scope.restServices[rs].data[rsd]);
-            }
-        }
-
-        for (var rs=0; rs < $scope.otherUserRestServices.length; rs++) {
-            for (var rsd=0; rsd < $scope.otherUserRestServices[rs].data.length; rsd++) {
-                $scope.mockSelection.push($scope.otherUserRestServices[rs].data[rsd]);
             }
         }
 
@@ -280,7 +265,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             if (status == 204) {
                 $scope.mockServerStatus = MockServerStoppedStatus;
                 showAlert("HTTP Server Stopped", "success");
-                loadTableData($scope.showAllEndpoints);
+                loadTableData();
                 return;
             }
 
@@ -319,18 +304,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             return;
         }
 
-        // Check and warn user that they cannot delete another's user's mocks.
-        for (var m=0; m < $scope.mockSelection.length; m++) {
-            for (var rs=0; rs < $scope.otherUserRestServices.length; rs++) {
-                for (var rsd=0; rsd < $scope.otherUserRestServices[rs].data.length; rsd++) {
-                    if ($scope.mockSelection[m].extId == $scope.otherUserRestServices[rs].data[rsd].extId) {
-                        showAlert("You have selected mocks belonging to another user! Please uncheck these first to proceed.");
-                        return;
-                    }
-                }
-            }
-        }
-
         var msgSuffix = ($scope.mockSelection.length == 1)
             ? "this 1 mock?"
             : ("these " + $scope.mockSelection.length + " mocks?");
@@ -355,14 +328,12 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.filterHttpMocks = function() {
 
         $scope.restServices = [];
-        $scope.otherUserRestServices = [];
         $scope.doClearAllEndpoints();
 
         if ($scope.searchFilter == null
                 || $scope.searchFilter.trim() == 0) {
 
             $scope.restServices = allRestServices;
-            $scope.otherUserRestServices = allOtherUserRestServices;
             return;
         }
 
@@ -370,14 +341,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             for (var rsd=0; rsd < allRestServices[rs].data.length; rsd++) {
                 if (allRestServices[rs].data[rsd].path.indexOf($scope.searchFilter) > -1) {
                     batchData($scope.restServices, allRestServices[rs].data[rsd], allRestServices[rs].basePath);
-                }
-            }
-        }
-
-        for (var rs=0; rs < allOtherUserRestServices.length; rs++) {
-            for (var rsd=0; rsd < allOtherUserRestServices[rs].data.length; rsd++) {
-                if (allOtherUserRestServices[rs].data[rsd].path.indexOf($scope.searchFilter) > -1) {
-                    batchData($scope.otherUserRestServices, allOtherUserRestServices[rs].data[rsd], allOtherUserRestServices[rs].basePath);
                 }
             }
         }
@@ -415,10 +378,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             $scope.restServices[rs].isOpen = isOpen;
         }
 
-        for (var ors=0; ors < $scope.otherUserRestServices.length; ors++) {
-            $scope.otherUserRestServices[ors].isOpen = isOpen;
-        }
-
     }
 
     var bulkDeleteCallbackFunc = function (status, data) {
@@ -433,8 +392,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
             utils.hideBlockingOverlay();
 
-            $scope.showAllEndpoints = (auth.isLoggedIn());
-            loadTableData($scope.showAllEndpoints);
+            loadTableData();
 
             showAlert("The selected mocks were successfully deleted", "success");
             $scope.mockSelection = [];
@@ -451,13 +409,9 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     function loadTableData(showAll) {
 
         allRestServices = [];
-        allOtherUserRestServices = [];
         $scope.restServices = [];
-        $scope.otherUserRestServices = [];
 
-        var filterParams = (showAll) ? '?filter=all' : '';
-
-        restClient.doGet($http, '/restmock' + filterParams, function(status, data) {
+        restClient.doGet($http, '/restmock', function(status, data) {
 
             if (status == 401) {
                 showAlert(globalVars.AuthRequiredMessage);
@@ -467,42 +421,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 return;
             }
 
-            var splitData = splitUserData(data);
-
-            allRestServices = batchByBasePath(splitData.own);
-            $scope.restServices = batchByBasePath(splitData.own);
-
-            allOtherUserRestServices = batchByBasePath(splitData.other);
-            $scope.otherUserRestServices = batchByBasePath(splitData.other);
-
+            allRestServices = batchByBasePath(data);
+            $scope.restServices = batchByBasePath(data);
         });
 
-    }
-
-    function splitUserData(allData) {
-
-        var splitOutData = {
-            "own" : [],
-            "other" : []
-        };
-
-        if (!auth.isLoggedIn()) {
-
-            splitOutData.own = allData;
-
-        } else {
-
-            for (var d=0; d < allData.length; d++) {
-                if (allData[d].createdBy == auth.getUserName()) {
-                    splitOutData.own.push(allData[d]);
-                } else {
-                    splitOutData.other.push(allData[d]);
-                }
-            }
-
-        }
-
-        return splitOutData;
     }
 
     function batchByBasePath(allData) {

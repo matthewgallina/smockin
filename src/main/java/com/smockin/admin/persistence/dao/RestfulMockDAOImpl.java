@@ -5,6 +5,7 @@ import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.AntPathMatcher;
@@ -30,6 +31,7 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .getResultList();
     }
 
+    /*
     @Override
     public List<RestfulMock> findAllByStatusAndUser(final RecordStatusEnum status, final long userId) {
         return entityManager.createQuery("FROM RestfulMock rm "
@@ -40,6 +42,7 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .setParameter("status", status)
                 .getResultList();
     }
+    */
 
     @Override
     public List<RestfulMock> findAll() {
@@ -73,6 +76,7 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
         }
     }
 
+    /*
     @Override
     public RestfulMock findActiveByMethodAndPathPattern(final RestMethodEnum method, final String path) {
 
@@ -89,27 +93,52 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
 
         return matchPath(mocks, path);
     }
+    */
 
     @Override
-    public RestfulMock findActiveByMethodAndPathPatternAndType(final RestMethodEnum method, final String path, final RestMockTypeEnum mockType) {
+    public RestfulMock findActiveByMethodAndPathPatternAndTypes(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
 
         final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
 
         final List<RestfulMock> mocks = entityManager.createQuery("FROM RestfulMock rm "
                 + " WHERE rm.method = :method "
-                + " AND rm.mockType = :mockType "
+                + " AND rm.mockType IN (:mockTypes) "
                 + " AND (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%')"
                 + " AND rm.status = 'ACTIVE'", RestfulMock.class)
                 .setParameter("method", method)
-                .setParameter("mockType", mockType)
+                .setParameter("mockTypes", mockTypes)
                 .setParameter("path1", path)
                 .setParameter("path2", part1)
                 .getResultList();
 
-        return matchPath(mocks, path);
+        return matchPath(mocks, path, false);
     }
 
-    private RestfulMock matchPath(final List<RestfulMock> mocks, final String path) {
+    @Override
+    public RestfulMock findActiveByMethodAndPathPatternAndTypesAndUserCtxPath(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
+
+        final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
+
+        final List<RestfulMock> mocks = entityManager.createQuery("FROM RestfulMock rm "
+                + " WHERE rm.method = :method "
+                + " AND rm.mockType IN (:mockTypes) "
+                + " AND "
+                + " ( "
+                + " ('/'||rm.createdBy.ctxPath||rm.path = :path1 OR '/'||rm.createdBy.ctxPath||rm.path LIKE '/'||:path2||'%') "
+                + " OR "
+                + " (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%') "
+                + " ) "
+                + " AND rm.status = 'ACTIVE'", RestfulMock.class)
+                .setParameter("method", method)
+                .setParameter("mockTypes", mockTypes)
+                .setParameter("path1", path)
+                .setParameter("path2", part1)
+                .getResultList();
+
+        return matchPath(mocks, path, true);
+    }
+
+    private RestfulMock matchPath(final List<RestfulMock> mocks, final String path, final boolean matchOnUserCtxPath) {
 
         if (mocks.isEmpty()) {
             return null;
@@ -118,9 +147,16 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
         final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
 
         return mocks.stream()
-                .filter(m -> matcher.match(m.getPath(), path))
-                .findFirst().orElse(null);
+                .filter(m ->
+                    matcher.match(buildMockMatchingPath(m, matchOnUserCtxPath), path))
+                .findFirst()
+                .orElse(null);
+    }
 
+    private String buildMockMatchingPath(final RestfulMock m, final boolean matchOnUserCtxPath) {
+        return (matchOnUserCtxPath && !SmockinUserRoleEnum.SYS_ADMIN.equals(m.getCreatedBy().getRole()))
+                ? "/" + m.getCreatedBy().getCtxPath() + m.getPath()
+                : m.getPath();
     }
 
 }

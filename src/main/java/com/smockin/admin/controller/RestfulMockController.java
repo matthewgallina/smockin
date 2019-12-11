@@ -57,10 +57,9 @@ public class RestfulMockController {
     }
 
     @RequestMapping(path="/restmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<RestfulMockResponseDTO>> getAll(@RequestParam(value = "filter", required = false) final String searchFilter,
-                                                                          @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+    public @ResponseBody ResponseEntity<List<RestfulMockResponseDTO>> getAll(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                                 throws RecordNotFoundException {
-        return new ResponseEntity<>(restfulMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+        return new ResponseEntity<>(restfulMockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
 }

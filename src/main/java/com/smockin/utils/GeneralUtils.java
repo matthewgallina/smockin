@@ -276,6 +276,7 @@ public final class GeneralUtils {
         return fileName.substring(extPos);
     }
 
+    // TODO fix this!
     public static byte[] createArchive(final File[] files) {
 
         ByteArrayOutputStream bos = null;
