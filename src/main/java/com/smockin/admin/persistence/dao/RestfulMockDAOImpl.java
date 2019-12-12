@@ -96,7 +96,7 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
     */
 
     @Override
-    public RestfulMock findActiveByMethodAndPathPatternAndTypes(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
+    public RestfulMock findActiveByMethodAndPathPatternAndTypesForSingleUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
 
         final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
 
@@ -104,18 +104,20 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 + " WHERE rm.method = :method "
                 + " AND rm.mockType IN (:mockTypes) "
                 + " AND (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%')"
+                + " AND rm.createdBy.role = :role "
                 + " AND rm.status = 'ACTIVE'", RestfulMock.class)
                 .setParameter("method", method)
                 .setParameter("mockTypes", mockTypes)
                 .setParameter("path1", path)
                 .setParameter("path2", part1)
+                .setParameter("role", SmockinUserRoleEnum.SYS_ADMIN)
                 .getResultList();
 
         return matchPath(mocks, path, false);
     }
 
     @Override
-    public RestfulMock findActiveByMethodAndPathPatternAndTypesAndUserCtxPath(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
+    public RestfulMock findActiveByMethodAndPathPatternAndTypesForMultiUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
 
         final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
 

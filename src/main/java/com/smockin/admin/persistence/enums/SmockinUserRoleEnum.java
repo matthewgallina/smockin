@@ -6,5 +6,5 @@ package com.smockin.admin.persistence.enums;
 public enum SmockinUserRoleEnum {
     SYS_ADMIN,
     ADMIN,
-    REGULAR;
+    REGULAR
 }

@@ -1007,7 +1007,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     }
 
     function getUserCtxPushPath(endpoint) {
-        return ($scope.defaultCtxPathPrefix != null) ? "/" + ($scope.defaultCtxPathPrefix + endpoint.path) : endpoint.path;
+        return ($scope.defaultCtxPathPrefix != null)
+            ? ($scope.defaultCtxPathPrefix + endpoint.path)
+            : endpoint.path;
     }
 
     function updateRuleOrderNumbers() {

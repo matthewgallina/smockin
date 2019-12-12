@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.admin.websocket.LiveLoggingHandler;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.dto.SseMessageDTO;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.utils.GeneralUtils;
@@ -45,7 +45,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     private RestfulMockDAO restfulMockDAO;
 
     @Autowired
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
@@ -80,7 +80,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
         userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
-        final String prefixedPath = mockedRestServerEngine.buildUserPath(mock);
+        final String prefixedPath = mockedRestServerEngineUtils.buildUserPath(mock);
         final List<PushClientDTO> sessionIds = new ArrayList<>();
 
         clients.forEach( (id, data) -> {

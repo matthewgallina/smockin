@@ -17,14 +17,16 @@ import java.io.IOException;
 public class SparkWebSocketEchoService {
 
     private final WebSocketService webSocketService;
+    private boolean isMultiUserMode;
 
-    public SparkWebSocketEchoService(final WebSocketService webSocketService) {
+    public SparkWebSocketEchoService(final WebSocketService webSocketService, final boolean isMultiUserMode) {
         this.webSocketService = webSocketService;
+        this.isMultiUserMode = isMultiUserMode;
     }
 
     @OnWebSocketConnect
     public void connected(final Session session) {
-        webSocketService.registerSession(session);
+        webSocketService.registerSession(session, isMultiUserMode);
     }
 
     @OnWebSocketClose

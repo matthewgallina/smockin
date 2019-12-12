@@ -6,9 +6,10 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.admin.websocket.LiveLoggingHandler;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
@@ -39,7 +40,7 @@ public class WebSocketServiceImpl implements WebSocketService {
     private RestfulMockDAO restfulMockDAO;
 
     @Autowired
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
@@ -59,11 +60,13 @@ public class WebSocketServiceImpl implements WebSocketService {
      * 'externally' identified using an allocated UUID.
      *
      */
-    public void registerSession(final Session session) {
+    public void registerSession(final Session session, final boolean isMultiUserMode) {
         logger.debug("registerSession called");
 
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
-        final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndTypes(RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS));
+        final RestfulMock wsMock = (isMultiUserMode)
+                ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS))
+                : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS));
 
         if (wsMock == null) {
             if (session.isOpen()) {
@@ -77,7 +80,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             return;
         }
 
-        final String path = wsMock.getPath();
+        final String path = buildPath(isMultiUserMode, wsMock);
 
         session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS );
 
@@ -161,7 +164,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
-        final String prefixedPath = mockedRestServerEngine.buildUserPath(mock);
+        final String prefixedPath = mockedRestServerEngineUtils.buildUserPath(mock);
         final List<PushClientDTO> sessionHandshakeIds = new ArrayList<>();
 
         if (!sessionMap.containsKey(prefixedPath)) {
@@ -186,6 +189,13 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         return null;
+    }
+
+    private String buildPath(final boolean isMultiUserMode, final RestfulMock wsMock) {
+
+        return (isMultiUserMode && !SmockinUserRoleEnum.SYS_ADMIN.equals(wsMock.getCreatedBy().getRole()))
+                ? ("/" + wsMock.getCreatedBy().getCtxPath() + wsMock.getPath())
+                : wsMock.getPath();
     }
 
     /**

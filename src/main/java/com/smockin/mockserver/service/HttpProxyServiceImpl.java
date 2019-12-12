@@ -6,7 +6,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -44,7 +44,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
     private UserTokenServiceUtils userTokenServiceUtils;
 
     @Autowired
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Override
     public RestfulResponseDTO waitForResponse(final String requestPath, final RestfulMock mock) {
@@ -99,7 +99,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
 
         userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
 
-        final String path = mockedRestServerEngine.buildUserPath(mock);
+        final String path = mockedRestServerEngineUtils.buildUserPath(mock);
 
         try {
 
@@ -134,7 +134,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
             lock.lock();
 
             Arrays.stream(RestMethodEnum.values())
-                    .forEach( rm -> synchronizedProxyResponsesMap.remove(new ProxiedKey(mockedRestServerEngine.buildUserPath(mock), rm)));
+                    .forEach( rm -> synchronizedProxyResponsesMap.remove(new ProxiedKey(mockedRestServerEngineUtils.buildUserPath(mock), rm)));
 
         } finally {
             lock.unlock();

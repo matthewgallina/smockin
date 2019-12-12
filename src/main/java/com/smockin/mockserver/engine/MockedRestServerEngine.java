@@ -3,7 +3,6 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
-import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,13 +79,13 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         initServerConfig(config);
 
+        final boolean isMultiUserMode = UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode());
+
         // Define all web socket routes first as the Spark framework requires this
-        buildWebSocketEndpoints();
+        buildWebSocketEndpoints(isMultiUserMode);
 
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
-
-        final boolean isMultiUserMode = UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode());
 
         // Next handle all HTTP RESTFul web service routes
         buildGlobalHttpEndpointsHandler(isMultiUserMode);
@@ -187,9 +185,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM));
     }
 
-    void buildWebSocketEndpoints() {
+    void buildWebSocketEndpoints(final boolean isMultiUserMode) {
 
-        Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService));
+        Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService, isMultiUserMode));
     }
 
     private void applyTrafficLogging() {
@@ -325,15 +323,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             response.header("Access-Control-Allow-Origin", "*");
         });
 
-    }
-
-    public String buildUserPath(final RestfulMock mock) {
-
-        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
-            return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();
-        }
-
-        return mock.getPath();
     }
 
 }

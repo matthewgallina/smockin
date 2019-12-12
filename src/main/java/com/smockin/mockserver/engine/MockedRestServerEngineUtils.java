@@ -6,6 +6,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.RandomUtils;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -56,14 +58,14 @@ public class MockedRestServerEngineUtils {
         try {
 
             final RestfulMock mock = (isMultiUserMode)
-                    ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesAndUserCtxPath(
+                    ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
                             RestMethodEnum.findByName(request.requestMethod()),
                             request.pathInfo(),
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                                     RestMockTypeEnum.PROXY_HTTP,
                                     RestMockTypeEnum.SEQ,
                                     RestMockTypeEnum.RULE))
-                    : restfulMockDAO.findActiveByMethodAndPathPatternAndTypes(
+                    : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                             RestMethodEnum.findByName(request.requestMethod()),
                             request.pathInfo(),
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
@@ -184,7 +186,7 @@ public class MockedRestServerEngineUtils {
     String processSSERequest(final RestfulMock mock, final Request req, final Response res) {
 
         try {
-            serverSideEventService.register(mock.getPath(), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), req, res);
+            serverSideEventService.register(buildUserPath(mock), mock.getSseHeartBeatInMillis(), mock.isProxyPushIdOnConnect(), req, res);
         } catch (IOException e) {
             logger.error("Error registering SEE client", e);
         }
@@ -207,6 +209,15 @@ public class MockedRestServerEngineUtils {
             logger.error("Failed to apply randomised latency and prolong current thread execution", ex);
         }
 
+    }
+
+    public String buildUserPath(final RestfulMock mock) {
+
+        if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
+            return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();
+        }
+
+        return mock.getPath();
     }
 
 }
