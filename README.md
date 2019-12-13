@@ -42,10 +42,9 @@ sMockin runs as a small web app which can be either installed locally to a devel
 ### KEY FEATURES
 
 * Create dynamic API mocks to mimic real world application behaviour.
-* Run sMockin as a proxy server and substitute existing or missing endpoints with mocks.
 * Run sMockin centrally and create user accounts for your team.
 * Import / Export mocks to share between your team when running sMockin on individual machines.
-* Monitor and log traffic going to the mock server or via the proxy.
+* Monitor and log traffic going to the mock server.
 * A complete UI solution requiring zero coding.
 
 
@@ -108,7 +107,6 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         Java-JWT                    -       https://github.com/auth0/java-jwt
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
-        Little Proxy                -       https://github.com/adamfisk/LittleProxy
 
 <br/>
 
