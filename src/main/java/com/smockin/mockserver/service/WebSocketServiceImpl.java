@@ -6,7 +6,6 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
-import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
@@ -80,7 +79,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             return;
         }
 
-        final String path = buildPath(isMultiUserMode, wsMock);
+        final String path = mockedRestServerEngineUtils.buildUserPath(wsMock);
 
         session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS );
 
@@ -191,12 +190,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         return null;
     }
 
-    private String buildPath(final boolean isMultiUserMode, final RestfulMock wsMock) {
-
-        return (isMultiUserMode && !SmockinUserRoleEnum.SYS_ADMIN.equals(wsMock.getCreatedBy().getRole()))
-                ? ("/" + wsMock.getCreatedBy().getCtxPath() + wsMock.getPath())
-                : wsMock.getPath();
-    }
 
     /**
      * Private class used to associate each WebSocket session against an allocated UUID.

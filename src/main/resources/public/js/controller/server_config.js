@@ -21,19 +21,16 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.timeOutMillisLabel = 'Idle Time out';
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
-    $scope.enableProxyServerLabel = 'Enable Proxy Server (mock interceptor) on port 8010';
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
 
-    $scope.restartServerMessage = "(Note, saving will cause the server to restart if currently running)"
-
 
     //
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
-    $scope.saveButtonLabel = 'Save';
+    $scope.saveButtonLabel = 'Update Server';
 
 
     //
@@ -69,7 +66,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "timeOutMillis" : 0,
         "autoStart" : false,
         "enableCors" : false,
-        "enableProxyServer" : false
     };
 
 
@@ -119,8 +115,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         // Handle Native Server Properties
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
-                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE",
-                "PROXY_SERVER_ENABLED" : ($scope.serverConfig.enableProxyServer)?"TRUE":"FALSE"
+                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
             };
         } else if (ServerType == globalVars.JmsServerType) {
             req.nativeProperties = {
@@ -165,8 +160,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
-                    "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
-                    "enableProxyServer" : (data.nativeProperties.PROXY_SERVER_ENABLED != null && data.nativeProperties.PROXY_SERVER_ENABLED.toUpperCase() == "TRUE")
+                    "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE")
                 };
 
                 return;

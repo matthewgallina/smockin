@@ -2,22 +2,19 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
-import com.smockin.mockserver.dto.ProxyActiveMock;
 import com.smockin.mockserver.exception.MockServerException;
-import com.smockin.mockserver.proxy.ProxyServer;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,9 +55,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private ServerSideEventService serverSideEventService;
 
     @Autowired
-    private ProxyServer proxyServer;
-
-    @Autowired
     private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Autowired
@@ -72,6 +66,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
+    private final String wildcardPath = "*";
+
 
     @Override
     public void start(final MockedServerConfigDTO config, final Optional opt) throws MockServerException {
@@ -93,9 +89,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         applyTrafficLogging();
 
         initServer(config.getPort());
-
-//        initProxyServer(activeRestfulMocks, config);
-
     }
 
     @Override
@@ -126,8 +119,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             clearState();
-
-            proxyServer.shutdown();
 
         } catch (Throwable ex) {
             throw new MockServerException(ex);
@@ -168,23 +159,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.threadPool(config.getMaxThreads(), config.getMinThreads(), config.getTimeOutMillis());
     }
 
-    void initProxyServer(final List<RestfulMock> activeMocks, final MockedServerConfigDTO config) {
-
-        if (!isProxyServerModeEnabled(config)) {
-            return;
-        }
-
-        final List<ProxyActiveMock> activeProxyMocks = activeMocks.stream()
-                .map(m -> new ProxyActiveMock(m.getPath(), m.getCreatedBy().getCtxPath(), m.getMethod()))
-                .collect(Collectors.toList());
-
-        proxyServer.start(config, activeProxyMocks);
-    }
-
-    public boolean isProxyServerModeEnabled(final MockedServerConfigDTO config) {
-        return BooleanUtils.toBoolean(config.getNativeProperties().get(GeneralUtils.PROXY_SERVER_ENABLED_PARAM));
-    }
-
     void buildWebSocketEndpoints(final boolean isMultiUserMode) {
 
         Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService, isMultiUserMode));
@@ -216,7 +190,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.afterAfter((request, response) -> {
 
             if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)
-                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader("Content-Type"))) {
+                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
                 return;
             }
 
@@ -233,8 +207,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
-
-        final String wildcardPath = "*";
 
         Spark.head(wildcardPath, (request, response) ->
                 mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
@@ -279,9 +251,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final Set<String> headerNames = request.headers();
 
-        return headerNames.contains("Upgrade")
+        return headerNames.contains(HttpHeaders.UPGRADE)
                 && headerNames.contains("Sec-WebSocket-Key")
-                && "websocket".equalsIgnoreCase(request.headers("Upgrade"));
+                && "websocket".equalsIgnoreCase(request.headers(HttpHeaders.UPGRADE));
     }
 
     void clearState() {
@@ -304,23 +276,25 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.options("/*", (request, response) -> {
 
-            final String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+            final String accessControlRequestHeaders = request.headers(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
 
             if (accessControlRequestHeaders != null) {
-                response.header("Access-Control-Allow-Headers", accessControlRequestHeaders);
+                response.header(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, accessControlRequestHeaders);
             }
 
-            final String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+            final String accessControlRequestMethod = request.headers(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD);
 
             if (accessControlRequestMethod != null) {
-                response.header("Access-Control-Allow-Methods", accessControlRequestMethod);
+
+                response.header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, accessControlRequestMethod);
             }
 
             return HttpStatus.OK.name();
         });
 
         Spark.before((request, response) -> {
-            response.header("Access-Control-Allow-Origin", "*");
+
+            response.header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, wildcardPath);
         });
 
     }

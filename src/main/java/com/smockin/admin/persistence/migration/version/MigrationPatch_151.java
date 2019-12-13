@@ -1,11 +1,6 @@
 package com.smockin.admin.persistence.migration.version;
 
-import com.smockin.admin.exception.MigrationException;
 import com.smockin.admin.persistence.dao.MigrationDAO;
-import com.smockin.admin.persistence.dao.SmockinUserDAO;
-import com.smockin.admin.persistence.entity.SmockinUser;
-import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
-import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,13 +24,13 @@ public class MigrationPatch_151 implements MigrationPatch {
         migrationDAO.buildNativeQuery("INSERT INTO SERVER_CONFIG_NATIVE_PROPERTIES "
                 + " (SERVER_CONFIG_ID, NATIVE_PROPERTIES_KEY, NATIVE_PROPERTIES) "
                 + " VALUES "
-                + " ((select ID from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'), '" + GeneralUtils.PROXY_SERVER_ENABLED_PARAM + "', 'FALSE');")
+                + " ((select ID from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'), 'PROXY_SERVER_ENABLED', 'FALSE');")
             .executeUpdate();
 
         migrationDAO.buildNativeQuery("INSERT INTO SERVER_CONFIG_NATIVE_PROPERTIES "
                 + " (SERVER_CONFIG_ID, NATIVE_PROPERTIES_KEY, NATIVE_PROPERTIES) "
                 + " VALUES "
-                + " ((select ID from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'), '" + GeneralUtils.PROXY_SERVER_PORT_PARAM + "', '8010');")
+                + " ((select ID from SERVER_CONFIG where SERVER_TYPE = 'RESTFUL'), 'PROXY_SERVER_PORT', '8010');")
                 .executeUpdate();
 
     }
