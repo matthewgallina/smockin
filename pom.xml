@@ -163,12 +163,14 @@
 
     </dependencies>
 
+    <!--
     <repositories>
         <repository>
             <id>reficio</id>
             <url>http://repo.reficio.org/maven/</url>
         </repository>
     </repositories>
+    -->
 
     <build>
         <plugins>
