@@ -18,16 +18,6 @@ public interface MockedServerEngineService {
     void shutdownRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockedServerConfigDTO restartRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
-    MockedServerConfigDTO startJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-    MockServerState getJmsServerState() throws MockServerException;
-    void shutdownJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-    MockedServerConfigDTO restartJms(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-
-    MockedServerConfigDTO startFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-    MockServerState getFtpServerState() throws MockServerException;
-    void shutdownFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-    MockedServerConfigDTO restartFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException;
-
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;
     void handleServerAutoStart();

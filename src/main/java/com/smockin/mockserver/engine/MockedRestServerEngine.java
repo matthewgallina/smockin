@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional
-public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO, Optional<Void>> {
+public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO> {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);
 
@@ -70,7 +70,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
 
     @Override
-    public void start(final MockedServerConfigDTO config, final Optional opt) throws MockServerException {
+    public void start(final MockedServerConfigDTO config) throws MockServerException {
         logger.debug("start called");
 
         initServerConfig(config);

@@ -16,8 +16,6 @@ app.service('globalVars', function() {
     this.RegularRole = "REGULAR";
 
     this.RestfulServerType = "RESTFUL";
-    this.JmsServerType = "JMS";
-    this.FtpServerType = "FTP";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';

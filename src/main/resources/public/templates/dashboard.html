@@ -6,29 +6,9 @@
 
         <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
-        <uib-tabset active="selectedTab">
-            <uib-tab index="0" heading="{{ tcpHeading }}">
+        <br />
 
-                <br />
-
-                <div ng-include="'tcp_dashboard.html'"></div>
-
-            </uib-tab>
-            <uib-tab index="1" heading="{{ jmsHeading }}">
-
-                <br />
-
-                <div ng-include="'jms_dashboard.html'"></div>
-
-            </uib-tab>
-            <uib-tab index="2" heading="{{ ftpHeading }}">
-
-                <br />
-
-                <div ng-include="'ftp_dashboard.html'"></div>
-
-            </uib-tab>
-        </uib-tabset>
+        <div ng-include="'tcp_dashboard.html'"></div>
 
     </div>
 

@@ -1,20 +1,12 @@
 package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smockin.admin.dto.FtpMockDTO;
-import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.MockImportConfigDTO;
-import com.smockin.admin.dto.response.FtpMockResponseDTO;
-import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.FtpMockDAO;
-import com.smockin.admin.persistence.dao.JmsMockDAO;
-import com.smockin.admin.persistence.entity.FtpMock;
-import com.smockin.admin.persistence.entity.JmsMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
@@ -46,18 +38,6 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     @Autowired
     private RestfulMockService restfulMockService;
-
-    @Autowired
-    private JmsMockService jmsMockService;
-
-    @Autowired
-    private FtpMockService ftpMockService;
-
-    @Autowired
-    private JmsMockDAO jmsMockDAO;
-
-    @Autowired
-    private FtpMockDAO ftpMockDAO;
 
     @Autowired
     private RestfulMockServiceUtils restfulMockServiceUtils;
@@ -111,12 +91,6 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 case RESTFUL:
                     exportFile = handleHTTPExport(selectedExports, token);
                     break;
-                case JMS:
-                    exportFile = handleJMSExport(selectedExports, token);
-                    break;
-                case FTP:
-                    exportFile = handleFTPExport(selectedExports, token);
-                    break;
                 default:
                     throw new MockImportException("Unsupported server type: " + serverType);
             }
@@ -155,64 +129,8 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         return restTempFile;
     }
 
-    private File handleJMSExport(final List<String> selectedExports, final String token) throws IOException {
-
-        final List<JmsMockResponseDTO> allJmsMocks = jmsMockService.loadAll(token);
-
-        final List<JmsMockResponseDTO> jmsMocksToExport = (!selectedExports.isEmpty())
-                ?
-                selectedExports
-                        .stream()
-                        .map(r -> findJmsByExternalId(r, allJmsMocks))
-                        .collect(Collectors.toList())
-                :
-                allJmsMocks;
-
-        final File jmsTempFile = File.createTempFile(jmsExportFileName, exportFileNameExt);
-
-        FileUtils.writeStringToFile(jmsTempFile, GeneralUtils.serialiseJson(jmsMocksToExport), Charset.defaultCharset());
-
-        return jmsTempFile;
-    }
-
-    private File handleFTPExport(final List<String> selectedExports, final String token) throws IOException {
-
-        final List<FtpMockResponseDTO> allFtpMocks = ftpMockService.loadAll(token);
-
-        final List<FtpMockResponseDTO> ftpMocksToExport = (!selectedExports.isEmpty())
-                ?
-                selectedExports
-                        .stream()
-                        .map(r -> findFtpByExternalId(r, allFtpMocks))
-                        .collect(Collectors.toList())
-                :
-                allFtpMocks;
-
-        final File ftpTempFile = File.createTempFile(ftpExportFileName, exportFileNameExt);
-
-        FileUtils.writeStringToFile(ftpTempFile, GeneralUtils.serialiseJson(ftpMocksToExport), Charset.defaultCharset());
-
-        return ftpTempFile;
-    }
-
     private RestfulMockResponseDTO findRestByExternalId(final String externalId, final List<RestfulMockResponseDTO> allRestfulMocks) throws RecordNotFoundException {
         return allRestfulMocks
-                .stream()
-                .filter(r -> r.getExtId().equals(externalId))
-                .findFirst()
-                .orElseThrow(() -> new RecordNotFoundException());
-    }
-
-    private JmsMockResponseDTO findJmsByExternalId(final String externalId, final List<JmsMockResponseDTO> allJmsMocks) throws RecordNotFoundException {
-        return allJmsMocks
-                .stream()
-                .filter(r -> r.getExtId().equals(externalId))
-                .findFirst()
-                .orElseThrow(() -> new RecordNotFoundException());
-    }
-
-    private FtpMockResponseDTO findFtpByExternalId(final String externalId, final List<FtpMockResponseDTO> allFtpMocks) throws RecordNotFoundException {
-        return allFtpMocks
                 .stream()
                 .filter(r -> r.getExtId().equals(externalId))
                 .findFirst()
@@ -260,12 +178,6 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         if (fileName.startsWith(restExportFileName)
                 && fileName.endsWith(exportFileNameExt)) {
             return ServerTypeEnum.RESTFUL;
-        } else if (fileName.startsWith(jmsExportFileName)
-                && fileName.endsWith(exportFileNameExt)) {
-            return ServerTypeEnum.JMS;
-        } else if (fileName.startsWith(ftpExportFileName)
-                && fileName.endsWith(exportFileNameExt)) {
-            return ServerTypeEnum.FTP;
         }
 
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
@@ -292,101 +204,11 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                         });
                 break;
 
-            case JMS:
-                GeneralUtils.deserialiseJson(content, new TypeReference<List<JmsMockResponseDTO>>() {})
-                        .stream()
-                        .forEach(qm -> {
-                            preHandleExistingJmsEndpoint(qm, config, currentUser, conflictCtxPath);
-                            try {
-                                jmsMockService.createEndpoint(qm, currentUser.getSessionToken());
-                                outcome.append(handleImportPass(type, qm.getName()));
-                            } catch (Throwable ex) {
-                                outcome.append(handleImportFail(type, qm.getName(), ex));
-                            }
-                        });
-                break;
-
-            case FTP:
-                GeneralUtils.deserialiseJson(content, new TypeReference<List<FtpMockResponseDTO>>() {})
-                        .stream()
-                        .forEach(fm -> {
-                            preHandleExistingFtpEndpoint(fm, config, currentUser, conflictCtxPath);
-                            try {
-                                ftpMockService.createEndpoint(fm, currentUser.getSessionToken());
-                                outcome.append(handleImportPass(type, fm.getName()));
-                            } catch (Throwable ex) {
-                                outcome.append(handleImportFail(type, fm.getName(), ex));
-                            }
-                        });
-                break;
-
             default:
                 throw new MockImportException("Unsupported server type: " + type);
         }
 
         return outcome.toString();
-    }
-
-    public void preHandleExistingJmsEndpoint(final JmsMockDTO dto, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
-
-        final JmsMock existingJmsMock = jmsMockDAO.findByNameAndUser(dto.getName(), currentUser);
-
-        if (existingJmsMock == null) {
-            return;
-        }
-
-        if (!config.isKeepExisting()) {
-            try {
-                jmsMockService.deleteEndpoint(existingJmsMock.getExtId(), currentUser.getSessionToken());
-            } catch (ValidationException ex) {
-                throw new MockImportException("Error deleting existing jms endpoint", ex);
-            }
-//            jmsMockDAO.delete(existingJmsMock);
-//            jmsMockDAO.flush();
-            return;
-        }
-
-        switch (config.getKeepStrategy()) {
-            case RENAME_EXISTING:
-                existingJmsMock.setName("/" + conflictCtxPath + existingJmsMock.getName());
-                jmsMockDAO.save(existingJmsMock);
-                break;
-            case RENAME_NEW:
-                dto.setName("/" + conflictCtxPath + dto.getName());
-                break;
-        }
-
-    }
-
-    public void preHandleExistingFtpEndpoint(final FtpMockDTO dto, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
-
-        final FtpMock existingFtpMock = ftpMockDAO.findByNameAndUser(dto.getName(), currentUser);
-
-        if (existingFtpMock == null) {
-            return;
-        }
-
-        if (!config.isKeepExisting()) {
-            try {
-                ftpMockService.deleteEndpoint(existingFtpMock.getExtId(), currentUser.getSessionToken());
-            } catch (ValidationException | IOException ex) {
-                throw new MockImportException("Error deleting existing ftp endpoint", ex);
-            }
-//            ftpMockDAO.delete(existingFtpMock);
-//            ftpMockDAO.flush();
-            return;
-        }
-
-        switch (config.getKeepStrategy()) {
-            case RENAME_EXISTING:
-                existingFtpMock.setName("/" + conflictCtxPath + existingFtpMock.getName());
-                ftpMockDAO.save(existingFtpMock);
-                break;
-            case RENAME_NEW:
-                dto.setName("/" + conflictCtxPath + dto.getName());
-                break;
-        }
-
     }
 
     private String handleImportPass(final ServerTypeEnum type, final String name) {

@@ -3,18 +3,13 @@ package com.smockin.admin.service;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.FtpMockDAO;
-import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ServerConfig;
-import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
-import com.smockin.mockserver.engine.MockedFtpServerEngine;
-import com.smockin.mockserver.engine.MockedJmsServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import org.slf4j.Logger;
@@ -22,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -37,19 +31,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private MockedRestServerEngine mockedRestServerEngine;
 
     @Autowired
-    private MockedJmsServerEngine mockedJmsServerEngine;
-
-    @Autowired
-    private MockedFtpServerEngine mockedFtpServerEngine;
-
-    @Autowired
     private RestfulMockDAO restfulMockDefinitionDAO;
-
-    @Autowired
-    private JmsMockDAO jmsQueueMockDAO;
-
-    @Autowired
-    private FtpMockDAO ftpMockDAO;
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
@@ -77,7 +59,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.RESTFUL);
 
-            mockedRestServerEngine.start(configDTO, Optional.empty());
+            mockedRestServerEngine.start(configDTO);
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
@@ -127,149 +109,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             throw ex;
         }
 
-    }
-
-
-    //
-    // JMS
-    @Override
-    public MockedServerConfigDTO startJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        return startJms();
-    }
-
-    private MockedServerConfigDTO startJms() throws MockServerException {
-
-        try {
-
-            final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.JMS);
-
-            if (getJmsServerState().isRunning()) {
-                logger.warn("Cannot start JMS server as it is already running");
-                return dto;
-            }
-
-            mockedJmsServerEngine.start(dto, jmsQueueMockDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
-
-            return dto;
-        } catch (RecordNotFoundException ex) {
-            logger.error("Starting JMS Mocking Engine, due to missing mock server config", ex);
-            throw new MockServerException("Missing mock JMS server config");
-        } catch (MockServerException ex) {
-            logger.error("Starting JMS Mocking Engine", ex);
-            throw ex;
-        }
-
-    }
-
-    @Override
-    public void shutdownJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        shutdownJms();
-    }
-
-    private void shutdownJms() throws MockServerException {
-
-        try {
-            mockedJmsServerEngine.shutdown();
-        } catch (MockServerException ex) {
-            logger.error("Stopping JMS Mocking Engine", ex);
-            throw ex;
-        }
-
-    }
-
-    @Override
-    public MockedServerConfigDTO restartJms(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        if (getJmsServerState().isRunning()) {
-            shutdownJms();
-        }
-
-        return startJms();
-    }
-
-    @Override
-    public MockServerState getJmsServerState() throws MockServerException {
-        return mockedJmsServerEngine.getCurrentState();
-    }
-
-
-    //
-    // FTP
-    @Override
-    public MockedServerConfigDTO startFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        return startFtp();
-    }
-
-    private MockedServerConfigDTO startFtp() throws MockServerException {
-
-        try {
-
-            final MockedServerConfigDTO dto = loadServerConfig(ServerTypeEnum.FTP);
-
-            if (getFtpServerState().isRunning()) {
-                logger.warn("Cannot start FTP server as it is already running");
-                return dto;
-            }
-
-            mockedFtpServerEngine.start(dto, ftpMockDAO.findAllByStatus(RecordStatusEnum.ACTIVE));
-
-            return dto;
-        } catch (RecordNotFoundException ex) {
-            logger.error("Starting FTP Mocking Engine, due to missing mock server config", ex);
-            throw new MockServerException("Missing mock FTP server config");
-        } catch (MockServerException ex) {
-            logger.error("Starting FTP Mocking Engine", ex);
-            throw ex;
-        }
-
-    }
-
-    @Override
-    public void shutdownFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        shutdownFtp();
-    }
-
-    private void shutdownFtp() throws MockServerException {
-
-        try {
-            mockedFtpServerEngine.shutdown();
-        } catch (MockServerException ex) {
-            logger.error("Stopping FTP Mocking Engine", ex);
-            throw ex;
-        }
-
-    }
-
-    @Override
-    public MockedServerConfigDTO restartFtp(final String token) throws MockServerException, RecordNotFoundException, AuthException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
-
-        if (getFtpServerState().isRunning()) {
-            shutdownFtp();
-        }
-
-        return startFtp();
-
-    }
-
-    @Override
-    public MockServerState getFtpServerState() throws MockServerException {
-        return mockedFtpServerEngine.getCurrentState();
     }
 
 
@@ -347,12 +186,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             case RESTFUL:
                 startRest();
                 break;
-            case JMS:
-                startJms();
-                break;
-            case FTP:
-                startFtp();
-                break;
+            default:
+                logger.warn("Found auto start instruction for discontinued server type: " + serverType);
         }
 
     }
