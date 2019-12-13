@@ -20,7 +20,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
         <spring-boot-test.version>2.2.1.RELEASE</spring-boot-test.version>
-        <spark-core.version>2.8.0</spark-core.version>
+        <spark-core.version>2.9.1</spark-core.version>
         <h2.version>1.4.194</h2.version>
         <hikaricp.version>2.6.1</hikaricp.version>
         <commons-lang3.version>3.5</commons-lang3.version>
@@ -33,7 +33,6 @@
         <raml-parser.version>1.0.25</raml-parser.version>
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
-        <littleproxy.version>1.1.2</littleproxy.version>
         <spring-boot-maven-plugin.version>2.2.1.RELEASE</spring-boot-maven-plugin.version>
     </properties>
 
@@ -140,13 +139,6 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java-jwt.version}</version>
-        </dependency>
-
-        <!-- Little Proxy -->
-        <dependency>
-            <groupId>org.littleshoot</groupId>
-            <artifactId>littleproxy</artifactId>
-            <version>${littleproxy.version}</version>
         </dependency>
 
         <!-- Testing Related -->
