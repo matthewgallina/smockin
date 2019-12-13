@@ -2,7 +2,6 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.JmsMockDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
-import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
@@ -73,20 +72,12 @@ public class JmsMockServiceImpl implements JmsMockService {
     }
 
     @Override
-    public List<JmsMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
+    public List<JmsMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        final List<JmsMock> jmsMocks;
-
-        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
-            jmsMocks = jmsMockDAO.findAll();
-        } else {
-            jmsMocks =  jmsMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId());
-        }
-
-        return jmsMocks
+        return jmsMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId())
                 .stream()
-                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), mockedJmsServerEngine.getDeploymentStatus(e, e.getStatus()), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
+                .map(e -> new JmsMockResponseDTO(e.getExtId(), e.getCreatedBy().getCtxPath(), e.getName(), e.getStatus(), e.getJmsType(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 

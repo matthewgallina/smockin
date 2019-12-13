@@ -5,5 +5,5 @@ package com.smockin.admin.persistence.enums;
  */
 public enum RecordStatusEnum {
     ACTIVE,
-    INACTIVE;
+    INACTIVE
 }

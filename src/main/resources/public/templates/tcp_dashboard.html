@@ -13,12 +13,12 @@
                         <span id="server-status-running" ng-show="mockServerStatus == mockServerRunning">{{ mockServerRunning }}</span>
                         <span id="server-status-restarting" ng-show="mockServerStatus == mockServerRestarting">{{ mockServerRestarting }}</span>
                         <br />
-                        <a id="server-config" href="" ng-click="doOpenServerConfig()">{{ serverConfigLabel }}</a>
+                        <a id="server-config" href="" ng-click="doOpenServerConfig()" ng-if="!readOnly">{{ serverConfigLabel }}</a>
                     </h3>
                 </div>
-                <div class="col-sm-4">
-                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startTcpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
-                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopTcpMockServer()" ng-disabled="readOnly"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
+                <div class="col-sm-4" ng-if="!readOnly">
+                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startTcpMockServer()"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopTcpMockServer()"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
                 </div>
            </div>
         </div>
@@ -37,7 +37,6 @@
                     <br />
                     <span class="batch-actions-group">
                         (
-                            <a href ng-click="doShowAllEndpoints(true)" ng-if="!showAllEndpoints && isLoggedIn">{{ showAllEndpointsHeading }} |</a>
                             <a href ng-click="doExpandAllEndpoints()">{{ expandAllEndpointsHeading }}</a> |
                             <a href ng-click="doCollapseAllEndpoints()">{{ collapseAllEndpointsHeading }}</a> |
                             <a href ng-click="doSelectAllEndpoints()">{{ selectAllEndpointsHeading }}</a> |
@@ -88,14 +87,14 @@
                         <tbody>
                             <tr ng-repeat="x in rs.data">
                                 <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
-                                <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
-                                <td class="status-{{x.deploymentStatus | lowercase}} mock-status-{{ x.status | lowercase }}">
-                                    {{ x.deploymentStatus }}
+                                <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                                <td>{{ translate(x.mockType) }}</td>
+                                <td class="status-{{x.status | lowercase}}">
+                                    {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
+                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x.extId)">{{ viewEndpointButtonLabel }}</button>
                                 </td>
                             </tr>
                         </tbody>
@@ -104,66 +103,6 @@
                 </div>
             </div>
         </uib-accordion>
-
-        <div ng-show="showAllEndpoints">
-
-            <br />
-            <hr />
-
-            <h3>
-                {{ endpointsOtherUsersHeading }}
-                <br />
-                <span class="batch-actions-group" ng-if="isLoggedIn && showAllEndpoints">(<a href ng-click="doShowAllEndpoints(false)">{{ hideAllEndpointsHeading }}</a>)</span>
-            </h3>
-
-            <br />
-
-            <h4 class="no-data-label" ng-if="otherUserRestServices.length == 0">
-                {{ noDataFoundMsg }}
-            </h4>
-
-            <uib-accordion close-others="false" class="table">
-                <div uib-accordion-group ng-repeat="rs in otherUserRestServices" is-open="rs.isOpen" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
-                    <uib-accordion-heading>
-                        <span class="batched-endpoint-path">{{ rs.basePath }}</span>
-                        <span class="pull-right">({{ rs.data.length }})
-                            <i class="glyphicon" ng-class="{'glyphicon-chevron-down': rs.isOpen, 'glyphicon-chevron-right': !rs.isOpen}"></i>
-                        </span>
-                    </uib-accordion-heading>
-                    <div>
-
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>{{ pathTableLabel }}</th>
-                                    <th ng-if="isLoggedIn">{{ createdByTableLabel }}</th>
-                                    <th>{{ mockTypeTableLabel }}</th>
-                                    <th>{{ statusTableLabel }}</th>
-                                    <th>{{ actionTableLabel }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr ng-repeat="x in rs.data">
-                                    <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
-                                    <td class="mock-status-{{ x.status | lowercase }}">{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
-                                    <td class="mock-status-{{ x.status | lowercase }}" ng-if="isLoggedIn">{{ x.createdBy }}</td>
-                                    <td class="mock-status-{{ x.status | lowercase }}">{{ translate(x.mockType) }}</td>
-                                    <td class="status-{{x.deploymentStatus | lowercase}} mock-status-{{ x.status | lowercase }}">
-                                        {{ x.deploymentStatus }}
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x)">{{ viewEndpointButtonLabel }}</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-                </div>
-            </uib-accordion>
-
-        </div>
 
     </div>
 

@@ -5,7 +5,6 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
-import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -89,7 +88,6 @@ public class MockedServerEngineServiceTest {
         serverConfig.setMinThreads(5);
         serverConfig.setTimeOutMillis(30000);
         serverConfig.setAutoStart(true);
-        serverConfig.setAutoRefresh(true);
         serverConfig.getNativeProperties().put("serverName", "foo");
 
         Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
@@ -105,7 +103,6 @@ public class MockedServerEngineServiceTest {
         Assert.assertEquals(serverConfig.getMinThreads(), dto.getMinThreads());
         Assert.assertEquals(serverConfig.getTimeOutMillis(), dto.getTimeOutMillis());
         Assert.assertEquals(serverConfig.isAutoStart(), dto.isAutoStart());
-        Assert.assertEquals(serverConfig.isAutoRefresh(), dto.isAutoRefresh());
 
         Assert.assertEquals(1, dto.getNativeProperties().size());
         Assert.assertEquals("foo", dto.getNativeProperties().get("serverName"));
@@ -122,7 +119,6 @@ public class MockedServerEngineServiceTest {
         dto.setMinThreads(1);
         dto.setTimeOutMillis(30000);
         dto.setAutoStart(true);
-        dto.setAutoRefresh(true);
         dto.getNativeProperties().put("serverName", "foo");
 
         // Test
@@ -137,7 +133,6 @@ public class MockedServerEngineServiceTest {
         Assert.assertEquals(dto.getMinThreads(), argument.getValue().getMinThreads());
         Assert.assertEquals(dto.getTimeOutMillis(), argument.getValue().getTimeOutMillis());
         Assert.assertEquals(dto.isAutoStart(), argument.getValue().isAutoStart());
-        Assert.assertEquals(dto.isAutoRefresh(), argument.getValue().isAutoRefresh());
         Assert.assertEquals(dto.isAutoStart(), argument.getValue().isAutoStart());
 
         Assert.assertNotNull(argument.getValue().getNativeProperties());
@@ -156,7 +151,6 @@ public class MockedServerEngineServiceTest {
         dto.setMinThreads(1);
         dto.setTimeOutMillis(30000);
         dto.setAutoStart(true);
-        dto.setAutoRefresh(true);
         dto.getNativeProperties().put("serverName", "foo");
 
         final ServerConfig serverConfig = new ServerConfig();
@@ -171,7 +165,6 @@ public class MockedServerEngineServiceTest {
         Assert.assertEquals(dto.getMinThreads(), serverConfig.getMinThreads());
         Assert.assertEquals(dto.getTimeOutMillis(), serverConfig.getTimeOutMillis());
         Assert.assertEquals(dto.isAutoStart(), serverConfig.isAutoStart());
-        Assert.assertEquals(dto.isAutoRefresh(), serverConfig.isAutoRefresh());
         Assert.assertEquals(dto.isAutoStart(), serverConfig.isAutoStart());
 
         Assert.assertNotNull(serverConfig.getNativeProperties());
@@ -292,7 +285,6 @@ public class MockedServerEngineServiceTest {
         serverConfig.setMinThreads(5);
         serverConfig.setTimeOutMillis(30000);
         serverConfig.setAutoStart(true);
-        serverConfig.setAutoRefresh(true);
         serverConfig.getNativeProperties().put("serverName", "foo");
 
         Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
@@ -308,7 +300,6 @@ public class MockedServerEngineServiceTest {
         Assert.assertEquals(serverConfig.getMinThreads(), dto.getMinThreads());
         Assert.assertEquals(serverConfig.getTimeOutMillis(), dto.getTimeOutMillis());
         Assert.assertEquals(serverConfig.isAutoStart(), dto.isAutoStart());
-        Assert.assertEquals(serverConfig.isAutoRefresh(), dto.isAutoRefresh());
         Assert.assertEquals(serverConfig.getNativeProperties().size(), dto.getNativeProperties().size());
         Assert.assertEquals(serverConfig.getNativeProperties().get("serverName"), dto.getNativeProperties().get("serverName"));
 
@@ -336,7 +327,7 @@ public class MockedServerEngineServiceTest {
         // Setup
         final ServerConfig serverConfig = Mockito.mock(ServerConfig.class);
         Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
-        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
+        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
 
         // Test
         mockedServerEngineService.startRest(token);
@@ -376,7 +367,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(ServerTypeEnum.RESTFUL);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
 
     }
 
@@ -387,7 +378,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(null);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class), Mockito.anyListOf(RestfulMock.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
     }
 
     @Test

@@ -7,7 +7,6 @@ import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
 import com.smockin.admin.dto.response.JmsMockResponseDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -32,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -139,7 +137,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     // Export related functions
     private File handleHTTPExport(final List<String> selectedExports, final String token) throws IOException {
 
-        final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+        final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(token);
 
         final List<RestfulMockResponseDTO> restfulMocksToExport = (!selectedExports.isEmpty())
                 ?
@@ -159,7 +157,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     private File handleJMSExport(final List<String> selectedExports, final String token) throws IOException {
 
-        final List<JmsMockResponseDTO> allJmsMocks = jmsMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+        final List<JmsMockResponseDTO> allJmsMocks = jmsMockService.loadAll(token);
 
         final List<JmsMockResponseDTO> jmsMocksToExport = (!selectedExports.isEmpty())
                 ?
@@ -179,7 +177,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     private File handleFTPExport(final List<String> selectedExports, final String token) throws IOException {
 
-        final List<FtpMockResponseDTO> allFtpMocks = ftpMockService.loadAll(SearchFilterEnum.ALL.name(), token);
+        final List<FtpMockResponseDTO> allFtpMocks = ftpMockService.loadAll(token);
 
         final List<FtpMockResponseDTO> ftpMocksToExport = (!selectedExports.isEmpty())
                 ?

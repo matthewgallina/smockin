@@ -500,16 +500,9 @@
         <hr />
 
         <div class="action-buttons">
-            <div class="row">
-                <div class="col-sm-9 restart-mock-server-instruction">
-                    {{ serverRestartInstruction }}
-                </div>
-                <div class="col-sm-3">
-                    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-                    <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
-                    <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
-                </div>
-            </div>
+            <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+            <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+            <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
         </div>
 
     </div>

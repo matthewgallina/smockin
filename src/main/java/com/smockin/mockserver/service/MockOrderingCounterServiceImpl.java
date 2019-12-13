@@ -99,6 +99,13 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
         return restfulMock.getDefinitions().get(randomIndex);
     }
 
+    public void clearMockStateById(final String mockExtId) {
+
+        synchronized (monitor) {
+            synchronizedCounter.remove(mockExtId);
+        }
+    }
+
     public void clearState() {
 
         synchronized (monitor) {

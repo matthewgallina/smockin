@@ -1,6 +1,5 @@
 package com.smockin.admin.service;
 
-import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -8,7 +7,6 @@ import com.smockin.admin.persistence.dao.FtpMockDAO;
 import com.smockin.admin.persistence.dao.JmsMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
-import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -24,8 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -80,12 +77,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.RESTFUL);
 
-            final List<RestfulMock> activeMocks =
-                    (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode()))
-                        ? restfulMockDefinitionDAO.findAllByStatusAndUser(RecordStatusEnum.ACTIVE, smockinUserService.loadDefaultUser().get().getId())
-                        : restfulMockDefinitionDAO.findAllByStatus(RecordStatusEnum.ACTIVE);
-
-            mockedRestServerEngine.start(configDTO, activeMocks);
+            mockedRestServerEngine.start(configDTO, Optional.empty());
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
@@ -299,7 +291,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.getMinThreads(),
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
-                serverConfig.isAutoRefresh(),
                 serverConfig.getNativeProperties()
         );
 
@@ -324,7 +315,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setMinThreads(config.getMinThreads());
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
-        serverConfig.setAutoRefresh(config.isAutoRefresh());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());

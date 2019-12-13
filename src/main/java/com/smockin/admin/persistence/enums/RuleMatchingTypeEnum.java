@@ -9,5 +9,5 @@ public enum RuleMatchingTypeEnum {
     REQUEST_HEADER,
     REQUEST_PARAM,
     REQUEST_BODY,
-    REQUEST_BODY_JSON_ANY;
+    REQUEST_BODY_JSON_ANY
 }

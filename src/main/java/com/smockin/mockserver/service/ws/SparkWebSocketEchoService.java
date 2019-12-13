@@ -1,8 +1,5 @@
 package com.smockin.mockserver.service.ws;
 
-/**
- * Created by mgallina on 31/08/17.
- */
 import com.smockin.mockserver.service.WebSocketService;
 import com.smockin.mockserver.service.enums.WebSocketCommandEnum;
 import org.eclipse.jetty.websocket.api.Session;
@@ -19,30 +16,17 @@ import java.io.IOException;
 @WebSocket
 public class SparkWebSocketEchoService {
 
-    private final String mockExtId;
-    private final String path;
-    private final long idleTimeoutMillis;
-    private final boolean proxyPushIdOnConnect;
     private final WebSocketService webSocketService;
-    private final boolean logMockCalls;
+    private boolean isMultiUserMode;
 
-    public SparkWebSocketEchoService(final String mockExtId,
-                                     final String path,
-                                     final long idleTimeoutMillis,
-                                     final boolean proxyPushIdOnConnect,
-                                     final WebSocketService webSocketService,
-                                     final boolean logMockCalls) {
-        this.mockExtId = mockExtId;
-        this.path = path;
-        this.idleTimeoutMillis = idleTimeoutMillis;
-        this.proxyPushIdOnConnect = proxyPushIdOnConnect;
+    public SparkWebSocketEchoService(final WebSocketService webSocketService, final boolean isMultiUserMode) {
         this.webSocketService = webSocketService;
-        this.logMockCalls = logMockCalls;
+        this.isMultiUserMode = isMultiUserMode;
     }
 
     @OnWebSocketConnect
     public void connected(final Session session) {
-        webSocketService.registerSession(mockExtId, path, idleTimeoutMillis, proxyPushIdOnConnect, session, logMockCalls);
+        webSocketService.registerSession(session, isMultiUserMode);
     }
 
     @OnWebSocketClose
@@ -54,7 +38,7 @@ public class SparkWebSocketEchoService {
     public void message(final Session session, final String message) throws IOException {
 
         if (WebSocketCommandEnum.SMOCKIN_ID.name().equals(message)) {
-            session.getRemote().sendString(webSocketService.getExternalId(path, session));
+            session.getRemote().sendString(webSocketService.getExternalId(session));
             return;
         }
 

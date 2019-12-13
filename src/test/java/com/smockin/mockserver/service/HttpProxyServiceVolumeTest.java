@@ -11,6 +11,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -36,7 +37,7 @@ public class HttpProxyServiceVolumeTest {
 
     private RestfulMockDAO restfulMockDAO;
     private UserTokenServiceUtils userTokenServiceUtils;
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
     private HttpProxyService proxyService;
     private SmockinUser user;
 
@@ -64,11 +65,11 @@ public class HttpProxyServiceVolumeTest {
         proxyService = new HttpProxyServiceImpl();
         restfulMockDAO = Mockito.mock(RestfulMockDAO.class);
         userTokenServiceUtils = Mockito.mock(UserTokenServiceUtils.class);
-        mockedRestServerEngine = Mockito.mock(MockedRestServerEngine.class);
+        mockedRestServerEngineUtils = Mockito.mock(MockedRestServerEngineUtils.class);
 
         ReflectionTestUtils.setField(proxyService, "restfulMockDAO", restfulMockDAO);
         ReflectionTestUtils.setField(proxyService, "userTokenServiceUtils", userTokenServiceUtils);
-        ReflectionTestUtils.setField(proxyService, "mockedRestServerEngine", mockedRestServerEngine);
+        ReflectionTestUtils.setField(proxyService, "mockedRestServerEngineUtils", mockedRestServerEngineUtils);
 
         Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Mockito.any(SmockinUser.class), Mockito.anyString());
 
@@ -83,7 +84,7 @@ public class HttpProxyServiceVolumeTest {
             final RestfulMock rm = mocks[p];
 
             Mockito.when(restfulMockDAO.findByExtId(rm.getExtId())).thenReturn(rm);
-            Mockito.when(mockedRestServerEngine.buildUserPath(rm)).thenReturn(File.separator + user.getCtxPath() + rm.getPath());
+            Mockito.when(mockedRestServerEngineUtils.buildUserPath(rm)).thenReturn(File.separator + user.getCtxPath() + rm.getPath());
 
             producers[p] = () -> {
                 try {

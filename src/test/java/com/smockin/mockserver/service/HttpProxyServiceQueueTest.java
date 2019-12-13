@@ -11,6 +11,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -44,7 +45,7 @@ public class HttpProxyServiceQueueTest {
     private UserTokenServiceUtils userTokenServiceUtils;
 
     @Mock
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Spy
     @InjectMocks
@@ -84,10 +85,10 @@ public class HttpProxyServiceQueueTest {
 
         Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Mockito.any(SmockinUser.class), Mockito.anyString());
 
-        Mockito.when(mockedRestServerEngine.buildUserPath(mockReqHelloGet)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloGet.getPath());
-        Mockito.when(mockedRestServerEngine.buildUserPath(mockReqHelloPost)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloPost.getPath());
-        Mockito.when(mockedRestServerEngine.buildUserPath(mockReqHelloDelete)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloDelete.getPath());
-        Mockito.when(mockedRestServerEngine.buildUserPath(mockReqFooGet)).thenReturn(File.separator + user.getCtxPath() + mockReqFooGet.getPath());
+        Mockito.when(mockedRestServerEngineUtils.buildUserPath(mockReqHelloGet)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloGet.getPath());
+        Mockito.when(mockedRestServerEngineUtils.buildUserPath(mockReqHelloPost)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloPost.getPath());
+        Mockito.when(mockedRestServerEngineUtils.buildUserPath(mockReqHelloDelete)).thenReturn(File.separator + user.getCtxPath() + mockReqHelloDelete.getPath());
+        Mockito.when(mockedRestServerEngineUtils.buildUserPath(mockReqFooGet)).thenReturn(File.separator + user.getCtxPath() + mockReqFooGet.getPath());
 
         proxyService.addResponse(mockReqHelloGet.getExtId(), helloGetDTO, user.getSessionToken());
         proxyService.addResponse(mockReqHelloPost.getExtId(), helloPostDTO, user.getSessionToken());

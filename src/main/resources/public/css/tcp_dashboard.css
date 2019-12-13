@@ -56,15 +56,11 @@
     font-size: 16px;
 }
 
-.status-deployed {
+.status-active {
     color: #53c653;
 }
 
-.status-pending {
-    color: orange;
-}
-
-.status-offline {
+.status-inactive {
     color: #ff8080;
 }
 
@@ -82,14 +78,6 @@
 
 .batch-actions-group {
     font-size: 16px;
-}
-
-.mock-status-active {
-
-}
-
-.mock-status-inactive {
-    text-decoration: line-through;
 }
 
 #bulk-delete-endpoints-button {

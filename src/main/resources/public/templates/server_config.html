@@ -34,28 +34,11 @@
         <label for="autoStart" class="ng-binding">{{ autoStartLabel }}</label>
     </div>
 
-    <div class="form-group">
-        <input id="autoRefresh"  ng-model="serverConfig.autoRefresh" type="checkbox" ng-disabled="readOnly" />
-        <label for="autoRefresh" class="ng-binding">{{ autoRefreshLabel }}</label>
-    </div>
-
     <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
         <input id="enableCors"  ng-model="serverConfig.enableCors" type="checkbox" ng-disabled="readOnly" />
         <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
     </div>
 
-    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
-        <input id="enableProxyServer"  ng-model="serverConfig.enableProxyServer" type="checkbox" ng-disabled="readOnly" />
-        <label for="enableProxyServer" class="ng-binding">{{ enableProxyServerLabel }}</label>
-    </div>
-
-    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
-        <input id="logMockCalls"  ng-model="serverConfig.logMockCalls" type="checkbox" ng-disabled="readOnly" />
-        <label for="logMockCalls" class="ng-binding">{{ logMockCallsLabel }}</label>
-    </div>
-
-    <br />
-    <div class="restart-message">{{ restartServerMessage }}</div>
 </div>
 
 <div class="modal-footer">

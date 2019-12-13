@@ -10,7 +10,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.bean.ProxiedKey;
 import com.smockin.mockserver.service.dto.HttpProxiedDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -41,7 +41,7 @@ public class HttpProxyServiceTest {
 
     private RestfulMockDAO restfulMockDAO;
     private UserTokenServiceUtils userTokenServiceUtils;
-    private MockedRestServerEngine mockedRestServerEngine;
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
     private HttpProxyService proxyService;
 
     @Before
@@ -58,7 +58,7 @@ public class HttpProxyServiceTest {
         proxyService = new HttpProxyServiceImpl();
         restfulMockDAO = Mockito.mock(RestfulMockDAO.class);
         userTokenServiceUtils = Mockito.mock(UserTokenServiceUtils.class);
-        mockedRestServerEngine = Mockito.mock(MockedRestServerEngine.class);
+        mockedRestServerEngineUtils = Mockito.mock(MockedRestServerEngineUtils.class);
 
         pxKey = new ProxiedKey("/helloworld", RestMethodEnum.GET);
         mockReq = new RestfulMock(pxKey.getPath(), pxKey.getMethod(), RecordStatusEnum.ACTIVE, RestMockTypeEnum.PROXY_HTTP, 0, 0, 0, false, false, false, user, false, 0,0, null);
@@ -68,11 +68,11 @@ public class HttpProxyServiceTest {
         Mockito.when(restfulMockDAO.findByExtId(Mockito.anyString())).thenReturn(mockReq);
         Mockito.doNothing().when(userTokenServiceUtils).validateRecordOwner(Mockito.any(SmockinUser.class), Mockito.anyString());
 
-        Mockito.when(mockedRestServerEngine.buildUserPath(mockReq)).thenReturn(File.separator + user.getCtxPath() + mockReq.getPath());
+        Mockito.when(mockedRestServerEngineUtils.buildUserPath(mockReq)).thenReturn(File.separator + user.getCtxPath() + mockReq.getPath());
 
         ReflectionTestUtils.setField(proxyService, "restfulMockDAO", restfulMockDAO);
         ReflectionTestUtils.setField(proxyService, "userTokenServiceUtils", userTokenServiceUtils);
-        ReflectionTestUtils.setField(proxyService, "mockedRestServerEngine", mockedRestServerEngine);
+        ReflectionTestUtils.setField(proxyService, "mockedRestServerEngineUtils", mockedRestServerEngineUtils);
 
         producer1 = () -> {
             try {

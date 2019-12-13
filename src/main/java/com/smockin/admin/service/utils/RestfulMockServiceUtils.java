@@ -9,10 +9,9 @@ import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by mgallina.
@@ -30,54 +29,56 @@ public class RestfulMockServiceUtils {
     private MockedRestServerEngine mockedRestServerEngine;
 
     @Transactional
-    public List<RestfulMockResponseDTO> buildRestfulMockDefinitionDTO(final List<RestfulMock> restfulMockDefinitions) {
+    public List<RestfulMockResponseDTO> buildRestfulMockDefinitionDTOs(final List<RestfulMock> restfulMockDefinitions) {
 
-        final List<RestfulMockResponseDTO> restMockDTOs = new ArrayList<>();
+        return restfulMockDefinitions
+                .stream()
+                .map(this::buildRestfulMockDefinitionDTO)
+                .collect(Collectors.toList());
+    }
 
-        for (RestfulMock rmd : restfulMockDefinitions) {
+    @Transactional
+    public RestfulMockResponseDTO buildRestfulMockDefinitionDTO(final RestfulMock rmd) {
 
-            final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), mockedRestServerEngine.getDeploymentStatus(rmd, rmd.getStatus()), rmd.getMethod(), rmd.getStatus(),
-                    rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
-                    rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null);
+        final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
+                rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
+                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null);
 
-            // Definitions
-            for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
-                final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend(), order.getFrequencyCount(), order.getFrequencyPercentage());
+        // Definitions
+        for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
+            final RestfulMockDefinitionDTO restfulMockDefinitionDTO = new RestfulMockDefinitionDTO(order.getExtId(), order.getOrderNo(), order.getHttpStatusCode(), order.getResponseContentType(), order.getResponseBody(), order.getSleepInMillis(), order.isSuspend(), order.getFrequencyCount(), order.getFrequencyPercentage());
 
-                for (Map.Entry<String, String> responseHeader : order.getResponseHeaders().entrySet()) {
-                    restfulMockDefinitionDTO.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
-                }
-
-                dto.getDefinitions().add(restfulMockDefinitionDTO);
+            for (Map.Entry<String, String> responseHeader : order.getResponseHeaders().entrySet()) {
+                restfulMockDefinitionDTO.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
             }
 
-            // Rules
-            for (RestfulMockDefinitionRule rule : rmd.getRules()) {
-
-                final RuleDTO ruleDto = new RuleDTO(rule.getExtId(), rule.getOrderNo(), rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getSleepInMillis(), rule.isSuspend());
-
-                for (Map.Entry<String, String> responseHeader : rule.getResponseHeaders().entrySet()) {
-                    ruleDto.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
-                }
-
-                for (RestfulMockDefinitionRuleGroup group : rule.getConditionGroups()) {
-
-                    final RuleGroupDTO groupDto = new RuleGroupDTO(group.getExtId(), group.getOrderNo());
-
-                    for (RestfulMockDefinitionRuleGroupCondition condition : group.getConditions()) {
-                        groupDto.getConditions().add(new RuleConditionDTO(condition.getExtId(), condition.getField(), condition.getDataType(), condition.getComparator(), condition.getMatchValue(), condition.getRuleMatchingType(), condition.isCaseSensitive()));
-                    }
-
-                    ruleDto.getGroups().add(groupDto);
-                }
-
-                dto.getRules().add(ruleDto);
-            }
-
-            restMockDTOs.add(dto);
+            dto.getDefinitions().add(restfulMockDefinitionDTO);
         }
 
-        return restMockDTOs;
+        // Rules
+        for (RestfulMockDefinitionRule rule : rmd.getRules()) {
+
+            final RuleDTO ruleDto = new RuleDTO(rule.getExtId(), rule.getOrderNo(), rule.getHttpStatusCode(), rule.getResponseContentType(), rule.getResponseBody(), rule.getSleepInMillis(), rule.isSuspend());
+
+            for (Map.Entry<String, String> responseHeader : rule.getResponseHeaders().entrySet()) {
+                ruleDto.getResponseHeaders().put(responseHeader.getKey(), responseHeader.getValue());
+            }
+
+            for (RestfulMockDefinitionRuleGroup group : rule.getConditionGroups()) {
+
+                final RuleGroupDTO groupDto = new RuleGroupDTO(group.getExtId(), group.getOrderNo());
+
+                for (RestfulMockDefinitionRuleGroupCondition condition : group.getConditions()) {
+                    groupDto.getConditions().add(new RuleConditionDTO(condition.getExtId(), condition.getField(), condition.getDataType(), condition.getComparator(), condition.getMatchValue(), condition.getRuleMatchingType(), condition.isCaseSensitive()));
+                }
+
+                ruleDto.getGroups().add(groupDto);
+            }
+
+            dto.getRules().add(ruleDto);
+        }
+
+        return dto;
     }
 
     public void buildRuleGroups(final RuleDTO dto, final RestfulMockDefinitionRule rule) {

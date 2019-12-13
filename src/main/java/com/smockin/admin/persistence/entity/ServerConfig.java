@@ -33,9 +33,6 @@ public class ServerConfig extends Identifier {
     @Column(name = "AUTO_START", nullable = false)
     private boolean autoStart;
 
-    @Column(name = "AUTO_REFRESH", nullable = false)
-    private boolean autoRefresh;
-
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> nativeProperties = new HashMap<String, String>();
 
@@ -87,13 +84,6 @@ public class ServerConfig extends Identifier {
     }
     public void setAutoStart(boolean autoStart) {
         this.autoStart = autoStart;
-    }
-
-    public boolean isAutoRefresh() {
-        return autoRefresh;
-    }
-    public void setAutoRefresh(boolean autoRefresh) {
-        this.autoRefresh = autoRefresh;
     }
 
     public Map<String, String> getNativeProperties() {

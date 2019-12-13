@@ -19,8 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="1.8.0"
-DEBUG_PORT=8008
+APP_VERSION="1.9.0"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
@@ -34,7 +33,6 @@ APP_PROPS_FILE=app.properties
 SMOCKIN_PID_FILE="$PIDS_DIR_PATH/smockin-app.pid"
 H2_DB_PID_FILE="$PIDS_DIR_PATH/smockin-db.pid"
 
-USE_DEBUG=false
 USE_INMEM_DB=false
 RESET_SYS_ADMIN=false
 MULTI_USER_MODE=false
@@ -79,10 +77,6 @@ MULTI_USER_MODE_CONF=$(echo "$APP_PROPS_FILE" | grep "MULTI_USER_MODE" | awk '{ 
 if ([ ! -z $MULTI_USER_MODE_CONF ] && [ $MULTI_USER_MODE_CONF = "TRUE" ])
 then
     MULTI_USER_MODE=true
-fi
-
-if ([ ! -z "$1" ] && [ $1 = "-DEBUG" ]) || ([ ! -z "$2" ] && [ $2 = "-DEBUG" ]); then
-    USE_DEBUG=true
 fi
 
 if ([ ! -z "$1" ] && [ $1 = "-INMEM" ]) || ([ ! -z "$2" ] && [ $2 = "-INMEM" ]); then
@@ -136,7 +130,7 @@ echo "#"
 #
 # Prepare runtime args
 #
-VM_ARGS="--spring.datasource.url=$JDBC_URL,--spring.datasource.username=$DB_USERNAME,--spring.datasource.password=$DB_PASSWORD,--spring.datasource.maximumPoolSize=$MAX_POOL_SIZE,--spring.datasource.minimumIdle=$MIN_POOL_SIZE,--user.timezone=UTC,--app.version=$APP_VERSION"
+VM_ARGS="-Dspring.datasource.url=$JDBC_URL -Dspring.datasource.username=$DB_USERNAME -Dspring.datasource.password=$DB_PASSWORD -Dspring.datasource.maximumPoolSize=$MAX_POOL_SIZE -Dspring.datasource.minimumIdle=$MIN_POOL_SIZE -Duser.timezone=UTC -Dapp.version=$APP_VERSION"
 APP_PROFILE="production"
 RESET_SYS_ADMIN_ARG=""
 
@@ -145,7 +139,7 @@ if ( $USE_INMEM_DB ); then
 fi
 
 if ( $RESET_SYS_ADMIN ); then
-  RESET_SYS_ADMIN_ARG="--reset.sys.admin=true"
+  RESET_SYS_ADMIN_ARG="-Dreset.sys.admin=true"
 fi
 
 
@@ -154,13 +148,12 @@ fi
 # (JPA WILL CREATE THE ACTUAL SMOCKIN DB AUTOMATICALLY IF IT DOES NOT ALREADY EXIST)
 #
 echo "#"
-echo "#  Starting Main Application..."
-echo "#"
-
 if ( $MULTI_USER_MODE ); then
-  echo "#  The application is running in 'Multi User Mode'"
-  echo "#"
+  echo "#  Starting Main Application in 'MULTI USER MODE'..."
+else
+  echo "#  Starting Main Application..."
 fi
+echo "#"
 
 echo "#  Please Note:"
 echo "#  - Application logs are available from: .smockin/log (under the user.home directory)"
@@ -172,9 +165,8 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 # Running 'start.sh' with no argument starts the application asynchronously in the background using the main (H2 TCP) DB.
 #
 # Note, these commands can be combined.
-# (i.e 'start.sh -DEBUG' will enable the debug port and use the main DB, whereas 'start.sh -DEBUG -INMEM' will do the same but with an in mem DB.)
+# (i.e 'run.sh -CONSOLE' will enable the console and use the main DB, whereas 'run.sh -CONSOLE -INMEM' will do the same but with run with an in-memory DB.)
 #
-# -DEBUG               Allows remote debugging.
 # -INMEM               Uses an in-memory DB.
 # -RESET_SYS_ADMIN     Resets the System Admin user's password back to factory default.
 # -CONSOLE             Runs in console view.
@@ -182,21 +174,14 @@ echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Sm
 #
 
 
-if ( $USE_DEBUG ); then
-
-  mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS" -Dspring-boot.run.jvmArguments="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=$DEBUG_PORT"
-
+if ( $USE_CONSOLE ); then
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG"
 else
-
-  if ( $USE_CONSOLE ); then
-    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG"
-  else
-    echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
-    mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active=$APP_PROFILE,--server.port=$APP_PORT,--multi.user.mode=$MULTI_USER_MODE,$VM_ARGS,$RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
-    echo "$!" > $SMOCKIN_PID_FILE
-  fi
-
+  echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
+  echo "$!" > $SMOCKIN_PID_FILE
 fi
+
 
 echo "#"
 echo "#####################################################################################"

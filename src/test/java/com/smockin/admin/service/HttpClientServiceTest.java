@@ -20,8 +20,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
-
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -153,7 +153,7 @@ public class HttpClientServiceTest {
 
         // Setup
         Mockito.when(httpResponse.getEntity()).thenReturn(httpEntity);
-        Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo"));
+        Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo", Charset.defaultCharset()));
 
         // Test
         final String result = httpClientServiceImpl.extractResponseBody(httpResponse);
@@ -183,7 +183,7 @@ public class HttpClientServiceTest {
         final Header contentTypeHeader = Mockito.mock(Header.class);
         Mockito.when(httpResponse.getEntity().getContentType()).thenReturn(contentTypeHeader);
         Mockito.when(contentTypeHeader.getValue()).thenReturn("text/plain");
-        Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo"));
+        Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo", Charset.defaultCharset()));
 
         // Test
         final HttpClientResponseDTO result = httpClientServiceImpl.executeRequest(request, requestHeaders);

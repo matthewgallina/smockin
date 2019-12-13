@@ -2,7 +2,6 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.FtpMockDTO;
 import com.smockin.admin.dto.response.FtpMockResponseDTO;
-import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.FtpMockDAO;
@@ -97,20 +96,12 @@ public class FtpMockServiceImpl implements FtpMockService {
     }
 
     @Override
-    public List<FtpMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
+    public List<FtpMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        final List<FtpMock> mocks;
-
-        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
-            mocks = ftpMockDAO.findAll();
-        } else {
-            mocks = ftpMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId());
-        }
-
-        return mocks
+        return ftpMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId())
                 .stream()
-                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), mockedFtpServerEngine.getDeploymentStatus(e, e.getStatus()), e.getDateCreated()))
+                .map(e -> new FtpMockResponseDTO(e.getExtId(), e.getName(), e.getStatus(), e.getDateCreated()))
                 .collect(Collectors.toList());
     }
 

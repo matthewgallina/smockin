@@ -53,10 +53,9 @@ public class FtpMockController {
     }
 
     @RequestMapping(path="/ftpmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<FtpMockResponseDTO>> get(@RequestParam(value = "filter", required = false) final String searchFilter,
-                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+    public @ResponseBody ResponseEntity<List<FtpMockResponseDTO>> get(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                            throws RecordNotFoundException {
-        return ResponseEntity.ok(ftpMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)));
+        return ResponseEntity.ok(ftpMockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)));
     }
 
     @RequestMapping(path="/ftpmock/{extId}/file/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

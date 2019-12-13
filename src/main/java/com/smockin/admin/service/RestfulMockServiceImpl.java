@@ -2,15 +2,16 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
-import com.smockin.admin.enums.SearchFilterEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDefinitionRuleDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,20 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
     @Autowired
     private ProjectService projectService;
+
+    @Autowired
+    private MockOrderingCounterService mockOrderingCounterService;
+
+    @Override
+    public RestfulMockResponseDTO loadEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
+        logger.debug("loadEndpoint called");
+
+        final RestfulMock mock = loadRestMock(mockExtId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(mock);
+    }
 
     @Override
     public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
@@ -117,7 +132,11 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
-        restfulMockDAO.save(mock).getId();
+        restfulMockDAO.save(mock);
+
+        if (RestMockTypeEnum.SEQ.equals(mock.getMockType())) {
+            mockOrderingCounterService.clearMockStateById(mock.getExtId());
+        }
 
         if (pathChanged) {
             restfulMockServiceUtils.handleEndpointOrdering();
@@ -137,14 +156,10 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     }
 
     @Override
-    public List<RestfulMockResponseDTO> loadAll(final String searchFilter, final String token) throws RecordNotFoundException {
+    public List<RestfulMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        if (SearchFilterEnum.ALL.name().equalsIgnoreCase(searchFilter)) {
-            return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAll());
-        }
-
-        return restfulMockServiceUtils.buildRestfulMockDefinitionDTO(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
     }
 
     RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {

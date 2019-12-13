@@ -25,6 +25,13 @@ public class RestfulMockController {
     @Autowired
     private RestfulMockService restfulMockService;
 
+    @RequestMapping(path="/restmock/{extId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<RestfulMockResponseDTO> get(@PathVariable("extId") final String extId,
+                                                                    @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws RecordNotFoundException, ValidationException {
+        return new ResponseEntity<>(restfulMockService.loadEndpoint(extId, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
     @RequestMapping(path="/restmock", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final RestfulMockDTO dto,
                                                                                  @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
@@ -50,10 +57,9 @@ public class RestfulMockController {
     }
 
     @RequestMapping(path="/restmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<List<RestfulMockResponseDTO>> get(@RequestParam(value = "filter", required = false) final String searchFilter,
-                                                                          @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+    public @ResponseBody ResponseEntity<List<RestfulMockResponseDTO>> getAll(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                                 throws RecordNotFoundException {
-        return new ResponseEntity<>(restfulMockService.loadAll(searchFilter, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+        return new ResponseEntity<>(restfulMockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
 }

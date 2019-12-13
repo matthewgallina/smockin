@@ -1,19 +1,14 @@
 package com.smockin.mockserver.engine;
 
-import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
-import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
-import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.SmockinUserService;
-import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.mockserver.service.HttpProxyService;
 import com.smockin.mockserver.service.RuleEngine;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
-import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +25,7 @@ import org.springframework.http.HttpStatus;
  * Created by mgallina.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class MockedRestServerEngineTest {
+public class MockedRestServerEngineUtilsTest {
 
     @Mock
     private RestfulMockDAO restfulMockDAO;
@@ -49,7 +44,7 @@ public class MockedRestServerEngineTest {
 
     @Spy
     @InjectMocks
-    private MockedRestServerEngine engine = new MockedRestServerEngine();
+    private MockedRestServerEngineUtils engineUtils = new MockedRestServerEngineUtils();
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -73,7 +68,7 @@ public class MockedRestServerEngineTest {
         thrown.expect(NullPointerException.class);
 
         // Test
-        engine.getDefault(null);
+        engineUtils.getDefault(null);
     }
 
     @Test
@@ -86,7 +81,7 @@ public class MockedRestServerEngineTest {
         restfulMock.getDefinitions().clear();
 
         // Test
-        engine.getDefault(restfulMock);
+        engineUtils.getDefault(restfulMock);
     }
 
     @Test
@@ -94,7 +89,7 @@ public class MockedRestServerEngineTest {
 
         // Test (run 1)
         // Should always be response with 'order No 1'
-        final RestfulResponseDTO result1 = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result1 = engineUtils.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result1);
@@ -104,7 +99,7 @@ public class MockedRestServerEngineTest {
 
         // Test (run 2)
         // ... and just to double check...
-        final RestfulResponseDTO result2 = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result2 = engineUtils.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result2);
@@ -121,7 +116,7 @@ public class MockedRestServerEngineTest {
         restfulMock.setMockType(RestMockTypeEnum.PROXY_HTTP);
 
         // Test
-        final RestfulResponseDTO result = engine.getDefault(restfulMock);
+        final RestfulResponseDTO result = engineUtils.getDefault(restfulMock);
 
         // Assertions
         Assert.assertNotNull(result);
