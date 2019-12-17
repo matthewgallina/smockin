@@ -7,7 +7,6 @@ import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockDefinitionImportExportService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class MockDefinitionImportExportController {
         return ResponseEntity.ok()
                 .header("Content-Type", "application/zip")
                 .header("Content-Disposition", "attachment; filename=\"" + exportFileName + "\"")
-                .body(mockDefinitionImportExportService.export(ServerTypeEnum.valueOf(serverType), exports, token));
+                .body(mockDefinitionImportExportService.export(exports, token));
     }
 
 }

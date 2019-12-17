@@ -79,37 +79,20 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     }
 
     @Override
-    public String export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token)
+    public String export(final List<String> selectedExports, final String token)
             throws MockExportException, RecordNotFoundException {
         logger.debug("export called");
 
-        final File exportFile;
+        final String exportContent = loadHTTPExportContent(selectedExports, token);
 
-        try {
+        final byte[] archiveBytes = GeneralUtils.createArchive(restExportFileName + exportFileNameExt, exportContent.getBytes());
 
-            switch (serverType) {
-                case RESTFUL:
-                    exportFile = handleHTTPExport(selectedExports, token);
-                    break;
-                default:
-                    throw new MockImportException("Unsupported server type: " + serverType);
-            }
-
-            final byte[] archiveBytes = GeneralUtils.createArchive(new File[] {
-                exportFile
-            });
-
-            return Base64.getEncoder().encodeToString(archiveBytes);
-
-        } catch (IOException ex) {
-            throw new MockExportException("Error generating export file");
-        }
-
+        return Base64.getEncoder().encodeToString(archiveBytes);
     }
 
     //
     // Export related functions
-    private File handleHTTPExport(final List<String> selectedExports, final String token) throws IOException {
+    private String loadHTTPExportContent(final List<String> selectedExports, final String token) {
 
         final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(token);
 
@@ -122,11 +105,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
                 :
                 allRestfulMocks;
 
-        final File restTempFile = File.createTempFile(restExportFileName, exportFileNameExt);
-
-        FileUtils.writeStringToFile(restTempFile, GeneralUtils.serialiseJson(restfulMocksToExport), Charset.defaultCharset());
-
-        return restTempFile;
+        return GeneralUtils.serialiseJson(restfulMocksToExport);
     }
 
     private RestfulMockResponseDTO findRestByExternalId(final String externalId, final List<RestfulMockResponseDTO> allRestfulMocks) throws RecordNotFoundException {

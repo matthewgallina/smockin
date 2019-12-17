@@ -9,7 +9,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
-
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -273,62 +272,31 @@ public final class GeneralUtils {
         return fileName.substring(extPos);
     }
 
-    // TODO fix this!
-    public static byte[] createArchive(final File[] files) {
+    public static byte[] createArchive(final String zipFileName, final byte[] zipFileContent) {
 
-        ByteArrayOutputStream bos = null;
-        ZipOutputStream zipOut = null;
-
-        final byte[] buffer = new byte[1024];
+        ZipOutputStream zos = null;
+        ByteArrayOutputStream baos = null;
 
         try {
 
-            bos = new ByteArrayOutputStream();
-            zipOut = new ZipOutputStream(bos);
+            baos = new ByteArrayOutputStream();
+            zos = new ZipOutputStream(baos);
+            final ZipEntry entry = new ZipEntry(zipFileName);
 
-            for (File fileToZip : files) {
+            entry.setSize(zipFileContent.length);
 
-                FileInputStream fis = null;
+            zos.putNextEntry(entry);
 
-                try {
+            zos.write(zipFileContent);
+            zos.closeEntry();
+            zos.close();
 
-                    fis = new FileInputStream(fileToZip);
-                    final ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+            return baos.toByteArray();
 
-                    zipOut.putNextEntry(zipEntry);
-
-                    int length;
-                    while ((length = fis.read(buffer)) >= 0) {
-                        zipOut.write(buffer, 0, length);
-                    }
-
-                    zipOut.closeEntry();
-
-                } catch (IOException e) {
-                    throw e;
-                } finally {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                }
-
-            }
-
-            return bos.toByteArray();
-
-        } catch (IOException e) {
-            logger.error("Error creating archive file", e);
-        } finally {
-            if (zipOut != null) {
-                try {
-                zipOut.close();
-                } catch (IOException e) {}
-            }
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException e) {}
-            }
+        } catch (Throwable ex) {
+            logger.error("Error creating zip archive", ex);
+            closeQuietly(zos);
+            closeQuietly(baos);
         }
 
         return null;
@@ -396,6 +364,16 @@ public final class GeneralUtils {
             }
         }
 
+    }
+
+    private static void closeQuietly(final OutputStream os) {
+        if (os != null) {
+            try {
+                os.close();
+            } catch (IOException e) {
+                logger.error("Error closing outputstream", e);
+            }
+        }
     }
 
 }
