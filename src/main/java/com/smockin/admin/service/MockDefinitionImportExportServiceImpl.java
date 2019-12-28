@@ -61,7 +61,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             return readImportArchiveFile(uploadedFile)
                     .entrySet()
                     .stream()
-                    .map(m -> handleMockImport(m.getKey(), m.getValue(), config, currentUser, conflictCtxPath))
+                    .map(m -> handleMockImport(m.getValue(), config, currentUser, conflictCtxPath))
                     .collect(Collectors.joining());
 
         } catch (IOException ex) {
@@ -162,42 +162,40 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
     }
 
-    // TODO Ensure existing exports are backwards compatible with new projects field...
-    private String handleMockImport(final ServerTypeEnum type, final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
+    private String handleMockImport(final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
 
         final StringBuilder outcome = new StringBuilder();
 
-        switch (type) {
+        GeneralUtils.deserialiseJson(content, new TypeReference<List<RestfulMockResponseDTO>>() {})
+            .stream()
+            .forEach(rm -> {
 
-            case RESTFUL:
-                GeneralUtils.deserialiseJson(content, new TypeReference<List<RestfulMockResponseDTO>>() {})
-                        .stream()
-                        .forEach(rm -> {
-                            restfulMockServiceUtils.preHandleExistingEndpoints(rm, config, currentUser, conflictCtxPath);
-                            try {
-                                restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
-                                outcome.append(handleImportPass(type, rm.getMethod() + " " + rm.getPath()));
-                            } catch (Throwable ex) {
-                                outcome.append(handleImportFail(type, rm.getMethod() + " " + rm.getPath(), ex));
-                            }
-                        });
-                break;
+                if (outcome.length() == 0) {
+                    outcome.append("Successful Imports:\n\n");
+                }
 
-            default:
-                throw new MockImportException("Unsupported server type: " + type);
-        }
+                restfulMockServiceUtils.preHandleExistingEndpoints(rm, config, currentUser, conflictCtxPath);
+
+                try {
+
+                    restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
+
+                    outcome.append(rm.getMethod());
+                    outcome.append(" ");
+                    outcome.append(rm.getPath());
+                    outcome.append("\n");
+
+                } catch (Throwable ex) {
+                    outcome.append(handleImportFail(rm.getMethod() + " " + rm.getPath(), ex));
+                }
+            });
 
         return outcome.toString();
     }
 
-    private String handleImportPass(final ServerTypeEnum type, final String name) {
+    private String handleImportFail(final String info, final Throwable cause) {
 
-        return type.name() + " mock: " + name + " successfully imported\n";
-    }
-
-    private String handleImportFail(final ServerTypeEnum type, final String info, final Throwable cause) {
-
-        final String msg = "Error importing " + type.name() + " mock: " + info;
+        final String msg = "Error importing " + info;
 
         logger.error(msg, cause);
 

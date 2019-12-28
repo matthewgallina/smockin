@@ -131,7 +131,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
             }
 
             showAlert("File successfully imported", "success");
-            $scope.importFeedback = "Import Outcome:\n\n" + data.message;
+            $scope.importFeedback = data.message;
 
             $scope.uploadCompleted = true;
             $scope.disableForm = false;

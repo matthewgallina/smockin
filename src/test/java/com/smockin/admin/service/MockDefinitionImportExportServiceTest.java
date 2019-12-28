@@ -185,11 +185,12 @@ public class MockDefinitionImportExportServiceTest {
 
         // Assertions (NOTE: smockin_export_rest.zip file contains 5 records)
         Assert.assertNotNull(result);
-        Assert.assertThat(result, CoreMatchers.is("RESTFUL mock: GET /hello successfully imported\n"
-                + "RESTFUL mock: GET /hello successfully imported\n"
-                + "RESTFUL mock: GET /ws successfully imported\n"
-                + "RESTFUL mock: GET /sse successfully imported\n"
-                + "RESTFUL mock: POST /remotefeed successfully imported\n"));
+        Assert.assertThat(result, CoreMatchers.is("Successful Imports:\n\n"
+                + "GET /hello\n"
+                + "GET /hello\n"
+                + "GET /ws\n"
+                + "GET /sse\n"
+                + "POST /remotefeed\n"));
         Mockito.verify(restfulMockServiceUtils, Mockito.times(5))
                 .preHandleExistingEndpoints(Mockito.any(RestfulMockDTO.class), Mockito.any(MockImportConfigDTO.class), Mockito.any(SmockinUser.class), Mockito.anyString());
         Mockito.verify(restfulMockService, Mockito.times(5)).createEndpoint(Mockito.any(RestfulMockResponseDTO.class), Mockito.anyString());

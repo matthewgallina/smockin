@@ -289,14 +289,16 @@ public final class GeneralUtils {
 
             zos.write(zipFileContent);
             zos.closeEntry();
-            zos.close();
+
+            closeOSQuietly(zos);
 
             return baos.toByteArray();
 
         } catch (Throwable ex) {
             logger.error("Error creating zip archive", ex);
-            closeQuietly(zos);
-            closeQuietly(baos);
+
+            closeOSQuietly(zos);
+            closeOSQuietly(baos);
         }
 
         return null;
@@ -332,15 +334,16 @@ public final class GeneralUtils {
                     FileOutputStream fos = null;
 
                     try {
+
                         fos = new FileOutputStream(newFile);
                         int len;
+
                         while ((len = zis.read(buffer)) > 0) {
                             fos.write(buffer, 0, len);
                         }
 
                     } finally {
-                        if (fos != null)
-                            fos.close();
+                        closeOSQuietly(fos);
                     }
 
                 }
@@ -350,28 +353,32 @@ public final class GeneralUtils {
             }
 
             zis.closeEntry();
-            zis.close();
+            closeISQuietly(zis);
 
         } catch (IOException e) {
             logger.error("Error unpacking archive file", e);
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-
-                }
-            }
+            closeISQuietly(fis);
         }
 
     }
 
-    private static void closeQuietly(final OutputStream os) {
+    private static void closeISQuietly(final InputStream is) {
+        if (is != null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                logger.error("Error closing input stream", e);
+            }
+        }
+    }
+
+    private static void closeOSQuietly(final OutputStream os) {
         if (os != null) {
             try {
                 os.close();
             } catch (IOException e) {
-                logger.error("Error closing outputstream", e);
+                logger.error("Error closing output stream", e);
             }
         }
     }
