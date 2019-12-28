@@ -7,7 +7,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     var ServerType = data.serverType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.RestfulServerType = globalVars.RestfulServerType;
-    $scope.JmsServerType = globalVars.JmsServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
 
 
@@ -116,10 +115,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
                 "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
-            };
-        } else if (ServerType == globalVars.JmsServerType) {
-            req.nativeProperties = {
-                "BROKER_URL" : "tcp://localhost:"
             };
         }
 

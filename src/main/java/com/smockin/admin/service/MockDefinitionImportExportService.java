@@ -15,11 +15,9 @@ public interface MockDefinitionImportExportService {
     String exportZipFileNamePrefix = "smockin_export_";
     String exportZipFileNameExt = ".zip";
     String restExportFileName = "rest_export";
-    String jmsExportFileName = "jms_export";
-    String ftpExportFileName = "ftp_export";
     String exportFileNameExt = ".json";
 
     String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token) throws MockImportException, ValidationException, RecordNotFoundException;
-    String export(final ServerTypeEnum serverType, final List<String> selectedExports, final String token) throws MockExportException, RecordNotFoundException;
+    String export(final List<String> selectedExports, final String token) throws MockExportException, RecordNotFoundException;
 
 }

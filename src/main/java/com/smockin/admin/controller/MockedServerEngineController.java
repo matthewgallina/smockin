@@ -48,53 +48,6 @@ public class MockedServerEngineController {
         return new ResponseEntity<>(mockedServerEngineService.getRestServerState(), HttpStatus.OK);
     }
 
-    //
-    // JMS Server
-    @RequestMapping(path="/mockedserver/jms/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> startJms(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        return new ResponseEntity<>(mockedServerEngineService.startJms(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
-    }
-
-    @RequestMapping(path="/mockedserver/jms/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> stopJms(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        mockedServerEngineService.shutdownJms(GeneralUtils.extractOAuthToken(bearerToken));
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-    }
-
-    @RequestMapping(path="/mockedserver/jms/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> restartJms(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        return new ResponseEntity<>(mockedServerEngineService.restartJms(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
-    }
-
-    @RequestMapping(path="/mockedserver/jms/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockServerState> jmsStatus() throws MockServerException {
-        return new ResponseEntity<>(mockedServerEngineService.getJmsServerState(), HttpStatus.OK);
-    }
-
-
-    //
-    // FTP Server
-    @RequestMapping(path="/mockedserver/ftp/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> startFtp(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        return new ResponseEntity<>(mockedServerEngineService.startFtp(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
-    }
-
-    @RequestMapping(path="/mockedserver/ftp/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> stopFtp(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        mockedServerEngineService.shutdownFtp(GeneralUtils.extractOAuthToken(bearerToken));
-        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-    }
-
-    @RequestMapping(path="/mockedserver/ftp/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> restartFtp(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
-        return new ResponseEntity<>(mockedServerEngineService.restartFtp(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
-    }
-
-    @RequestMapping(path="/mockedserver/ftp/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockServerState> ftpStatus() throws MockServerException {
-        return new ResponseEntity<>(mockedServerEngineService.getFtpServerState(), HttpStatus.OK);
-    }
-
 
     //
     // Server Config

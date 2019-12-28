@@ -6,8 +6,8 @@ import com.smockin.mockserver.exception.MockServerException;
 /**
  * Created by mgallina.
  */
-public interface MockServerEngine<C extends MockedServerConfigDTO, D> extends BaseServerEngine<C, D> {
+public interface MockServerEngine<C extends MockedServerConfigDTO> extends BaseServerEngine<C> {
 
-    void start(final C config, D data) throws MockServerException;
+    void start(final C config) throws MockServerException;
 
 }

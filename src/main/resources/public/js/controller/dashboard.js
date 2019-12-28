@@ -1,21 +1,6 @@
 
 app.controller('dashboardController', function($scope, $routeParams, $timeout, globalVars) {
 
-    //
-    // Constants
-    var SelectedTab = $routeParams.tab;
-    var tabIndexes = {
-        'HTTP' : 0,
-        'JMS' : 1,
-        'FTP' : 2
-    }
-
-    //
-    // Labels
-    $scope.tcpHeading = 'HTTP';
-    $scope.jmsHeading = 'JMS';
-    $scope.ftpHeading = 'FTP';
-
 
     //
     // Alerts
@@ -38,14 +23,5 @@ app.controller('dashboardController', function($scope, $routeParams, $timeout, g
     }
 
     $scope.closeAlert = closeAlertFunc;
-
-
-    //
-    // Data
-    $scope.selectedTab = tabIndexes.HTTP;
-
-    if (SelectedTab != null) {
-        $scope.selectedTab = tabIndexes[SelectedTab];
-    }
 
 });

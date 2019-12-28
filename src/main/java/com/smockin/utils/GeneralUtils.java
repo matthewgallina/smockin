@@ -9,7 +9,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
-
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -39,7 +38,6 @@ public final class GeneralUtils {
     public static final String KEEP_EXISTING_HEADER_NAME = "KeepExisting";
 
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
-    public static final String BROKER_URL_PARAM = "BROKER_URL";
 
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
@@ -274,62 +272,33 @@ public final class GeneralUtils {
         return fileName.substring(extPos);
     }
 
-    // TODO fix this!
-    public static byte[] createArchive(final File[] files) {
+    public static byte[] createArchive(final String zipFileName, final byte[] zipFileContent) {
 
-        ByteArrayOutputStream bos = null;
-        ZipOutputStream zipOut = null;
-
-        final byte[] buffer = new byte[1024];
+        ZipOutputStream zos = null;
+        ByteArrayOutputStream baos = null;
 
         try {
 
-            bos = new ByteArrayOutputStream();
-            zipOut = new ZipOutputStream(bos);
+            baos = new ByteArrayOutputStream();
+            zos = new ZipOutputStream(baos);
+            final ZipEntry entry = new ZipEntry(zipFileName);
 
-            for (File fileToZip : files) {
+            entry.setSize(zipFileContent.length);
 
-                FileInputStream fis = null;
+            zos.putNextEntry(entry);
 
-                try {
+            zos.write(zipFileContent);
+            zos.closeEntry();
 
-                    fis = new FileInputStream(fileToZip);
-                    final ZipEntry zipEntry = new ZipEntry(fileToZip.getName());
+            closeOSQuietly(zos);
 
-                    zipOut.putNextEntry(zipEntry);
+            return baos.toByteArray();
 
-                    int length;
-                    while ((length = fis.read(buffer)) >= 0) {
-                        zipOut.write(buffer, 0, length);
-                    }
+        } catch (Throwable ex) {
+            logger.error("Error creating zip archive", ex);
 
-                    zipOut.closeEntry();
-
-                } catch (IOException e) {
-                    throw e;
-                } finally {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                }
-
-            }
-
-            return bos.toByteArray();
-
-        } catch (IOException e) {
-            logger.error("Error creating archive file", e);
-        } finally {
-            if (zipOut != null) {
-                try {
-                zipOut.close();
-                } catch (IOException e) {}
-            }
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException e) {}
-            }
+            closeOSQuietly(zos);
+            closeOSQuietly(baos);
         }
 
         return null;
@@ -365,15 +334,16 @@ public final class GeneralUtils {
                     FileOutputStream fos = null;
 
                     try {
+
                         fos = new FileOutputStream(newFile);
                         int len;
+
                         while ((len = zis.read(buffer)) > 0) {
                             fos.write(buffer, 0, len);
                         }
 
                     } finally {
-                        if (fos != null)
-                            fos.close();
+                        closeOSQuietly(fos);
                     }
 
                 }
@@ -383,20 +353,34 @@ public final class GeneralUtils {
             }
 
             zis.closeEntry();
-            zis.close();
+            closeISQuietly(zis);
 
         } catch (IOException e) {
             logger.error("Error unpacking archive file", e);
         } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-
-                }
-            }
+            closeISQuietly(fis);
         }
 
+    }
+
+    private static void closeISQuietly(final InputStream is) {
+        if (is != null) {
+            try {
+                is.close();
+            } catch (IOException e) {
+                logger.error("Error closing input stream", e);
+            }
+        }
+    }
+
+    private static void closeOSQuietly(final OutputStream os) {
+        if (os != null) {
+            try {
+                os.close();
+            } catch (IOException e) {
+                logger.error("Error closing output stream", e);
+            }
+        }
     }
 
 }

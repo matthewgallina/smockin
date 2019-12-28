@@ -327,7 +327,7 @@ public class MockedServerEngineServiceTest {
         // Setup
         final ServerConfig serverConfig = Mockito.mock(ServerConfig.class);
         Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
-        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
+        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class));
 
         // Test
         mockedServerEngineService.startRest(token);
@@ -367,7 +367,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(ServerTypeEnum.RESTFUL);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
+        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class));
 
     }
 
@@ -378,7 +378,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(null);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any());
+        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class));
     }
 
     @Test

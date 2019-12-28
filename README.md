@@ -3,14 +3,8 @@
 </p>
 
 <p align="center">
-  version 1.9.0
+  version 2.0.0
 </p>
-
-<br />
-
-Looking for an online hosted solution instead? Check out <b>sMockin Cloud</b> at www.smockin.com and sign up for free!
-
-<br />
 
 ### Intelligent API simulation for application development and QA testing
 
@@ -20,6 +14,13 @@ Looking for an online hosted solution instead? Check out <b>sMockin Cloud</b> at
 
 <br />
 
+**Version 2** of sMockin brings about a few signicant changes...
+
+- First off we have done away with the JMS and FTP mocking servers (no one was using them) and are now purely focused on HTTP based mocking.
+
+- The other big change has been on improving multi user mode. Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience to your team.
+
+<br />
 
 ### OVERVIEW
 

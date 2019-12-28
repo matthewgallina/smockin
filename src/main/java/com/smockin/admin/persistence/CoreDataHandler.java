@@ -77,38 +77,6 @@ public class CoreDataHandler {
             serverConfigDAO.save(restServerConfig);
         }
 
-        if (serverConfigDAO.findByServerType(ServerTypeEnum.JMS) == null) {
-
-            logger.info("Installing JMS Server Config DB Defaults...");
-
-            final ServerConfig jmsServerConfig = new ServerConfig();
-            jmsServerConfig.setServerType(ServerTypeEnum.JMS);
-            jmsServerConfig.setPort(8002); // 61616
-            jmsServerConfig.setMaxThreads(10);
-            jmsServerConfig.setMinThreads(0);
-            jmsServerConfig.setTimeOutMillis(0);
-            jmsServerConfig.setAutoStart(false);
-            jmsServerConfig.getNativeProperties().put(GeneralUtils.BROKER_URL_PARAM, "tcp://localhost:");
-
-            serverConfigDAO.save(jmsServerConfig);
-
-        }
-
-        if (serverConfigDAO.findByServerType(ServerTypeEnum.FTP) == null) {
-
-            logger.info("Installing FTP Server Config DB Defaults...");
-
-            final ServerConfig ftpServerConfig = new ServerConfig();
-            ftpServerConfig.setServerType(ServerTypeEnum.FTP);
-            ftpServerConfig.setPort(8003);
-            ftpServerConfig.setMaxThreads(0);
-            ftpServerConfig.setMinThreads(0);
-            ftpServerConfig.setTimeOutMillis(0);
-            ftpServerConfig.setAutoStart(false);
-
-            serverConfigDAO.save(ftpServerConfig);
-        }
-
     }
 
     void applyAppVersioning() {
