@@ -6,7 +6,7 @@
   version 2.0.0
 </p>
 
-### Intelligent API simulation for application development and QA testing
+### Dynamic REST API simulation and for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -16,21 +16,21 @@
 
 **Version 2** of sMockin brings about a few signicant changes...
 
-- First off we have done away with the JMS and FTP mocking servers (no one was using them) and are now purely focused on HTTP based mocking.
+- First off, we have removed the JMS and FTP mocking servers (no one was using them) and are now purely focused on HTTP based API mocking.
 
-- The other big change has been on improving multi user mode. Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience to your team.
+- The other big change has been on improving multi user mode. Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience for teams using sMockin collaboratively.
 
 <br />
 
 ### OVERVIEW
 
-sMockin is a tool used to build dynamic mocks of your API.
+sMockin is an API mocking tool used to dynamically simulate HTTP endpoints.
 
-Featuring a rich UI and inbuilt mock servers, mocking your existing or new API model can be done quickly and without any coding or scripting.
+Featuring a rich UI and an inbuilt HTTP mock server, mocking your existing or new API model can be done quickly and without any coding or scripting.
 
-Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA/IoT/microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
+Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA / IoT / microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
 
-sMockin runs as a small web app which can be either installed locally to a developers machine or hosted centrally with mutliple user accounts on a development / QA team server.
+sMockin runs as a small web app which can be either installed locally onto a personal machine or hosted centrally and used by multiple users.
 
 <br/>
 
@@ -44,8 +44,8 @@ sMockin runs as a small web app which can be either installed locally to a devel
 
 * Create dynamic API mocks to mimic real world application behaviour.
 * Run sMockin centrally and create user accounts for your team.
-* Import / Export mocks to share between your team when running sMockin on individual machines.
-* Monitor and log traffic going to the mock server.
+* Import / Export mocks to share between your team & version control.
+* Monitor and log traffic going to the HTTP mock server.
 * A complete UI solution requiring zero coding.
 
 
