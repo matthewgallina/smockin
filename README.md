@@ -74,17 +74,19 @@ Change the current directory to **smockin** and build the project:
 
 ```
 cd smockin
+
 mvn clean install
 ```
 
-Run the **install** and **start** scripts (or .bat for windows):
+Run the **install** and **start** scripts (for windows, use the equivalent .bat files):
 
 ```
 ./install.sh
+
 ./start.sh
 ```
 
-From your browser open the dashboard:
+Finally from your browser open the dashboard:
 
 ```
 http://localhost:8000/index.html
