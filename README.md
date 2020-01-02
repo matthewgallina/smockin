@@ -62,9 +62,39 @@ sMockin runs as a small web app which can be either installed locally onto a per
 
 <br/>
 
-### GETTING STARTED
+### QUICK START
 
-Please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
+Clone this repo:
+
+```
+git clone https://github.com/mgtechsoftware/smockin.git
+```
+
+Change the current directory to **smockin** and build the project:
+
+```
+cd smockin
+mvn clean install
+```
+
+Run the **install** and **start** scripts (or .bat for windows):
+
+```
+./install.sh
+./start.sh
+```
+
+From your browser open the dashboard:
+
+```
+http://localhost:8000/index.html
+```
+
+(If running sMockin for the first time then please allow 20 - 30 secs for the app to fully start up.)
+
+<br />
+
+For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
 
 <br/>
 
