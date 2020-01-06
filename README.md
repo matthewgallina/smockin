@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.0.0
+  version 2.1.0
 </p>
 
 ### Dynamic REST API simulation and for application development & QA testing

@@ -9,7 +9,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         MockTypeRule : 'RULE',
         MockTypeProxyHttp : 'PROXY_HTTP',
         MockTypeWebSocket : 'PROXY_WS',
-        MockTypeProxySse : 'PROXY_SSE'
+        MockTypeProxySse : 'PROXY_SSE',
+        MockTypeCustomJs : 'CUSTOM_JS'
     };
 
     var TimeoutDefinitions = {
@@ -39,6 +40,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.mockTypeProxyHttp = MockTypeDefinitions.MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
+    $scope.mockTypeCustomJs = MockTypeDefinitions.MockTypeCustomJs;
     $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
@@ -160,7 +162,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "HTTP Rules Based", "value" : MockTypeDefinitions.MockTypeRule },
        { "name" : "HTTP External Feed", "value" : MockTypeDefinitions.MockTypeProxyHttp },
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
-       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse }
+       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
+       { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs }
     ];
 
     $scope.isNew = isNew;
@@ -740,6 +743,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse && !validateSSE()) {
             return;
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs && !validateCustomJS()) {
+            return;
         }
 
         if ($scope.endpoint.randomiseLatency) {
@@ -841,6 +846,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
 
             reqData.proxyPushIdOnConnect = $scope.endpoint.ssePushIdOnConnect;
+
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs) {
+
+            // Nothing extra to do
 
         }
 
@@ -1108,6 +1117,11 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             showAlert("'SSE Heartbeat' is required and must be numeric and at least 1 second (1000 millis)");
             return false;
         }
+
+        return true;
+    }
+
+    function validateCustomJS() {
 
         return true;
     }

@@ -74,6 +74,9 @@ public class RestfulMock extends Identifier {
     @OrderBy("orderNo ASC")
     private List<RestfulMockDefinitionOrder> definitions = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
+    private RestfulMockJavaScriptHandler javaScriptHandler;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="PROJ_ID", nullable = true)
     private RestfulProject project;
@@ -212,6 +215,13 @@ public class RestfulMock extends Identifier {
     }
     public void setDefinitions(List<RestfulMockDefinitionOrder> definitions) {
         this.definitions = definitions;
+    }
+
+    public RestfulMockJavaScriptHandler getJavaScriptHandler() {
+        return javaScriptHandler;
+    }
+    public void setJavaScriptHandler(RestfulMockJavaScriptHandler javaScriptHandler) {
+        this.javaScriptHandler = javaScriptHandler;
     }
 
     public RestfulProject getProject() {

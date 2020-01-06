@@ -8,5 +8,6 @@ public enum RestMockTypeEnum {
     RULE,
     PROXY_HTTP,
     PROXY_SSE,
-    PROXY_WS
+    PROXY_WS,
+    CUSTOM_JS
 }
