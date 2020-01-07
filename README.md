@@ -14,7 +14,7 @@
 
 <br />
 
-**Version 2.1.0 of sMockin brings about a few significant changes...
+**Version 2.1.0** of sMockin brings about a few significant changes...
 
 - The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 
