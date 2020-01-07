@@ -1,9 +1,12 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import spark.Request;
@@ -19,7 +22,10 @@ import java.util.stream.Collectors;
 @Service
 public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler {
 
+    private final Logger logger = LoggerFactory.getLogger(JavaScriptResponseHandlerImpl.class);
+
     public RestfulResponseDTO executeUserResponse(final Request req, final String userDefinedResponseFunc) {
+        logger.debug("executeUserResponse called");
 
         Object engineResponse;
 

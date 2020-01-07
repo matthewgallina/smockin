@@ -43,7 +43,9 @@ public class RestfulMockServiceUtils {
     @Transactional
     public RestfulMockResponseDTO buildRestfulMockDefinitionDTO(final RestfulMock rmd) {
 
-        final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
+        final String path = formatOutboundPathVarArgs(rmd.getPath());
+
+        final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), path, rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
                 rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
                 rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null, (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null);
 
@@ -191,6 +193,55 @@ public class RestfulMockServiceUtils {
                 break;
         }
 
+    }
+
+    public String formatInboundPathVarArgs(final String inboundPath) {
+
+        if (StringUtils.isBlank(inboundPath)) {
+            return null;
+        }
+
+        final int varArgStart = StringUtils.indexOf(inboundPath, ":");
+
+        if (varArgStart > -1) {
+
+            final int varArgEnd = StringUtils.indexOf(inboundPath, "/", varArgStart);
+
+            final String varArg = (varArgEnd > -1)
+                    ? StringUtils.substring(inboundPath, varArgStart, varArgEnd)
+                    : StringUtils.substring(inboundPath, varArgStart);
+
+            final String result = StringUtils.replace(inboundPath, varArg, "{" + StringUtils.remove(varArg, ':') + "}");
+
+            return formatInboundPathVarArgs(result);
+        }
+
+        return inboundPath;
+    }
+
+    public String formatOutboundPathVarArgs(final String outboundPath) {
+
+        if (StringUtils.isBlank(outboundPath)) {
+            return null;
+        }
+
+        final int varArgStart = StringUtils.indexOf(outboundPath, "{");
+
+        if (varArgStart > -1) {
+
+            final int varArgEnd = StringUtils.indexOf(outboundPath, "}", varArgStart);
+
+            final String varArg = (varArgEnd > -1)
+                    ? StringUtils.substring(outboundPath, varArgStart, varArgEnd + 1)
+                    : StringUtils.substring(outboundPath, varArgStart);
+
+            final String result = StringUtils.replace(outboundPath, varArg,
+                    ":" + StringUtils.remove(StringUtils.remove(varArg, '{'), '}'));
+
+            return formatOutboundPathVarArgs(result);
+        }
+
+        return outboundPath;
     }
 
 }

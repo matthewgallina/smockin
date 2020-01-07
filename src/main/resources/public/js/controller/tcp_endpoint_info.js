@@ -32,7 +32,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
 
-    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
+//    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
     var DefaultCustomJsSyntax = 'function handleResponse(request, response) {\n\n  // Your logic...\n\n  return response;\n}';
 
 
@@ -196,7 +196,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMinMillis" : 0,
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
-        "customJsSyntax" : CustomJsSyntaxDoc + DefaultCustomJsSyntax,
+        "customJsSyntax" : DefaultCustomJsSyntax,
         "rules" : []
     };
 

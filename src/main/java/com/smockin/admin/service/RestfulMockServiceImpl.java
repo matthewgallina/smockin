@@ -70,7 +70,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
         RestfulMock mock = new RestfulMock(
-                dto.getPath(),
+                restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()),
                 dto.getMethod(),
                 dto.getStatus(),
                 dto.getMockType(),
@@ -115,7 +115,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         restfulMockDAO.saveAndFlush(mock);
 
         mock.setMockType(dto.getMockType());
-        mock.setPath(dto.getPath());
+        mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()));
         mock.setMethod(dto.getMethod());
         mock.setStatus(dto.getStatus());
         mock.setProxyTimeOutInMillis(dto.getProxyTimeoutInMillis());
