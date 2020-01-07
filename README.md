@@ -22,7 +22,7 @@
 
 - Multi user mode has been improved based on user feedback and suggestions.
 
-- Users can now utilise javascript to deliver mock functionality.
+- Users can now utilise JavaScript to deliver mock functionality.
 
 <br />
 
