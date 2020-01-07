@@ -20,9 +20,9 @@
 
 - Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience.
 
-- Multi user mode has been greatly improved based on user feedback and suggestions.
+- Multi user mode has been improved based on user feedback and suggestions.
 
-- Users looking for more control can now utilise javascript to deliver mock functionality.
+- Users can now utilise javascript to deliver mock functionality.
 
 <br />
 
