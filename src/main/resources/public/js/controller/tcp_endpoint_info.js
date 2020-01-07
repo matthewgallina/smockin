@@ -33,7 +33,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.XmlContentType = globalVars.XmlContentType;
 
 //    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
-    var DefaultCustomJsSyntax = 'function handleResponse(request, response) {\n\n  // Your logic...\n\n  return response;\n}';
+    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['Authorization'];\n  // request.parameters['name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-My-Header'] = 'foobar';\n\n  return response;\n}";
 
 
     //
@@ -289,6 +289,11 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             case MockTypeDefinitions.MockTypeProxySse :
                 $scope.pathPlaceHolderTxt = SsePathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
+                break;
+            case MockTypeDefinitions.MockTypeCustomJs :
+                if ($scope.endpoint.customJsSyntax == null) {
+                    $scope.endpoint.customJsSyntax = DefaultCustomJsSyntax;
+                }
                 break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
