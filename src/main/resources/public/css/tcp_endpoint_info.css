@@ -182,3 +182,7 @@
 .alert-format {
     white-space: pre-line;
 }
+
+#custom-js-syntax {
+    height: 380px;
+}

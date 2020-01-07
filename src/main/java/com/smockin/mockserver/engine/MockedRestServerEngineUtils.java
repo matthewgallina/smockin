@@ -45,6 +45,9 @@ public class MockedRestServerEngineUtils {
     private HttpProxyService proxyService;
 
     @Autowired
+    private JavaScriptResponseHandler javaScriptResponseHandler;
+
+    @Autowired
     private InboundParamMatchService inboundParamMatchService;
 
     @Autowired
@@ -64,14 +67,16 @@ public class MockedRestServerEngineUtils {
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                                     RestMockTypeEnum.PROXY_HTTP,
                                     RestMockTypeEnum.SEQ,
-                                    RestMockTypeEnum.RULE))
+                                    RestMockTypeEnum.RULE,
+                                    RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                             RestMethodEnum.findByName(request.requestMethod()),
                             request.pathInfo(),
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                                           RestMockTypeEnum.PROXY_HTTP,
                                           RestMockTypeEnum.SEQ,
-                                          RestMockTypeEnum.RULE));
+                                          RestMockTypeEnum.RULE,
+                                          RestMockTypeEnum.CUSTOM_JS));
 
             if (mock == null) {
                 return Optional.empty();
@@ -104,6 +109,9 @@ public class MockedRestServerEngineUtils {
                 break;
             case PROXY_HTTP:
                 outcome = proxyService.waitForResponse(req.pathInfo(), mock);
+                break;
+            case CUSTOM_JS:
+                outcome = javaScriptResponseHandler.executeUserResponse(req, mock.getJavaScriptHandler().getSyntax());
                 break;
             case SEQ:
             default:

@@ -175,7 +175,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 });
             }
 
-            final RestfulMockDTO dto = new RestfulMockDTO(path, method, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, false, 0, 0, null);
+            final RestfulMockDTO dto = new RestfulMockDTO(path, method, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ, 0, 0, 0, false, false, false, false, 0, 0, null, null);
 
             //
             // Responses
@@ -231,6 +231,8 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 restfulMockService.createEndpoint(dto, user.getSessionToken());
             } catch (RecordNotFoundException e) {
                 throw new MockImportException("Unauthorized user access");
+            } catch (ValidationException e) {
+                throw new MockImportException("A validation issue occurred", e);
             }
         });
 

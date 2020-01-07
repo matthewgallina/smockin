@@ -14,11 +14,15 @@
 
 <br />
 
-**Version 2** of sMockin brings about a few signicant changes...
+**Version 2.1.0 of sMockin brings about a few significant changes...
 
-- First off, we have removed the JMS and FTP mocking servers (no one was using them) and are now purely focused on HTTP based API mocking.
+- The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 
-- The other big change has been on improving multi user mode. Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience for teams using sMockin collaboratively.
+- Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience.
+
+- Multi user mode has been greatly improved based on user feedback and suggestions.
+
+- Users looking for more control can now utilise javascript to deliver mock functionality.
 
 <br />
 

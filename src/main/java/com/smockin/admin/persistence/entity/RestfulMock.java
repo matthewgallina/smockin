@@ -4,7 +4,6 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import org.hibernate.annotations.ColumnDefault;
-
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,9 +91,9 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeOutInMillis, long webSocketTimeoutInMillis, long sseHeartBeatInMillis,
-                       boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch, SmockinUser createdBy, boolean randomiseLatency, long randomiseLatencyRangeMinMillis,
-                       long randomiseLatencyRangeMaxMillis, RestfulProject project) {
+    public RestfulMock(final String path, final RestMethodEnum method, final RecordStatusEnum status, final RestMockTypeEnum mockType, final long proxyTimeOutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
+                       final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch, final SmockinUser createdBy, boolean randomiseLatency, final long randomiseLatencyRangeMinMillis,
+                       final long randomiseLatencyRangeMaxMillis, final RestfulProject project) {
         this.path = path;
         this.method = method;
         this.status = status;

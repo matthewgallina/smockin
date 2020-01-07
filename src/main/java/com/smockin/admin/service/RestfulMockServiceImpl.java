@@ -62,7 +62,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     }
 
     @Override
-    public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException {
+    public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("createEndpoint called");
 
         restfulMockServiceUtils.amendPath(dto);
@@ -85,6 +85,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 dto.getRandomiseLatencyRangeMinMillis(),
                 dto.getRandomiseLatencyRangeMaxMillis(),
                 (dto.getProjectId() != null) ? projectService.loadByExtId(dto.getProjectId()) : null);
+
+        restfulMockServiceUtils.handleCustomJsSyntax(dto, mock);
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 
@@ -129,6 +131,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         if (dto.getProjectId() != null)
             mock.setProject(projectService.loadByExtId(dto.getProjectId()));
+
+        restfulMockServiceUtils.handleCustomJsSyntax(dto, mock);
 
         restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
 

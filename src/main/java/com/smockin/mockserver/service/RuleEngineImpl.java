@@ -11,6 +11,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
@@ -69,7 +70,7 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_HEADER:
                 return req.headers(fieldName);
             case REQUEST_PARAM:
-                return extractRequestParam(req, fieldName);
+                return extractRequestParamByName(req, fieldName);
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
@@ -95,13 +96,14 @@ public class RuleEngineImpl implements RuleEngine {
 
     }
 
-    String extractRequestParam(final Request req, final String fieldName) {
+    String extractRequestParamByName(final Request req, final String fieldName) {
 
         // Java Spark does not provide a convenient way of extracting form based request parameters,
         // so have to parse these manually.
         if (req.contentType() != null
-                && (req.contentType().contains("application/x-www-form-urlencoded")
-                    ||  req.contentType().contains("multipart/form-data"))) {
+                && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
+
             return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                     .stream()
                     .filter(k -> k.getName().equals(fieldName))

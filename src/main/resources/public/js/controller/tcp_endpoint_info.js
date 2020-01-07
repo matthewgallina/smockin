@@ -32,6 +32,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
 
+    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
+    var DefaultCustomJsSyntax = 'function handleResponse(request, response) {\n\n  // Your logic...\n\n  return response;\n}';
+
 
     //
     // Labels
@@ -91,6 +94,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.disabledLabel = "Disabled";
     $scope.formatJsonLabel = 'Validate & Format JSON';
     $scope.formatXmlLabel = 'Validate & Format XML';
+    $scope.customJsSyntaxLabel = 'Javascript Logic';
 
 
     //
@@ -192,6 +196,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMinMillis" : 0,
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
+        "customJsSyntax" : CustomJsSyntaxDoc + DefaultCustomJsSyntax,
         "rules" : []
     };
 
@@ -237,6 +242,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
                 "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
                 "definitions" : endpoint.definitions,
+                "customJsSyntax" : endpoint.customJsSyntax,
                 "rules" : endpoint.rules,
                 "createdBy" : endpoint.createdBy
             };
@@ -786,7 +792,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "randomiseLatencyRangeMinMillis" : $scope.endpoint.randomiseLatencyRangeMinMillis,
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
-            "rules" : []
+            "rules" : [],
+            "customJsSyntax" : $scope.endpoint.customJsSyntax
         };
 
         // Handle Sequence specifics
@@ -1123,7 +1130,17 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
     function validateCustomJS() {
 
-        return true;
+      if (utils.isBlank($scope.endpoint.method)) {
+        showAlert("'Method' is required");
+        return false;
+      }
+
+      if (utils.isBlank($scope.endpoint.customJsSyntax)) {
+        showAlert("'Javascript logic' is required");
+        return false;
+      }
+
+      return true;
     }
 
     var serverCallbackFunc = function (status, data) {

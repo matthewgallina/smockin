@@ -59,7 +59,7 @@ public class RamlApiImportServiceTest {
     private ApiImportService apiImportService = new RamlApiImportServiceImpl();
 
     @Before
-    public void setUp() throws RecordNotFoundException {
+    public void setUp() throws RecordNotFoundException, ValidationException {
 
         Mockito.when(restfulMockService.createEndpoint(Mockito.any(RestfulMockDTO.class), Mockito.anyString())).thenReturn("1");
 

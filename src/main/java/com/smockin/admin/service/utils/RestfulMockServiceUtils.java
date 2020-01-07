@@ -2,10 +2,13 @@ package com.smockin.admin.service.utils;
 
 import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,7 +45,7 @@ public class RestfulMockServiceUtils {
 
         final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
                 rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
-                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null);
+                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null, (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null);
 
         // Definitions
         for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
@@ -127,6 +130,24 @@ public class RestfulMockServiceUtils {
             mockDest.getRules().add(rule);
         }
 
+    }
+
+    public void handleCustomJsSyntax(final RestfulMockDTO dto, final RestfulMock mock) throws ValidationException {
+
+        if (!RestMockTypeEnum.CUSTOM_JS.equals(dto.getMockType())) {
+            mock.setJavaScriptHandler(null);
+            return;
+        }
+
+        if (StringUtils.isBlank(dto.getCustomJsSyntax())) {
+            throw new ValidationException("Missing javaScript logic");
+        }
+
+        final RestfulMockJavaScriptHandler javaScriptHandler = new RestfulMockJavaScriptHandler();
+        javaScriptHandler.setRestfulMock(mock);
+        javaScriptHandler.setSyntax(dto.getCustomJsSyntax());
+
+        mock.setJavaScriptHandler(javaScriptHandler);
     }
 
     @Transactional

@@ -1,34 +1,37 @@
 package com.smockin.mockserver.service;
 
-import javax.script.ScriptException;
+import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import spark.Request;
 
 public interface JavaScriptResponseHandler {
 
     String jsEngine = "JavaScript";
 
-    String handleResponseCaller =
+    String defaultRequestObject =
             " var request = { "
-            + "   pathVars : [], "
-            + "   body : null, "
-            + "   headers : [], "
-            + "   parameters : [] "
-            + " }; "
-            + " "
-            + " var response = { "
-            + "   body : null, "
-            + "   status : 200, "
-            + "   contentType : 'text/plain', "
-            + "   headers : [] "
-            + " }; "
-            + " "
-            + " if (typeof handleResponse === 'function') { "
-            + "   handleResponse(request, response); "
-            + " } else { "
-            + "   response.status = 404; "
-            + "   response.body = 'mock js logic is undefined!'; "
-            + "   response; "
-            + " } ";
+                + " pathVars : {},"
+                + " body : null,"
+                + " headers : {},"
+                + " parameters : {}"
+                + "};";
 
-    Object execute(final String js) throws ScriptException;
+    String defaultResponseObject =
+            " var response = { "
+                + " body : null,"
+                + " status : 200,"
+                + " contentType : 'text/plain',"
+                + " headers : {}"
+                + "};";
+
+    String userResponseFunctionInvoker =
+            " if (typeof handleResponse === 'function') { "
+            + " handleResponse(request, response); "
+            + "} else {"
+            + " response.status = 404; "
+            + " response.body = 'mock js logic is undefined!'; "
+            + " response; "
+            + "}";
+
+    RestfulResponseDTO executeUserResponse(final Request req, final String userDefinedResponseFunc);
 
 }

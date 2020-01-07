@@ -16,6 +16,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     translations.push({ "k" : "PROXY_HTTP", "v" : "HTTP External Feed" });
     translations.push({ "k" : "PROXY_WS", "v" : "WebSocket Proxied" });
     translations.push({ "k" : "PROXY_SSE", "v" : "SSE Proxied" });
+    translations.push({ "k" : "CUSTOM_JS", "v" : "Custom JavaScript" });
 
 
     //
