@@ -2,10 +2,13 @@ package com.smockin.admin.service.utils;
 
 import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +43,11 @@ public class RestfulMockServiceUtils {
     @Transactional
     public RestfulMockResponseDTO buildRestfulMockDefinitionDTO(final RestfulMock rmd) {
 
-        final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), rmd.getPath(), rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
+        final String path = formatOutboundPathVarArgs(rmd.getPath());
+
+        final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), path, rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
                 rmd.getMockType(), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
-                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null);
+                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null, (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null);
 
         // Definitions
         for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
@@ -129,6 +134,24 @@ public class RestfulMockServiceUtils {
 
     }
 
+    public void handleCustomJsSyntax(final RestfulMockDTO dto, final RestfulMock mock) throws ValidationException {
+
+        if (!RestMockTypeEnum.CUSTOM_JS.equals(dto.getMockType())) {
+            mock.setJavaScriptHandler(null);
+            return;
+        }
+
+        if (StringUtils.isBlank(dto.getCustomJsSyntax())) {
+            throw new ValidationException("Missing javaScript logic");
+        }
+
+        final RestfulMockJavaScriptHandler javaScriptHandler = new RestfulMockJavaScriptHandler();
+        javaScriptHandler.setRestfulMock(mock);
+        javaScriptHandler.setSyntax(dto.getCustomJsSyntax());
+
+        mock.setJavaScriptHandler(javaScriptHandler);
+    }
+
     @Transactional
     public void handleEndpointOrdering() {
 
@@ -170,6 +193,55 @@ public class RestfulMockServiceUtils {
                 break;
         }
 
+    }
+
+    public String formatInboundPathVarArgs(final String inboundPath) {
+
+        if (StringUtils.isBlank(inboundPath)) {
+            return null;
+        }
+
+        final int varArgStart = StringUtils.indexOf(inboundPath, ":");
+
+        if (varArgStart > -1) {
+
+            final int varArgEnd = StringUtils.indexOf(inboundPath, "/", varArgStart);
+
+            final String varArg = (varArgEnd > -1)
+                    ? StringUtils.substring(inboundPath, varArgStart, varArgEnd)
+                    : StringUtils.substring(inboundPath, varArgStart);
+
+            final String result = StringUtils.replace(inboundPath, varArg, "{" + StringUtils.remove(varArg, ':') + "}");
+
+            return formatInboundPathVarArgs(result);
+        }
+
+        return inboundPath;
+    }
+
+    public String formatOutboundPathVarArgs(final String outboundPath) {
+
+        if (StringUtils.isBlank(outboundPath)) {
+            return null;
+        }
+
+        final int varArgStart = StringUtils.indexOf(outboundPath, "{");
+
+        if (varArgStart > -1) {
+
+            final int varArgEnd = StringUtils.indexOf(outboundPath, "}", varArgStart);
+
+            final String varArg = (varArgEnd > -1)
+                    ? StringUtils.substring(outboundPath, varArgStart, varArgEnd + 1)
+                    : StringUtils.substring(outboundPath, varArgStart);
+
+            final String result = StringUtils.replace(outboundPath, varArg,
+                    ":" + StringUtils.remove(StringUtils.remove(varArg, '{'), '}'));
+
+            return formatOutboundPathVarArgs(result);
+        }
+
+        return outboundPath;
     }
 
 }

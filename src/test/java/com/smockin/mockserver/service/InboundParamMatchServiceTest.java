@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import spark.Request;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -34,7 +33,7 @@ public class InboundParamMatchServiceTest {
 
     @Test
     public void processParamMatch_NoToken_Test() {
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "Hello World"));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}","Hello World"));
     }
 
     @Test
@@ -47,7 +46,7 @@ public class InboundParamMatchServiceTest {
         // Test
         final String responseBody = "Hello ${FOO=name}";
 
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody));
     }
 
     @Test
@@ -60,7 +59,7 @@ public class InboundParamMatchServiceTest {
         // Test
         final String responseBody = "Hello ${FOO}";
 
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody));
     }
 
     @Test
@@ -73,7 +72,7 @@ public class InboundParamMatchServiceTest {
         // Test
         final String responseBody = "Hello ${xxx YYY zzz}";
 
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody));
     }
 
     @Test
@@ -86,7 +85,7 @@ public class InboundParamMatchServiceTest {
         // Test
         final String responseBody = "Hello ${  }";
 
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody));
     }
 
     @Test
@@ -99,7 +98,7 @@ public class InboundParamMatchServiceTest {
         // Test
         final String responseBody = "Hello ${}";
 
-        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, responseBody));
+        Assert.assertNull(inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody));
     }
 
     @Test
@@ -116,7 +115,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -136,7 +135,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -147,7 +146,7 @@ public class InboundParamMatchServiceTest {
 
         // Test
         final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_HEAD.name() +"=name}";
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello ", result);
@@ -167,7 +166,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -187,7 +186,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -198,7 +197,7 @@ public class InboundParamMatchServiceTest {
 
         // Test
         final String responseBody = "Hello ${"+ ParamMatchTypeEnum.REQ_PARAM.name() +"=name}";
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello ", result);
@@ -210,14 +209,10 @@ public class InboundParamMatchServiceTest {
         // Setup
         final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=name}";
 
-        Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
-            {
-                put(":name", "Roger");
-            }
-        });
+        Mockito.when(request.pathInfo()).thenReturn("/person/Roger");
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -229,14 +224,10 @@ public class InboundParamMatchServiceTest {
         // Setup
         final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=NAME}";
 
-        Mockito.when(request.params()).thenReturn(new HashMap<String, String>() {
-            {
-                put(":name", "Roger");
-            }
-        });
+        Mockito.when(request.pathInfo()).thenReturn("/person/Roger");
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger", result);
@@ -245,9 +236,12 @@ public class InboundParamMatchServiceTest {
     @Test
     public void processParamMatch_pathVarNoMatch_Test() {
 
+        // Setup
+        Mockito.when(request.pathInfo()).thenReturn("/person");
+
         // Test
         final String responseBody = "Hello ${"+ ParamMatchTypeEnum.PATH_VAR.name() +"=name}";
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello ", result);
@@ -271,7 +265,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger, you are Male and are 21 years old", result);
@@ -291,7 +285,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody);
 
         // Assertions
         Assert.assertEquals("Hello Roger, you are  years old", result);
@@ -314,7 +308,7 @@ public class InboundParamMatchServiceTest {
             }
         });
 
-        inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, responseBody);
+        inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -325,7 +319,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "The date is ${"+ ParamMatchTypeEnum.ISO_DATE.name() + "}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("The date is ", "");
@@ -345,7 +339,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "The date and time is ${"+ ParamMatchTypeEnum.ISO_DATETIME.name() + "}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("The date and time is ", "");
@@ -364,7 +358,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your ID is ${"+ ParamMatchTypeEnum.UUID.name() + "}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your ID is ", "");
@@ -383,7 +377,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -397,7 +391,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1to3}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -412,7 +406,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-2to2}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -427,7 +421,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-4to-2}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -442,7 +436,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-3to0}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -457,7 +451,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=0to2}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -472,7 +466,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=0to0}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -487,7 +481,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=4to4}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -502,7 +496,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=-3 to -3}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -517,7 +511,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1 tO 3}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -532,7 +526,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=5 to 6}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -547,7 +541,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1until3}";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -562,7 +556,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "= 1  until  3   }";
 
         // Test
-        final String result = inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        final String result = inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
 
         // Assertions
         final String remainder = result.replaceAll("Your number is ", "");
@@ -581,7 +575,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -595,7 +589,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=1foo2}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -609,7 +603,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=" + inboundParamMatchServiceImpl.TO_ARG + "}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -623,7 +617,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=2" + inboundParamMatchServiceImpl.TO_ARG + "}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -637,7 +631,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=" + inboundParamMatchServiceImpl.TO_ARG + "5}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
     @Test
@@ -651,7 +645,7 @@ public class InboundParamMatchServiceTest {
         final String responseBody = "Your number is ${"+ ParamMatchTypeEnum.RANDOM_NUMBER.name() + "=A" + inboundParamMatchServiceImpl.TO_ARG + "Z}";
 
         // Test
-        inboundParamMatchServiceImpl.processParamMatch(request, responseBody);
+        inboundParamMatchServiceImpl.processParamMatch(request, "/person/{name}", responseBody);
     }
 
 }

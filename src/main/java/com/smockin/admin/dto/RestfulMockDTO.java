@@ -25,7 +25,8 @@ public class RestfulMockDTO {
     private long randomiseLatencyRangeMinMillis;
     private long randomiseLatencyRangeMaxMillis;
     private String projectId;
-    private List<RestfulMockDefinitionDTO> definitions = new ArrayList<RestfulMockDefinitionDTO>();
+    private List<RestfulMockDefinitionDTO> definitions = new ArrayList<>();
+    private String customJsSyntax;
     private List<RuleDTO> rules = new ArrayList<>();
 
     public RestfulMockDTO() {
@@ -34,7 +35,7 @@ public class RestfulMockDTO {
 
     public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
-                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId) {
+                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId, String customJsSyntax) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -49,7 +50,7 @@ public class RestfulMockDTO {
         this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
         this.projectId = projectId;
-
+        this.customJsSyntax = customJsSyntax;
     }
 
     public String getPath() {
@@ -155,6 +156,13 @@ public class RestfulMockDTO {
     }
     public void setDefinitions(List<RestfulMockDefinitionDTO> definitions) {
         this.definitions = definitions;
+    }
+
+    public String getCustomJsSyntax() {
+        return customJsSyntax;
+    }
+    public void setCustomJsSyntax(String customJsSyntax) {
+        this.customJsSyntax = customJsSyntax;
     }
 
     public List<RuleDTO> getRules() {

@@ -45,6 +45,9 @@ public class MockedRestServerEngineUtils {
     private HttpProxyService proxyService;
 
     @Autowired
+    private JavaScriptResponseHandler javaScriptResponseHandler;
+
+    @Autowired
     private InboundParamMatchService inboundParamMatchService;
 
     @Autowired
@@ -55,6 +58,8 @@ public class MockedRestServerEngineUtils {
                                                final boolean isMultiUserMode) {
         logger.debug("loadMockedResponse called");
 
+        debugInboundRequest(request);
+
         try {
 
             final RestfulMock mock = (isMultiUserMode)
@@ -64,18 +69,23 @@ public class MockedRestServerEngineUtils {
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                                     RestMockTypeEnum.PROXY_HTTP,
                                     RestMockTypeEnum.SEQ,
-                                    RestMockTypeEnum.RULE))
+                                    RestMockTypeEnum.RULE,
+                                    RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                             RestMethodEnum.findByName(request.requestMethod()),
                             request.pathInfo(),
                             Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                                           RestMockTypeEnum.PROXY_HTTP,
                                           RestMockTypeEnum.SEQ,
-                                          RestMockTypeEnum.RULE));
+                                          RestMockTypeEnum.RULE,
+                                          RestMockTypeEnum.CUSTOM_JS));
 
             if (mock == null) {
+                logger.debug("no mock was found");
                 return Optional.empty();
             }
+
+            debugLoadedMock(mock);
 
             if (RestMockTypeEnum.PROXY_SSE.equals(mock.getMockType())) {
                 return Optional.of(processSSERequest(mock, request, response));
@@ -105,6 +115,9 @@ public class MockedRestServerEngineUtils {
             case PROXY_HTTP:
                 outcome = proxyService.waitForResponse(req.pathInfo(), mock);
                 break;
+            case CUSTOM_JS:
+                outcome = javaScriptResponseHandler.executeUserResponse(req, mock);
+                break;
             case SEQ:
             default:
                 outcome = mockOrderingCounterService.process(mock);
@@ -116,12 +129,7 @@ public class MockedRestServerEngineUtils {
             outcome = getDefault(mock);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("status " + outcome.getHttpStatusCode());
-            logger.debug("content type " + outcome.getResponseContentType());
-            logger.debug("status " + outcome.getHttpStatusCode());
-            logger.debug("response body " + outcome.getResponseBody());
-        }
+        debugOutcome(outcome);
 
         res.status(outcome.getHttpStatusCode());
         res.type(outcome.getResponseContentType());
@@ -131,7 +139,7 @@ public class MockedRestServerEngineUtils {
             res.header(e.getKey(), e.getValue())
         );
 
-        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
+        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody());
 
         handleLatency(mock);
 
@@ -218,6 +226,44 @@ public class MockedRestServerEngineUtils {
         }
 
         return mock.getPath();
+    }
+
+    private void debugInboundRequest(final Request request) {
+
+        if (logger.isDebugEnabled()) {
+
+            logger.debug("inbound request method: " + request.requestMethod());
+            logger.debug("inbound request path: " + request.pathInfo());
+            logger.debug("inbound request body: " + request.body());
+
+        }
+
+    }
+
+    private void debugLoadedMock(final RestfulMock mock) {
+
+        if (logger.isDebugEnabled()) {
+
+            logger.debug("mock ext id: " + mock.getExtId());
+            logger.debug("mock method: " + mock.getMethod());
+            logger.debug("mock path: " + mock.getPath());
+            logger.debug("mock type: " + mock.getMockType());
+
+        }
+
+    }
+
+    private void debugOutcome(final RestfulResponseDTO outcome) {
+
+        if (logger.isDebugEnabled()) {
+
+            logger.debug("status " + outcome.getHttpStatusCode());
+            logger.debug("content type " + outcome.getResponseContentType());
+            logger.debug("status " + outcome.getHttpStatusCode());
+            logger.debug("response body " + outcome.getResponseBody());
+
+        }
+
     }
 
 }

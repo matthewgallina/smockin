@@ -1,6 +1,8 @@
 server:
   port: 8000
 
+#logging.level.com.smockin: ERROR
+
 jpa:
   show-sql: false
   hibernate:

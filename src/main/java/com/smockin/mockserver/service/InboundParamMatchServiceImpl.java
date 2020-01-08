@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import spark.Request;
 import java.text.SimpleDateFormat;
 
-
 /**
  * Created by mgallina on 09/08/17.
  */
@@ -17,7 +16,7 @@ import java.text.SimpleDateFormat;
 public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
     @Override
-    public String enrichWithInboundParamMatches(final Request req, final String responseBody) {
+    public String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody) {
 
         if (responseBody == null) {
             return null;
@@ -34,7 +33,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                 throw new StackOverflowError("Error MAX iterations reached in 'while loop', whilst trying to swap out inbound param tokens.");
             }
 
-            final String r = processParamMatch(req, enrichedResponseBody);
+            final String r = processParamMatch(req, mockPath, enrichedResponseBody);
 
             if (r == null) {
                 break;
@@ -48,7 +47,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
         return enrichedResponseBody;
     }
 
-    String processParamMatch(final Request req, final String responseBody) {
+    String processParamMatch(final Request req, final String mockPath, final String responseBody) {
 
         // Look up for any 'inbound param token' matches
         final String matchResult = GeneralUtils.findFirstInboundParamMatch(responseBody);
@@ -76,7 +75,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
         if (matchResult.startsWith(ParamMatchTypeEnum.PATH_VAR.name())) {
 
             final String pathVariableName = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.PATH_VAR.name() + "="));
-            final String pathVariableValue = GeneralUtils.findPathVarIgnoreCase(req, pathVariableName);
+            final String pathVariableValue = GeneralUtils.findPathVarIgnoreCase(req, mockPath, pathVariableName);
             return StringUtils.replace(responseBody, "${" + matchResult + "}", (pathVariableValue != null)?pathVariableValue:"", 1);
         }
 

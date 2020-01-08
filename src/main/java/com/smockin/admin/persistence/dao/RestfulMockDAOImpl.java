@@ -31,19 +31,6 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .getResultList();
     }
 
-    /*
-    @Override
-    public List<RestfulMock> findAllByStatusAndUser(final RecordStatusEnum status, final long userId) {
-        return entityManager.createQuery("FROM RestfulMock rm "
-                + " WHERE rm.createdBy.id = :userId "
-                + " AND rm.status = :status "
-                + " ORDER BY rm.initializationOrder ASC")
-                .setParameter("userId", userId)
-                .setParameter("status", status)
-                .getResultList();
-    }
-    */
-
     @Override
     public List<RestfulMock> findAll() {
         return entityManager.createQuery("FROM RestfulMock rm "
@@ -75,25 +62,6 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
             return null;
         }
     }
-
-    /*
-    @Override
-    public RestfulMock findActiveByMethodAndPathPattern(final RestMethodEnum method, final String path) {
-
-        final String part1 = StringUtils.split(path, AntPathMatcher.DEFAULT_PATH_SEPARATOR)[0];
-
-        final List<RestfulMock> mocks = entityManager.createQuery("FROM RestfulMock rm "
-                + " WHERE rm.method = :method "
-                + " AND (rm.path = :path1 OR rm.path LIKE '/'||:path2||'%')"
-                + " AND rm.status = 'ACTIVE'", RestfulMock.class)
-                .setParameter("method", method)
-                .setParameter("path1", path)
-                .setParameter("path2", part1)
-                .getResultList();
-
-        return matchPath(mocks, path);
-    }
-    */
 
     @Override
     public RestfulMock findActiveByMethodAndPathPatternAndTypesForSingleUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes) {
@@ -140,7 +108,7 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
         return matchPath(mocks, path, true);
     }
 
-    private RestfulMock matchPath(final List<RestfulMock> mocks, final String path, final boolean matchOnUserCtxPath) {
+    RestfulMock matchPath(final List<RestfulMock> mocks, final String path, final boolean matchOnUserCtxPath) {
 
         if (mocks.isEmpty()) {
             return null;

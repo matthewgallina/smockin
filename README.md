@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.0.0
+  version 2.1.0
 </p>
 
 ### Dynamic REST API simulation and for application development & QA testing
@@ -14,11 +14,15 @@
 
 <br />
 
-**Version 2** of sMockin brings about a few signicant changes...
+**Version 2.1.0** of sMockin brings about a few significant changes...
 
-- First off, we have removed the JMS and FTP mocking servers (no one was using them) and are now purely focused on HTTP based API mocking.
+- The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 
-- The other big change has been on improving multi user mode. Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience for teams using sMockin collaboratively.
+- Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience.
+
+- Multi user mode has been improved based on user feedback and suggestions.
+
+- Users can now utilise JavaScript to deliver mock functionality.
 
 <br />
 
@@ -109,7 +113,7 @@ Please consult the [Configuration & Troubleshooting](https://github.com/mgtechso
 ### LICENCE
 
 
-sMockin is licensed according to the terms of the Apache License, Version 2.0.
+sMockin is licensed in accordance with the terms of the Apache License, Version 2.0.
 
 The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 
@@ -140,7 +144,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         Java-JWT                    -       https://github.com/auth0/java-jwt
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
-
+        Code Mirror                 -       https://codemirror.net/
 <br/>
 
 ### ABOUT

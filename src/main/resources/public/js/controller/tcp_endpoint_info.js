@@ -9,7 +9,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         MockTypeRule : 'RULE',
         MockTypeProxyHttp : 'PROXY_HTTP',
         MockTypeWebSocket : 'PROXY_WS',
-        MockTypeProxySse : 'PROXY_SSE'
+        MockTypeProxySse : 'PROXY_SSE',
+        MockTypeCustomJs : 'CUSTOM_JS'
     };
 
     var TimeoutDefinitions = {
@@ -31,6 +32,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
 
+    var jsEditor = null;
+//    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
+    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  return response;\n}";
+
 
     //
     // Labels
@@ -39,6 +44,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.mockTypeProxyHttp = MockTypeDefinitions.MockTypeProxyHttp;
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
+    $scope.mockTypeCustomJs = MockTypeDefinitions.MockTypeCustomJs;
     $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
@@ -89,6 +95,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.disabledLabel = "Disabled";
     $scope.formatJsonLabel = 'Validate & Format JSON';
     $scope.formatXmlLabel = 'Validate & Format XML';
+    $scope.customJsSyntaxLabel = 'Javascript Logic';
 
 
     //
@@ -160,7 +167,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "HTTP Rules Based", "value" : MockTypeDefinitions.MockTypeRule },
        { "name" : "HTTP External Feed", "value" : MockTypeDefinitions.MockTypeProxyHttp },
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
-       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse }
+       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
+       { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs }
     ];
 
     $scope.isNew = isNew;
@@ -189,6 +197,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMinMillis" : 0,
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
+        "customJsSyntax" : null,
         "rules" : []
     };
 
@@ -234,6 +243,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
                 "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
                 "definitions" : endpoint.definitions,
+                "customJsSyntax" : null,
                 "rules" : endpoint.rules,
                 "createdBy" : endpoint.createdBy
             };
@@ -258,6 +268,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 $scope.proxyEndpoint.path = $scope.endpoint.path;
             }
 
+            if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
+                initJSEditor(endpoint.customJsSyntax);
+            }
+
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
         };
 
@@ -280,6 +294,13 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             case MockTypeDefinitions.MockTypeProxySse :
                 $scope.pathPlaceHolderTxt = SsePathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
+                break;
+            case MockTypeDefinitions.MockTypeCustomJs :
+                if ($scope.endpoint.customJsSyntax == null) {
+                    $scope.endpoint.customJsSyntax = DefaultCustomJsSyntax;
+                }
+
+                initJSEditor($scope.endpoint.customJsSyntax);
                 break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
@@ -740,6 +761,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse && !validateSSE()) {
             return;
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs && !validateCustomJS()) {
+            return;
         }
 
         if ($scope.endpoint.randomiseLatency) {
@@ -781,7 +804,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "randomiseLatencyRangeMinMillis" : $scope.endpoint.randomiseLatencyRangeMinMillis,
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
-            "rules" : []
+            "rules" : [],
+            "customJsSyntax" : null
         };
 
         // Handle Sequence specifics
@@ -841,6 +865,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse) {
 
             reqData.proxyPushIdOnConnect = $scope.endpoint.ssePushIdOnConnect;
+
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs) {
+
+            reqData.customJsSyntax = jsEditor.getValue();
 
         }
 
@@ -1112,6 +1140,21 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         return true;
     }
 
+    function validateCustomJS() {
+
+      if (utils.isBlank($scope.endpoint.method)) {
+        showAlert("'Method' is required");
+        return false;
+      }
+
+      if (utils.isBlank(jsEditor.getValue())) {
+        showAlert("'Javascript logic' is required");
+        return false;
+      }
+
+      return true;
+    }
+
     var serverCallbackFunc = function (status, data) {
 
         if (status == 201 || status == 204) {
@@ -1238,6 +1281,35 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             callback(data);
         });
 
+    }
+
+    function initJSEditor(content) {
+
+        if (jsEditor != null) {
+            return;
+        }
+
+        jsEditor = CodeMirror.fromTextArea(document.getElementById('custom-js-syntax'), {
+          lineNumbers: true,
+          styleActiveLine: true,
+          matchBrackets: true,
+          mode: "javascript",
+          gutters: ["CodeMirror-lint-markers"],
+          lint: true
+        });
+
+        jsEditor.setOption("theme", "darcula");
+
+        updateJSEditor(content);
+    }
+
+    function updateJSEditor(content) {
+        $timeout(function () {
+            if (content != null) {
+                jsEditor.setValue(content);
+            }
+            jsEditor.refresh();
+        }, 500);
     }
 
 
