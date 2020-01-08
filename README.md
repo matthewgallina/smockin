@@ -113,7 +113,7 @@ Please consult the [Configuration & Troubleshooting](https://github.com/mgtechso
 ### LICENCE
 
 
-sMockin is licensed according to the terms of the Apache License, Version 2.0.
+sMockin is licensed in accordance with the terms of the Apache License, Version 2.0.
 
 The full text of this license can be found at https://www.apache.org/licenses/LICENSE-2.0
 
@@ -144,7 +144,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         Java-JWT                    -       https://github.com/auth0/java-jwt
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
-
+        Code Mirror                 -       https://codemirror.net/
 <br/>
 
 ### ABOUT
