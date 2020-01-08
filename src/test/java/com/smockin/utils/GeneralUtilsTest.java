@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import spark.Request;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
