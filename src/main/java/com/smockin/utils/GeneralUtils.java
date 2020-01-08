@@ -139,25 +139,48 @@ public final class GeneralUtils {
         return null;
     }
 
-    /**
-     *
-     * Returns the request parameter value for the given name.
-     * Look up is case insensitive (as Java Spark handles request parameter look ups with case sensitivity. Unclear on what the standard is for this...)
-     *
-     * @param request
-     * @param pathVarName
-     * @returns String
-     *
-     */
-    public static String findPathVarIgnoreCase(final Request request, final String pathVarName) {
+    public static String findPathVarIgnoreCase(final Request request, final String mockPath, final String pathVarName) {
 
-        for (Map.Entry<String, String> pv : request.params().entrySet()) {
-            if (pv.getKey().equalsIgnoreCase((pathVarName.startsWith(":"))?pathVarName:(":"+pathVarName))) {
-                return pv.getValue();
-            }
+        if (pathVarName == null) {
+            return null;
         }
 
-        return null;
+        return findAllPathVars(request.pathInfo(), mockPath).get(pathVarName.toLowerCase());
+    }
+
+    public static Map<String, String> findAllPathVars(final String inboundPath, final String mockPath) {
+
+        final String[] inboundPathSegments = StringUtils.split(inboundPath, "/");
+        final String[] mockPathSegments = StringUtils.split(mockPath, "/");
+
+        final Map<String, String> pathVars = new HashMap<>();
+
+        if (inboundPathSegments.length < mockPathSegments.length) {
+            return pathVars;
+        }
+
+        int index = 0;
+
+        for (String segment : mockPathSegments) {
+
+            if (segment != null
+                    && ("*".equals(segment)
+                            || (segment.startsWith("{") && segment.endsWith("}")))) {
+
+                segment = StringUtils.remove(segment, "{");
+                segment = StringUtils.remove(segment, "}");
+
+                if ("*".equals(segment)) {
+                    segment = "*" + index;
+                }
+
+                pathVars.put(segment.toLowerCase(), inboundPathSegments[index]);
+            }
+
+            index++;
+        }
+
+        return pathVars;
     }
 
     public static void checkForAndHandleSleep(final long sleepInMillis) {

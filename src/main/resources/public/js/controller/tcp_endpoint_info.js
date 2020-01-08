@@ -32,8 +32,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
 
+    var jsEditor = null;
 //    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
-    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['Authorization'];\n  // request.parameters['name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-My-Header'] = 'foobar';\n\n  return response;\n}";
+    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  return response;\n}";
 
 
     //
@@ -196,7 +197,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMinMillis" : 0,
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
-        "customJsSyntax" : DefaultCustomJsSyntax,
+        "customJsSyntax" : null,
         "rules" : []
     };
 
@@ -242,7 +243,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
                 "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
                 "definitions" : endpoint.definitions,
-                "customJsSyntax" : endpoint.customJsSyntax,
+                "customJsSyntax" : null,
                 "rules" : endpoint.rules,
                 "createdBy" : endpoint.createdBy
             };
@@ -265,6 +266,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeProxyHttp) {
                 $scope.proxyEndpoint.path = $scope.endpoint.path;
+            }
+
+            if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
+                initJSEditor(endpoint.customJsSyntax);
             }
 
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
@@ -294,6 +299,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 if ($scope.endpoint.customJsSyntax == null) {
                     $scope.endpoint.customJsSyntax = DefaultCustomJsSyntax;
                 }
+
+                initJSEditor($scope.endpoint.customJsSyntax);
                 break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
@@ -798,7 +805,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
             "rules" : [],
-            "customJsSyntax" : $scope.endpoint.customJsSyntax
+            "customJsSyntax" : null
         };
 
         // Handle Sequence specifics
@@ -861,7 +868,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs) {
 
-            // Nothing extra to do
+            reqData.customJsSyntax = jsEditor.getValue();
 
         }
 
@@ -1140,7 +1147,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         return false;
       }
 
-      if (utils.isBlank($scope.endpoint.customJsSyntax)) {
+      if (utils.isBlank(jsEditor.getValue())) {
         showAlert("'Javascript logic' is required");
         return false;
       }
@@ -1274,6 +1281,35 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             callback(data);
         });
 
+    }
+
+    function initJSEditor(content) {
+
+        if (jsEditor != null) {
+            return;
+        }
+
+        jsEditor = CodeMirror.fromTextArea(document.getElementById('custom-js-syntax'), {
+          lineNumbers: true,
+          styleActiveLine: true,
+          matchBrackets: true,
+          mode: "javascript",
+          gutters: ["CodeMirror-lint-markers"],
+          lint: true
+        });
+
+        jsEditor.setOption("theme", "darcula");
+
+        updateJSEditor(content);
+    }
+
+    function updateJSEditor(content) {
+        $timeout(function () {
+            if (content != null) {
+                jsEditor.setValue(content);
+            }
+            jsEditor.refresh();
+        }, 500);
     }
 
 

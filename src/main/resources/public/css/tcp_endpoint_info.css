@@ -183,6 +183,8 @@
     white-space: pre-line;
 }
 
-#custom-js-syntax {
-    height: 380px;
+.CodeMirror {
+    border-radius: 8px;
+    font-size: 13px;
+    height: 450px !important;
 }

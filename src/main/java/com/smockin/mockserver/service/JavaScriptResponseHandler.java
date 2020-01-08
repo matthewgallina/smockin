@@ -1,5 +1,6 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import spark.Request;
 
@@ -32,6 +33,6 @@ public interface JavaScriptResponseHandler {
             + " response; "
             + "}";
 
-    RestfulResponseDTO executeUserResponse(final Request req, final String userDefinedResponseFunc);
+    RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock);
 
 }

@@ -116,7 +116,7 @@ public class MockedRestServerEngineUtils {
                 outcome = proxyService.waitForResponse(req.pathInfo(), mock);
                 break;
             case CUSTOM_JS:
-                outcome = javaScriptResponseHandler.executeUserResponse(req, mock.getJavaScriptHandler().getSyntax());
+                outcome = javaScriptResponseHandler.executeUserResponse(req, mock);
                 break;
             case SEQ:
             default:
@@ -129,12 +129,7 @@ public class MockedRestServerEngineUtils {
             outcome = getDefault(mock);
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("status " + outcome.getHttpStatusCode());
-            logger.debug("content type " + outcome.getResponseContentType());
-            logger.debug("status " + outcome.getHttpStatusCode());
-            logger.debug("response body " + outcome.getResponseBody());
-        }
+        debugOutcome(outcome);
 
         res.status(outcome.getHttpStatusCode());
         res.type(outcome.getResponseContentType());
@@ -144,7 +139,7 @@ public class MockedRestServerEngineUtils {
             res.header(e.getKey(), e.getValue())
         );
 
-        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, outcome.getResponseBody());
+        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody());
 
         handleLatency(mock);
 
@@ -253,6 +248,19 @@ public class MockedRestServerEngineUtils {
             logger.debug("mock method: " + mock.getMethod());
             logger.debug("mock path: " + mock.getPath());
             logger.debug("mock type: " + mock.getMockType());
+
+        }
+
+    }
+
+    private void debugOutcome(final RestfulResponseDTO outcome) {
+
+        if (logger.isDebugEnabled()) {
+
+            logger.debug("status " + outcome.getHttpStatusCode());
+            logger.debug("content type " + outcome.getResponseContentType());
+            logger.debug("status " + outcome.getHttpStatusCode());
+            logger.debug("response body " + outcome.getResponseBody());
 
         }
 

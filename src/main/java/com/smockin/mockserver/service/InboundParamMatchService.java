@@ -11,6 +11,6 @@ public interface InboundParamMatchService {
     String TO_ARG = "TO";
     String UNTIL_ARG = "UNTIL";
 
-    String enrichWithInboundParamMatches(final Request req, final String responseBody);
+    String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody);
 
 }

@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import spark.Request;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -131,26 +130,29 @@ public class GeneralUtilsTest {
     }
 
     @Test
-    public void findPathVarIgnoreCaseTest() {
+    public void findPathVarIgnoreCase1Test() {
 
         // Setup
         final Request req = Mockito.mock(Request.class);
-        Mockito.when(req.params()).thenReturn(new HashMap<String, String>() {
-            {
-                put(":name", "Bob");
-                put(":Age", "21");
-            }
-        });
+        Mockito.when(req.pathInfo()).thenReturn("/person/Bob");
 
         // Test
-        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req, "NAME");
+        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{name}", "NAME");
 
         // Assertions
         Assert.assertNotNull(nameResult);
         Assert.assertEquals("Bob", nameResult);
+    }
+
+    @Test
+    public void findPathVarIgnoreCase2Test() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        Mockito.when(req.pathInfo()).thenReturn("/person/21");
 
         // Test
-        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req, "age");
+        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{age}", "agE");
 
         // Assertions
         Assert.assertNotNull(ageResult);
@@ -258,6 +260,105 @@ public class GeneralUtilsTest {
     @Test
     public void removeAllLineBreaks_Blank_Test() {
         Assert.assertEquals("", GeneralUtils.removeAllLineBreaks(""));
+    }
+
+    @Test
+    public void findAllPathVars_1Arg_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob", "/hello/{name}");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(1, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("name"));
+        Assert.assertEquals("bob", pathVars.get("name"));
+    }
+
+    @Test
+    public void findAllPathVars_2Args_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob/foo/bar", "/hello/{name}/foo/{res}");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(2, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("name"));
+        Assert.assertTrue(pathVars.containsKey("res"));
+        Assert.assertEquals("bob", pathVars.get("name"));
+        Assert.assertEquals("bar", pathVars.get("res"));
+    }
+
+    @Test
+    public void findAllPathVars_wildcard1Arg_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob", "/hello/*");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(1, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("*1"));
+        Assert.assertEquals("bob", pathVars.get("*1"));
+    }
+
+    @Test
+    public void findAllPathVars_wildcard1ArgCaseInsensitive_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob", "/hello/{nAmE}");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(1, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("name"));
+        Assert.assertEquals("bob", pathVars.get("name"));
+    }
+
+    @Test
+    public void findAllPathVars_wildcard1ArgOpen_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob/world", "/hello/*");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(1, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("*1"));
+        Assert.assertEquals("bob", pathVars.get("*1"));
+    }
+
+    @Test
+    public void findAllPathVars_wildcard2Args_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob/foo/bar", "/hello/*/foo/*");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(2, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("*1"));
+        Assert.assertTrue(pathVars.containsKey("*3"));
+        Assert.assertEquals("bob", pathVars.get("*1"));
+        Assert.assertEquals("bar", pathVars.get("*3"));
+    }
+
+    @Test
+    public void findAllPathVars_NoArgs_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/world", "/hello/world");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertTrue(pathVars.isEmpty());
+    }
+
+    @Test
+    public void findAllPathVars_ArgsSegmentsMismatch1_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/bob/world", "/hello/{name}");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertEquals(1, pathVars.size());
+        Assert.assertTrue(pathVars.containsKey("name"));
+        Assert.assertEquals("bob", pathVars.get("name"));
+    }
+
+    @Test
+    public void findAllPathVars_ArgsSegmentsMismatch2_Test() {
+
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars("/hello/world", "/hello/world/{name}");
+
+        Assert.assertNotNull(pathVars);
+        Assert.assertTrue(pathVars.isEmpty());
     }
 
 }

@@ -32,6 +32,7 @@ public class RuleEngineImpl implements RuleEngine {
     private RuleResolver ruleResolver;
 
     public RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules) {
+        logger.debug("process called");
 
         for (RestfulMockDefinitionRule rule : rules) {
 
@@ -41,7 +42,12 @@ public class RuleEngineImpl implements RuleEngine {
 
                 for (RestfulMockDefinitionRuleGroupCondition condition : group.getConditions()) {
 
-                    final String inboundValue = extractInboundValue(condition.getRuleMatchingType(), condition.getField(), req);
+                    final String inboundValue = extractInboundValue(condition.getRuleMatchingType(), condition.getField(), req, rule.getRestfulMock().getPath());
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Rule Matching Type: " + condition.getRuleMatchingType());
+                        logger.debug("Inbound Value: " + inboundValue);
+                    }
 
                     if (ruleResolver.processRuleComparison(condition, inboundValue)) {
                         groupMatchCount++;
@@ -64,7 +70,7 @@ public class RuleEngineImpl implements RuleEngine {
         return null;
     }
 
-    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req) {
+    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req, final String mockPath) {
 
         switch (matchingType) {
             case REQUEST_HEADER:
@@ -74,7 +80,7 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
-                return req.params(fieldName);
+                return GeneralUtils.findPathVarIgnoreCase(req, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
 
                 final int argPosition = NumberUtils.toInt(fieldName, -1);
