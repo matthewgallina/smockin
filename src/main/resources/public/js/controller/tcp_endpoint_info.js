@@ -1,5 +1,5 @@
 
-app.controller('tcpEndpointInfoController', function($scope, $window, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
+app.controller('tcpEndpointInfoController', function($scope, $location, $uibModal, $http, $timeout, utils, globalVars, restClient, auth) {
 
 
     //
@@ -33,7 +33,7 @@ app.controller('tcpEndpointInfoController', function($scope, $window, $location,
     $scope.XmlContentType = globalVars.XmlContentType;
 
     var jsEditor = null;
-    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
+//    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
     var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  return response;\n}";
 
 
