@@ -186,5 +186,13 @@
 .CodeMirror {
     border-radius: 8px;
     font-size: 13px;
-    height: 450px !important;
+}
+
+#custom-js-syntax {
+    display: none;
+}
+
+.enlarge-js-editor-link {
+    cursor: pointer;
+    text-decoration: underline;
 }

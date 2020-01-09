@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.1.0
+  version 2.2.0
 </p>
 
 ### Dynamic REST API simulation and for application development & QA testing
@@ -14,7 +14,7 @@
 
 <br />
 
-**Version 2.1.0** of sMockin brings about a few significant changes...
+**Version 2.2.0** of sMockin brings about a few significant changes...
 
 - The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 

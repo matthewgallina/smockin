@@ -472,9 +472,18 @@
                 <!-- Custom JS -->
                 <div ng-show="endpoint.mockType.value == mockTypeCustomJs">
 
+                    <br />
+
                     <div class="form-group">
-                        <label for="custom-js-syntax" class="ng-binding">{{ customJsSyntaxLabel }}</label>
-                        <textarea id="custom-js-syntax" name="custom-js-syntax" style="display: none;"></textarea>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label for="custom-js-syntax" class="ng-binding">{{ customJsSyntaxLabel }}</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <a ng-click="doExpandJsEditor()" class="pull-right enlarge-js-editor-link">{{ editCustomJSLabel }}</a>
+                            </div>
+                        </div>
+                        <textarea id="custom-js-syntax" name="custom-js-syntax"></textarea>
                     </div>
 
                 </div>
