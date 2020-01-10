@@ -6,9 +6,13 @@
 
 <div class="modal-body" id="modal-body" window-dimensions-directive style="height: {{ (height - 200) }}px;">
 
-    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+    <div id="js-editor-wrapper">
 
-    <textarea id="custom-js-syntax-modal" name="custom-js-syntax-modal"></textarea>
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+        <textarea id="custom-js-syntax-modal" name="custom-js-syntax-modal"></textarea>
+
+    </div>
 
 </div>
 

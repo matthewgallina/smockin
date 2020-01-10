@@ -6,9 +6,10 @@
     background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
 }
 
-.CodeMirror {
+#js-editor-wrapper .CodeMirror {
     border-radius: 8px;
     font-size: 13px;
+    height: calc(100vh - 230px) !important;
 }
 
 #custom-js-syntax-modal {

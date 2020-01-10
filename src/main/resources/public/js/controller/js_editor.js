@@ -1,4 +1,4 @@
-app.controller('jsEditorController', function($scope, $window, $timeout, $uibModalInstance, globalVars, utils, data) {
+app.controller('jsEditorController', function($scope, $timeout, $uibModalInstance, globalVars, utils, data) {
 
 
     //
@@ -96,7 +96,6 @@ app.controller('jsEditorController', function($scope, $window, $timeout, $uibMod
         });
 
         jsEditor.setOption("theme", "darcula");
-        jsEditor.setSize(null, $window.innerHeight - 230);
 
         updateJSEditor(content);
     }

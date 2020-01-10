@@ -183,9 +183,14 @@
     white-space: pre-line;
 }
 
-.CodeMirror {
+#custom-js .CodeMirror {
     border-radius: 8px;
     font-size: 13px;
+    height: calc(100vh - 420px) !important;
+}
+
+#custom-js .CodeMirror-lines {
+    cursor: default;
 }
 
 #custom-js-syntax {
