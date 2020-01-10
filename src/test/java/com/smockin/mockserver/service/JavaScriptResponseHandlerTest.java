@@ -119,7 +119,7 @@ public class JavaScriptResponseHandlerTest {
         Assert.assertNotNull(response);
         Assert.assertTrue(response instanceof ScriptObjectMirror);
 
-        Assert.assertEquals("Required handleResponse(request, response) function is undefined!", ((ScriptObjectMirror)response).get("body"));
+        Assert.assertEquals("Expected handleResponse(request, response) function is undefined!", ((ScriptObjectMirror)response).get("body"));
         Assert.assertEquals(404, ((ScriptObjectMirror)response).get("status"));
     }
 
