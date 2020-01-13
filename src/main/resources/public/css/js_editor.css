@@ -1,0 +1,28 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+#js-editor-wrapper .CodeMirror {
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.js-editor {
+    height: calc(100vh - 230px) !important;
+}
+
+.js-editor-shortened {
+    height: calc(100vh - 300px) !important;
+}
+
+#custom-js-syntax-modal {
+    display: none;
+}
+
+.modal-dialog {
+    width: 980px;
+}

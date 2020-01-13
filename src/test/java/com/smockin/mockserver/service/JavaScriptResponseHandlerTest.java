@@ -88,6 +88,27 @@ public class JavaScriptResponseHandlerTest {
     }
 
     @Test
+    public void executeJS_empty_user_func_Test() throws ScriptException {
+
+        final String userFunction = "function handleResponse(req, res) { "
+                + " return res; "
+                + "}";
+
+        final Object response = javaScriptResponseHandler.executeJS(
+                userFunction
+                        + JavaScriptResponseHandler.defaultRequestObject
+                        + JavaScriptResponseHandler.defaultResponseObject
+                        + JavaScriptResponseHandler.userResponseFunctionInvoker);
+
+        Assert.assertNotNull(response);
+        Assert.assertTrue(response instanceof ScriptObjectMirror);
+
+        Assert.assertNull(((ScriptObjectMirror)response).get("body"));
+        Assert.assertEquals(404, ((ScriptObjectMirror)response).get("status"));
+        Assert.assertEquals("text/plain", ((ScriptObjectMirror)response).get("contentType"));
+    }
+
+    @Test
     public void executeJS_missing_mock_user_func_Test() throws ScriptException {
 
         final Object response = javaScriptResponseHandler.executeJS(
@@ -98,7 +119,7 @@ public class JavaScriptResponseHandlerTest {
         Assert.assertNotNull(response);
         Assert.assertTrue(response instanceof ScriptObjectMirror);
 
-        Assert.assertEquals("mock js logic is undefined!", ((ScriptObjectMirror)response).get("body"));
+        Assert.assertEquals("Expected handleResponse(request, response) function is undefined!", ((ScriptObjectMirror)response).get("body"));
         Assert.assertEquals(404, ((ScriptObjectMirror)response).get("status"));
     }
 

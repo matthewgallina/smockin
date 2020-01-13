@@ -33,8 +33,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.XmlContentType = globalVars.XmlContentType;
 
     var jsEditor = null;
-//    var CustomJsSyntaxDoc = "/**\n\nvar request = {\n  pathVars : {},\n  body : null,\n  headers : {},\n  parameters : {}\n};\n\nvar response = {\n  body : null,\n  status : 200,\n  contentType : 'text/plain',\n  headers : {}\n};\n\n*/\n";
-    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars;\n  // request.body;\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  return response;\n}";
+    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.pathVars['name'];\n  // request.body;\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  return response;\n}";
 
 
     //
@@ -96,6 +95,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.formatJsonLabel = 'Validate & Format JSON';
     $scope.formatXmlLabel = 'Validate & Format XML';
     $scope.customJsSyntaxLabel = 'Javascript Logic';
+    $scope.editCustomJSLabel = 'Open Editor';
 
 
     //
@@ -243,7 +243,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
                 "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
                 "definitions" : endpoint.definitions,
-                "customJsSyntax" : null,
+                "customJsSyntax" : endpoint.customJsSyntax,
                 "rules" : endpoint.rules,
                 "createdBy" : endpoint.createdBy
             };
@@ -296,11 +296,13 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 $scope.endpoint.method = 'GET';
                 break;
             case MockTypeDefinitions.MockTypeCustomJs :
+
                 if ($scope.endpoint.customJsSyntax == null) {
                     $scope.endpoint.customJsSyntax = DefaultCustomJsSyntax;
                 }
 
                 initJSEditor($scope.endpoint.customJsSyntax);
+
                 break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
@@ -970,6 +972,30 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         $scope.proxyEndpoint.responseBody = validationOutcome[1];
     };
 
+    $scope.doExpandJsEditor = function() {
+
+        var modalInstance = $uibModal.open({
+          templateUrl: 'js_editor.html',
+          controller: 'jsEditorController',
+          backdrop  : 'static',
+          keyboard  : false,
+          resolve: {
+            data: function () {
+              return {
+                "customJsSyntax" : jsEditor.getValue()
+              };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (editorContent) {
+            jsEditor.setValue(editorContent);
+        }, function () {
+
+        });
+
+    };
+
 
     //
     // Internal Functions
@@ -1291,11 +1317,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
         jsEditor = CodeMirror.fromTextArea(document.getElementById('custom-js-syntax'), {
           lineNumbers: true,
-          styleActiveLine: true,
-          matchBrackets: true,
           mode: "javascript",
-          gutters: ["CodeMirror-lint-markers"],
-          lint: true
+          readOnly: 'nocursor'
         });
 
         jsEditor.setOption("theme", "darcula");

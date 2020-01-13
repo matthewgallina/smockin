@@ -19,7 +19,7 @@ public interface JavaScriptResponseHandler {
     String defaultResponseObject =
             " var response = { "
                 + " body : null,"
-                + " status : 200,"
+                + " status : 404,"
                 + " contentType : 'text/plain',"
                 + " headers : {}"
                 + "};";
@@ -28,8 +28,7 @@ public interface JavaScriptResponseHandler {
             " if (typeof handleResponse === 'function') { "
             + " handleResponse(request, response); "
             + "} else {"
-            + " response.status = 404; "
-            + " response.body = 'mock js logic is undefined!'; "
+            + " response.body = 'Expected handleResponse(request, response) function is undefined!'; "
             + " response; "
             + "}";
 
