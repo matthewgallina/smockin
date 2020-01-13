@@ -9,7 +9,14 @@
 #js-editor-wrapper .CodeMirror {
     border-radius: 8px;
     font-size: 13px;
+}
+
+.js-editor {
     height: calc(100vh - 230px) !important;
+}
+
+.js-editor-shortened {
+    height: calc(100vh - 300px) !important;
 }
 
 #custom-js-syntax-modal {

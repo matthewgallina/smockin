@@ -24,6 +24,7 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
 
     var closeAlertFunc = function() {
         $scope.alerts = [];
+        switchJsEditorStyles('js-editor-shortened', 'js-editor');
     };
 
    function showAlert(msg, type) {
@@ -31,6 +32,8 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
         if (type == null) {
             type = 'danger';
         }
+
+        switchJsEditorStyles('js-editor', 'js-editor-shortened');
 
         $scope.alerts = [];
         $scope.alerts.push({ "type" : type, "msg" : msg });
@@ -59,12 +62,10 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
 
     $scope.doUpdate = function() {
 
-        if (utils.isBlank(jsEditor.getValue())) {
-            showAlert("Please enter tour JavaScript logic");
-            return;
-        }
-
-        if (!jsEditor.getValue().trim().startsWith("function handleResponse")) {
+        if (utils.isBlank(jsEditor.getValue())
+                || !jsEditor.getValue().trim().startsWith("function handleResponse(request, response) {")
+                || jsEditor.getValue().trim().indexOf("return response;") == -1
+                || !jsEditor.getValue().trim().endsWith("}")) {
             showAlert("The required function handleResponse(request, response) is not correctly defined");
             return;
         }
@@ -105,10 +106,19 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
             if (content != null) {
                 jsEditor.setValue(content);
             }
+            switchJsEditorStyles(null, 'js-editor-shortened');
             jsEditor.refresh();
         }, 500);
     }
 
+    function switchJsEditorStyles(removeClazz, addClazz) {
+        if (removeClazz != null) {
+            jQuery('#js-editor-wrapper > .CodeMirror').removeClass(removeClazz);
+        }
+        if (addClazz != null) {
+            jQuery('#js-editor-wrapper > .CodeMirror').addClass(addClazz);
+        }
+    }
 
     //
     // Init Page
