@@ -62,11 +62,8 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
 
     $scope.doUpdate = function() {
 
-        if (utils.isBlank(jsEditor.getValue())
-                || !jsEditor.getValue().trim().startsWith("function handleResponse(request, response) {")
-                || jsEditor.getValue().trim().indexOf("return response;") == -1
-                || !jsEditor.getValue().trim().endsWith("}")) {
-            showAlert("The required function handleResponse(request, response) is not correctly defined");
+        if (!validateHandleResponseStructure(jsEditor.getValue())) {
+            showAlert("The required function 'handleResponse(request, response)' is not correctly defined");
             return;
         }
 
@@ -103,12 +100,23 @@ app.controller('jsEditorController', function($scope, $timeout, $uibModalInstanc
 
     function updateJSEditor(content) {
         $timeout(function () {
+
             if (content != null) {
                 jsEditor.setValue(content);
             }
-            switchJsEditorStyles(null, 'js-editor-shortened');
+
+            switchJsEditorStyles(null, 'js-editor');
             jsEditor.refresh();
+
         }, 500);
+    }
+
+    function validateHandleResponseStructure(jsEditorValue) {
+
+        return !(utils.isBlank(jsEditorValue)
+                || !jsEditorValue.trim().startsWith("function handleResponse(request, response)")
+                || jsEditorValue.trim().indexOf("return response;") == -1
+                || !jsEditorValue.trim().endsWith("}"));
     }
 
     function switchJsEditorStyles(removeClazz, addClazz) {
