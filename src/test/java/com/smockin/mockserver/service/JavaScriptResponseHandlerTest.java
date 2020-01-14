@@ -200,7 +200,7 @@ public class JavaScriptResponseHandlerTest {
 
         // Assertions
         Assert.assertNotNull(result);
-        Assert.assertEquals("request.path=/hello/james; request.body=xxx; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
+        Assert.assertEquals("request.path='/hello/james'; request.body='xxx'; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
     }
 
 }

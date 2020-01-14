@@ -76,10 +76,15 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
         final StringBuilder reqObject = new StringBuilder();
 
-        reqObject.append("request.path=").append(req.pathInfo()).append("; ");
+        reqObject.append("request.path=")
+                .append("'").append(req.pathInfo()).append("'")
+                .append("; ");
 
-        if (StringUtils.isNotBlank(req.body()))
-            reqObject.append("request.body=").append(req.body()).append(";");
+        if (StringUtils.isNotBlank(req.body())) {
+            reqObject.append("request.body=")
+                    .append("'").append(req.body()).append("'")
+                    .append(";");
+        }
 
         applyMapValuesToStringBuilder("request.pathVars", GeneralUtils.findAllPathVars(req.pathInfo(), mockPath), reqObject);
         applyMapValuesToStringBuilder("request.parameters", extractAllRequestParams(req), reqObject);
