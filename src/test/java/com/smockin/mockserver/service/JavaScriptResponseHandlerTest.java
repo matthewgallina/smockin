@@ -4,15 +4,20 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.http.MediaType;
+import spark.Request;
 import javax.script.ScriptException;
+import java.util.*;
 
 public class JavaScriptResponseHandlerTest {
 
     private JavaScriptResponseHandlerImpl javaScriptResponseHandler;
+    private Request req;
 
     @Before
     public void setUp() {
-
+        req = Mockito.mock(Request.class);
         javaScriptResponseHandler = new JavaScriptResponseHandlerImpl();
     }
 
@@ -121,6 +126,81 @@ public class JavaScriptResponseHandlerTest {
 
         Assert.assertEquals("Expected handleResponse(request, response) function is undefined!", ((ScriptObjectMirror)response).get("body"));
         Assert.assertEquals(404, ((ScriptObjectMirror)response).get("status"));
+    }
+
+    @Test
+    public void extractAllRequestParamsTest() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_JSON_VALUE);
+        Mockito.when(req.queryParams()).thenReturn(new HashSet<>(Arrays.asList("name", "age")));
+        Mockito.when(req.queryParams("name")).thenReturn("joe");
+        Mockito.when(req.queryParams("age")).thenReturn("35");
+
+        // Test
+        final Map<String, String> params = javaScriptResponseHandler.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(params);
+        Assert.assertEquals(2, params.size());
+        Assert.assertEquals("joe", params.get("name"));
+        Assert.assertEquals("35", params.get("age"));
+    }
+
+    @Test
+    public void extractAllRequestParams_formPost_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn("name=jane;age=28;");
+
+        // Test
+        final Map<String, String> params = javaScriptResponseHandler.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(params);
+        Assert.assertEquals(2, params.size());
+        Assert.assertEquals("jane", params.get("name"));
+        Assert.assertEquals("28", params.get("age"));
+    }
+
+    @Test
+    public void applyMapValuesToStringBuilderTest() {
+
+        // Setup
+        final Map<String, String> values = new HashMap<>();
+        values.put("firstname", "Bob");
+        values.put("lastname", "Bloggs");
+        final StringBuilder reqObject = new StringBuilder();
+
+        // Test
+        javaScriptResponseHandler.applyMapValuesToStringBuilder("request.parameters", values, reqObject);
+
+        // Assertions
+        Assert.assertNotNull(reqObject);
+        Assert.assertNotNull(reqObject.toString());
+        Assert.assertEquals("request.parameters['firstname']='Bob'; request.parameters['lastname']='Bloggs';", reqObject.toString().trim());
+    }
+
+    @Test
+    public void populateRequestObjectWithInboundTest() {
+
+        // Setup
+        Mockito.when(req.headers()).thenReturn(new HashSet<>(Arrays.asList("one", "two")));
+        Mockito.when(req.headers("one")).thenReturn("1");
+        Mockito.when(req.headers("two")).thenReturn("2");
+        Mockito.when(req.pathInfo()).thenReturn("/hello/james");
+        Mockito.when(req.body()).thenReturn("xxx");
+        Mockito.when(req.queryParams()).thenReturn(new HashSet<>(Arrays.asList("name", "age")));
+        Mockito.when(req.queryParams("name")).thenReturn("joe");
+        Mockito.when(req.queryParams("age")).thenReturn("35");
+
+        // Test
+        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("request.path=/hello/james; request.body=xxx; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
     }
 
 }

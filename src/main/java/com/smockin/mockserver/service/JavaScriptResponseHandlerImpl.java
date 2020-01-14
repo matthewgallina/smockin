@@ -67,7 +67,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return buildEngine().eval(js);
     }
 
-    private String populateRequestObjectWithInbound(final Request req, final String mockPath) {
+    String populateRequestObjectWithInbound(final Request req, final String mockPath) {
 
         final Map<String, String> reqHeaders =
                 req.headers()
@@ -75,6 +75,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
                     .collect(Collectors.toMap(k -> k, k -> req.headers(k)));
 
         final StringBuilder reqObject = new StringBuilder();
+
+        reqObject.append("request.path=").append(req.pathInfo()).append("; ");
 
         if (StringUtils.isNotBlank(req.body()))
             reqObject.append("request.body=").append(req.body()).append(";");
@@ -95,13 +97,9 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         values.entrySet().forEach(e ->
                 reqObject.append(" ")
                         .append(field)
-                        .append("['")
-                        .append(e.getKey())
-                        .append("']")
+                        .append("['").append(e.getKey()).append("']")
                         .append("=")
-                        .append("'")
-                        .append(e.getValue())
-                        .append("'")
+                        .append("'").append(e.getValue()).append("'")
                         .append(";"));
     }
 
