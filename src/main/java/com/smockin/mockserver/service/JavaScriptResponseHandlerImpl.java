@@ -118,7 +118,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
             return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                     .stream()
-                    .collect(Collectors.toMap(k -> k.getName(), v -> v.getValue()));
+                    .collect(HashMap::new, (m, v) -> m.put(v.getName(), v.getValue()), HashMap::putAll);
         }
 
         return req.queryParams()

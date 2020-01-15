@@ -17,7 +17,6 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import spark.Request;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -237,6 +236,66 @@ public class RuleEngineTest {
         // Assertions
         Assert.assertNull(result);
 
+    }
+
+    @Test
+    public void extractRequestParamByNameTest() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(null);
+        Mockito.when(req.queryParams("name")).thenReturn("bob");
+
+        // Test
+        final String result = ruleEngine.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("bob", result);
+
+    }
+
+    @Test
+    public void extractRequestParamByName_formPost_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn("name=jane;age=28;");
+
+        // Test
+        final String result = ruleEngine.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("jane", result);
+
+    }
+
+    @Test
+    public void extractRequestParamByName_formWithRandomReqBody_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn("adasdasdadasd");
+
+        // Test
+        final String result = ruleEngine.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNull(result);
+    }
+
+    @Test
+    public void extractRequestParamByName_formWithBlankReqBody_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn(" ");
+
+        // Test
+        final String result = ruleEngine.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNull(result);
     }
 
 }

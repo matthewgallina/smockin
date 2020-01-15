@@ -54,7 +54,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.defaultHttpStatusCodeLabel = 'Default HTTP Status Code';
     $scope.defaultHttpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.defaultResponseBodyLabel = 'Default Response Body';
-    $scope.proxyPathLabel = 'Exact Path';
     $scope.proxyContentTypeLabel = 'Content Type';
     $scope.proxyHttpStatusCodeLabel = 'HTTP Status Code';
     $scope.proxyResponseBodyLabel = 'Response Body';
@@ -80,7 +79,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.clientIdHeading = 'Session Id';
     $scope.clientJoinDateHeading = 'Joining Date';
     $scope.manageHttpProxyQueueLabel = 'HTTP External Feed Tools';
-    $scope.sendProxiedResponseLabel = 'Feed in a response';
     $scope.sseHeartbeatLabel = 'SSE Heartbeat (in millis)';
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
@@ -96,6 +94,11 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.formatXmlLabel = 'Validate & Format XML';
     $scope.customJsSyntaxLabel = 'Javascript Logic';
     $scope.editCustomJSLabel = 'Open Editor';
+    $scope.proxyPushToQueueEndpoint = 'http://localhost:8000/proxy/' + extId;
+    $scope.option1Label = 'Option 1';
+    $scope.option2Label = 'Option 2';
+    $scope.option1Text = 'Endpoint for pushing responses to queue';
+    $scope.option2Text = 'Input form for pushing responses to queue';
 
 
     //
@@ -109,7 +112,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
     $scope.refreshClientsLinkLabel = 'refresh';
-    $scope.clearProxyButtonLabel = 'Clear Pending Responses';
+    $scope.clearProxyButtonLabel = 'Clear All Responses In Queue';
     $scope.clearProxyResponseFieldsButtonLabel = 'Clear Fields';
     $scope.postProxyResponseButtonLabel = 'Post Response';
     $scope.messageButtonLabel = 'Message';
@@ -202,7 +205,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     };
 
     $scope.proxyEndpoint = {
-        "path" : null,
         "contentType" : null,
         "httpStatusCode" : null,
         "responseBody" : null
@@ -262,10 +264,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                     $scope.responseHeaderList.push({ 'name' : k, 'value' : v });
                 });
 
-            }
-
-            if (endpoint.mockType == MockTypeDefinitions.MockTypeProxyHttp) {
-                $scope.proxyEndpoint.path = $scope.endpoint.path;
             }
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
@@ -383,14 +381,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         closeAlertFunc();
 
         // Validation
-        if (utils.isBlank($scope.proxyEndpoint.path)) {
-            showAlert("'Path' for response is required");
-            return false;
-        }
-        if ($scope.proxyEndpoint.path.indexOf("*") > -1) {
-            showAlert("'Path' for response cannot contain any wildcard * path variables");
-            return false;
-        }
         if (utils.isBlank($scope.proxyEndpoint.contentType)) {
             showAlert("'Content Type' for response is required");
             return false;
@@ -403,7 +393,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
         // Send external feed response
         var reqData = {
-            "path" : $scope.proxyEndpoint.path,
+            "path" : $scope.endpoint.path,
             "method" : $scope.endpoint.method,
             "responseContentType" : $scope.proxyEndpoint.contentType,
             "httpStatusCode" : $scope.proxyEndpoint.httpStatusCode,
@@ -426,7 +416,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.doClearProxyFields = function() {
 
         $scope.proxyEndpoint = {
-            "path" : $scope.endpoint.path,
             "contentType" : null,
             "httpStatusCode" : null,
             "responseBody" : null

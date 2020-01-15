@@ -165,6 +165,55 @@ public class JavaScriptResponseHandlerTest {
     }
 
     @Test
+    public void extractAllRequestParams_formWithRandomReqBody_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn("asdasdasdasd");
+
+        // Test
+        final Map<String, String> params = javaScriptResponseHandler.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(params);
+        Assert.assertEquals(1, params.size());
+        Assert.assertNull(params.get("asdasdasdasd"));
+    }
+
+    @Test
+    public void extractAllRequestParams_formWithRandomReqBody2_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn("a;b=;c;;");
+
+        // Test
+        final Map<String, String> params = javaScriptResponseHandler.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(params);
+        Assert.assertEquals(3, params.size());
+        Assert.assertNull(params.get("a"));
+        Assert.assertEquals("", params.get("b"));
+        Assert.assertNull(params.get("c"));
+    }
+
+    @Test
+    public void extractAllRequestParams_formWithBlankReqBody_Test() {
+
+        // Setup
+        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(req.body()).thenReturn(" ");
+
+        // Test
+        final Map<String, String> params = javaScriptResponseHandler.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(params);
+        Assert.assertTrue(params.isEmpty());
+    }
+
+    @Test
     public void applyMapValuesToStringBuilderTest() {
 
         // Setup
