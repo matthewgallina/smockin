@@ -286,13 +286,13 @@
                                 </span>
                             </uib-accordion-heading>
 
-                            <h5>{{ sendProxiedResponseLabel }}</h5>
-                            <br />
+                            <h5><b>{{ option1Label }}</b> - {{ option1Text }}</h5>
+                            <input class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyPushToQueueEndpoint" readonly="true" ng-disaabled="true" />
 
-                            <div class="form-group">
-                                <label for="proxyPath" class="ng-binding">{{ proxyPathLabel }}</label>
-                                <input id="proxyPath" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="proxyEndpoint.path" type="text" />
-                            </div>
+                            <hr />
+
+                            <h5><b>{{ option2Label }}</b> - {{ option2Text }}</h5>
+                            <br />
 
                             <div class="form-group">
                                 <label for="proxyContentType" class="ng-binding">{{ proxyContentTypeLabel }}</label>

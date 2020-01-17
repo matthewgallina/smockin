@@ -67,7 +67,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return buildEngine().eval(js);
     }
 
-    private String populateRequestObjectWithInbound(final Request req, final String mockPath) {
+    String populateRequestObjectWithInbound(final Request req, final String mockPath) {
 
         final Map<String, String> reqHeaders =
                 req.headers()
@@ -76,8 +76,15 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
         final StringBuilder reqObject = new StringBuilder();
 
-        if (StringUtils.isNotBlank(req.body()))
-            reqObject.append("request.body=").append(req.body()).append(";");
+        reqObject.append("request.path=")
+                .append("'").append(req.pathInfo()).append("'")
+                .append("; ");
+
+        if (StringUtils.isNotBlank(req.body())) {
+            reqObject.append("request.body=")
+                    .append("'").append(req.body()).append("'")
+                    .append(";");
+        }
 
         applyMapValuesToStringBuilder("request.pathVars", GeneralUtils.findAllPathVars(req.pathInfo(), mockPath), reqObject);
         applyMapValuesToStringBuilder("request.parameters", extractAllRequestParams(req), reqObject);
@@ -95,13 +102,9 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         values.entrySet().forEach(e ->
                 reqObject.append(" ")
                         .append(field)
-                        .append("['")
-                        .append(e.getKey())
-                        .append("']")
+                        .append("['").append(e.getKey()).append("']")
                         .append("=")
-                        .append("'")
-                        .append(e.getValue())
-                        .append("'")
+                        .append("'").append(e.getValue()).append("'")
                         .append(";"));
     }
 
@@ -115,7 +118,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
             return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                     .stream()
-                    .collect(Collectors.toMap(k -> k.getName(), v -> v.getValue()));
+                    .collect(HashMap::new, (m, v) -> m.put(v.getName(), v.getValue()), HashMap::putAll);
         }
 
         return req.queryParams()

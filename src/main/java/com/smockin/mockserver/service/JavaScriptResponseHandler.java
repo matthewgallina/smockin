@@ -10,6 +10,7 @@ public interface JavaScriptResponseHandler {
 
     String defaultRequestObject =
             " var request = { "
+                + " path : null,"
                 + " pathVars : {},"
                 + " body : null,"
                 + " headers : {},"
