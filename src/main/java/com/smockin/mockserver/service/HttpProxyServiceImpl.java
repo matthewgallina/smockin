@@ -80,7 +80,7 @@ public class HttpProxyServiceImpl implements HttpProxyService {
                 // A matching path was found, so consume/remove the element from the synchronizedProxyResponsesMap, release the lock and return response.
 
                 final HttpProxiedDTO proxiedResponse = responses.remove(0);
-                return new RestfulResponseDTO(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<Map.Entry<String, String>>());
+                return new RestfulResponseDTO(proxiedResponse.getHttpStatusCode(), proxiedResponse.getResponseContentType(), proxiedResponse.getBody(), new HashSet<>());
             }
 
         } catch (InterruptedException ex) {

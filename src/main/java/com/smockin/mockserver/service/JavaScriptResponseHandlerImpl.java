@@ -3,6 +3,7 @@ package com.smockin.mockserver.service;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
@@ -143,8 +143,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     }
 
     private ScriptEngine buildEngine() {
-        final ScriptEngineManager factory = new ScriptEngineManager();
-        return factory.getEngineByName(jsEngine);
+        return new NashornScriptEngineFactory()
+                .getScriptEngine(engineSecurityArgs);
     }
 
 }

@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Created by mgallina.
  */
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO> {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);

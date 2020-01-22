@@ -21,7 +21,7 @@ import java.util.Map;
 public class MockOrderingCounterServiceImpl implements MockOrderingCounterService {
 
     private final Object monitor = new Object();
-    private final Map<String, List<DefinitionCounter>> synchronizedCounter = new HashMap<String, List<DefinitionCounter>>();
+    private final Map<String, List<DefinitionCounter>> synchronizedCounter = new HashMap<>();
 
     public RestfulResponseDTO process(final RestfulMock restfulMock) {
 

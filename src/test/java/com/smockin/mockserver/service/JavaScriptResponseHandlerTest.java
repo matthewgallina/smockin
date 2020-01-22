@@ -1,9 +1,12 @@
 package com.smockin.mockserver.service;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import spark.Request;
@@ -14,6 +17,9 @@ public class JavaScriptResponseHandlerTest {
 
     private JavaScriptResponseHandlerImpl javaScriptResponseHandler;
     private Request req;
+
+    @Rule
+    public ExpectedException expect = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -250,6 +256,24 @@ public class JavaScriptResponseHandlerTest {
         // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals("request.path='/hello/james'; request.body='xxx'; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
+    }
+
+    @Test
+    public void executeJS_runJavaSecurityAttempt1_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+        expect.expectMessage(Matchers.is("ReferenceError: \"java\" is not defined in <eval> at line number 1"));
+
+        javaScriptResponseHandler.executeJS("java.lang.System.nanoTime();");
+    }
+
+    @Test
+    public void executeJS_runJavaSecurityAttempt2_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+        expect.expectMessage(Matchers.is("ReferenceError: \"java\" is not defined in <eval> at line number 1"));
+
+        javaScriptResponseHandler.executeJS("java.lang.Runtime.getRuntime().exec(\"java.lang.System.nanoTime();\");");
     }
 
 }
