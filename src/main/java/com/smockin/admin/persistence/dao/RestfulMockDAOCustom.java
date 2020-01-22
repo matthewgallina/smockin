@@ -5,7 +5,6 @@ import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
-
 import java.util.List;
 
 /**
@@ -19,5 +18,6 @@ public interface RestfulMockDAOCustom {
     RestfulMock findByPathAndMethodAndUser(final String path, final RestMethodEnum method, final SmockinUser user);
     RestfulMock findActiveByMethodAndPathPatternAndTypesForSingleUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes);
     RestfulMock findActiveByMethodAndPathPatternAndTypesForMultiUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes);
+    void detach(final RestfulMock restfulMock);
 
 }

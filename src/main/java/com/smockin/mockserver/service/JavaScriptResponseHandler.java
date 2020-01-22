@@ -6,7 +6,9 @@ import spark.Request;
 
 public interface JavaScriptResponseHandler {
 
-    String jsEngine = "JavaScript";
+    String[] engineSecurityArgs = {
+            "--no-java"
+    };
 
     String defaultRequestObject =
             " var request = { "

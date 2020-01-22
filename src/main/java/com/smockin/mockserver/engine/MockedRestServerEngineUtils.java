@@ -27,7 +27,7 @@ import java.util.*;
  * Created by mgallina.
  */
 @Service
-@Transactional
+@Transactional(readOnly = true)
 public class MockedRestServerEngineUtils {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngineUtils.class);

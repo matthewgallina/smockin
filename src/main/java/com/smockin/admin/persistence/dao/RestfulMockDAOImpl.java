@@ -108,6 +108,11 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
         return matchPath(mocks, path, true);
     }
 
+    @Override
+    public void detach(final RestfulMock restfulMock) {
+        entityManager.detach(restfulMock);
+    }
+
     RestfulMock matchPath(final List<RestfulMock> mocks, final String path, final boolean matchOnUserCtxPath) {
 
         if (mocks.isEmpty()) {
