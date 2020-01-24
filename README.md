@@ -14,7 +14,7 @@
 
 <br />
 
-**Version 2.4.0** of sMockin brings about a few significant changes...
+**Version 2** of sMockin brings about a few significant changes...
 
 - The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 
@@ -100,7 +100,9 @@ http://localhost:8000/index.html
 
 <br />
 
-For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
+For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki. 
+
+You can also check out the latest help guide at [help.smockin.com](https://help.smockin.com)
 
 <br/>
 
