@@ -6,6 +6,8 @@
   version 2.4.0
 </p>
 
+<br />
+
 ### Dynamic REST API simulation and for application development & QA testing
 
    - Visit us: https://www.smockin.com
@@ -23,6 +25,8 @@
 - Multi user mode has been improved based on user feedback and suggestions.
 
 - Users can now utilise JavaScript to deliver mock functionality.
+
+- There will also be a greater focus on supporting more API document specs such as RAML and OpenAPI, which will be used to automatically generate mocks.
 
 <br />
 
