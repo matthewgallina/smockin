@@ -10,7 +10,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         MockTypeProxyHttp : 'PROXY_HTTP',
         MockTypeWebSocket : 'PROXY_WS',
         MockTypeProxySse : 'PROXY_SSE',
-        MockTypeCustomJs : 'CUSTOM_JS'
+        MockTypeCustomJs : 'CUSTOM_JS',
+        MockTypeRuleWs : 'RULE_WS',
+        MockTypePushWs : 'PUSH_WS'
     };
 
     var TimeoutDefinitions = {
@@ -44,6 +46,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.mockTypeWebSocket = MockTypeDefinitions.MockTypeWebSocket;
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
     $scope.mockTypeCustomJs = MockTypeDefinitions.MockTypeCustomJs;
+    $scope.mockTypeRuleWs = MockTypeDefinitions.MockTypeRuleWs;
+    $scope.mockTypePushWs = MockTypeDefinitions.MockTypePushWs;
     $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
@@ -171,7 +175,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "HTTP External Feed", "value" : MockTypeDefinitions.MockTypeProxyHttp },
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
-       { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs }
+       { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs },
+       { "name" : "WebSocket Fules Based", "value" : MockTypeDefinitions.MockTypeRuleWs },
+       { "name" : "WebSocket Server Push", "value" : MockTypeDefinitions.MockTypePushWs }
     ];
 
     $scope.isNew = isNew;
@@ -253,6 +259,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
+            		|| endpoint.mockType == MockTypeDefinitions.MockTypeRuleWs
                     || (endpoint.mockType == MockTypeDefinitions.MockTypeRule
                             && !endpoint.proxyForwardWhenNoRuleMatch)) {
 
@@ -289,10 +296,13 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             case MockTypeDefinitions.MockTypeWebSocket :
                 $scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
+                break;
+                
             case MockTypeDefinitions.MockTypeProxySse :
                 $scope.pathPlaceHolderTxt = SsePathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
                 break;
+                
             case MockTypeDefinitions.MockTypeCustomJs :
 
                 if ($scope.endpoint.customJsSyntax == null) {
@@ -302,6 +312,12 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 initJSEditor($scope.endpoint.customJsSyntax);
 
                 break;
+            case MockTypeDefinitions.MockTypeRuleWs :
+            case MockTypeDefinitions.MockTypePushWs :
+            	$scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
+                $scope.endpoint.method = 'GET';
+
+            	break;
             default :
                 $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
                 break;
@@ -742,7 +758,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return;
         }
 
-        if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule && !validateRule()) {
+        if (($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs) && !validateRule()) {
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeSeq && !validateSeq()) {
             return;
@@ -811,7 +827,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             }
 
         // Handle Rule specifics
-        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule) {
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs) {
 
             if (!$scope.endpoint.proxyForwardWhenNoRuleMatch) {
 
@@ -849,7 +865,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             // Nothing extra to do
 
-         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
 
             reqData.proxyPushIdOnConnect = $scope.endpoint.wsPushIdOnConnect;
 
@@ -861,6 +877,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             reqData.customJsSyntax = jsEditor.getValue();
 
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypePushWs) {
+        	// TODO save push events
+        	
         }
 
         if (!isNew) {
