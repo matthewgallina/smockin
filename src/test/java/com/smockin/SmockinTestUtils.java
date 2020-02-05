@@ -9,7 +9,6 @@ import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.mock.web.MockMultipartFile;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,6 +35,15 @@ public final class SmockinTestUtils {
 
     public static SmockinUser buildSmockinUser() {
         return new SmockinUser("admin", "letmein", "admin", "admin", SmockinUserRoleEnum.SYS_ADMIN, RecordStatusEnum.ACTIVE, GeneralUtils.generateUUID(), GeneralUtils.generateUUID());
+    }
+
+    public MockMultipartFile buildMockMultiPartFile(final String fileName) throws URISyntaxException, IOException {
+
+        final URL openApiUrl = this.getClass().getClassLoader().getResource(fileName);
+        final File apiFile = new File(openApiUrl.toURI());
+        final FileInputStream openInput = new FileInputStream(apiFile);
+
+        return new MockMultipartFile(fileName, apiFile.getName(), "text/plain", IOUtils.toByteArray(openInput));
     }
 
 }

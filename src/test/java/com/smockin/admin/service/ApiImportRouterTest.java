@@ -38,7 +38,7 @@ public class ApiImportRouterTest {
 
         dto = new ApiImportDTO(multipartFile, new MockImportConfigDTO());
 
-        Mockito.doNothing().when(ramlApiImportService).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.doNothing().when(ramlApiImportService).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
 
     }
 
@@ -47,7 +47,7 @@ public class ApiImportRouterTest {
 
         apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.times(1)).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.times(1)).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
 
     }
 
@@ -61,7 +61,7 @@ public class ApiImportRouterTest {
         // Test
         apiImportRouter.route(ApiImportTypeEnum.RAML.name(), null, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.never()).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -77,7 +77,7 @@ public class ApiImportRouterTest {
         // Test
         apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.never()).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class ApiImportRouterTest {
         // Test
         apiImportRouter.route(null, dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.never()).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class ApiImportRouterTest {
         // Test
         apiImportRouter.route("Foo", dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.never()).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ApiImportRouterTest {
         // Test
         apiImportRouter.route(ApiImportTypeEnum.RAML.name(), dto, GeneralUtils.generateUUID());
 
-        Mockito.verify(ramlApiImportService, Mockito.never()).importApiDoc(Mockito.any(ApiImportDTO.class), Mockito.anyString());
+        Mockito.verify(ramlApiImportService, Mockito.never()).processFileImport(Mockito.any(ApiImportDTO.class), Mockito.anyString());
     }
 
 }

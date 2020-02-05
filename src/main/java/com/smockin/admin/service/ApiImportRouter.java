@@ -26,7 +26,7 @@ public class ApiImportRouter {
 
         switch (ApiImportTypeEnum.valueOf(importType)) {
             case RAML:
-                ramlApiImportService.importApiDoc(dto, token);
+                ramlApiImportService.processFileImport(dto, token);
                 break;
             default:
                 throw new ValidationException("Unsupported import type");

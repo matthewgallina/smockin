@@ -7,7 +7,6 @@ import com.smockin.admin.dto.RestfulMockDefinitionDTO;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
@@ -44,64 +42,29 @@ public class RamlApiImportServiceImpl implements ApiImportService {
     private RestfulMockService restfulMockService;
 
     @Autowired
-    private RestfulMockDAO restfulMockDAO;
-
-    @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
     @Autowired
     private RestfulMockServiceUtils restfulMockServiceUtils;
 
     @Override
-    public void importApiDoc(final ApiImportDTO dto, final String token) throws MockImportException, ValidationException {
-        logger.debug("importApiDoc (RAML) called");
+    public void handleApiDocImport(final ApiImportDTO dto, final File tempDir, final String token) {
+        logger.debug("handleApiDocImport (RAML) called");
 
-        validate(dto);
+        final Api api = readContent(loadRamlFileFromUpload(dto.getFile(), tempDir));
+        final MockImportConfigDTO apiImportConfig = dto.getConfig();
+        final String conflictCtxPath = "raml_" + GeneralUtils.createFileNameUniqueTimeStamp();
 
-        File tempDir = null;
+        debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
+        debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
 
-        try {
+        debug("Base");
+        debug("URI " + api.baseUri().value());
+        debug("version " + api.version().value());
 
-            tempDir = Files.createTempDirectory(Long.toString(System.nanoTime())).toFile();
-            final Api api = readContent(loadRamlFileFromUpload(dto.getFile(), tempDir));
-            final MockImportConfigDTO apiImportConfig = dto.getConfig();
-            final String conflictCtxPath = "raml_" + GeneralUtils.createFileNameUniqueTimeStamp();
+        final String defaultMimeType = api.mediaType().stream().findFirst().orElse(() -> "text/plain").value();
 
-            debug("Keep existing mocks: " + apiImportConfig.isKeepExisting());
-            debug("Keep strategy: " + apiImportConfig.getKeepStrategy());
-
-            debug("Base");
-            debug("URI " + api.baseUri().value());
-            debug("version " + api.version().value());
-
-            final String defaultMimeType = api.mediaType().stream().findFirst().orElse(() -> "text/plain").value();
-
-            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath, defaultMimeType);
-        } catch (RecordNotFoundException ex) {
-            throw new MockImportException("Unauthorized user access");
-        } catch (MockImportException ex) {
-            throw ex;
-        } catch (Throwable ex) {
-            logger.error("Unexpected error whilst importing RAML API", ex);
-            throw new MockImportException("Unexpected error whilst importing RAML API");
-        } finally {
-            if (!FileUtils.deleteQuietly(tempDir)) {
-                logger.error("Error deleting temp dir");
-            }
-        }
-
-    }
-
-    void validate(final ApiImportDTO dto) throws ValidationException {
-
-        if (dto == null)
-            throw new ValidationException("No data was provided");
-
-        if (dto.getFile() == null)
-            throw new ValidationException("No file found");
-
-        if (dto.getConfig() == null)
-            throw new ValidationException("No config found");
+        loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath, defaultMimeType);
 
     }
 
@@ -277,7 +240,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 return Files.find(Paths.get(parent), 5, (path, attr)
                         -> path.getFileName().toString().toLowerCase().indexOf(".raml") > -1)
                     .findFirst()
-                    .orElseThrow(() -> new MockImportException("Error locating raml file within uploaded archive"))
+                    .orElseThrow(() -> new MockImportException("Error locating raml file within uploaded RAML archive"))
                     .toFile();
 
             } else if (".raml".equalsIgnoreCase(fileTypeExtension)) {

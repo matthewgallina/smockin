@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.SmockinTestUtils;
 import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
@@ -7,13 +8,11 @@ import com.smockin.admin.enums.MockImportKeepStrategyEnum;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,12 +21,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.mock.web.MockMultipartFile;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,9 +33,6 @@ public class RamlApiImportServiceTest {
 
     @Mock
     private RestfulMockService restfulMockService;
-
-    @Mock
-    private RestfulMockDAO restfulMockDAO;
 
     @Mock
     private UserTokenServiceUtils userTokenServiceUtils;
@@ -58,8 +50,12 @@ public class RamlApiImportServiceTest {
     @InjectMocks
     private ApiImportService apiImportService = new RamlApiImportServiceImpl();
 
+    private SmockinTestUtils smockinTestUtils;
+
     @Before
     public void setUp() throws RecordNotFoundException, ValidationException {
+
+        smockinTestUtils = new SmockinTestUtils();
 
         Mockito.when(restfulMockService.createEndpoint(Mockito.any(RestfulMockDTO.class), Mockito.anyString())).thenReturn("1");
 
@@ -71,13 +67,13 @@ public class RamlApiImportServiceTest {
     }
 
     @Test
-    public void importApiDocPass() throws MockImportException, ValidationException, RecordNotFoundException, URISyntaxException, IOException {
+    public void processFileImportPass() throws MockImportException, ValidationException, RecordNotFoundException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/raml_100.raml"), new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_EXISTING));
+        final ApiImportDTO importDTO = new ApiImportDTO(smockinTestUtils.buildMockMultiPartFile("raml/raml_100.raml"), new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_EXISTING));
 
         // Test
-        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
+        apiImportService.processFileImport(importDTO, GeneralUtils.generateUUID());
 
         // Assertions
         Mockito.verify(restfulMockService, Mockito.times(3)).createEndpoint(argCaptor.capture(), Mockito.anyString());
@@ -158,19 +154,19 @@ public class RamlApiImportServiceTest {
     }
 
     @Test
-    public void importApiDoc_NullDto_Fail() throws MockImportException, ValidationException {
+    public void processFileImport_NullDto_Fail() throws MockImportException, ValidationException {
 
         // Assertions
         expected.expect(ValidationException.class);
         expected.expectMessage("No data was provided");
 
         // Test
-        apiImportService.importApiDoc(null, GeneralUtils.generateUUID());
+        apiImportService.processFileImport(null, GeneralUtils.generateUUID());
 
     }
 
     @Test
-    public void importApiDoc_NullFile_Fail() throws MockImportException, ValidationException {
+    public void processFileImport_NullFile_Fail() throws MockImportException, ValidationException {
 
         // Setup
         final ApiImportDTO importDTO = new ApiImportDTO(null, new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_EXISTING));
@@ -180,47 +176,38 @@ public class RamlApiImportServiceTest {
         expected.expectMessage("No file found");
 
         // Test
-        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
+        apiImportService.processFileImport(importDTO, GeneralUtils.generateUUID());
 
     }
 
     @Test
-    public void importApiDoc_NullConfig_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
+    public void processFileImport_NullConfig_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/raml_100.raml"), null);
+        final ApiImportDTO importDTO = new ApiImportDTO(smockinTestUtils.buildMockMultiPartFile("raml/raml_100.raml"), null);
 
         // Assertions
         expected.expect(ValidationException.class);
         expected.expectMessage("No config found");
 
         // Test
-        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
+        apiImportService.processFileImport(importDTO, GeneralUtils.generateUUID());
 
     }
 
     @Test
-    public void importApiDoc_InvalidContent_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
+    public void processFileImport_InvalidContent_Fail() throws MockImportException, ValidationException, URISyntaxException, IOException {
 
         // Setup
-        final ApiImportDTO importDTO = new ApiImportDTO(buildMockMultiPartFile("raml/bad_raml_100.raml"), new MockImportConfigDTO());
+        final ApiImportDTO importDTO = new ApiImportDTO(smockinTestUtils.buildMockMultiPartFile("raml/bad_raml_100.raml"), new MockImportConfigDTO());
 
         // Assertions
         expected.expect(MockImportException.class);
         expected.expectMessage("Unexpected key 'get'. Options are :");
 
         // Test
-        apiImportService.importApiDoc(importDTO, GeneralUtils.generateUUID());
+        apiImportService.processFileImport(importDTO, GeneralUtils.generateUUID());
 
-    }
-
-    MockMultipartFile buildMockMultiPartFile(final String fileName) throws URISyntaxException, IOException {
-
-        final URL ramlUrl = this.getClass().getClassLoader().getResource(fileName);
-        final File ramlFile = new File(ramlUrl.toURI());
-        final FileInputStream ramlInput = new FileInputStream(ramlFile);
-
-        return new MockMultipartFile(fileName, ramlFile.getName(), "text/plain", IOUtils.toByteArray(ramlInput));
     }
 
 }
