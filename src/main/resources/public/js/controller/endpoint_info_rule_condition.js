@@ -1,7 +1,6 @@
 
 app.controller('endpointInfoRuleConditionController', function($scope, $location, $uibModalInstance, $timeout, utils, globalVars, data) {
 
-
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
@@ -62,7 +61,8 @@ app.controller('endpointInfoRuleConditionController', function($scope, $location
 
     //
     // Data Objects
-    $scope.matchingTypes = globalVars.RuleMatchingTypes;
+    $scope.matchingTypes = (data.mockType == globalVars.MockTypeDefinitions.MockTypeRuleWs) ? globalVars.WebSocketRuleMatchingTypes : globalVars.RuleMatchingTypes;
+
     $scope.comparators = [];
     $scope.conditionArgs = [];
 

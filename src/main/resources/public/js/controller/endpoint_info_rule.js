@@ -1,7 +1,6 @@
 
 app.controller('endpointInfoRuleController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, data, auth) {
 
-
     //
     // Constants
     var isNew = (data.rule == null);
@@ -10,6 +9,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
+    $scope.MockTypeRuleWs = globalVars.MockTypeDefinitions.MockTypeRuleWs;
 
 
     //
@@ -88,6 +88,7 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
 
     $scope.isNew = isNew;
     $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
+    $scope.mockType = data.mockType;
 
 
     //
@@ -235,7 +236,10 @@ app.controller('endpointInfoRuleController', function($scope, $location, $uibMod
           keyboard  : false,
           resolve: {
             data: function () {
-              return { "ruleGroup" : ruleGroup };
+              return {
+                "ruleGroup" : ruleGroup,
+                "mockType" : data.mockType
+              };
             }
           }
         });

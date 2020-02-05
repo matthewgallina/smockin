@@ -4,16 +4,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
     //
     // Constants
-    var MockTypeDefinitions = {
-        MockTypeSeq : 'SEQ',
-        MockTypeRule : 'RULE',
-        MockTypeProxyHttp : 'PROXY_HTTP',
-        MockTypeWebSocket : 'PROXY_WS',
-        MockTypeProxySse : 'PROXY_SSE',
-        MockTypeCustomJs : 'CUSTOM_JS',
-        MockTypeRuleWs : 'RULE_WS',
-        MockTypePushWs : 'PUSH_WS'
-    };
+    var MockTypeDefinitions = globalVars.MockTypeDefinitions;
 
     var TimeoutDefinitions = {
         AlertTimeoutMillis : globalVars.AlertTimeoutMillis,
@@ -636,6 +627,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             data: function () {
               return {
                 "rule" : rule,
+                "mockType" : $scope.endpoint.mockType.value,
                 "createdBy" : $scope.endpoint.createdBy
               };
             }
@@ -659,7 +651,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
           keyboard  : false,
           resolve: {
             data: function () {
-              return { };
+              return {
+                  "mockType" : $scope.endpoint.mockType.value
+              };
             }
           }
         });
