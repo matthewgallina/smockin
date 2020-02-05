@@ -21,5 +21,6 @@ public interface WebSocketService {
     List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
     String getExternalId(final Session session);
     void clearSession();
+    void respondToMessage(final Session session, final String message);
 
 }

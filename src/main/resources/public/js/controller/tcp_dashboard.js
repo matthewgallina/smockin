@@ -58,6 +58,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.importEndpointButtonLabel = 'Import...';
     $scope.exportEndpointButtonLabel = 'Export';
     $scope.viewEndpointButtonLabel = 'View';
+    $scope.serverPushButtonLabel = 'Push';
     $scope.bulkDeleteEndpointsButtonLabel = 'Delete';
 
 

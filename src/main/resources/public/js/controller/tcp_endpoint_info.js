@@ -176,7 +176,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
        { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs },
-       { "name" : "WebSocket Fules Based", "value" : MockTypeDefinitions.MockTypeRuleWs },
+       { "name" : "WebSocket Rules Based", "value" : MockTypeDefinitions.MockTypeRuleWs },
        { "name" : "WebSocket Server Push", "value" : MockTypeDefinitions.MockTypePushWs }
     ];
 

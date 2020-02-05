@@ -71,7 +71,7 @@
 	                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
 	                </div>
 
-	                <div class="form-group">
+	                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
 	                    <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
 	                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
 	                </div>
@@ -89,7 +89,7 @@
 	                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"></textarea>
 	                </div>
 
-	                <div class="form-group">
+	                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
 	                    <label for="response-headers" class="ng-binding default-label-color">{{ responseHeadersLabel }}</label>
 	
 	                    <div class="panel panel-default">
