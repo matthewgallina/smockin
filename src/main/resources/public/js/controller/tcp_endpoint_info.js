@@ -78,7 +78,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.sseHeartbeatPlaceholderTxt = 'Interval at which responses are pushed to the client';
     $scope.pushIdOnConnectLabel = 'Send Session Id on connect';
     $scope.actualPathPrefixLabel = "actual path:";
-    $scope.proxyPassThroughLabel = "Only intercept if rule matched";
     $scope.enableRandomLatencyLabel = "Delay responses";
     $scope.latencyRangeLabel = "Latency Range (in millis)";
     $scope.latencyRangeMinLabel = "min";
@@ -192,7 +191,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "ssePushIdOnConnect" : false,
         "mockType" : lookupMockType(MockTypeDefinitions.MockTypeSeq),
         "randomiseDefinitions" : false,
-        "proxyForwardWhenNoRuleMatch" : false,
         "randomiseLatency" : false,
         "randomiseLatencyRangeMinMillis" : 0,
         "randomiseLatencyRangeMaxMillis" : 0,
@@ -237,7 +235,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "ssePushIdOnConnect" : endpoint.proxyPushIdOnConnect,
                 "mockType" : lookupMockType(endpoint.mockType),
                 "randomiseDefinitions" : endpoint.randomiseDefinitions,
-                "proxyForwardWhenNoRuleMatch" : endpoint.proxyForwardWhenNoRuleMatch,
                 "randomiseLatency" : endpoint.randomiseLatency,
                 "randomiseLatencyRangeMinMillis" : endpoint.randomiseLatencyRangeMinMillis,
                 "randomiseLatencyRangeMaxMillis" : endpoint.randomiseLatencyRangeMaxMillis,
@@ -251,8 +248,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeSeq
             		|| endpoint.mockType == MockTypeDefinitions.MockTypeRuleWs
-                    || (endpoint.mockType == MockTypeDefinitions.MockTypeRule
-                            && !endpoint.proxyForwardWhenNoRuleMatch)) {
+                    || endpoint.mockType == MockTypeDefinitions.MockTypeRule) {
 
                 $scope.endpoint.contentType = endpoint.definitions[0].responseContentType;
                 $scope.endpoint.httpStatusCode = endpoint.definitions[0].httpStatusCode;
@@ -800,7 +796,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "sseHeartBeatInMillis" : $scope.endpoint.sseHeartbeat,
             "proxyPushIdOnConnect" : false,
             "randomiseDefinitions" : $scope.endpoint.randomiseDefinitions,
-            "proxyForwardWhenNoRuleMatch" : $scope.endpoint.proxyForwardWhenNoRuleMatch,
             "randomiseLatency" : $scope.endpoint.randomiseLatency,
             "randomiseLatencyRangeMinMillis" : $scope.endpoint.randomiseLatencyRangeMinMillis,
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
@@ -823,25 +818,21 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         // Handle Rule specifics
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRule || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs) {
 
-            if (!$scope.endpoint.proxyForwardWhenNoRuleMatch) {
+            // Default response (where a rule is not matched)
+            reqData.definitions.push({
+                "extId" : null,
+                "orderNo" : 1,
+                "responseContentType" : $scope.endpoint.contentType,
+                "httpStatusCode" : $scope.endpoint.httpStatusCode,
+                "responseBody" : $scope.endpoint.responseBody,
+                "sleepInMillis" : 0,
+                "suspend" : false,
+                "responseHeaders" : {}
+            });
 
-                // Default response (where a rule is not matched)
-                reqData.definitions.push({
-                    "extId" : null,
-                    "orderNo" : 1,
-                    "responseContentType" : $scope.endpoint.contentType,
-                    "httpStatusCode" : $scope.endpoint.httpStatusCode,
-                    "responseBody" : $scope.endpoint.responseBody,
-                    "sleepInMillis" : 0,
-                    "suspend" : false,
-                    "responseHeaders" : {}
-                });
-
-                // Default response headers (where a rule is not matched)
-                for (var r=0; r < $scope.responseHeaderList.length; r++) {
-                    reqData.definitions[0].responseHeaders[$scope.responseHeaderList[r].name] = $scope.responseHeaderList[r].value;
-                }
-
+            // Default response headers (where a rule is not matched)
+            for (var r=0; r < $scope.responseHeaderList.length; r++) {
+                reqData.definitions[0].responseHeaders[$scope.responseHeaderList[r].name] = $scope.responseHeaderList[r].value;
             }
 
             // Rules
@@ -886,9 +877,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
     $scope.doCancel = function() {
 
-        $location.path("/dashboard").search({
-            'tab' : 'HTTP'
-        });
+        $location.path("/dashboard").search({});
 
     };
 
@@ -1006,18 +995,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         if (utils.isBlank($scope.endpoint.method)) {
             showAlert("'Method' is required");
             return false;
-        }
-
-        /*
-        if (isNew && countActiveRules($scope.endpoint.rules) == 0) {
-            showAlert("At least one active 'Rule' is required");
-            return false;
-        }
-        */
-
-        if ($scope.endpoint.proxyForwardWhenNoRuleMatch) {
-            // No need to provide a default response
-            return true;
         }
 
         if (utils.isBlank($scope.endpoint.contentType)) {

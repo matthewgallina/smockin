@@ -80,6 +80,7 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="PROJ_ID", nullable = true)
     private RestfulProject project;
 
+    @Deprecated
     @ColumnDefault("false")
     @Column(name = "PROXY_FW_NO_RULE_MATCH", nullable = false)
     private boolean proxyForwardWhenNoRuleMatch;
@@ -230,9 +231,11 @@ public class RestfulMock extends Identifier {
         this.project = project;
     }
 
+    @Deprecated
     public boolean isProxyForwardWhenNoRuleMatch() {
         return proxyForwardWhenNoRuleMatch;
     }
+    @Deprecated
     public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
     }
