@@ -46,11 +46,12 @@
                     <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.path" placeholder="{{ pathPlaceHolderTxt }}" type="text" ng-disabled="readOnly" />
                 </div>
 
+				<!-- This is the method drop-down list.  Disabled for Websocket and SSE Mock Types -->
                 <div class="form-group">
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || readOnly">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs || readOnly">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ selectDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -63,68 +64,71 @@
                     </div>
                 </div>
 
-                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
-                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
-                </div>
+				<!-- This column is only visible for HTTP Rules -->
+				<section ng-show="endpoint.mockType.value == mockTypeRule|| endpoint.mockType.value == mockTypeRuleWs">
+	                <div class="form-group">
+	                    <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
+	                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
+	                </div>
 
-                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
-                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
-                </div>
+	                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
+	                    <label for="httpStatusCode" class="ng-binding default-label-color">{{ defaultHttpStatusCodeLabel }}</label>
+	                    <input id="httpStatusCode" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.httpStatusCode" placeholder="{{ defaultHttpStatusCodePlaceholderTxt }}" type="text" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
+	                </div>
 
-                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
-                        </div>
-                        <div class="col-sm-6">
-                            <a href ng-click="doFormatJson()" class="pull-right" ng-if="endpoint.contentType == JsonContentType">{{ formatJsonLabel }}</a>
-                            <a href ng-click="doFormatXml()" class="pull-right" ng-if="endpoint.contentType == XmlContentType">{{ formatXmlLabel }}</a>
-                        </div>
-                    </div>
-                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"></textarea>
-                </div>
+	                <div class="form-group">
+	                    <div class="row">
+	                        <div class="col-sm-6">
+	                            <label for="default-response-body" class="ng-binding default-label-color">{{ defaultResponseBodyLabel }}</label>
+	                        </div>
+	                        <div class="col-sm-6">
+	                            <a href ng-click="doFormatJson()" class="pull-right" ng-if="endpoint.contentType == JsonContentType">{{ formatJsonLabel }}</a>
+	                            <a href ng-click="doFormatXml()" class="pull-right" ng-if="endpoint.contentType == XmlContentType">{{ formatXmlLabel }}</a>
+	                        </div>
+	                    </div>
+	                    <textarea id="default-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"></textarea>
+	                </div>
 
-                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <label for="response-headers" class="ng-binding default-label-color">{{ responseHeadersLabel }}</label>
+	                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
+	                    <label for="response-headers" class="ng-binding default-label-color">{{ responseHeadersLabel }}</label>
+	
+	                    <div class="panel panel-default">
+	                        <div class="panel-body">
+	
+	                            <table id="response-headers" class="table table-striped">
+	                                <thead>
+	                                <tr>
+	                                    <th class="default-label-color">{{ responseHeaderNameLabel }}</th>
+	                                    <th class="default-label-color">{{ responseHeaderValueLabel }}</th>
+	                                    <th></th>
+	                                </tr>
+	                                </thead>
+	                                <tbody>
+	                                <tr ng-repeat="rh in responseHeaderList">
+	                                    <td>
+	                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
+	                                    </td>
+	                                    <td>
+	                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
+	                                    </td>
+	                                    <td class="remove-resp-head-row-button">
+	                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch">{{ removeResponseHeaderButtonLabel }}</button>
+	                                    </td>
+	                                </tr>
+	                                </tbody>
+	                            </table>
+	
+	                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
+	
+	                        </div>
+	                    </div>
+	                </div>
 
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-
-                            <table id="response-headers" class="table table-striped">
-                                <thead>
-                                <tr>
-                                    <th class="default-label-color">{{ responseHeaderNameLabel }}</th>
-                                    <th class="default-label-color">{{ responseHeaderValueLabel }}</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr ng-repeat="rh in responseHeaderList">
-                                    <td>
-                                        <input type="text" ng-model="rh.name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
-                                    </td>
-                                    <td>
-                                        <input type="text" ng-model="rh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch" />
-                                    </td>
-                                    <td class="remove-resp-head-row-button">
-                                        <button type="button" class="btn btn-warning" ng-click="doRemoveResponseHeaderRow($index)" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch">{{ removeResponseHeaderButtonLabel }}</button>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-
-                            <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddResponseHeaderRow()" ng-disabled="readOnly || endpoint.proxyForwardWhenNoRuleMatch"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addResponseHeaderButtonLabel }}</button>
-
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group" ng-show="endpoint.mockType.value == mockTypeRule">
-                    <input id="proxy-pass-through"  ng-model="endpoint.proxyForwardWhenNoRuleMatch" type="checkbox" ng-disabled="readOnly" />
-                    <label for="proxy-pass-through" class="ng-binding default-label-color">{{ proxyPassThroughLabel }}</label>
-                </div>
+	                <div class="form-group">
+	                    <input id="proxy-pass-through"  ng-model="endpoint.proxyForwardWhenNoRuleMatch" type="checkbox" ng-disabled="readOnly" />
+	                    <label for="proxy-pass-through" class="ng-binding default-label-color">{{ proxyPassThroughLabel }}</label>
+	                </div>
+	            </section>
 
             </div>
             <div class="col-sm-6">
@@ -208,7 +212,7 @@
 
 
                 <!-- Rule Based Type -->
-                <div ng-show="endpoint.mockType.value == mockTypeRule">
+                <div ng-show="endpoint.mockType.value == mockTypeRule || endpoint.mockType.value == mockTypeRuleWs">
 
                     <div class="add-button-div">
                         <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddRule()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addRuleButtonLabel }}</button>

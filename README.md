@@ -6,6 +6,8 @@
   version 2.4.0
 </p>
 
+<br />
+
 ### Dynamic REST API simulation and for application development & QA testing
 
    - Visit us: https://www.smockin.com
@@ -14,7 +16,7 @@
 
 <br />
 
-**Version 2.4.0** of sMockin brings about a few significant changes...
+**Version 2** of sMockin brings about a few significant changes...
 
 - The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
 
@@ -23,6 +25,8 @@
 - Multi user mode has been improved based on user feedback and suggestions.
 
 - Users can now utilise JavaScript to deliver mock functionality.
+
+- There will also be a greater focus on supporting more API document specs such as RAML and OpenAPI, which will be used to automatically generate mocks.
 
 <br />
 
@@ -100,7 +104,9 @@ http://localhost:8000/index.html
 
 <br />
 
-For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki.
+For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki. 
+
+You can also check out the latest help guide at [help.smockin.com](https://help.smockin.com)
 
 <br/>
 
