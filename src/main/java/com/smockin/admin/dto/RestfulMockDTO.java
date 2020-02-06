@@ -20,7 +20,7 @@ public class RestfulMockDTO {
     private long sseHeartBeatInMillis;
     private boolean proxyPushIdOnConnect;
     private boolean randomiseDefinitions;
-    private boolean proxyForwardWhenNoRuleMatch;
+    @Deprecated private boolean proxyForwardWhenNoRuleMatch;
     private boolean randomiseLatency;
     private long randomiseLatencyRangeMinMillis;
     private long randomiseLatencyRangeMaxMillis;
@@ -116,9 +116,11 @@ public class RestfulMockDTO {
         this.randomiseDefinitions = randomiseDefinitions;
     }
 
+    @Deprecated
     public boolean isProxyForwardWhenNoRuleMatch() {
         return proxyForwardWhenNoRuleMatch;
     }
+    @Deprecated
     public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
         this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
     }

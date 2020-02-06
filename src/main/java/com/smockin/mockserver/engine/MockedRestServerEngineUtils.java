@@ -157,11 +157,6 @@ public class MockedRestServerEngineUtils {
             return new RestfulResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 
-        if (RestMockTypeEnum.RULE.equals(restfulMock.getMockType())
-                && restfulMock.isProxyForwardWhenNoRuleMatch()) {
-            return new RestfulResponseDTO(HttpStatus.TEMPORARY_REDIRECT.value());
-        }
-
         final RestfulMockDefinitionOrder mockDefOrder = restfulMock.getDefinitions().get(0);
         return new RestfulResponseDTO(mockDefOrder.getHttpStatusCode(), mockDefOrder.getResponseContentType(), mockDefOrder.getResponseBody(), mockDefOrder.getResponseHeaders().entrySet());
     }
