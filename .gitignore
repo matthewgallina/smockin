@@ -25,4 +25,4 @@ standalone
 build_all_distributions.sh
 /src/test/java/com/smockin/temp
 sMockin.app
-
+*.zip
