@@ -77,7 +77,6 @@ app.controller('endpointInfoPushController', function($scope, $location, $uibMod
         $scope.ruleResponse = data.rule;
         
     }
-    alert(JSON.stringify($scope.ruleResponse));
     $scope.isNew = isNew;
     $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != data.createdBy);
     $scope.mockType = data.mockType;
@@ -143,14 +142,15 @@ app.controller('endpointInfoPushController', function($scope, $location, $uibMod
             showAlert("'Http Status Code' is required and must be numeric");
             return;
         }
-        if ($scope.ruleResponse.responseHeaders.length != 2) {
-        	showAlert("There should be only two header values")
-        } else {
-        	alert(JSON.stringify($scope.ruleResponse.responseHeaders));
-//        	if ($scope.ruleResponse.trigger === 'Clock' && $scope.ruleResponse.trigger.value > 0) {
-//                showAlert("Clock trigger must be a positive value");
-//                return;
-//            }
+        if ($scope.ruleResponse.responseHeaders['0'] && $scope.ruleResponse.responseHeaders['1']) {
+        	if ($scope.ruleResponse.responseHeaders['0'].value === undefined) {
+        		showAlert("'Trigger Type' is required");
+                return;
+        	}
+        	if ($scope.ruleResponse.responseHeaders['0'].value === 'clock' && $scope.ruleResponse.responseHeaders['1'].value < 100) {
+        		showAlert("'Clock' value must be greater than 100ms");
+                return;
+        	}
         }
         
 
