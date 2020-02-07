@@ -65,7 +65,7 @@
                 </div>
 
 				<!-- This column is only visible for HTTP Rules -->
-				<section ng-show="endpoint.mockType.value == mockTypeRule|| endpoint.mockType.value == mockTypeRuleWs">
+				<section ng-show="endpoint.mockType.value == mockTypeRule || endpoint.mockType.value == mockTypeRuleWs">
 	                <div class="form-group">
 	                    <label for="contentType" class="ng-binding default-label-color">{{ defaultContentTypeLabel }}</label>
 	                    <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.contentType" placeholder="{{ defaultContentTypePlaceholderTxt }}" type="text" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
@@ -333,9 +333,60 @@
 
                 </div>
 
+                <!-- Websocket Push Based Type -->
+                <div ng-show="endpoint.mockType.value == mockTypePushWs">
+                    
+                    <div class="add-button-div">
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddPush()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addPushButtonLabel }}</button>
+                    </div>
+                    
+                    <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
+                        <thead>
+                        <tr>
+                            <th>{{ ruleLabel }}</th>
+                            <th>{{ clockValueLabel }}</th>
+                            <th>{{ responseBodyLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="x in endpoint.rules">
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.orderNo }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.responseHeaders['1'].value }}</td>
+                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
+                            <td class="action-button-table-cell">
+
+                                <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''" ng-hide="readOnly">
+                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
+                                </a>
+                                <a href="" ng-click="doMoveRuleDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
+                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                </a>
+
+                                <br />
+
+                                <a href="" ng-click="doToggleSuspendRule($index)">
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
+                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
+                                </a>
+                                <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
+                                    <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
+                                </a>
+
+                                <br />
+                                <br />
+
+                                <button type="button" class="btn btn-primary view-rule-button" ng-class="(x.suspend) ? 'suspend-button' : ''" ng-click="doOpenViewPush(x)" ng-disabled="x.suspend">{{ viewButtonLabel }}</button>
+
+                            </td>
+                        </tr>
+                        </tbody>
+
+                    </table>
+                </div>
 
                 <!-- WebSocket Proxy Type -->
-                <div ng-show="endpoint.mockType.value == mockTypeWebSocket">
+                <div ng-show="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs">
 
                     <div class="form-group proxy-timeout-group">
                         <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
