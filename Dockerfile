@@ -1,7 +1,7 @@
 # Dockerfile
 FROM adoptopenjdk/openjdk8:jre8u242-b08-alpine
 
-ARG APP_VERSION_ARG='2.4.0'
+ARG APP_VERSION_ARG='2.5.0'
 RUN mkdir -p /app/db/data
 RUN mkdir /app/db/driver
 RUN mkdir /app/log
