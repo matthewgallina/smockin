@@ -4,10 +4,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
@@ -60,6 +67,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     
     @Autowired
     private RuleEngine ruleEngine;
+    
+    Map<String, ExecutorService> executorServices = new HashMap<>();
 
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
@@ -79,16 +88,16 @@ public class WebSocketServiceImpl implements WebSocketService {
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
         final RestfulMock wsMock = (isMultiUserMode)
                 ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
-                		RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS, RestMockTypeEnum.PUSH_WS, RestMockTypeEnum.RULE_WS))
+                        RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS, RestMockTypeEnum.PUSH_WS, RestMockTypeEnum.RULE_WS))
                 : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
-                		RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS, RestMockTypeEnum.PUSH_WS, RestMockTypeEnum.RULE_WS));
+                        RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.PROXY_WS, RestMockTypeEnum.PUSH_WS, RestMockTypeEnum.RULE_WS));
 
         if (wsMock == null) {
             if (session.isOpen()) {
                 try {
                     session.getRemote().sendString("No suitable mock found for " + wsPath);
                     session.disconnect();
-                } catch(IOException e){
+                } catch(IOException e) {
                     logger.error("Error closing non mock matching web socket client connection", e);
                 }
             }
@@ -97,15 +106,15 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         final String path = mockedRestServerEngineUtils.buildUserPath(wsMock);
 
-        session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS );
-        
+        session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS);
+
         final Set<SessionIdWrapper> sessions = sessionMap.computeIfAbsent(path, k -> new HashSet<>());
         final String assignedId = GeneralUtils.generateUUID();
         final String traceId = session.getUpgradeResponse().getHeader(GeneralUtils.LOG_REQ_ID);
 
         sessionMap.merge(
-                path,
-                sessions,
+                path, 
+                sessions, 
                 (k, v) -> {
                     v.add(new SessionIdWrapper(assignedId, traceId, session, GeneralUtils.getCurrentDate()));
                     return v;
@@ -114,16 +123,46 @@ public class WebSocketServiceImpl implements WebSocketService {
         if (wsMock.isProxyPushIdOnConnect()) {
             sendMessage(assignedId, new WebSocketDTO(path, "clientId: " + assignedId));
         }
-        
+
         if (wsMock.getMockType() == RestMockTypeEnum.RULE_WS && wsMock.getDefinitions().get(0) != null) {
-        	RestfulMockDefinitionOrder order = wsMock.getDefinitions().get(0);
-        	if (order.getResponseBody() != null) {
-        		sendMessage(assignedId, new WebSocketDTO(path, order.getResponseBody()));
-        	}
-        		
+            RestfulMockDefinitionOrder order = wsMock.getDefinitions().get(0);
+            if (order.getResponseBody() != null) {
+                sendMessage(assignedId, new WebSocketDTO(path, order.getResponseBody()));
+            }
+
+        }
+        
+        if (wsMock.getMockType() == RestMockTypeEnum.PUSH_WS && executorServices.get(path) == null) {
+            List<Callable<String>> tasks = new ArrayList<>();
+            wsMock.getRules().forEach(r -> {
+                if (r.getResponseHeaders().get("type").equalsIgnoreCase("clock")) {
+                    Callable<String> runnableTask = () -> {
+                        try {
+                            Long timeDelay = Long.parseLong(r.getResponseHeaders().get("clock")); 
+                            TimeUnit.MILLISECONDS.sleep(timeDelay);
+                            broadcast(new WebSocketDTO(path, r.getResponseBody()));
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        return "Finished running rule #" + r.getId();
+                    };
+                    tasks.add(runnableTask);
+                    
+                }
+                
+            });
+            ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+                    new LinkedBlockingQueue<Runnable>());
+            executorServices.put(path, executorService);
+            try {
+                executorService.invokeAll(tasks);
+            } catch (InterruptedException ie) {
+                logger.error("Executor Thread got interrupted, {}", ie);
+            }
         }
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null, "Websocket established (clientId: " + assignedId + ")", false, false));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null,
+                "Websocket established (clientId: " + assignedId + ")", false, false));
 
     }
     
@@ -134,53 +173,54 @@ public class WebSocketServiceImpl implements WebSocketService {
      * @param message
      */
     public void respondToMessage(final Session session, final String message) {
-    	logger.debug("respondToMessage called, with message {}", message);
-    	final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
-    	
-    	if (session.isOpen()) {
-	    	// retrieve the session details
-    		final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
-    		Set<SessionIdWrapper> sessions = sessionMap.get(wsPath);
-    		
-    		final RestfulMock wsMock = 
-	                restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
-	                		RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.RULE_WS));
-    		if (wsMock != null && wsMock.getDefinitions().get(0) != null) {
-    			// If none of the rules match, send the default response body
-	        	RestfulMockDefinitionOrder order = wsMock.getDefinitions().get(0);
-	        	
-	        	// check if a rules is matched
-	        	boolean ruleMatched = false;
-	        	Request req = new sMockinRequest(message);
-	        	RestfulResponseDTO response = ruleEngine.process(req, wsMock.getRules());
-	        	if (response!= null && response.getResponseBody() != null) {
-	        		ruleMatched = true;
-	        		// Only one session should match this key - needs verification
-		    		for (SessionIdWrapper wrapper : sessions) {
-		                if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
-		                	final String id = wrapper.getId();
-		                	sendMessage(id, new WebSocketDTO(wsPath, response.getResponseBody()));
-		                	break;
-		                }
-		            }
-	        	}
-	        	
-	        	if (!ruleMatched && order.getResponseBody() != null) {
-	        		// Only one session should match this key - needs verification
-		    		for (SessionIdWrapper wrapper : sessions) {
-		                if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
-		                	final String id = wrapper.getId();
-		                	sendMessage(id, new WebSocketDTO(wsPath, order.getResponseBody()));
-		                	break;
-		                }
-		            }
-	        	}	        
-	        } else {
-	        	logger.warn("Invalid response for path {}", wsPath);
-	        }
-    	} else {
-    		logger.info("Session for path {} is not open", wsPath);
-    	}
+        logger.debug("respondToMessage called, with message {}", message);
+        final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
+
+        if (session.isOpen()) {
+            // retrieve the session details
+            final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
+            Set<SessionIdWrapper> sessions = sessionMap.get(wsPath);
+
+            final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
+                    RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.RULE_WS));
+            if (wsMock != null && wsMock.getDefinitions().get(0) != null) {
+                // If none of the rules match, send the default response body
+                RestfulMockDefinitionOrder order = wsMock.getDefinitions().get(0);
+
+                // check if a rules is matched
+                boolean ruleMatched = false;
+                Request req = new sMockinRequest(message);
+                RestfulResponseDTO response = ruleEngine.process(req, wsMock.getRules());
+                if (response != null && response.getResponseBody() != null) {
+                    ruleMatched = true;
+                    // Only one session should match this key - needs verification
+                    for (SessionIdWrapper wrapper : sessions) {
+                        if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
+                                .equals(sessionHandshake)) {
+                            final String id = wrapper.getId();
+                            sendMessage(id, new WebSocketDTO(wsPath, response.getResponseBody()));
+                            break;
+                        }
+                    }
+                }
+
+                if (!ruleMatched && order.getResponseBody() != null) {
+                    // Only one session should match this key - needs verification
+                    for (SessionIdWrapper wrapper : sessions) {
+                        if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
+                                .equals(sessionHandshake)) {
+                            final String id = wrapper.getId();
+                            sendMessage(id, new WebSocketDTO(wsPath, order.getResponseBody()));
+                            break;
+                        }
+                    }
+                }
+            } else {
+                logger.warn("Invalid response for path {}", wsPath);
+            }
+        } else {
+            logger.info("Session for path {} is not open", wsPath);
+        }
     }
 
     /**
@@ -194,7 +234,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
 
-        sessionMap.values().forEach(sessionSet ->
+        sessionMap.entrySet().forEach(entry -> {
+            String path = entry.getKey();
+            Set<SessionIdWrapper> sessionSet = entry.getValue();
             sessionSet.forEach( s -> {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
@@ -203,11 +245,37 @@ public class WebSocketServiceImpl implements WebSocketService {
 
                     return;
                 }
-            })
-        );
+            });
+            ExecutorService executorService = executorServices.get(path);
+            if (executorService != null) {
+                executorService.shutdown();
+                executorServices.remove(path);
+            }
+        });
 
     }
 
+    public void broadcast(final WebSocketDTO dto) throws MockServerException {
+        logger.debug("broadcast called");
+
+        dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
+
+        final Set<SessionIdWrapper> sessions = sessionMap.get(dto.getPath());
+
+        if (sessions == null) {
+            return;
+        }
+
+        // Push to specific client session for the given handshake id
+        sessions.forEach(s -> {
+            try {
+                s.getSession().getRemote().sendString(dto.getBody());
+                liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
+            } catch (IOException e) {
+                throw new MockServerException(e);
+            }
+        });
+    }
     public void sendMessage(final String id, final WebSocketDTO dto) throws MockServerException {
         logger.debug("sendMessage called");
 

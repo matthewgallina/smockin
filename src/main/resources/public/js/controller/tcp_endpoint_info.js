@@ -59,6 +59,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.statusCodeLabel = 'Code';
     $scope.frequencyLabel = 'Freq';
     $scope.responseBodyLabel = 'Response Body';
+    $scope.pushBodyLabel = 'Body';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
