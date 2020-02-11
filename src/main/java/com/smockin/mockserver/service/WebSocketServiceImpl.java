@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +30,7 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
+import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
@@ -133,32 +136,28 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
         
         if (wsMock.getMockType() == RestMockTypeEnum.PUSH_WS && executorServices.get(path) == null) {
-            List<Callable<String>> tasks = new ArrayList<>();
-            wsMock.getRules().forEach(r -> {
-                if (r.getResponseHeaders().get("type").equalsIgnoreCase("clock")) {
-                    Callable<String> runnableTask = () -> {
-                        try {
-                            Long timeDelay = Long.parseLong(r.getResponseHeaders().get("clock")); 
-                            TimeUnit.MILLISECONDS.sleep(timeDelay);
-                            broadcast(new WebSocketDTO(path, r.getResponseBody()));
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        return "Finished running rule #" + r.getId();
-                    };
-                    tasks.add(runnableTask);
-                    
+            ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+            // The period will be the sum of all delays plus 1 second
+            long period = 1000;
+            for (RestfulMockDefinitionRule rule: wsMock.getRules()) {
+                if (rule.getResponseHeaders().get("type").equalsIgnoreCase("clock")) {
+                    long timeDelay = Long.parseLong(rule.getResponseHeaders().get("clock")); 
+                    period += timeDelay;
                 }
-                
-            });
-            ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<Runnable>());
-            executorServices.put(path, executorService);
-            try {
-                executorService.invokeAll(tasks);
-            } catch (InterruptedException ie) {
-                logger.error("Executor Thread got interrupted, {}", ie);
             }
+            long offset = 0;
+            for (RestfulMockDefinitionRule rule: wsMock.getRules()) {
+                if (rule.getResponseHeaders().get("type").equalsIgnoreCase("clock")) {
+                    long timeDelay = Long.parseLong(rule.getResponseHeaders().get("clock")); 
+                    Runnable runnableTask = () -> {
+                        broadcast(new WebSocketDTO(path, rule.getResponseBody()));
+                    };
+                    scheduler.scheduleAtFixedRate(runnableTask, offset + timeDelay, period, TimeUnit.MILLISECONDS);
+                    offset += timeDelay;
+                }
+            }
+            
+            executorServices.put(path, scheduler);
         }
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null,
