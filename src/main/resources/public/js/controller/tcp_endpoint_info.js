@@ -59,6 +59,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.statusCodeLabel = 'Code';
     $scope.frequencyLabel = 'Freq';
     $scope.responseBodyLabel = 'Response Body';
+    $scope.pushBodyLabel = 'Body';
     $scope.responseHeadersLabel = 'Default Response Headers';
     $scope.responseHeaderNameLabel = 'Name';
     $scope.responseHeaderValueLabel = 'Value';
@@ -93,6 +94,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.option2Label = 'Option 2';
     $scope.option1Text = 'Endpoint for pushing responses to queue';
     $scope.option2Text = 'Input form for pushing responses to queue';
+    $scope.clockValueLabel = 'Offset (ms)';
 
 
     //
@@ -102,6 +104,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.cancelButtonLabel = 'Cancel';
     $scope.addRuleButtonLabel = 'Add Rule';
     $scope.addSequenceButtonLabel = 'Add Seq Response';
+    $scope.addPushButtonLabel = 'Push';
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
@@ -261,9 +264,21 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             }
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
-                initJSEditor(endpoint.customJsSyntax);
+            	initJSEditor(endpoint.customJsSyntax);
             }
-
+            if (endpoint.mockType == MockTypeDefinitions.MockTypePushWs) {
+                
+                for (var r = 0; r < endpoint.rules.length; r++) {
+            		var originalHeaders = endpoint.rules[r].responseHeaders;
+            		endpoint.rules[r].responseHeaders = {"0":{
+            			"name":"type",
+            			"value":originalHeaders.type || "clock"
+            		},"1":{
+            			"name":"clock",
+            			"value": Number(originalHeaders.clock) || 1000
+            		}};
+            	}
+            }
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
         };
 
@@ -662,7 +677,56 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         });
 
     };
+    
+    // This is very similar to add rule, except that Push Notifications are sent on a trigger.
+    // Trigger can be time based, or HTTP/WS request based.
+    $scope.doOpenAddPush = function() {
+        var modalInstance = $uibModal.open({
+            templateUrl: 'endpoint_info_push.html',
+            controller: 'endpointInfoPushController',
+            backdrop  : 'static',
+            keyboard  : false,
+            resolve: {
+              data: function () {
+                return {
+                    "mockType" : $scope.endpoint.mockType.value
+                };
+              }
+            }
+          });
 
+          modalInstance.result.then(function (rule) {
+              rule.orderNo = ( $scope.endpoint.rules.length + 1 );
+              $scope.endpoint.rules.push(rule);
+          }, function () {
+
+          });
+    };
+    
+    $scope.doOpenViewPush = function(notification) {
+       var modalInstance = $uibModal.open({
+            templateUrl: 'endpoint_info_push.html',
+            controller: 'endpointInfoPushController',
+            backdrop  : 'static',
+            keyboard  : false,
+            resolve: {
+              data: function () {
+                return {
+                  "rule" : notification,
+                  "mockType" : $scope.endpoint.mockType.value,
+                  "createdBy" : $scope.endpoint.createdBy
+                };
+              }
+            }
+          });
+
+          modalInstance.result.then(function () {
+
+          }, function () {
+
+          });
+    };
+    
     $scope.doOpenViewSequence = function(seq) {
 
         var modalInstance = $uibModal.open({
@@ -863,8 +927,21 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             reqData.customJsSyntax = jsEditor.getValue();
 
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypePushWs) {
-        	// TODO save push events
-        	
+        
+            // Rules
+            angular.copy($scope.endpoint.rules, reqData.rules); // deep copy rules array
+            // Convert all local rule headers objects to DTO
+            for (var r=0; r < $scope.endpoint.rules.length; r++) {
+            	reqData.rules[r].responseHeaders = { "type" : "", "clock": 1000};
+            	// Ensure that there are two headers
+            	if ($scope.endpoint.rules[r].responseHeaders['0'] && $scope.endpoint.rules[r].responseHeaders['1']) {
+            		var type = $scope.endpoint.rules[r].responseHeaders['0'];
+                	var clock = $scope.endpoint.rules[r].responseHeaders['1'];
+                	reqData.rules[r].responseHeaders.type = type.value;
+                	reqData.rules[r].responseHeaders.clock = clock.value;
+            	}
+            }
+
         }
 
         if (!isNew) {
@@ -1319,7 +1396,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     // Init Page
     if (!isNew
             && !$scope.readOnly
-            && $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket) {
+            && ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket || 
+            	$scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs
+            		)) {
         doRefreshActiveWsClientsFunc();
     } else if (!isNew
             && !$scope.readOnly

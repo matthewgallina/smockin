@@ -20,7 +20,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     translations.push({ "k" : "RULE_WS", "v" : "Websocket Rules Based" });
     translations.push({ "k" : "PUSH_WS", "v" : "Websocket Push" });
 
-
     //
     // Labels
     $scope.mockServerStatusLabel = 'HTTP Mock Server Status:';
@@ -58,7 +57,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.importEndpointButtonLabel = 'Import...';
     $scope.exportEndpointButtonLabel = 'Export';
     $scope.viewEndpointButtonLabel = 'View';
-    $scope.serverPushButtonLabel = 'Push';
     $scope.bulkDeleteEndpointsButtonLabel = 'Delete';
 
 
