@@ -9,13 +9,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.websocket.api.Session;
@@ -173,16 +170,20 @@ public class WebSocketServiceImpl implements WebSocketService {
      */
     public void respondToMessage(final Session session, final String message) {
         logger.debug("respondToMessage called, with message {}", message);
+
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
 
         if (session.isOpen()) {
+
             // retrieve the session details
             final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
             Set<SessionIdWrapper> sessions = sessionMap.get(wsPath);
 
             final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                     RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.RULE_WS));
+
             if (wsMock != null && wsMock.getDefinitions().get(0) != null) {
+
                 // If none of the rules match, send the default response body
                 RestfulMockDefinitionOrder order = wsMock.getDefinitions().get(0);
 
@@ -214,9 +215,8 @@ public class WebSocketServiceImpl implements WebSocketService {
                         }
                     }
                 }
-            } else {
-                logger.warn("Invalid response for path {}", wsPath);
             }
+
         } else {
             logger.info("Session for path {} is not open", wsPath);
         }
