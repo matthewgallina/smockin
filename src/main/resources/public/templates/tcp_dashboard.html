@@ -63,7 +63,6 @@
             {{ noDataFoundMsg }}
         </h4>
 
-		<!-- This is the table with the various endpoints -->
         <uib-accordion close-others="false" class="table">
             <div uib-accordion-group ng-repeat="rs in restServices" is-open="rs.isOpen" class="{{ ($index % 2 == 0) ? 'batched-endpoint-alt-color' : '' }}">
                 <uib-accordion-heading>
@@ -95,7 +94,7 @@
                                     {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                                 </td>
                                 <td>
-                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x.extId)">{{ viewEndpointButtonLabel }}</button> 
+                                    <button type="button" class="btn btn-primary" ng-click="doOpenTcpEndpointInfo(x.extId)">{{ viewEndpointButtonLabel }}</button>
                                 </td>
                             </tr>
                         </tbody>
