@@ -13,9 +13,6 @@
         </encoder>
     </appender>
 
-    <logger name="org.eclipse.jetty.server" level="ERROR">
-        <appender-ref ref="STDOUT" />
-    </logger>
     <logger name="com.smockin" level="WARN">
         <appender-ref ref="smockin_appender" />
     </logger>
