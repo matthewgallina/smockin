@@ -1,5 +1,5 @@
 
-app.controller('endpointInfoPushController', function($scope, $location, $uibModal, $uibModalInstance, $http, $timeout, utils, globalVars, data, auth) {
+app.controller('endpointInfoWsPushController', function($scope, $uibModalInstance, $http, $timeout, utils, globalVars, data, auth) {
 
     //
     // Constants
@@ -14,7 +14,7 @@ app.controller('endpointInfoPushController', function($scope, $location, $uibMod
 
     //
     // Labels
-    $scope.newEndpointPushHeading = ( (!isNew)?'View':'New' ) + ' Push Notification';
+    $scope.newEndpointPushHeading = ( (!isNew)?'View':'New' ) + ' WS Periodic Response';
     $scope.contentTypeLabel = 'Content Type';
     $scope.contentTypePlaceholderTxt = 'e.g. (application/json)';
     $scope.responseBodyLabel = 'Response Body';
@@ -29,7 +29,7 @@ app.controller('endpointInfoPushController', function($scope, $location, $uibMod
     //
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
-    $scope.saveButtonLabel = (!isNew)?'Amend Notification':'Add Notification';
+    $scope.saveButtonLabel = (!isNew)?'Amend':'Add';
 
     //
     // Alerts

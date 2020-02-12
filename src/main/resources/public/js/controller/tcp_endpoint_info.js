@@ -104,7 +104,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.cancelButtonLabel = 'Cancel';
     $scope.addRuleButtonLabel = 'Add Rule';
     $scope.addSequenceButtonLabel = 'Add Seq Response';
-    $scope.addPushButtonLabel = 'Push';
+//    $scope.addWsPushResponseButtonLabel = 'Add Response';
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
@@ -166,11 +166,11 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "HTTP Sequenced Based", "value" : MockTypeDefinitions.MockTypeSeq },
        { "name" : "HTTP Rules Based", "value" : MockTypeDefinitions.MockTypeRule },
        { "name" : "HTTP External Feed", "value" : MockTypeDefinitions.MockTypeProxyHttp },
-       { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
-       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
        { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs },
-       { "name" : "WebSocket Rules Based", "value" : MockTypeDefinitions.MockTypeRuleWs },
-       { "name" : "WebSocket Server Push", "value" : MockTypeDefinitions.MockTypePushWs }
+       { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
+       { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
+       { "name" : "WebSocket Rules Based", "value" : MockTypeDefinitions.MockTypeRuleWs }
+//       { "name" : "WebSocket Periodic Push", "value" : MockTypeDefinitions.MockTypePushWs }
     ];
 
     $scope.isNew = isNew;
@@ -266,6 +266,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
             	initJSEditor(endpoint.customJsSyntax);
             }
+/*
             if (endpoint.mockType == MockTypeDefinitions.MockTypePushWs) {
                 
                 for (var r = 0; r < endpoint.rules.length; r++) {
@@ -279,6 +280,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             		}};
             	}
             }
+*/
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
         };
 
@@ -315,7 +317,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
                 break;
             case MockTypeDefinitions.MockTypeRuleWs :
-            case MockTypeDefinitions.MockTypePushWs :
+//            case MockTypeDefinitions.MockTypePushWs :
             	$scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
                 $scope.endpoint.method = 'GET';
 
@@ -680,10 +682,11 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     
     // This is very similar to add rule, except that Push Notifications are sent on a trigger.
     // Trigger can be time based, or HTTP/WS request based.
-    $scope.doOpenAddPush = function() {
+/*
+    $scope.doOpenAddWsPushResponse = function() {
         var modalInstance = $uibModal.open({
-            templateUrl: 'endpoint_info_push.html',
-            controller: 'endpointInfoPushController',
+            templateUrl: 'endpoint_info_ws_push.html',
+            controller: 'endpointInfoWsPushController',
             backdrop  : 'static',
             keyboard  : false,
             resolve: {
@@ -704,9 +707,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     };
     
     $scope.doOpenViewPush = function(notification) {
+
        var modalInstance = $uibModal.open({
-            templateUrl: 'endpoint_info_push.html',
-            controller: 'endpointInfoPushController',
+            templateUrl: 'endpoint_info_ws_push.html',
+            controller: 'endpointInfoWsPushController',
             backdrop  : 'static',
             keyboard  : false,
             resolve: {
@@ -726,7 +730,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
           });
     };
-    
+    */
+
     $scope.doOpenViewSequence = function(seq) {
 
         var modalInstance = $uibModal.open({
@@ -926,6 +931,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             reqData.customJsSyntax = jsEditor.getValue();
 
+/*
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypePushWs) {
         
             // Rules
@@ -941,7 +947,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 	reqData.rules[r].responseHeaders.clock = clock.value;
             	}
             }
-
+*/
         }
 
         if (!isNew) {

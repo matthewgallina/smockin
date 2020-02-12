@@ -337,7 +337,7 @@
                 <div ng-show="endpoint.mockType.value == mockTypePushWs">
                     
                     <div class="add-button-div">
-                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddPush()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addPushButtonLabel }}</button>
+                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddWsPushResponse()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addWsPushResponseButtonLabel }}</button>
                     </div>
                     
                     <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
@@ -384,6 +384,7 @@
 
                     </table>
                 </div>
+
 
                 <!-- WebSocket Proxy Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs">
@@ -543,32 +544,39 @@
 
         </div>
 
-        <div class="form-group">
-            <input id="random-response-latency"  ng-model="endpoint.randomiseLatency" type="checkbox" />
-            <label for="random-response-latency" class="ng-binding">{{ enableRandomLatencyLabel }}</label>
-        </div>
+        <div ng-if="endpoint.mockType.value == mockTypeProxyHttp
+                        || endpoint.mockType.value == mockTypeSeq
+                        || endpoint.mockType.value == mockTypeRule
+                        || endpoint.mockType.value == mockTypeCustomJs">
 
-        <div ng-if="endpoint.randomiseLatency" class="latency-range-div">
+            <div class="form-group">
+                <input id="random-response-latency"  ng-model="endpoint.randomiseLatency" type="checkbox" />
+                <label for="random-response-latency" class="ng-binding">{{ enableRandomLatencyLabel }}</label>
+            </div>
 
-            <b>{{ latencyRangeLabel }}</b>
+            <div ng-if="endpoint.randomiseLatency" class="latency-range-div">
 
-            <br />
-            <br />
+                <b>{{ latencyRangeLabel }}</b>
 
-            <div class="row">
-                <div class="col-sm-1 latency-range-label">
-                    {{ latencyRangeMinLabel }}
-                </div>
-                <div class="col-sm-5">
-                    <input type="text" ng-model="endpoint.randomiseLatencyRangeMinMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
-                </div>
-                <div class="col-sm-1 latency-range-label">
-                    {{ latencyRangeMaxLabel }}
-                </div>
-                <div class="col-sm-5">
-                    <input type="text" ng-model="endpoint.randomiseLatencyRangeMaxMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                <br />
+                <br />
+
+                <div class="row">
+                    <div class="col-sm-1 latency-range-label">
+                        {{ latencyRangeMinLabel }}
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" ng-model="endpoint.randomiseLatencyRangeMinMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                    </div>
+                    <div class="col-sm-1 latency-range-label">
+                        {{ latencyRangeMaxLabel }}
+                    </div>
+                    <div class="col-sm-5">
+                        <input type="text" ng-model="endpoint.randomiseLatencyRangeMaxMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                    </div>
                 </div>
             </div>
+
         </div>
 
         <hr />
