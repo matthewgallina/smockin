@@ -1243,9 +1243,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             checkAutoRefreshStatus(function(autoRefresh) {
 
-                var locParams = {
-                    'tab' : 'HTTP'
-                };
+                var locParams = {};
 
                 if (autoRefresh != null && autoRefresh) {
                     locParams.restart = 'true';
