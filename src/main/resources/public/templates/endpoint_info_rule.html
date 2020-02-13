@@ -35,7 +35,7 @@
                 <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody" ng-disabled="readOnly"></textarea>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" ng-if="mockType != MockTypeRuleWs">
                 <label for="response-headers" class="ng-binding">{{ responseHeadersLabel }}</label>
                 <div class="panel panel-default">
                     <div class="panel-body">

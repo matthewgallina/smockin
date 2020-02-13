@@ -89,6 +89,25 @@ public class MockDefinitionImportExportServiceTest {
         ruleBasedDTO.getRules().add(rule);
 
         allRestfulMocks.add(ruleBasedDTO);
+        
+        // Websocket Rule mock
+        final RestfulMockResponseDTO wsRuleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/helloWs", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+                RestMockTypeEnum.RULE_WS, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
+                false, false, false, false, 0,0, null, null);
+
+        final RuleDTO wsRule = new RuleDTO(GeneralUtils.generateUUID(), 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"hello\" }", 0, false);
+        rule.getResponseHeaders().put("X-Smockin-ID", "12345");
+
+        final RuleGroupDTO wsRuleGroupDTO = new RuleGroupDTO(GeneralUtils.generateUUID(), 1);
+        ruleGroupDTO.getConditions().add(new RuleConditionDTO(GeneralUtils.generateUUID(), "name", RuleDataTypeEnum.TEXT, RuleComparatorEnum.EQUALS, "foo", RuleMatchingTypeEnum.REQUEST_PARAM, false));
+
+        wsRule.getGroups().add(wsRuleGroupDTO);
+
+        wsRuleBasedDTO.getRules().add(wsRule);
+
+        allRestfulMocks.add(wsRuleBasedDTO);
+        
+        
 
         // WS based HTTP mock
         final RestfulMockResponseDTO wsBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/ws", "mike", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,

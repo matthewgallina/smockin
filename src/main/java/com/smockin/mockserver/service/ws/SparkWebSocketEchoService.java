@@ -42,7 +42,7 @@ public class SparkWebSocketEchoService {
             return;
         }
 
-        // Ignore all other inbound messages from client
+        webSocketService.respondToMessage(session, message);
     }
 
 }

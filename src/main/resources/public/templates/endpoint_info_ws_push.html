@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="../css/endpoint_info_ws_push.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ newEndpointPushHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
+
+    <div class="row">
+        <div class="col-sm-6">
+
+            <div class="form-group">
+                <label for="contentType" class="ng-binding">{{ contentTypeLabel }}</label>
+                <input id="contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseContentType" placeholder="{{ contentTypePlaceholderTxt }}" type="text" focus="isNew" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="readOnly" />
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <label for="rule-response-body" class="ng-binding">{{ responseBodyLabel }}</label>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href ng-click="doFormatJson()" class="pull-right" ng-if="ruleResponse.responseContentType == JsonContentType">{{ formatJsonLabel }}</a>
+                        <a href ng-click="doFormatXml()" class="pull-right" ng-if="ruleResponse.responseContentType == XmlContentType">{{ formatXmlLabel }}</a>
+                    </div>
+                </div>
+                <textarea id="rule-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="ruleResponse.responseBody" ng-disabled="readOnly"></textarea>
+            </div>
+
+        </div>
+        <div class="col-sm-6">
+            <div class="form-group">
+                <label for="triggerType" class="ng-binding">{{ labelTriggerType }}</label>
+                <select id="triggerType" class="form-control ng-isolate-scope ng-pristine ng-valid" 
+                    ng-model="ruleResponse.responseHeaders['0'].value" ng-disabled="readOnly">
+                    <option value="clock">{{ optionLabelClock }}</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="triggerValue" class="ng-binding">{{ clockTriggerValue }}</label>
+                <input id="triggerValue" class="form-control ng-isolate-scope ng-pristine ng-valid" 
+                    ng-model="ruleResponse.responseHeaders['1'].value" placeholder="{{ triggerValuePlaceholderTxt }}" type="number" 
+                    ng-disabled="readOnly" />
+            </div>
+            
+        </div>
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveRule()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
+</div>

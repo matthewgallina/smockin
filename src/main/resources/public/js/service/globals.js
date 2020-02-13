@@ -47,6 +47,17 @@ app.service('globalVars', function() {
         this.XmlContentType
     ];
 
+    this.MockTypeDefinitions = {
+        MockTypeSeq : 'SEQ',
+        MockTypeRule : 'RULE',
+        MockTypeProxyHttp : 'PROXY_HTTP',
+        MockTypeWebSocket : 'PROXY_WS',
+        MockTypeProxySse : 'PROXY_SSE',
+        MockTypeCustomJs : 'CUSTOM_JS',
+        MockTypeRuleWs : 'RULE_WS',
+        MockTypePushWs : 'PUSH_WS'
+    };
+
     this.RuleComparators = [
        { dropDownName : 'Equals ( TEXT )', tableName : 'equals', value : this.EqualsText, dataType: this.TextDataType },
        { dropDownName : 'Equals ( NUMBER )', tableName : '==', value : this.EqualsText, dataType: this.NumericDataType },
@@ -59,6 +70,11 @@ app.service('globalVars', function() {
         { name : 'Path Variable (Wildcard)', value : this.PathVariableWildcardText, fieldPlaceholderText : 'Position of \'Wildcard\' var (e.g for /home/*/pet/* enter 1 or 2)' },
         { name : 'Request Header', value : this.RequestHeaderText, fieldPlaceholderText : 'Enter \'Request Header\' Key Name' },
         { name : 'Request Parameter', value : this.RequestParamText, fieldPlaceholderText : 'Enter \'Request Parameter\' Key Name' },
+        { name : 'Request Body', value : this.RequestBodyText, fieldPlaceholderText : '' },
+        { name : 'Request Body JSON Field', value : this.RequestBodyJsonAnyFieldText, fieldPlaceholderText : 'Enter \'JSON Parameter\' Key Name'  }
+    ];
+
+    this.WebSocketRuleMatchingTypes = [
         { name : 'Request Body', value : this.RequestBodyText, fieldPlaceholderText : '' },
         { name : 'Request Body JSON Field', value : this.RequestBodyJsonAnyFieldText, fieldPlaceholderText : 'Enter \'JSON Parameter\' Key Name'  }
     ];

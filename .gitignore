@@ -27,4 +27,4 @@ Dockerfile
 launch.sh
 /src/test/java/com/smockin/temp
 sMockin.app
-
+*.zip
