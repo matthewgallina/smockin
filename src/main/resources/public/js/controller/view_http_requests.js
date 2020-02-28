@@ -19,7 +19,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.viewRequestsHeading = "HTTP Live Feed";
     $scope.noActivityData = 'Listening for activity...';
     $scope.headersLabel = 'Headers';
-    $scope.parametersLabel = 'Inbound Parameters';
+    $scope.parametersLabel = 'Parameters';
     $scope.bodyLabel = 'Body';
     $scope.requestSearchPlaceholderText = 'Enter a keyword to filter results below...';
     $scope.connectionStatusLabel = 'Connection Status';
@@ -30,6 +30,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.responseLabel = 'Response';
     $scope.usingOverrideLabel = "using override!";
     $scope.overrideResponseLabel = "Override Response";
+    $scope.httpResponseLabel = 'HTTP Response:';
 
 
     //

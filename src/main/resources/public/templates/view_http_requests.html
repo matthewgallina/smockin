@@ -35,18 +35,22 @@
                 <div class="col-sm-3">
 
                     <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
-                            class="live-log-font activity-feed-table-row" ng-class="getRowStyle(af.id)" ng-click="doViewFeedRow(af)"
-                            style="border: 1px solid grey; border-radius: 4px; padding: 8px; margin-bottom: 8px;">
+                            class="live-log-font activity-feed-table-row" ng-class="getRowStyle(af.id)" ng-click="doViewFeedRow(af)">
 
-                        <div style="word-wrap: break-word;">
-                            {{ af.request.method }}
-                            <b>{{ af.request.url }}</b>
+                        <div class="break-word">
+                            <b>
+                                {{ af.request.method }}
+                                {{ af.request.url }}
+                            </b>
                         </div>
 
                         <br />
 
                         {{ af.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
-                        <b ng-if="af.response.status != null" class="pull-right">HTTP Response: {{ af.response.status }}</b>
+
+                        <span class="pull-right">
+                            {{ httpResponseLabel }} <b ng-if="af.response.status != null">{{ af.response.status }}</b>
+                        </span>
 
                         <div class="pull-right" ng-if="isUsingOverride(af)">
                             {{ usingOverrideLabel }}
@@ -87,7 +91,7 @@
                                             <br />
 
                                             <div ng-if="selectedFeedData.request.requestParams != null">
-                                                <b>{{ parametersLabel }}</b>
+                                                <b>{{ requestLabel }} {{ parametersLabel }}</b>
 
                                                 <br />
                                                 <br />
@@ -116,7 +120,7 @@
 
                                         <div class="col-sm-6">
 
-                                            <b>{{ headersLabel }}</b>
+                                            <b>{{ requestLabel }} {{ headersLabel }}</b>
                                             <br />
 
                                             <div class="well activity-feed-details-well">
@@ -129,7 +133,7 @@
                                         </div>
                                         <div class="col-sm-6">
 
-                                            <b>{{ headersLabel }}</b>
+                                            <b>{{ responseLabel }} {{ headersLabel }}</b>
                                             <br />
 
                                             <div class="well activity-feed-details-well">
@@ -145,7 +149,7 @@
                                         <div class="col-sm-6">
 
                                             <br />
-                                            <b>{{ bodyLabel }}</b>
+                                            <b>{{ requestLabel }} {{ bodyLabel }}</b>
                                             <br />
 
                                             <div class="well activity-feed-details-well">
@@ -156,7 +160,7 @@
                                         <div class="col-sm-6">
 
                                             <br />
-                                            <b>{{ bodyLabel }}</b>
+                                            <b>{{ responseLabel }} {{ bodyLabel }}</b>
                                             <br />
 
                                             <div class="well activity-feed-details-well">

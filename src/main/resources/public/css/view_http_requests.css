@@ -38,13 +38,17 @@
 .live-log-font {
     font-size: 11px;
 }
-/*
-.activity-feed-details {
-    height: 440px;
-}
-*/
+
 .activity-feed-table-row {
     cursor: pointer;
+    border: 1px solid grey;
+    border-radius: 4px;
+    padding: 8px;
+    margin-bottom: 8px;
+}
+
+.break-word {
+    word-wrap: break-word;
 }
 
 .activity-feed-details-row {
