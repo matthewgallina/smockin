@@ -16,9 +16,12 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
+import spark.QueryParamsMap;
 import spark.Request;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by mgallina.
@@ -31,6 +34,9 @@ public class RuleEngineTest {
 
     @Mock
     private Request req;
+
+    @Mock
+    private QueryParamsMap queryParamsMap;
 
     @Mock
     private List<RestfulMockDefinitionRule> rules;
@@ -133,7 +139,10 @@ public class RuleEngineTest {
         // Setup
         final String fieldName = "name";
         final String reqResponse = "Hey Joe";
-        Mockito.when(req.queryParams(fieldName)).thenReturn(reqResponse);
+        final Map<String, String[]> params = new HashMap<>();
+        params.put(fieldName, new String[] { reqResponse });
+        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
 
         // Test
         final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_PARAM, "name", req, "/person/{name}");
@@ -236,66 +245,6 @@ public class RuleEngineTest {
         // Assertions
         Assert.assertNull(result);
 
-    }
-
-    @Test
-    public void extractRequestParamByNameTest() {
-
-        // Setup
-        Mockito.when(req.contentType()).thenReturn(null);
-        Mockito.when(req.queryParams("name")).thenReturn("bob");
-
-        // Test
-        final String result = ruleEngine.extractRequestParamByName(req, "name");
-
-        // Assertions
-        Assert.assertNotNull(result);
-        Assert.assertEquals("bob", result);
-
-    }
-
-    @Test
-    public void extractRequestParamByName_formPost_Test() {
-
-        // Setup
-        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        Mockito.when(req.body()).thenReturn("name=jane;age=28;");
-
-        // Test
-        final String result = ruleEngine.extractRequestParamByName(req, "name");
-
-        // Assertions
-        Assert.assertNotNull(result);
-        Assert.assertEquals("jane", result);
-
-    }
-
-    @Test
-    public void extractRequestParamByName_formWithRandomReqBody_Test() {
-
-        // Setup
-        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        Mockito.when(req.body()).thenReturn("adasdasdadasd");
-
-        // Test
-        final String result = ruleEngine.extractRequestParamByName(req, "name");
-
-        // Assertions
-        Assert.assertNull(result);
-    }
-
-    @Test
-    public void extractRequestParamByName_formWithBlankReqBody_Test() {
-
-        // Setup
-        Mockito.when(req.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        Mockito.when(req.body()).thenReturn(" ");
-
-        // Test
-        final String result = ruleEngine.extractRequestParamByName(req, "name");
-
-        // Assertions
-        Assert.assertNull(result);
     }
 
 }

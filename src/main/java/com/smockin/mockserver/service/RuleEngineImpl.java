@@ -7,15 +7,12 @@ import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +73,7 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_HEADER:
                 return req.headers(fieldName);
             case REQUEST_PARAM:
-                return extractRequestParamByName(req, fieldName);
+                return GeneralUtils.extractRequestParamByName(req, fieldName);
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
@@ -100,25 +97,6 @@ public class RuleEngineImpl implements RuleEngine {
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }
 
-    }
-
-    String extractRequestParamByName(final Request req, final String fieldName) {
-
-        // Java Spark does not provide a convenient way of extracting form based request parameters,
-        // so have to parse these manually.
-        if (req.contentType() != null
-                && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
-
-            return URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
-                    .stream()
-                    .filter(k -> k.getName().equals(fieldName))
-                    .map(k -> k.getValue())
-                    .findFirst()
-                    .orElse(null);
-        }
-
-        return req.queryParams(fieldName);
     }
 
 }

@@ -5,7 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import spark.QueryParamsMap;
 import spark.Request;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -358,6 +360,126 @@ public class GeneralUtilsTest {
 
         Assert.assertNotNull(pathVars);
         Assert.assertTrue(pathVars.isEmpty());
+    }
+
+    @Test
+    public void extractRequestParamByNameTest() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        final Map<String, String[]> params = new HashMap<>();
+        params.put("name", new String[] { "bob" });
+        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final String result = GeneralUtils.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("bob", result);
+
+    }
+
+    @Test
+    public void extractRequestParamByName_nullValue_Test() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        final Map<String, String[]> params = new HashMap<>();
+        params.put("name", null);
+        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final String result = GeneralUtils.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
+    @Test
+    public void extractRequestParamByName_emptyMap_Test() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        Mockito.when(queryParamsMap.toMap()).thenReturn(new HashMap<>());
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final String result = GeneralUtils.extractRequestParamByName(req, "name");
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
+    @Test
+    public void extractAllRequestParamsTest() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        final Map<String, String[]> params = new HashMap<>();
+        params.put("name", new String[] { "bob" });
+        params.put("age", new String[] { "27" });
+        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final Map<String, String> results = GeneralUtils.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(results);
+        Assert.assertEquals(2, results.size());
+        Assert.assertEquals("bob", results.get("name"));
+        Assert.assertEquals("27", results.get("age"));
+
+    }
+
+    @Test
+    public void extractAllRequestParams_nullValues_Test() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        final Map<String, String[]> params = new HashMap<>();
+        params.put("name", null);
+        params.put("age", null);
+        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final Map<String, String> results = GeneralUtils.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(results);
+        Assert.assertEquals(2, results.size());
+        Assert.assertNull(results.get("name"));
+        Assert.assertNull(results.get("age"));
+
+    }
+
+    @Test
+    public void extractAllRequestParams_emptyMap_Test() {
+
+        // Setup
+        final Request req = Mockito.mock(Request.class);
+        final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
+        Mockito.when(queryParamsMap.toMap()).thenReturn(new HashMap<>());
+        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+
+        // Test
+        final Map<String, String> results = GeneralUtils.extractAllRequestParams(req);
+
+        // Assertions
+        Assert.assertNotNull(results);
+        Assert.assertEquals(0, results.size());
+
     }
 
 }

@@ -5,27 +5,21 @@ import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.HttpClientUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Request;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Created by mgallina.
@@ -88,7 +82,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         final Request request = Request.Post(reqDto.getUrl());
 
-        handleRequestData(request, reqDto.getHeaders(), reqDto);
+        HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
         return executeRequest(request, reqDto.getHeaders());
     }
@@ -97,7 +91,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         final Request request = Request.Put(reqDto.getUrl());
 
-        handleRequestData(request, reqDto.getHeaders(), reqDto);
+        HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
         return executeRequest(request, reqDto.getHeaders());
     }
@@ -175,39 +169,6 @@ public class HttpClientServiceImpl implements HttpClientService {
                 extractResponseHeaders(httpResponse),
                 extractResponseBody(httpResponse)
         );
-    }
-
-    void handleRequestData(final Request request, final Map<String, String> requestHeaders, final HttpClientCallDTO reqDto) {
-
-        if (requestHeaders.containsValue(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
-
-            final List<NameValuePair> postParameters = new ArrayList<>();
-
-            if (reqDto.getBody() != null && reqDto.getBody().contains("&")) {
-
-                final String[] formParameterPairsArray = reqDto.getBody().split("&");
-
-                Stream.of(formParameterPairsArray).forEach(pa -> {
-
-                    if (pa.contains("=")) {
-
-                        final String[] pairArray = pa.split("=");
-
-                        if (pairArray.length == 2) {
-                            postParameters.add(new BasicNameValuePair(pairArray[0], pairArray[1]));
-                        }
-
-                    }
-
-                });
-
-            }
-
-            request.bodyForm(postParameters);
-            return;
-        }
-
-        request.bodyByteArray((reqDto.getBody() != null)?reqDto.getBody().getBytes():null);
     }
 
     private void debugDTO(final HttpClientCallDTO dto) {
