@@ -57,6 +57,10 @@
     font-size: 20px;
 }
 
+.activity-feed-details-header-url {
+    word-wrap: break-word;
+}
+
 .activity-feed-details-subheader {
     font-size: 16px;
 }

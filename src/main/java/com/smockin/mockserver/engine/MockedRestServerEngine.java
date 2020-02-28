@@ -10,6 +10,7 @@ import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.HttpClientUtils;
 import com.smockin.utils.LiveLoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,7 +185,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
             reqHeaders.put(GeneralUtils.LOG_REQ_ID, traceId);
 
-            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false));
+            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false, GeneralUtils.extractAllRequestParams(request)));
         });
 
         Spark.afterAfter((request, response) -> {

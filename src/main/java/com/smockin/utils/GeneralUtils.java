@@ -6,10 +6,13 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import spark.Request;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -404,6 +407,36 @@ public final class GeneralUtils {
                 logger.error("Error closing output stream", e);
             }
         }
+    }
+
+    public static String extractRequestParamByName(final Request req, final String fieldName) {
+
+        return extractAllRequestParams(req).get(fieldName);
+    }
+
+    public static Map<String, String> extractAllRequestParams(final Request req) {
+
+        final Map<String, String> allParams = req.queryMap()
+                .toMap()
+                .entrySet()
+                .stream()
+                .collect(HashMap::new,
+                        (m,v) ->
+                            m.put(v.getKey(), (v.getValue() != null && v.getValue().length != 0) ? v.getValue()[0] : null),
+                        HashMap::putAll);
+
+        if (req.contentType() != null
+            && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+            ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
+
+            if (req.body() != null) {
+                allParams.putAll(URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
+                                    .stream()
+                                    .collect(HashMap::new, (m,v) -> m.put(v.getName(), v.getValue()), HashMap::putAll));
+            }
+        }
+
+        return allParams;
     }
 
 }

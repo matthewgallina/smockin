@@ -9,7 +9,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.http.MediaType;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -100,7 +99,9 @@ public final class HttpClientUtils {
         );
     }
 
-    static void handleRequestData(final Request request, final Map<String, String> requestHeaders, final HttpClientCallDTO reqDto) {
+    public static void handleRequestData(final Request request,
+                                         final Map<String, String> requestHeaders,
+                                         final HttpClientCallDTO reqDto) {
 
         if (requestHeaders.containsValue(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
 

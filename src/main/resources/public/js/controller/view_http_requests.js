@@ -18,8 +18,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     // Labels
     $scope.viewRequestsHeading = "HTTP Live Feed";
     $scope.noActivityData = 'Listening for activity...';
-    $scope.proxyLabel = '(via sMockin Proxy)';
     $scope.headersLabel = 'Headers';
+    $scope.parametersLabel = 'Inbound Parameters';
     $scope.bodyLabel = 'Body';
     $scope.requestSearchPlaceholderText = 'Enter a keyword to filter results below...';
     $scope.connectionStatusLabel = 'Connection Status';
@@ -28,8 +28,6 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.noFeedRecordSelected = 'Nothing Selected';
     $scope.requestLabel = 'Request';
     $scope.responseLabel = 'Response';
-    $scope.mockedResponseLabel = 'Substituted (mock)';
-    $scope.originalResponseLabel = 'Original';
     $scope.usingOverrideLabel = "using override!";
     $scope.overrideResponseLabel = "Override Response";
 
@@ -265,7 +263,6 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
         var data = {
             'id' : req.id,
-            'proxied' : req.proxied,
             'request' : req.content,
             'response' : null
         };

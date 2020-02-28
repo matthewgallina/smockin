@@ -34,25 +34,25 @@
             <div class="row activity-feed-details-row" ng-show="activityFeed.length > 0" style="height: {{ (height - 310) }}px;">
                 <div class="col-sm-3">
 
-                    <table class="table table-bordered table-striped">
-                        <tbody>
-                            <tr ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search" class="live-log-font" ng-class="getRowStyle(af.id)">
-                                <td ng-click="doViewFeedRow(af)" class="activity-feed-table-row">
-                                    {{ af.request.method }} <b>{{ af.request.url }}</b>
-                                    <br />
-                                    <i ng-if="af.proxied">
-                                        {{ proxyLabel }}
-                                        <br />
-                                    </i>
-                                    {{ af.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
+                    <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
+                            class="live-log-font activity-feed-table-row" ng-class="getRowStyle(af.id)" ng-click="doViewFeedRow(af)"
+                            style="border: 1px solid grey; border-radius: 4px; padding: 8px; margin-bottom: 8px;">
 
-                                    <div class="pull-right" ng-if="isUsingOverride(af)">
-                                        {{ usingOverrideLabel }}
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <div style="word-wrap: break-word;">
+                            {{ af.request.method }}
+                            <b>{{ af.request.url }}</b>
+                        </div>
+
+                        <br />
+
+                        {{ af.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
+                        <b ng-if="af.response.status != null" class="pull-right">HTTP Response: {{ af.response.status }}</b>
+
+                        <div class="pull-right" ng-if="isUsingOverride(af)">
+                            {{ usingOverrideLabel }}
+                        </div>
+
+                    </div>
 
                 </div>
                 <div class="col-sm-9">
@@ -63,15 +63,14 @@
                             <div ng-show="selectedFeedData != null">
 
                                 <span class="activity-feed-details-header">
-                                    {{ selectedFeedData.request.method }} <b>{{ selectedFeedData.request.url }}</b>
+                                    {{ selectedFeedData.request.method }}
+                                    <b class="activity-feed-details-header-url">
+                                        {{ selectedFeedData.request.url }}
+                                    </b>
                                     <div class="pull-right" ng-hide="true">
                                         <a href="" ng-click="doOpenOverride()" class="activity-feed-details-subheader">({{ overrideResponseLabel }})</a>
                                     </div>
                                 </span>
-                                <i ng-if="selectedFeedData.proxied">
-                                    <br />
-                                    {{ proxyLabel }}
-                                </i>
 
                                 <br />
                                 <br />
@@ -81,24 +80,36 @@
 
                                         <div class="col-sm-6">
 
-                                            <b class="activity-feed-details-subheader">{{ requestLabel }}</b>
+                                            <span>
+                                                <b class="activity-feed-details-subheader">{{ requestLabel }}</b> ({{ selectedFeedData.request.date | date: 'HH:mm:ss.sss' : 'UTC' }})
+                                            </span>
                                             <br />
-                                            {{ selectedFeedData.request.date | date: 'HH:mm:ss.sss' : 'UTC' }}
-                                            <hr />
+                                            <br />
+
+                                            <div ng-if="selectedFeedData.request.requestParams != null">
+                                                <b>{{ parametersLabel }}</b>
+
+                                                <br />
+                                                <br />
+
+                                                <div class="well activity-feed-details-well">
+                                                    <div ng-repeat="(key, value) in selectedFeedData.request.requestParams">
+                                                        {{ key }} = {{ value }}
+                                                    </div>
+                                                </div>
+
+                                            </div>
 
                                         </div>
                                         <div class="col-sm-6">
 
-                                            <b class="activity-feed-details-subheader">
-                                                <i ng-if="selectedFeedData.proxied">
-                                                    <span ng-if="selectedFeedData.response.proxyResponseMocked">{{ mockedResponseLabel }}</span>
-                                                    <span ng-if="!selectedFeedData.response.proxyResponseMocked">{{ originalResponseLabel }}</span>
-                                                </i>
-                                                {{ selectedFeedData.response.status }} {{ responseLabel }}
-                                            </b>
+                                            <span>
+                                                <b class="activity-feed-details-subheader">{{ selectedFeedData.response.status }} {{ responseLabel }}</b>
+                                                ({{ selectedFeedData.response.date | date: 'HH:mm:ss.sss' : 'UTC' }})
+                                            </span>
+
                                             <br />
-                                            {{ selectedFeedData.response.date | date: 'HH:mm:ss.sss' : 'UTC' }}
-                                            <hr />
+                                            <br />
 
                                         </div>
 
@@ -107,13 +118,12 @@
 
                                             <b>{{ headersLabel }}</b>
                                             <br />
-                                            <br />
 
                                             <div class="well activity-feed-details-well">
-                                            <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.request.headers)">
-                                                {{ h }}
-                                                <br/>
-                                            </span>
+                                                <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.request.headers)">
+                                                    {{ h }}
+                                                    <br/>
+                                                </span>
                                             </div>
 
                                         </div>
@@ -121,13 +131,12 @@
 
                                             <b>{{ headersLabel }}</b>
                                             <br />
-                                            <br />
 
                                             <div class="well activity-feed-details-well">
-                                            <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.response.headers)">
-                                                {{ h }}
-                                                <br/>
-                                            </span>
+                                                <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.response.headers)">
+                                                    {{ h }}
+                                                    <br/>
+                                                </span>
                                             </div>
 
                                         </div>
@@ -137,7 +146,6 @@
 
                                             <br />
                                             <b>{{ bodyLabel }}</b>
-                                            <br />
                                             <br />
 
                                             <div class="well activity-feed-details-well">
@@ -149,7 +157,6 @@
 
                                             <br />
                                             <b>{{ bodyLabel }}</b>
-                                            <br />
                                             <br />
 
                                             <div class="well activity-feed-details-well">
