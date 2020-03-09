@@ -1,0 +1,31 @@
+
+.vertical-center {
+  min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+  min-height: 100vh; /* These two lines are counted as one :-)       */
+  display: flex;
+  align-items: center;
+}
+
+.dashboard-card {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.chart-wrapper-div {
+    width: 100%;
+}
+
+.table-wrapper-div {
+    width: 100%;
+}
+
+table.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.logout {
+    cursor: pointer;
+    text-decoration: underline !important;
+}

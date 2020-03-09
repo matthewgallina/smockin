@@ -1,0 +1,112 @@
+<!DOCTYPE HTML>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta http-equiv="content-type" content="text/html; charset=utf-8">
+<html>
+
+    <head>
+        <title>sMockin Client Demo</title>
+
+        <link type="text/css"
+              rel="stylesheet"
+              href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css">
+
+        <link type="text/css"
+              rel="stylesheet"
+              href="css/dashboard.css">
+
+        <link type="text/css"
+              rel="stylesheet"
+              href="css/lib/Chart.min.css">
+
+        <link rel="stylesheet"
+              href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+              integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+              crossorigin="anonymous">
+
+        <!-- production version, optimized for size and speed -->
+        <!--
+            <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        -->
+        <!-- development version, includes helpful console warnings -->
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+        <!-- ChartJS -->
+        <script src="js/lib/Chart.bundle.min.js"></script>
+        <script src="js/lib/chartjs-plugin-annotation.js"></script>
+        <script src="js/lib/chartjs-plugin-labels.min.js"></script>
+
+    </head>
+
+    <body>
+
+    <div id="dashboard-app" class="vertical-center">
+        <div class="container">
+
+            <br />
+
+            <div class="row">
+                <div class="col-sm-10">
+                    <h4>{{ dashboardHeading }}</h4>
+                </div>
+                <div class="col-sm-2">
+                    <h5><a v-on:click="doLogout" class="float-right logout">{{ logoutLabel }}</a></h5>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="card dashboard-card">
+
+                <!-- Graph Charts -->
+                <div class="chart-wrapper-div">
+
+                    <div class="row" style="min-height: 500px">
+                        <div class="col-sm-6">
+                            <canvas id="bar-chart"></canvas>
+                        </div>
+                        <div class="col-sm-6">
+                            <canvas id="donut-chart"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <br />
+                <hr />
+
+                <!-- Tables -->
+                <div class="table-wrapper-div">
+
+                    <button v-on:click="doOpenAddRecord" class="btn btn-outline-dark float-right">{{ addRecordButtonLabel }}</button>
+
+                    <br />
+                    <br />
+
+                    <table class="table table-striped center" style="width: 98%;">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">First</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="s in stats">
+                                <th scope="row">{{ s.id }}</th>
+                                <td>{{ s.name }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    </body>
+
+    <script src="js/utils.js"></script>
+    <script src="js/dashboard.js"></script>
+
+</html>
