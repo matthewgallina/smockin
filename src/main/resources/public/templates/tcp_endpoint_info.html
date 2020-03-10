@@ -51,7 +51,7 @@
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs || endpoint.mockType.value == mockTypeStateful || readOnly">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypeStateful || readOnly">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ selectDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -343,7 +343,7 @@
 
 
                 <!-- WebSocket Proxy Type -->
-                <div ng-show="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs">
+                <div ng-show="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeRuleWs">
 
                     <div class="form-group proxy-timeout-group">
                         <label for="websocketTimeout" class="ng-binding">{{ webSocketTimeoutLabel }}</label>
