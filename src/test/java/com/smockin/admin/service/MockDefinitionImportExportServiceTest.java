@@ -63,7 +63,7 @@ public class MockDefinitionImportExportServiceTest {
 
         // Seq based HTTP mock
         final RestfulMockResponseDTO seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.SEQ, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
+                RestMockTypeEnum.SEQ, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null, null);
 
         RestfulMockDefinitionDTO seqDTO = new RestfulMockDefinitionDTO(GeneralUtils.generateUUID(), 1, 400, MediaType.TEXT_PLAIN_VALUE, "Not good!", 0, false, 1, 0);
@@ -75,7 +75,7 @@ public class MockDefinitionImportExportServiceTest {
 
         // Rule based HTTP mock
         final RestfulMockResponseDTO ruleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.RULE, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
+                RestMockTypeEnum.RULE, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null, null);
 
         final RuleDTO rule = new RuleDTO(GeneralUtils.generateUUID(), 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"hello\" }", 0, false);
@@ -92,7 +92,7 @@ public class MockDefinitionImportExportServiceTest {
         
         // Websocket Rule mock
         final RestfulMockResponseDTO wsRuleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/helloWs", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.RULE_WS, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
+                RestMockTypeEnum.RULE_WS, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null, null);
 
         final RuleDTO wsRule = new RuleDTO(GeneralUtils.generateUUID(), 1, 200, MediaType.APPLICATION_JSON_VALUE, "{ \"msg\" : \"hello\" }", 0, false);
@@ -111,21 +111,21 @@ public class MockDefinitionImportExportServiceTest {
 
         // WS based HTTP mock
         final RestfulMockResponseDTO wsBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/ws", "mike", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.PROXY_WS, GeneralUtils.getCurrentDate(), "mike", 0, 50000, 0,
+                RestMockTypeEnum.PROXY_WS, false, GeneralUtils.getCurrentDate(), "mike", 0, 50000, 0,
                 true, false, false, false, 0,0, null, null);
 
         allRestfulMocks.add(wsBasedDTO);
 
         // SSE based HTTP mock
         final RestfulMockResponseDTO sseBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/sse", "paul", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.PROXY_SSE, GeneralUtils.getCurrentDate(), "paul", 0, 0, 40000,
+                RestMockTypeEnum.PROXY_SSE, false, GeneralUtils.getCurrentDate(), "paul", 0, 0, 40000,
                 false, false, false, false, 0,0, null, null);
 
         allRestfulMocks.add(sseBasedDTO);
 
         // Remote Feed based HTTP mock
         final RestfulMockResponseDTO remoteFeedBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/remotefeed", null, RestMethodEnum.POST, RecordStatusEnum.ACTIVE,
-                RestMockTypeEnum.PROXY_HTTP, GeneralUtils.getCurrentDate(), "howard", 60000, 0, 0,
+                RestMockTypeEnum.PROXY_HTTP, false, GeneralUtils.getCurrentDate(), "howard", 60000, 0, 0,
                 false, false, false, false, 0, 0, null, null);
 
         allRestfulMocks.add(remoteFeedBasedDTO);

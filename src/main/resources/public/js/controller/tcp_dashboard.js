@@ -18,7 +18,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     translations.push({ "k" : "PROXY_SSE", "v" : "SSE Proxied" });
     translations.push({ "k" : "CUSTOM_JS", "v" : "Custom JavaScript" });
     translations.push({ "k" : "RULE_WS", "v" : "Websocket Rules Based" });
-    translations.push({ "k" : "PUSH_WS", "v" : "Websocket Push" });
+    translations.push({ "k" : "STATEFUL", "v" : "Stateful REST" });
+
 
     //
     // Labels
@@ -39,6 +40,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
+    $scope.allMethodsLabel = "ALL METHODS";
 
 
     //
@@ -423,10 +425,30 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 return;
             }
 
-            allRestServices = batchByBasePath(data);
-            $scope.restServices = batchByBasePath(data);
+            var filteredData = filterOutStatefulMocks(data);
+            allRestServices = batchByBasePath(filteredData);
+            $scope.restServices = batchByBasePath(filteredData);
         });
 
+    }
+
+    function filterOutStatefulMocks(allData) {
+
+        var filteredData = [];
+
+        for (var d=0; d < allData.length; d++) {
+
+            var rec = allData[d];
+
+            if (rec.mockType == globalVars.MockTypeDefinitions.MockTypeStateful
+                    && !rec.statefulParent) {
+                continue;
+            }
+
+            filteredData.push(rec);
+        }
+
+        return filteredData;
     }
 
     function batchByBasePath(allData) {

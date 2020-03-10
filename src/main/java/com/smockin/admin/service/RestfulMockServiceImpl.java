@@ -8,6 +8,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDefinitionRuleDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
@@ -69,7 +70,105 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
-        RestfulMock mock = new RestfulMock(
+        RestfulMock mainMock = buildRestfulMock(dto, smockinUser);
+
+        if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) {
+
+            mainMock.setMethod(RestMethodEnum.GET);
+            mainMock = restfulMockDAO.save(mainMock);
+
+            createStatefulChildMocks(dto, mainMock, smockinUser);
+
+        } else {
+
+            restfulMockServiceUtils.handleCustomJsSyntax(dto, mainMock);
+            restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mainMock);
+
+            mainMock = restfulMockDAO.save(mainMock);
+
+        }
+
+        restfulMockServiceUtils.handleEndpointOrdering();
+
+        return mainMock.getExtId();
+    }
+
+    @Override
+    public void updateEndpoint(final String mockExtId, final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
+        logger.debug("updateEndpoint called");
+
+        restfulMockServiceUtils.amendPath(dto);
+
+        final RestfulMock mock = loadRestMock(mockExtId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        final boolean pathChanged = (!mock.getPath().equalsIgnoreCase(dto.getPath()));
+
+        if (RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) {
+
+            handleStatefulMockUpdate(dto, mock);
+
+        } else if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) {
+
+            dto.setMethod(RestMethodEnum.GET);
+            handleMockFieldsUpdate(dto, mock);
+
+            createStatefulChildMocks(dto, mock, mock.getCreatedBy());
+
+        } else {
+
+            handleMockFieldsUpdate(dto, mock);
+
+        }
+
+        if (pathChanged) {
+            restfulMockServiceUtils.handleEndpointOrdering();
+        }
+
+    }
+
+    @Override
+    public void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
+        logger.debug("deleteEndpoint called");
+
+        final RestfulMock mock = loadRestMock(mockExtId);
+
+        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        if (RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) {
+
+            final RestfulMock parent = loadStatefulParent(mock);
+
+            parent.getStatefulChildren().clear();
+            restfulMockDAO.saveAndFlush(parent);
+
+        }
+
+        restfulMockDAO.delete(mock);
+    }
+
+    @Override
+    public List<RestfulMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
+        logger.debug("loadAll called");
+
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
+    }
+
+    RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {
+        logger.debug("loadRestMock called");
+
+        final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
+
+        if (mock == null)
+            throw new RecordNotFoundException();
+
+        return mock;
+    }
+
+    RestfulMock buildRestfulMock(final RestfulMockDTO dto, final SmockinUser smockinUser) {
+
+        return new RestfulMock(
                 restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()),
                 dto.getMethod(),
                 dto.getStatus(),
@@ -86,29 +185,10 @@ public class RestfulMockServiceImpl implements RestfulMockService {
                 dto.getRandomiseLatencyRangeMaxMillis(),
                 (dto.getProjectId() != null) ? projectService.loadByExtId(dto.getProjectId()) : null);
 
-        restfulMockServiceUtils.handleCustomJsSyntax(dto, mock);
-
-        restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
-
-        // Reassign entity variable, as spring data does not enrich the passed in entity instance with any generated ids.
-        mock = restfulMockDAO.save(mock);
-
-        restfulMockServiceUtils.handleEndpointOrdering();
-
-        return mock.getExtId();
     }
 
-    @Override
-    public void updateEndpoint(final String mockExtId, final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
-        logger.debug("updateEndpoint called");
-
-        restfulMockServiceUtils.amendPath(dto);
-
-        final RestfulMock mock = loadRestMock(mockExtId);
-
-        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
-
-        final boolean pathChanged = (!mock.getPath().equalsIgnoreCase(dto.getPath()));
+    void handleMockFieldsUpdate(final RestfulMockDTO dto, final RestfulMock mock)
+            throws ValidationException {
 
         mock.getDefinitions().clear();
         mock.getRules().clear();
@@ -142,39 +222,73 @@ public class RestfulMockServiceImpl implements RestfulMockService {
             mockOrderingCounterService.clearMockStateById(mock.getExtId());
         }
 
-        if (pathChanged) {
-            restfulMockServiceUtils.handleEndpointOrdering();
+    }
+
+    void updateStatefulMockTypeFields(final RestfulMockDTO dto, final RestfulMock mock) {
+
+        mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()));
+        mock.setStatus(dto.getStatus());
+
+        restfulMockDAO.save(mock);
+    }
+
+    void createStatefulChildMocks(final RestfulMockDTO dto, final RestfulMock mainMock, final SmockinUser smockinUser) {
+
+        final String originalPath = dto.getPath();
+        final String varPath = dto.getPath() + "/:id";
+
+        for (RestMethodEnum method : RestMethodEnum.values()) {
+
+            if (RestMethodEnum.GET.equals(method)
+                    || RestMethodEnum.PUT.equals(method)
+                    || RestMethodEnum.PATCH.equals(method)
+                    || RestMethodEnum.DELETE.equals(method)) {
+                dto.setPath(varPath);
+            } else {
+                dto.setPath(originalPath);
+            }
+
+            final RestfulMock mock = buildRestfulMock(dto, smockinUser);
+            mock.setMethod(method);
+            mock.setStatefulParent(mainMock);
+
+            restfulMockDAO.save(mock);
+
         }
 
     }
 
-    @Override
-    public void deleteEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
-        logger.debug("deleteEndpoint called");
+    RestfulMock loadStatefulParent(final RestfulMock mock) {
 
-        final RestfulMock mock = loadRestMock(mockExtId);
-
-        userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
-
-        restfulMockDAO.delete(mock);
+        return (mock.getStatefulParent() != null)
+                ? mock.getStatefulParent()
+                : mock;
     }
 
-    @Override
-    public List<RestfulMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
-        logger.debug("loadAll called");
+    void handleStatefulMockUpdate(final RestfulMockDTO dto, final RestfulMock mock) throws ValidationException {
 
-        return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
-    }
+        final boolean mockTypeChanged = (!mock.getMockType().equals(dto.getMockType()));
 
-    RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {
-        logger.debug("loadRestMock called");
+        final RestfulMock parent = loadStatefulParent(mock);
 
-        final RestfulMock mock = restfulMockDAO.findByExtId(mockExtId);
+        if (mockTypeChanged) {
 
-        if (mock == null)
-            throw new RecordNotFoundException();
+            parent.getStatefulChildren().clear();
+            restfulMockDAO.saveAndFlush(parent);
 
-        return mock;
+            handleMockFieldsUpdate(dto, parent);
+
+        } else {
+
+            updateStatefulMockTypeFields(dto, parent);
+
+            parent.getStatefulChildren()
+                    .stream()
+                    .forEach(c ->
+                            updateStatefulMockTypeFields(dto, c));
+
+        }
+
     }
 
 }

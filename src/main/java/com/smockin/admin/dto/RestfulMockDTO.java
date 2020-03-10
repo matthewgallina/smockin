@@ -15,6 +15,7 @@ public class RestfulMockDTO {
     private RestMethodEnum method;
     private RecordStatusEnum status;
     private RestMockTypeEnum mockType;
+    private boolean statefulParent;
     private long proxyTimeoutInMillis;
     private long webSocketTimeoutInMillis;
     private long sseHeartBeatInMillis;
@@ -33,13 +34,15 @@ public class RestfulMockDTO {
 
     }
 
-    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
+    public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, boolean statefulParent,
+                          long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
                           boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId, String customJsSyntax) {
         this.path = path;
         this.method = method;
         this.status = status;
         this.mockType = mockType;
+        this.statefulParent = statefulParent;
         this.proxyTimeoutInMillis = proxyTimeoutInMillis;
         this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
         this.sseHeartBeatInMillis = sseHeartBeatInMillis;
@@ -79,6 +82,13 @@ public class RestfulMockDTO {
     }
     public void setMockType(RestMockTypeEnum mockType) {
         this.mockType = mockType;
+    }
+
+    public boolean isStatefulParent() {
+        return statefulParent;
+    }
+    public void setStatefulParent(boolean statefulParent) {
+        this.statefulParent = statefulParent;
     }
 
     public long getProxyTimeoutInMillis() {

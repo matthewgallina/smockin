@@ -53,6 +53,10 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private ServerSideEventService serverSideEventService;
 
+    @Autowired
+    private StatefulService statefulService;
+
+
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode) {
@@ -70,6 +74,7 @@ public class MockedRestServerEngineUtils {
                                     RestMockTypeEnum.PROXY_HTTP,
                                     RestMockTypeEnum.SEQ,
                                     RestMockTypeEnum.RULE,
+                                    RestMockTypeEnum.STATEFUL,
                                     RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                             RestMethodEnum.findByName(request.requestMethod()),
@@ -78,6 +83,7 @@ public class MockedRestServerEngineUtils {
                                           RestMockTypeEnum.PROXY_HTTP,
                                           RestMockTypeEnum.SEQ,
                                           RestMockTypeEnum.RULE,
+                                          RestMockTypeEnum.STATEFUL,
                                           RestMockTypeEnum.CUSTOM_JS));
 
             if (mock == null) {
@@ -117,6 +123,9 @@ public class MockedRestServerEngineUtils {
                 break;
             case CUSTOM_JS:
                 outcome = javaScriptResponseHandler.executeUserResponse(req, mock);
+                break;
+            case STATEFUL:
+                outcome = statefulService.process(req, mock);
                 break;
             case SEQ:
             default:

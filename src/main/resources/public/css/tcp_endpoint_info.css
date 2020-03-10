@@ -150,6 +150,10 @@
     width: 100%;
 }
 
+#clear-data-state-button {
+    width: 100%;
+}
+
 #mock-type {
     margin-top: 25px;
     width: 100%;

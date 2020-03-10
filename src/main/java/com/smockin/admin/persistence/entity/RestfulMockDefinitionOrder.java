@@ -1,7 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
 import org.hibernate.annotations.ColumnDefault;
-
 import javax.persistence.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +45,7 @@ public class RestfulMockDefinitionOrder extends Identifier {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name="REST_MOCK_DEF_RES_HDR")
-    private Map<String, String> responseHeaders = new HashMap<String, String>();
+    private Map<String, String> responseHeaders = new HashMap<>();
 
     public RestfulMockDefinitionOrder() {
     }

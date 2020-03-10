@@ -51,7 +51,7 @@
                     <label for="method" class="ng-binding">{{ methodLabel }}</label>
                     <br />
                     <div id="method" class="btn-group" uib-dropdown>
-                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs || readOnly">
+                        <button id="method-button" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeProxySse || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs || endpoint.mockType.value == mockTypeStateful || readOnly">
                             <span ng-if="endpoint.method != null">{{ endpoint.method }}</span>
                             <span ng-if="endpoint.method == null">{{ selectDropDownLabel }}</span>
                             <span class="caret"></span>
@@ -63,6 +63,14 @@
                         </ul>
                     </div>
                 </div>
+
+                <!-- This column is only visible for Stateful Mock Types -->
+                <section ng-show="endpoint.mockType.value == mockTypeStateful">
+                    <div class="form-group">
+                        <label for="statefulContentType" class="ng-binding">{{ defaultContentTypeLabel }}</label>
+                        <input id="statefulContentType" class="form-control ng-isolate-scope ng-pristine ng-valid" value="application/json" type="text" ng-disabled="true" />
+                    </div>
+                </section>
 
 				<!-- This column is only visible for HTTP Rules -->
 				<section ng-show="endpoint.mockType.value == mockTypeRule || endpoint.mockType.value == mockTypeRuleWs">
@@ -333,58 +341,6 @@
 
                 </div>
 
-                <!-- Websocket Push Based Type -->
-                <div ng-show="endpoint.mockType.value == mockTypePushWs">
-                    
-                    <div class="add-button-div">
-                        <button type="button" class="btn btn-primary add-button" ng-click="doOpenAddWsPushResponse()" ng-disabled="readOnly"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addWsPushResponseButtonLabel }}</button>
-                    </div>
-                    
-                    <table class="table table-striped rule-table" ng-if="endpoint.rules.length > 0">
-                        <thead>
-                        <tr>
-                            <th>{{ ruleLabel }}</th>
-                            <th>{{ clockValueLabel }}</th>
-                            <th>{{ pushBodyLabel }}</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="x in endpoint.rules">
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.orderNo }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule resp-col-width-10' : 'resp-col-width-10'">{{ x.responseHeaders['1'].value }}</td>
-                            <td ng-class="(x.suspend) ? 'suspend-seq-rule' : ''">{{ (x.responseBody != null) ? ( x.responseBody | limitTo: responseBodyLimit ) : 'N/A' }}</td>
-                            <td class="action-button-table-cell">
-
-                                <a href="" ng-click="doMoveRuleUp(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-left' : ''" ng-hide="readOnly">
-                                    <span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span>
-                                </a>
-                                <a href="" ng-click="doMoveRuleDown(x, $index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
-                                    <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
-                                </a>
-
-                                <br />
-
-                                <a href="" ng-click="doToggleSuspendRule($index)">
-                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-hide="x.suspend || readOnly"></span>
-                                    <span class="glyphicon glyphicon-play condition-arg-button-top-offset" aria-hidden="true" ng-show="x.suspend && !readOnly"></span>
-                                </a>
-                                <a href="" ng-click="doRemoveRule($index)" ng-class="(x.suspend) ? 'suspend-icon-right' : 'condition-arg-button-side-offset'" ng-hide="readOnly">
-                                    <span class="glyphicon glyphicon-remove condition-arg-button-top-offset" aria-hidden="true"></span>
-                                </a>
-
-                                <br />
-                                <br />
-
-                                <button type="button" class="btn btn-primary view-rule-button" ng-class="(x.suspend) ? 'suspend-button' : ''" ng-click="doOpenViewPush(x)" ng-disabled="x.suspend">{{ viewButtonLabel }}</button>
-
-                            </td>
-                        </tr>
-                        </tbody>
-
-                    </table>
-                </div>
-
 
                 <!-- WebSocket Proxy Type -->
                 <div ng-show="endpoint.mockType.value == mockTypeWebSocket || endpoint.mockType.value == mockTypeRuleWs || endpoint.mockType.value == mockTypePushWs">
@@ -537,6 +493,26 @@
                         </div>
                         <textarea id="custom-js-syntax" name="custom-js-syntax"></textarea>
                     </div>
+
+                </div>
+
+
+                <!-- Stateful Mock Type -->
+                <div ng-show="endpoint.mockType.value == mockTypeStateful && !isNew && !readOnly">
+
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+                    <br />
+
+                    <hr />
+                    <br />
+
+                    <button id="clear-data-state-button" class="btn btn-info" type="button" ng-click="doClearDataState()" ng-if="!readOnly">{{ clearStateButtonLabel }}</button>
 
                 </div>
 
