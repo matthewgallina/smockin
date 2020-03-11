@@ -235,13 +235,23 @@ public final class GeneralUtils {
     }
 
     public static <T> T deserialiseJson(final String jsonStr) {
+        return deserialiseJson(jsonStr, true);
+    }
+
+    public static Map<String, ?> deserialiseJSONToMap(final String jsonStr, final boolean logFailure) {
+        return deserialiseJson(jsonStr, logFailure);
+    }
+
+    public static <T> T deserialiseJson(final String jsonStr, final boolean logFailure) {
 
         if (jsonStr != null) {
             try {
                 return JSON_MAPPER.readValue(jsonStr, new TypeReference<T>() {});
             } catch (IOException e) {
-                logger.error("Error de-serialising json", e);
-                // fail silently
+                if (logFailure) {
+                    logger.error("Error de-serialising json", e);
+                }
+                // always fail silently
             }
         }
 
