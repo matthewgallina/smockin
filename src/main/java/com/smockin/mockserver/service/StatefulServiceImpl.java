@@ -1,5 +1,7 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -9,14 +11,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -26,9 +25,16 @@ public class StatefulServiceImpl implements StatefulService {
 
     private final Logger logger = LoggerFactory.getLogger(StatefulServiceImpl.class);
 
-    // Key: RestfulMock.externalId of stateful parent.
-    // Value: JSON String Data
-    private Map<String, List<String>> state = new ConcurrentHashMap<>();
+    private final static String ID_FIELD = "id";
+
+    /*
+        Key: RestfulMock.externalId of stateful parent.
+        Value: JSON String Data
+    */
+    private Map<String, List<Map<String, Object>>> state = new ConcurrentHashMap<>();
+
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
 
     @Override
     public RestfulResponseDTO process(final Request req, final RestfulMock mock) {
@@ -39,65 +45,117 @@ public class StatefulServiceImpl implements StatefulService {
             state.put(parent.getExtId(), new ArrayList<>());
         }
 
-        final List<String> currentStateContent = state.get(parent.getExtId());
+        final List<Map<String, Object>> currentStateContentForMock = state.get(parent.getExtId());
 
         final int httpResponseCode;
         final String response;
 
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars(req.pathInfo(), mock.getPath());
+        final String id = pathVars.get(ID_FIELD);
+
         switch (RestMethodEnum.findByName(req.requestMethod())) {
             case GET:
 
-                final Map<String, String> pathVars = GeneralUtils.findAllPathVars(req.pathInfo(), mock.getPath());
+                if (id != null) {
 
-                if (pathVars.containsKey("id")) {
+                    final Optional<Map<String, Object>> resultOpt = findStatefulDataById(id, currentStateContentForMock);
 
-                    final String id = pathVars.get("id");
+                    if (!resultOpt.isPresent()) {
+                        response = null;
+                        httpResponseCode = HttpStatus.SC_NOT_FOUND;
+                        break;
+                    }
 
-                    response = currentStateContent.stream()
-                            .filter(f -> {
-
-                                try {
-                                    final Map<String, ?> dataMap = GeneralUtils.deserialiseJSONToMap(f);
-                                    return (dataMap.containsKey("id") && StringUtils.equals(id, (String)dataMap.get("id")));
-                                } catch (Throwable ex) {}
-
-                                return false;
-                            })
-                            .findFirst()
-                            .orElse(null);
+                    response = GeneralUtils.serialiseJson(resultOpt.get());
 
                 } else {
 
-                    response = toJsonList(currentStateContent);
-
+                    response = GeneralUtils.serialiseJson(currentStateContentForMock);
                 }
 
                 httpResponseCode = HttpStatus.SC_OK;
+
                 break;
             case POST:
 
-                    // TODO validate is valid json body
+                // Validate is valid json body and append ID if none present
+                final Optional<Map<String, Object>> jsonDataMapOpt = convertToJsonMap(req.body());
 
-                    currentStateContent.add(req.body());
-                    state.put(parent.getExtId(), currentStateContent);
+                if (jsonDataMapOpt.isPresent()) {
 
-                response = null;
-                httpResponseCode = HttpStatus.SC_CREATED;
+                    final Map<String, Object> jsonDataMap = jsonDataMapOpt.get();
+
+                    if (!jsonDataMap.containsKey(ID_FIELD)) {
+                        jsonDataMap.put(ID_FIELD, GeneralUtils.generateUUID());
+                    }
+
+                    currentStateContentForMock.add(jsonDataMap);
+                    state.put(parent.getExtId(), currentStateContentForMock);
+
+                    response = null;
+                    httpResponseCode = HttpStatus.SC_CREATED;
+
+                    break;
+                }
+
+                response = "Invalid JSON in request body";
+                httpResponseCode = HttpStatus.SC_BAD_REQUEST;
+
                 break;
             case PUT:
 
+                if (id == null) {
+                    response = null;
+                    httpResponseCode = HttpStatus.SC_BAD_REQUEST;
+                    break;
+                }
+
+                // TODO
+
                 response = null;
                 httpResponseCode = HttpStatus.SC_NO_CONTENT;
+
                 break;
             case PATCH:
 
-                response = null;
-                httpResponseCode = HttpStatus.SC_NO_CONTENT;
-                break;
-            case DELETE:
+                if (id == null) {
+                    response = null;
+                    httpResponseCode = HttpStatus.SC_BAD_REQUEST;
+                    break;
+                }
+
+                // TODO
 
                 response = null;
                 httpResponseCode = HttpStatus.SC_NO_CONTENT;
+
+                break;
+            case DELETE:
+
+                if (id == null) {
+                    response = null;
+                    httpResponseCode = HttpStatus.SC_BAD_REQUEST;
+                    break;
+                }
+
+                final int originalSize = currentStateContentForMock.size();
+
+                final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
+                        .stream()
+                        .filter(f ->
+                            !(StringUtils.equals(id, (String)f.get(ID_FIELD))))
+                        .collect(Collectors.toList());
+
+                state.put(parent.getExtId(), filteredCurrentStateContentForMock);
+
+                if (filteredCurrentStateContentForMock.size() < originalSize) {
+                    httpResponseCode = HttpStatus.SC_NO_CONTENT;
+                } else {
+                    httpResponseCode = HttpStatus.SC_NOT_FOUND;
+                }
+
+                response = null;
+
                 break;
             default:
 
@@ -110,9 +168,15 @@ public class StatefulServiceImpl implements StatefulService {
     }
 
     @Override
-    public void resetState(final RestfulMock mock) {
+    public void resetState(final String externalId, final String userToken) throws RecordNotFoundException {
 
-        final RestfulMock parent = loadStatefulParent(mock);
+        final RestfulMock restfulMock = restfulMockDAO.findByExtId(externalId);
+
+        if (restfulMock == null) {
+            throw new RecordNotFoundException();
+        }
+
+        final RestfulMock parent = loadStatefulParent(restfulMock);
 
         state.remove(parent.getExtId());
 
@@ -125,16 +189,32 @@ public class StatefulServiceImpl implements StatefulService {
                 : mock;
     }
 
-    String toJsonList(final List<String> currentStateContent) {
+    Optional<Map<String, Object>> findStatefulDataById(final String id,
+                             final List<Map<String, Object>> currentStateContent) {
 
-        final StringBuilder sb = new StringBuilder();
+        return currentStateContent
+                .stream()
+                .filter(f -> {
 
-        sb.append("[");
-        final String records = currentStateContent.stream().collect(Collectors.joining(","));
-        sb.append(records);
-        sb.append("]");
+                    try {
+                        return (StringUtils.equals(id, (String)f.get(ID_FIELD)));
+                    } catch (Throwable ex) {}
 
-        return sb.toString();
+                    return false;
+                })
+                .findFirst();
+
+    }
+
+    Optional<Map<String, Object>> convertToJsonMap(final String json) {
+
+        try {
+            final Map<String, Object> dataMap = (Map<String, Object>)GeneralUtils.deserialiseJSONToMap(json);
+            return Optional.of(dataMap);
+        } catch (Throwable ex) {
+            return Optional.empty();
+        }
+
     }
 
 }

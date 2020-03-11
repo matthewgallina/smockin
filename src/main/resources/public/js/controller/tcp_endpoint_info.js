@@ -1005,7 +1005,26 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
     $scope.doClearDataState = function() {
 
-        // TODO
+        utils.openWarningConfirmation("Clear all data state for this mock?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                var reqData = {};
+
+                restClient.doPost($http, '/stateful/' + extId + '/clear', reqData, function(status, data) {
+
+                    if (status != 204) {
+                         showAlert(globalVars.GeneralErrorMessage);
+                         return;
+                    }
+
+                    showAlert("State data has been successfully cleared", "success");
+
+                });
+
+            }
+
+        });
 
     };
 
