@@ -5,8 +5,11 @@ import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.*;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
+import com.smockin.admin.service.ProjectService;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +29,17 @@ public class RestfulMockServiceUtils {
     private RestfulMockDAO restfulMockDAO;
 
     @Autowired
+    private ProjectService projectService;
+
+    @Autowired
     private RestfulMockSortingUtils restfulMockSortingUtils;
 
     @Autowired
     private MockedRestServerEngine mockedRestServerEngine;
+
+    @Autowired
+    private MockOrderingCounterService mockOrderingCounterService;
+
 
     @Transactional
     public List<RestfulMockResponseDTO> buildRestfulMockDefinitionDTOs(final List<RestfulMock> restfulMockDefinitions) {
@@ -45,10 +55,15 @@ public class RestfulMockServiceUtils {
 
         final String path = formatOutboundPathVarArgs(rmd.getPath());
 
+        final boolean isStatefulParent = (RestMockTypeEnum.STATEFUL.equals(rmd.getMockType()) && rmd.getStatefulParent() == null);
+
         final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), path, rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
-                rmd.getMockType(), (RestMockTypeEnum.STATEFUL.equals(rmd.getMockType()) && rmd.getStatefulParent() == null), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
+                rmd.getMockType(), isStatefulParent, rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
                 rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null,
-                (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null, rmd.getStatefulDefaultResponseBody());
+                (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null,
+                (isStatefulParent) ? rmd.getRestfulMockStatefulMeta().getInitialResponseBody() : null,
+                (isStatefulParent) ? rmd.getRestfulMockStatefulMeta().getIdFieldName() : null,
+                (isStatefulParent) ? rmd.getRestfulMockStatefulMeta().getIdFieldLocation() : null);
 
         // Definitions
         for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
@@ -153,6 +168,39 @@ public class RestfulMockServiceUtils {
         mock.setJavaScriptHandler(javaScriptHandler);
     }
 
+    public RestfulMock handleCreateStatefulMockType(final RestfulMockDTO dto, RestfulMock mainMock, final SmockinUser smockinUser) {
+
+        if (!RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) {
+            return mainMock;
+        }
+
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
+        restfulMockStatefulMeta.setIdFieldName(dto.getStatefulIdFieldName());
+        restfulMockStatefulMeta.setInitialResponseBody(dto.getStatefulDefaultResponseBody());
+        restfulMockStatefulMeta.setIdFieldLocation(dto.getStatefulIdFieldLocation());
+        restfulMockStatefulMeta.setRestfulMock(mainMock);
+
+        mainMock.setMethod(RestMethodEnum.GET);
+        mainMock.setRestfulMockStatefulMeta(restfulMockStatefulMeta);
+        mainMock = restfulMockDAO.save(mainMock);
+
+        createStatefulChildMocks(dto, mainMock, smockinUser);
+
+        return mainMock;
+    }
+
+    public void handleDeleteStatefulMock(final RestfulMock mock) {
+
+        if (!RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) {
+            return;
+        }
+
+        final RestfulMock parent = loadStatefulParent(mock);
+
+        parent.getStatefulChildren().clear();
+        restfulMockDAO.saveAndFlush(parent);
+    }
+
     @Transactional
     public void handleEndpointOrdering() {
 
@@ -243,6 +291,157 @@ public class RestfulMockServiceUtils {
         }
 
         return outboundPath;
+    }
+
+    void updateExistingStatefulMockTypeFields(final RestfulMockDTO dto, final RestfulMock mock) {
+
+        final RestMethodEnum method = mock.getMethod();
+        final String originalPath = dto.getPath();
+        final boolean isParent = (mock.getStatefulParent() == null);
+        final String idFieldName = (!isParent)
+                ? mock.getStatefulParent().getRestfulMockStatefulMeta().getIdFieldName()
+                : null; // if not the parent then we don't need the idFieldName anyway
+        final String varPath = dto.getPath() + "/:" + idFieldName;
+
+        if (!isParent
+                && (RestMethodEnum.GET.equals(method)
+                || RestMethodEnum.PUT.equals(method)
+                || RestMethodEnum.PATCH.equals(method)
+                || RestMethodEnum.DELETE.equals(method))) {
+            mock.setPath(formatInboundPathVarArgs(varPath));
+        } else {
+            mock.setPath(formatInboundPathVarArgs(originalPath));
+        }
+
+        mock.setStatus(dto.getStatus());
+
+        if (isParent) {
+            mock.getRestfulMockStatefulMeta().setInitialResponseBody(dto.getStatefulDefaultResponseBody());
+            mock.getRestfulMockStatefulMeta().setIdFieldName(dto.getStatefulIdFieldName());
+            mock.getRestfulMockStatefulMeta().setIdFieldLocation(dto.getStatefulIdFieldLocation());
+        }
+
+        restfulMockDAO.save(mock);
+    }
+
+    public void createStatefulChildMocks(final RestfulMockDTO dto, final RestfulMock mainMock, final SmockinUser smockinUser) {
+
+        final String originalPath = dto.getPath();
+        final String idFieldName = mainMock.getRestfulMockStatefulMeta().getIdFieldName();
+        final String varPath = dto.getPath() + "/:" + idFieldName;
+
+        for (RestMethodEnum method : RestMethodEnum.values()) {
+
+            if (RestMethodEnum.GET.equals(method)
+                    || RestMethodEnum.PUT.equals(method)
+                    || RestMethodEnum.PATCH.equals(method)
+                    || RestMethodEnum.DELETE.equals(method)) {
+                dto.setPath(varPath);
+            } else {
+                dto.setPath(originalPath);
+            }
+
+            final RestfulMock mock = buildRestfulMock(dto, smockinUser);
+            mock.setMethod(method);
+            mock.setStatefulParent(mainMock);
+            mock.setRestfulMockStatefulMeta(null); // only set this in the parent
+
+            restfulMockDAO.save(mock);
+
+        }
+
+    }
+
+    RestfulMock loadStatefulParent(final RestfulMock mock) {
+
+        return (mock.getStatefulParent() != null)
+                ? mock.getStatefulParent()
+                : mock;
+    }
+
+    public void handleExistingStatefulMockUpdate(final RestfulMockDTO dto, final RestfulMock mock) throws ValidationException {
+
+        final boolean mockTypeChanged = (!mock.getMockType().equals(dto.getMockType()));
+
+        final RestfulMock parent = loadStatefulParent(mock);
+
+        if (mockTypeChanged) {
+
+            parent.getStatefulChildren().clear();
+            restfulMockDAO.saveAndFlush(parent);
+
+            handleMockFieldsUpdate(dto, parent);
+
+        } else {
+
+            updateExistingStatefulMockTypeFields(dto, parent);
+
+            parent.getStatefulChildren()
+                    .stream()
+                    .forEach(c ->
+                            updateExistingStatefulMockTypeFields(dto, c));
+
+        }
+
+    }
+
+    public RestfulMock buildRestfulMock(final RestfulMockDTO dto, final SmockinUser smockinUser) {
+
+        return new RestfulMock(
+                formatInboundPathVarArgs(dto.getPath()),
+                dto.getMethod(),
+                dto.getStatus(),
+                dto.getMockType(),
+                dto.getProxyTimeoutInMillis(),
+                dto.getWebSocketTimeoutInMillis(),
+                dto.getSseHeartBeatInMillis(),
+                dto.isProxyPushIdOnConnect(),
+                dto.isRandomiseDefinitions(),
+                dto.isProxyForwardWhenNoRuleMatch(),
+                smockinUser,
+                dto.isRandomiseLatency(),
+                dto.getRandomiseLatencyRangeMinMillis(),
+                dto.getRandomiseLatencyRangeMaxMillis(),
+                (dto.getProjectId() != null) ? projectService.loadByExtId(dto.getProjectId()) : null);
+
+    }
+
+    public void handleMockFieldsUpdate(final RestfulMockDTO dto, final RestfulMock mock)
+            throws ValidationException {
+
+        mock.getDefinitions().clear();
+        mock.getRules().clear();
+        restfulMockDAO.saveAndFlush(mock);
+
+        mock.setMockType(dto.getMockType());
+        mock.setPath(formatInboundPathVarArgs(dto.getPath()));
+        mock.setMethod(dto.getMethod());
+        mock.setStatus(dto.getStatus());
+        mock.setProxyTimeOutInMillis(dto.getProxyTimeoutInMillis());
+        mock.setWebSocketTimeoutInMillis(dto.getWebSocketTimeoutInMillis());
+        mock.setSseHeartBeatInMillis(dto.getSseHeartBeatInMillis());
+        mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
+        mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
+        mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
+        mock.setLastUpdated(GeneralUtils.getCurrentDate()); // force update to lastUpdated, as changes to child records do not otherwise change this
+        mock.setRandomiseLatency(dto.isRandomiseLatency());
+        mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
+        mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
+//        mock.setStatefulDefaultResponseBody(dto.getStatefulDefaultResponseBody());
+
+        if (dto.getProjectId() != null)
+            mock.setProject(projectService.loadByExtId(dto.getProjectId()));
+
+        handleCustomJsSyntax(dto, mock);
+
+        populateEndpointDefinitionsAndRules(dto, mock);
+
+        restfulMockDAO.save(mock);
+
+        if (RestMockTypeEnum.SEQ.equals(mock.getMockType())) {
+            mockOrderingCounterService.clearMockStateById(mock.getExtId());
+        }
+
     }
 
 }

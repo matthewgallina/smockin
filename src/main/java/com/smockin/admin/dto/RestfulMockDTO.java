@@ -30,6 +30,8 @@ public class RestfulMockDTO {
     private String customJsSyntax;
     private List<RuleDTO> rules = new ArrayList<>();
     private String statefulDefaultResponseBody;
+    private String statefulIdFieldName;
+    private String statefulIdFieldLocation;
 
     public RestfulMockDTO() {
 
@@ -39,7 +41,7 @@ public class RestfulMockDTO {
                           long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
                           boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId,
-                          String customJsSyntax, final String statefulDefaultResponseBody) {
+                          String customJsSyntax, final String statefulDefaultResponseBody, final String statefulIdFieldName, final String statefulIdFieldLocation) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -57,6 +59,8 @@ public class RestfulMockDTO {
         this.projectId = projectId;
         this.customJsSyntax = customJsSyntax;
         this.statefulDefaultResponseBody = statefulDefaultResponseBody;
+        this.statefulIdFieldName = statefulIdFieldName;
+        this.statefulIdFieldLocation = statefulIdFieldLocation;
     }
 
     public String getPath() {
@@ -192,6 +196,20 @@ public class RestfulMockDTO {
     }
     public void setStatefulDefaultResponseBody(String statefulDefaultResponseBody) {
         this.statefulDefaultResponseBody = statefulDefaultResponseBody;
+    }
+
+    public String getStatefulIdFieldName() {
+        return statefulIdFieldName;
+    }
+    public void setStatefulIdFieldName(String statefulIdFieldName) {
+        this.statefulIdFieldName = statefulIdFieldName;
+    }
+
+    public String getStatefulIdFieldLocation() {
+        return statefulIdFieldLocation;
+    }
+    public void setStatefulIdFieldLocation(String statefulIdFieldLocation) {
+        this.statefulIdFieldLocation = statefulIdFieldLocation;
     }
 
 }

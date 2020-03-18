@@ -93,11 +93,11 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="STATEFUL_PARENT", nullable = true)
     private RestfulMock statefulParent;
 
-    @Column(name = "STATEFUL_DEFAULT_RESPONSE_BODY", length = Integer.MAX_VALUE)
-    private String statefulDefaultResponseBody;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "statefulParent", orphanRemoval = true)
     private List<RestfulMock> statefulChildren = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
+    private RestfulMockStatefulMeta restfulMockStatefulMeta;
 
     public RestfulMock() {
     }
@@ -264,18 +264,18 @@ public class RestfulMock extends Identifier {
         this.statefulParent = statefulParent;
     }
 
-    public String getStatefulDefaultResponseBody() {
-        return statefulDefaultResponseBody;
-    }
-    public void setStatefulDefaultResponseBody(String statefulDefaultResponseBody) {
-        this.statefulDefaultResponseBody = statefulDefaultResponseBody;
-    }
-
     public List<RestfulMock> getStatefulChildren() {
         return statefulChildren;
     }
     public void setStatefulChildren(List<RestfulMock> statefulChildren) {
         this.statefulChildren = statefulChildren;
+    }
+
+    public RestfulMockStatefulMeta getRestfulMockStatefulMeta() {
+        return restfulMockStatefulMeta;
+    }
+    public void setRestfulMockStatefulMeta(RestfulMockStatefulMeta restfulMockStatefulMeta) {
+        this.restfulMockStatefulMeta = restfulMockStatefulMeta;
     }
 
 }
