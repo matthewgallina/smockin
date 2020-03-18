@@ -37,6 +37,10 @@
     min-height: 200px;
 }
 
+#stateful-response-body {
+    min-height: 200px;
+}
+
 .default-label-color {
     color: cadetblue;
 }

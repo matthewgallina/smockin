@@ -93,6 +93,9 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="STATEFUL_PARENT", nullable = true)
     private RestfulMock statefulParent;
 
+    @Column(name = "STATEFUL_DEFAULT_RESPONSE_BODY", length = Integer.MAX_VALUE)
+    private String statefulDefaultResponseBody;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "statefulParent", orphanRemoval = true)
     private List<RestfulMock> statefulChildren = new ArrayList<>();
 
@@ -259,6 +262,13 @@ public class RestfulMock extends Identifier {
     }
     public void setStatefulParent(RestfulMock statefulParent) {
         this.statefulParent = statefulParent;
+    }
+
+    public String getStatefulDefaultResponseBody() {
+        return statefulDefaultResponseBody;
+    }
+    public void setStatefulDefaultResponseBody(String statefulDefaultResponseBody) {
+        this.statefulDefaultResponseBody = statefulDefaultResponseBody;
     }
 
     public List<RestfulMock> getStatefulChildren() {

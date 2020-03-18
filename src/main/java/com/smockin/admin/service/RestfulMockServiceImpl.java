@@ -75,6 +75,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) {
 
             mainMock.setMethod(RestMethodEnum.GET);
+            mainMock.setStatefulDefaultResponseBody(dto.getStatefulDefaultResponseBody());
             mainMock = restfulMockDAO.save(mainMock);
 
             createStatefulChildMocks(dto, mainMock, smockinUser);
@@ -105,11 +106,11 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final boolean pathChanged = (!mock.getPath().equalsIgnoreCase(dto.getPath()));
 
-        if (RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) {
+        if (RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) { // existing mock is STATEFUL...
 
             handleStatefulMockUpdate(dto, mock);
 
-        } else if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) {
+        } else if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) { // existing mock IS NOT STATEFUL but being updated to a STATEFUL type...
 
             dto.setMethod(RestMethodEnum.GET);
             handleMockFieldsUpdate(dto, mock);
@@ -208,6 +209,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         mock.setRandomiseLatency(dto.isRandomiseLatency());
         mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
         mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
+        mock.setStatefulDefaultResponseBody(dto.getStatefulDefaultResponseBody());
 
         if (dto.getProjectId() != null)
             mock.setProject(projectService.loadByExtId(dto.getProjectId()));
@@ -226,8 +228,26 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
     void updateStatefulMockTypeFields(final RestfulMockDTO dto, final RestfulMock mock) {
 
-        mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()));
+        final RestMethodEnum method = mock.getMethod();
+        final String originalPath = dto.getPath();
+        final String varPath = dto.getPath() + "/:id";
+        final boolean isParent = (mock.getStatefulParent() == null);
+
+        if (!isParent
+                && (RestMethodEnum.GET.equals(method)
+                || RestMethodEnum.PUT.equals(method)
+                || RestMethodEnum.PATCH.equals(method)
+                || RestMethodEnum.DELETE.equals(method))) {
+            mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(varPath));
+        } else {
+            mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(originalPath));
+        }
+
         mock.setStatus(dto.getStatus());
+
+        if (isParent) {
+            mock.setStatefulDefaultResponseBody(dto.getStatefulDefaultResponseBody());
+        }
 
         restfulMockDAO.save(mock);
     }
@@ -251,6 +271,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
             final RestfulMock mock = buildRestfulMock(dto, smockinUser);
             mock.setMethod(method);
             mock.setStatefulParent(mainMock);
+            mock.setStatefulDefaultResponseBody(null); // only set this in parent
 
             restfulMockDAO.save(mock);
 

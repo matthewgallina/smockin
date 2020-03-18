@@ -47,7 +47,8 @@ public class RestfulMockServiceUtils {
 
         final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), path, rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
                 rmd.getMockType(), (RestMockTypeEnum.STATEFUL.equals(rmd.getMockType()) && rmd.getStatefulParent() == null), rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
-                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null, (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null);
+                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null,
+                (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null, rmd.getStatefulDefaultResponseBody());
 
         // Definitions
         for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {

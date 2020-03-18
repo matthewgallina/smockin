@@ -52,6 +52,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.defaultHttpStatusCodeLabel = 'Default HTTP Status Code';
     $scope.defaultHttpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.defaultResponseBodyLabel = 'Default Response Body';
+    $scope.initialDataStateLabel = 'Initial Data State';
     $scope.proxyContentTypeLabel = 'Content Type';
     $scope.proxyHttpStatusCodeLabel = 'HTTP Status Code';
     $scope.proxyResponseBodyLabel = 'Response Body';
@@ -271,6 +272,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             if (endpoint.mockType == MockTypeDefinitions.MockTypeStateful) {
                 $scope.endpoint.method = AllMethods;
+                $scope.endpoint.contentType = globalVars.JsonContentType;
+                $scope.endpoint.responseBody = endpoint.statefulDefaultResponseBody;
             }
 
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
@@ -317,6 +320,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             	break;
             case MockTypeDefinitions.MockTypeStateful :
                 $scope.endpoint.method = AllMethods;
+                $scope.endpoint.contentType = "application/json";
+                $scope.endpoint.responseBody = "[]";
 
             	break;
             default :
@@ -774,6 +779,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs && !validateCustomJS()) {
             return;
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeStateful && !validateStateful()) {
+            return;
         }
 
         if ($scope.endpoint.randomiseLatency) {
@@ -815,7 +822,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
             "rules" : [],
-            "customJsSyntax" : null
+            "customJsSyntax" : null,
+            "statefulDefaultResponseBody" : null
         };
 
         // Handle Sequence specifics
@@ -880,6 +888,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             // Use GET as a placeholder for stateful mock parent
             reqData.method = 'GET';
+            reqData.statefulDefaultResponseBody = ($scope.endpoint.responseBody != null) ? $scope.endpoint.responseBody : "[]";
 
         }
 
@@ -1199,6 +1208,25 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
       }
 
       return true;
+    }
+
+    function validateStateful() {
+
+        var path = $scope.endpoint.path;
+        var lastSlash = path.lastIndexOf("/");
+
+        if (lastSlash != -1 && path.substring(lastSlash).indexOf(":") != -1) {
+            showAlert("Stateful mock cannot end with a path variable");
+            return false;
+        }
+
+        if ($scope.endpoint.responseBody != null
+                && utils.validateJson($scope.endpoint.responseBody) != null) {
+            showAlert("'Initial Data State' must contain a valid JSON value");
+            return false;
+        }
+
+        return true;
     }
 
     var serverCallbackFunc = function (status, data) {

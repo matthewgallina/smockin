@@ -66,10 +66,24 @@
 
                 <!-- This column is only visible for Stateful Mock Types -->
                 <section ng-show="endpoint.mockType.value == mockTypeStateful">
+
                     <div class="form-group">
-                        <label for="statefulContentType" class="ng-binding">{{ defaultContentTypeLabel }}</label>
-                        <input id="statefulContentType" class="form-control ng-isolate-scope ng-pristine ng-valid" value="application/json" type="text" ng-disabled="true" />
+                        <label for="stateful-content-type" class="ng-binding">{{ defaultContentTypeLabel }}</label>
+                        <input id="stateful-content-type" class="form-control ng-isolate-scope ng-pristine ng-valid" value="{{ endpoint.contentType }}" type="text" ng-disabled="true" />
                     </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <label for="stateful-response-body" class="ng-binding default-label-color">{{ initialDataStateLabel }}</label>
+                            </div>
+                            <div class="col-sm-6">
+                                <a href ng-click="doFormatJson()" class="pull-right">{{ formatJsonLabel }}</a>
+                            </div>
+                        </div>
+                        <textarea id="stateful-response-body" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="endpoint.responseBody" ng-disabled="readOnly"></textarea>
+                    </div>
+
                 </section>
 
 				<!-- This column is only visible for HTTP Rules -->

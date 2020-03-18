@@ -29,6 +29,7 @@ public class RestfulMockDTO {
     private List<RestfulMockDefinitionDTO> definitions = new ArrayList<>();
     private String customJsSyntax;
     private List<RuleDTO> rules = new ArrayList<>();
+    private String statefulDefaultResponseBody;
 
     public RestfulMockDTO() {
 
@@ -37,7 +38,8 @@ public class RestfulMockDTO {
     public RestfulMockDTO(String path, RestMethodEnum method, RecordStatusEnum status, RestMockTypeEnum mockType, boolean statefulParent,
                           long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
-                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId, String customJsSyntax) {
+                          boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId,
+                          String customJsSyntax, final String statefulDefaultResponseBody) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -54,6 +56,7 @@ public class RestfulMockDTO {
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
         this.projectId = projectId;
         this.customJsSyntax = customJsSyntax;
+        this.statefulDefaultResponseBody = statefulDefaultResponseBody;
     }
 
     public String getPath() {
@@ -182,6 +185,13 @@ public class RestfulMockDTO {
     }
     public void setRules(List<RuleDTO> rules) {
         this.rules = rules;
+    }
+
+    public String getStatefulDefaultResponseBody() {
+        return statefulDefaultResponseBody;
+    }
+    public void setStatefulDefaultResponseBody(String statefulDefaultResponseBody) {
+        this.statefulDefaultResponseBody = statefulDefaultResponseBody;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.smockin.mockserver.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
@@ -41,7 +42,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         final RestfulMock parent = loadStatefulParent(mock);
 
-        final List<Map<String, Object>> mockStateContent = loadStateForMock(parent.getExtId());
+        final List<Map<String, Object>> mockStateContent = loadStateForMock(parent);
         final Map<String, String> pathVars = GeneralUtils.findAllPathVars(req.pathInfo(), mock.getPath());
         final String dataId = pathVars.get(ID_FIELD);
 
@@ -94,13 +95,18 @@ public class StatefulServiceImpl implements StatefulService {
 
     }
 
-    List<Map<String, Object>> loadStateForMock(final String parentExtId) {
+    List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
 
-        if (!state.containsKey(parentExtId)) {
-            state.put(parentExtId, new ArrayList<>());
+        if (!state.containsKey(parent.getExtId())) {
+            if (parent.getStatefulDefaultResponseBody() != null) {
+                state.put(parent.getExtId(), GeneralUtils.deserialiseJson(parent.getStatefulDefaultResponseBody(),
+                        new TypeReference<List<Map<String, Object>>>() {}));
+            } else {
+                state.put(parent.getExtId(), new ArrayList<>());
+            }
         }
 
-        return state.get(parentExtId);
+        return state.get(parent.getExtId());
     }
 
     RestfulMock loadStatefulParent(final RestfulMock mock) {
