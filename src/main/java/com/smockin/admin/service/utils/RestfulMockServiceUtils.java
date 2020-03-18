@@ -174,14 +174,9 @@ public class RestfulMockServiceUtils {
             return mainMock;
         }
 
-        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
-        restfulMockStatefulMeta.setIdFieldName(dto.getStatefulIdFieldName());
-        restfulMockStatefulMeta.setInitialResponseBody(dto.getStatefulDefaultResponseBody());
-        restfulMockStatefulMeta.setIdFieldLocation(dto.getStatefulIdFieldLocation());
-        restfulMockStatefulMeta.setRestfulMock(mainMock);
+        applyRestfulMockStatefulMeta(dto, mainMock);
 
         mainMock.setMethod(RestMethodEnum.GET);
-        mainMock.setRestfulMockStatefulMeta(restfulMockStatefulMeta);
         mainMock = restfulMockDAO.save(mainMock);
 
         createStatefulChildMocks(dto, mainMock, smockinUser);
@@ -427,7 +422,8 @@ public class RestfulMockServiceUtils {
         mock.setRandomiseLatency(dto.isRandomiseLatency());
         mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
         mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
-//        mock.setStatefulDefaultResponseBody(dto.getStatefulDefaultResponseBody());
+
+        applyRestfulMockStatefulMeta(dto, mock);
 
         if (dto.getProjectId() != null)
             mock.setProject(projectService.loadByExtId(dto.getProjectId()));
@@ -442,6 +438,26 @@ public class RestfulMockServiceUtils {
             mockOrderingCounterService.clearMockStateById(mock.getExtId());
         }
 
+    }
+
+    private void applyRestfulMockStatefulMeta(final RestfulMockDTO dto, final RestfulMock mock) {
+
+        if (!RestMockTypeEnum.STATEFUL.equals(mock.getMockType())
+                || mock.getStatefulParent() != null) {
+            mock.setRestfulMockStatefulMeta(null);
+            return;
+        }
+
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = (mock.getRestfulMockStatefulMeta() != null)
+                ? mock.getRestfulMockStatefulMeta()
+                : new RestfulMockStatefulMeta();
+
+        restfulMockStatefulMeta.setIdFieldName(dto.getStatefulIdFieldName());
+        restfulMockStatefulMeta.setInitialResponseBody(dto.getStatefulDefaultResponseBody());
+        restfulMockStatefulMeta.setIdFieldLocation(dto.getStatefulIdFieldLocation());
+        restfulMockStatefulMeta.setRestfulMock(mock);
+
+        mock.setRestfulMockStatefulMeta(restfulMockStatefulMeta);
     }
 
 }
