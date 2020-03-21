@@ -23,6 +23,9 @@ public class RestfulMockStatefulMeta extends Identifier {
     @Column(name = "ID_FIELD_LOCATION", length = 200)
     private String idFieldLocation;
 
+    @Column(name = "ENF_DATA_STRUCTURE", nullable = false)
+    private boolean enforceDataStructure;
+
     public RestfulMock getRestfulMock() {
         return restfulMock;
     }
@@ -49,6 +52,13 @@ public class RestfulMockStatefulMeta extends Identifier {
     }
     public void setIdFieldLocation(String idFieldLocation) {
         this.idFieldLocation = idFieldLocation;
+    }
+
+    public boolean isEnforceDataStructure() {
+        return enforceDataStructure;
+    }
+    public void setEnforceDataStructure(boolean enforceDataStructure) {
+        this.enforceDataStructure = enforceDataStructure;
     }
 
 }

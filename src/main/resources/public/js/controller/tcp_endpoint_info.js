@@ -98,6 +98,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.option2Label = 'Option 2';
     $scope.option1Text = 'Endpoint for pushing responses to queue';
     $scope.option2Text = 'Input form for pushing responses to queue';
+    $scope.statefulIdFieldNameLabel = 'ID Field Name';
+    $scope.statefulIdFieldLocationLabel = 'JSON Path to ID Field';
+    $scope.statefulIdFieldLocationPlaceholderLabel = 'e.g use data.id where your json format is { data : [{ "id" : "123" }] }';
+    $scope.statefulEnforceDataStructureLabel = 'Enforce Data Structure State';
 
 
     //
@@ -202,7 +206,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
         "customJsSyntax" : null,
-        "rules" : []
+        "rules" : [],
+        "statefulIdFieldName" : "id",
+        "statefulIdFieldLocation" : null,
+        "statefulEnforceDataStructure" : false
     };
 
     $scope.proxyEndpoint = {
@@ -247,7 +254,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "definitions" : endpoint.definitions,
                 "customJsSyntax" : endpoint.customJsSyntax,
                 "rules" : endpoint.rules,
-                "createdBy" : endpoint.createdBy
+                "createdBy" : endpoint.createdBy,
+                "statefulIdFieldName" : endpoint.statefulIdFieldName,
+                "statefulIdFieldLocation" : endpoint.statefulIdFieldLocation,
+                "statefulEnforceDataStructure" : endpoint.statefulEnforceDataStructure
             };
 
             $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
@@ -888,7 +898,10 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             // Use GET as a placeholder for stateful mock parent
             reqData.method = 'GET';
-            reqData.statefulDefaultResponseBody = ($scope.endpoint.responseBody != null) ? $scope.endpoint.responseBody : "[]";
+            reqData.statefulDefaultResponseBody = (!utils.isBlank($scope.endpoint.responseBody)) ? $scope.endpoint.responseBody : "[]";
+            reqData.statefulIdFieldName = (!utils.isBlank($scope.endpoint.statefulIdFieldName)) ? $scope.endpoint.statefulIdFieldName : "id";
+            reqData.statefulIdFieldLocation = (!utils.isBlank($scope.endpoint.statefulIdFieldLocation)) ? $scope.endpoint.statefulIdFieldLocation : reqData.statefulIdFieldName;
+            reqData.statefulEnforceDataStructure = $scope.endpoint.statefulEnforceDataStructure;
 
         }
 
@@ -1220,10 +1233,25 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return false;
         }
 
-        if ($scope.endpoint.responseBody != null
+        if (!utils.isBlank($scope.endpoint.responseBody)
                 && utils.validateJson($scope.endpoint.responseBody) != null) {
             showAlert("'Initial Data State' must contain a valid JSON value");
             return false;
+        }
+
+        if (!utils.isBlank($scope.endpoint.statefulIdFieldName)
+                && !utils.isBlank($scope.endpoint.statefulIdFieldLocation)) {
+
+            var locPos = $scope.endpoint.statefulIdFieldLocation.indexOf(".");
+
+            var idLocationValue = (locPos > -1)
+                ? $scope.endpoint.statefulIdFieldLocation.substring(locPos + 1)
+                : $scope.endpoint.statefulIdFieldLocation;
+
+            if (idLocationValue != $scope.endpoint.statefulIdFieldName) {
+                showAlert("ID field name '" + $scope.endpoint.statefulIdFieldName + "' and ID in location '" + idLocationValue + "' do not match");
+                return false;
+            }
         }
 
         return true;

@@ -28,12 +28,12 @@ public class RestfulMockResponseDTO extends RestfulMockDTO {
                                   final RestMockTypeEnum mockType, boolean statefulParent, final Date dateCreated, final String createdBy, final long proxyTimeoutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
                                   final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch,
                                   boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId, String customJsSyntax,
-                                  final String statefulDefaultResponseBody, final String statefulIdFieldName, final String statefulIdFieldLocation) {
+                                  final String statefulDefaultResponseBody, final String statefulIdFieldName, final String statefulIdFieldLocation, final boolean statefulEnforceDataStructure) {
 
         super(path, method, status, mockType, statefulParent, proxyTimeoutInMillis, webSocketTimeoutInMillis,
                 sseHeartBeatInMillis, proxyPushIdOnConnect, randomiseDefinitions, proxyForwardWhenNoRuleMatch,
                 randomiseLatency, randomiseLatencyRangeMinMillis, randomiseLatencyRangeMaxMillis, projectId,
-                customJsSyntax, statefulDefaultResponseBody, statefulIdFieldName, statefulIdFieldLocation);
+                customJsSyntax, statefulDefaultResponseBody, statefulIdFieldName, statefulIdFieldLocation, statefulEnforceDataStructure);
 
         this.extId = extId;
         this.dateCreated = dateCreated;

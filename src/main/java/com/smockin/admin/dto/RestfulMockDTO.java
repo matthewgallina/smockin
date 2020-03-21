@@ -32,6 +32,7 @@ public class RestfulMockDTO {
     private String statefulDefaultResponseBody;
     private String statefulIdFieldName;
     private String statefulIdFieldLocation;
+    private boolean statefulEnforceDataStructure;
 
     public RestfulMockDTO() {
 
@@ -41,7 +42,8 @@ public class RestfulMockDTO {
                           long proxyTimeoutInMillis, long webSocketTimeoutInMillis,
                           long sseHeartBeatInMillis, boolean proxyPushIdOnConnect, boolean randomiseDefinitions, boolean proxyForwardWhenNoRuleMatch,
                           boolean randomiseLatency, long randomiseLatencyRangeMinMillis, long randomiseLatencyRangeMaxMillis, String projectId,
-                          String customJsSyntax, final String statefulDefaultResponseBody, final String statefulIdFieldName, final String statefulIdFieldLocation) {
+                          String customJsSyntax, final String statefulDefaultResponseBody, final String statefulIdFieldName, final String statefulIdFieldLocation,
+                          boolean statefulEnforceDataStructure) {
         this.path = path;
         this.method = method;
         this.status = status;
@@ -61,6 +63,7 @@ public class RestfulMockDTO {
         this.statefulDefaultResponseBody = statefulDefaultResponseBody;
         this.statefulIdFieldName = statefulIdFieldName;
         this.statefulIdFieldLocation = statefulIdFieldLocation;
+        this.statefulEnforceDataStructure = statefulEnforceDataStructure;
     }
 
     public String getPath() {
@@ -210,6 +213,13 @@ public class RestfulMockDTO {
     }
     public void setStatefulIdFieldLocation(String statefulIdFieldLocation) {
         this.statefulIdFieldLocation = statefulIdFieldLocation;
+    }
+
+    public boolean isStatefulEnforceDataStructure() {
+        return statefulEnforceDataStructure;
+    }
+    public void setStatefulEnforceDataStructure(boolean statefulEnforceDataStructure) {
+        this.statefulEnforceDataStructure = statefulEnforceDataStructure;
     }
 
 }

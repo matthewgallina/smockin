@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
@@ -50,23 +51,23 @@ public class StatefulServiceImpl implements StatefulService {
         switch (RestMethodEnum.findByName(req.requestMethod())) {
 
             case GET:
-                statefulResponse = handleGet(dataId, mockStateContent, fieldId);
+                statefulResponse = handleGet(dataId, mockStateContent, parent.getRestfulMockStatefulMeta());
                 break;
 
             case POST:
-                statefulResponse = handlePost(parent.getExtId(), req.body(), mockStateContent, fieldId);
+                statefulResponse = handlePost(parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
                 break;
 
             case PUT:
-                statefulResponse = handlePut(dataId, parent.getExtId(), req.body(), mockStateContent, fieldId);
+                statefulResponse = handlePut(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
                 break;
 
             case PATCH:
-                statefulResponse = handlePatch(dataId, parent.getExtId(), req.body(), mockStateContent, fieldId);
+                statefulResponse = handlePatch(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
                 break;
 
             case DELETE:
-                statefulResponse = handleDelete(dataId, parent.getExtId(), mockStateContent, fieldId);
+                statefulResponse = handleDelete(dataId, parent.getExtId(), mockStateContent, parent.getRestfulMockStatefulMeta());
                 break;
 
             default:
@@ -89,74 +90,15 @@ public class StatefulServiceImpl implements StatefulService {
             throw new RecordNotFoundException();
         }
 
+        // TODO userToken
+
         final RestfulMock parent = loadStatefulParent(restfulMock);
 
         state.remove(parent.getExtId());
 
     }
 
-    List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
-
-        if (!state.containsKey(parent.getExtId())) {
-
-            final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
-
-            if (initialBody != null) {
-                state.put(parent.getExtId(), GeneralUtils.deserialiseJson(initialBody,
-                        new TypeReference<List<Map<String, Object>>>() {}));
-            } else {
-                state.put(parent.getExtId(), new ArrayList<>());
-            }
-        }
-
-        return state.get(parent.getExtId());
-    }
-
-    RestfulMock loadStatefulParent(final RestfulMock mock) {
-
-        return (mock.getStatefulParent() != null)
-                ? mock.getStatefulParent()
-                : mock;
-    }
-
-    Optional<Map<String, Object>> findStatefulDataById(final String id,
-                             final List<Map<String, Object>> currentStateContent,
-                             final String fieldId) {
-
-        return currentStateContent
-                .stream()
-                .filter(f -> {
-
-                    try {
-                        return (StringUtils.equals(id, (String)f.get(fieldId)));
-                    } catch (Throwable ex) {}
-
-                    return false;
-                })
-                .findFirst();
-
-    }
-
-    Optional<Map<String, Object>> convertToJsonMap(final String json) {
-
-        try {
-            final Map<String, Object> dataMap = (Map<String, Object>)GeneralUtils.deserialiseJSONToMap(json, false);
-            return Optional.of(dataMap);
-        } catch (Throwable ex) {
-            return Optional.empty();
-        }
-
-    }
-
-    void appendIdToJson(final Map<String, Object> jsonDataMap, final String fieldId) {
-
-        // Append ID if none present
-        if (!jsonDataMap.containsKey(fieldId)) {
-            jsonDataMap.put(fieldId, GeneralUtils.generateUUID());
-        }
-    }
-
-    StatefulResponse handleGet(final String dataId, final List<Map<String, Object>> currentStateContentForMock, final String fieldId) {
+    StatefulResponse handleGet(final String dataId, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         // GET All
         if (dataId == null) {
@@ -166,7 +108,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         // GET by ID
         final Optional<Map<String, Object>> stateDataOpt =
-                findStatefulDataById(dataId, currentStateContentForMock, fieldId);
+                findStatefulDataById(dataId, currentStateContentForMock, restfulMockStatefulMeta);
 
         if (!stateDataOpt.isPresent()) {
             return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
@@ -176,7 +118,7 @@ public class StatefulServiceImpl implements StatefulService {
                 GeneralUtils.serialiseJson(stateDataOpt.get()));
     }
 
-    StatefulResponse handlePost(final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final String fieldId) {
+    StatefulResponse handlePost(final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         // Validate is valid json body
         final Optional<Map<String, Object>> requestDataMapOpt = convertToJsonMap(requestBody);
@@ -188,7 +130,10 @@ public class StatefulServiceImpl implements StatefulService {
 
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
 
-        appendIdToJson(requestDataMap, fieldId);
+        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
+
+        appendIdToJson(requestDataMap, fieldId, fieldIdPathPattern);
 
         currentStateContentForMock.add(requestDataMap);
 
@@ -197,7 +142,7 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_CREATED);
     }
 
-    StatefulResponse handleDelete(final String dataId, final String parentExtId, final List<Map<String, Object>> currentStateContentForMock, final String fieldId) {
+    StatefulResponse handleDelete(final String dataId, final String parentExtId, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
@@ -205,10 +150,21 @@ public class StatefulServiceImpl implements StatefulService {
 
         final int originalDataStateSize = currentStateContentForMock.size();
 
+        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
+
+        final String[] pathArray =
+                (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1)
+                    ?  StringUtils.split(fieldIdPathPattern, ".")
+                    : null;
+
         final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
                 .stream()
-                .filter(f ->
-                        !(StringUtils.equals(dataId, (String)f.get(fieldId))))
+                .filter(f -> {
+
+                    return !(StringUtils.equals(dataId, (String) f.get(fieldId)));
+
+                })
                 .collect(Collectors.toList());
 
         state.put(parentExtId, filteredCurrentStateContentForMock);
@@ -220,7 +176,7 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
-    StatefulResponse handlePut(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final String fieldId) {
+    StatefulResponse handlePut(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
@@ -233,6 +189,9 @@ public class StatefulServiceImpl implements StatefulService {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                     "Invalid JSON in request body");
         }
+
+        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
 
         // Check path and request body IDs match
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
@@ -273,7 +232,7 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
-    StatefulResponse handlePatch(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final String fieldId) {
+    StatefulResponse handlePatch(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
@@ -286,6 +245,9 @@ public class StatefulServiceImpl implements StatefulService {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                     "Invalid JSON in request body");
         }
+
+        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
 
         // Check path and request body IDs match
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
@@ -317,6 +279,311 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
+    Optional<Map<String, Object>> findStatefulDataById(final String id,
+                                                       final List<Map<String, Object>> currentStateContent,
+                                                       final RestfulMockStatefulMeta restfulMockStatefulMeta) {
+
+        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
+
+        return currentStateContent
+                .stream()
+                .filter(f -> {
+
+                    try {
+
+                        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
+
+                            final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
+
+                            int index = 0;
+                            Object currentJsonObject = f;
+
+                            for (String pathElement : pathArray) {
+
+                                if (currentJsonObject == null) {
+                                    return false;
+                                }
+
+                                Map<String, Object> currentJsonObjectMap = null;
+
+                                if (currentJsonObject instanceof Map) {
+
+                                    currentJsonObjectMap = (Map<String, Object>)currentJsonObject;
+
+                                } else if (currentJsonObject instanceof List) {
+
+                                    final List<Map<String, Object>> currentJsonObjectList = (List<Map<String, Object>>)currentJsonObject;
+
+                                    if (!currentJsonObjectList.isEmpty()) {
+                                        currentJsonObjectMap = currentJsonObjectList.get(0); // TODO make this recursive
+                                    }
+
+                                }
+
+                                if (index == (pathArray.length -1)) {
+
+                                    return (currentJsonObjectMap != null
+                                            && StringUtils.equals(id, (String)currentJsonObjectMap.get(pathElement)));
+
+                                } else {
+
+                                    if (currentJsonObjectMap != null
+                                            && currentJsonObjectMap.containsKey(pathElement)) {
+                                        currentJsonObject = currentJsonObjectMap.get(pathElement);
+                                    }
+
+                                }
+
+                                index++;
+                            }
+
+                        } else {
+
+                            return (StringUtils.equals(id, (String)f.get(fieldId)));
+                        }
+
+                    } catch (Throwable ex) {}
+
+                    return false;
+                })
+                .findFirst();
+
+    }
+
+    List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
+
+        if (!state.containsKey(parent.getExtId())) {
+
+            final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
+
+            if (initialBody != null) {
+                state.put(parent.getExtId(), GeneralUtils.deserialiseJson(initialBody,
+                        new TypeReference<List<Map<String, Object>>>() {}));
+            } else {
+                state.put(parent.getExtId(), new ArrayList<>());
+            }
+        }
+
+        return state.get(parent.getExtId());
+    }
+
+    RestfulMock loadStatefulParent(final RestfulMock mock) {
+
+        return (mock.getStatefulParent() != null)
+                ? mock.getStatefulParent()
+                : mock;
+    }
+
+    Optional<Map<String, Object>> convertToJsonMap(final String json) {
+
+        try {
+            final Map<String, Object> dataMap = (Map<String, Object>)GeneralUtils.deserialiseJSONToMap(json, false);
+            return Optional.of(dataMap);
+        } catch (Throwable ex) {
+            return Optional.empty();
+        }
+
+    }
+
+    void appendIdToJson(final Map<String, Object> jsonDataMap, final String fieldId, final String fieldIdPathPattern) {
+
+        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
+            final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
+
+            int index = 0;
+            Object currentJsonObject = jsonDataMap;
+
+            for (String e : pathArray) {
+
+                if (currentJsonObject == null) {
+                    break;
+                }
+
+                final Optional<Object> currentJsonObjectOpt = appendIdToJsonIdLocator(currentJsonObject, index, e, pathArray.length);
+
+                if (!currentJsonObjectOpt.isPresent()) {
+                    break;
+                }
+
+                currentJsonObject = currentJsonObjectOpt.get();
+
+                /*
+                Map<String, Object> currentJsonObjectMap = null;
+
+                if (currentJsonObject instanceof Map) {
+
+                    currentJsonObjectMap = (Map<String, Object>)currentJsonObject;
+
+                } else if (currentJsonObject instanceof List) {
+
+                    final List<Map<String, Object>> currentJsonObjectList = (List<Map<String, Object>>)currentJsonObject;
+
+                    if (!currentJsonObjectList.isEmpty()) {
+                        currentJsonObjectMap = currentJsonObjectList.get(0);
+                    }
+
+                }
+
+                if (index == (pathArray.length -1)) {
+
+                    if (currentJsonObjectMap != null
+                            && !currentJsonObjectMap.containsKey(e)) {
+                        currentJsonObjectMap.put(e, GeneralUtils.generateUUID());
+                    }
+
+                    break;
+                }
+
+                if (currentJsonObjectMap.containsKey(e)) {
+                    currentJsonObject = currentJsonObjectMap.get(e);
+                }
+                */
+
+                index++;
+            }
+
+        } else {
+
+            // Append ID if none present
+            if (!jsonDataMap.containsKey(fieldId)) {
+                jsonDataMap.put(fieldId, GeneralUtils.generateUUID());
+            }
+
+        }
+
+    }
+
+    Optional<Object> appendIdToJsonIdLocator(Object currentJsonObject,
+                                         final int index,
+                                         final String path,
+                                         final int pathArrayLength) {
+
+        Map<String, Object> currentJsonObjectMap = null;
+
+        if (currentJsonObject instanceof Map) {
+
+            currentJsonObjectMap = (Map<String, Object>)currentJsonObject;
+
+        } else if (currentJsonObject instanceof List) {
+
+            final List<Map<String, Object>> currentJsonObjectList = (List<Map<String, Object>>)currentJsonObject;
+
+            if (!currentJsonObjectList.isEmpty()) {
+                currentJsonObjectMap = currentJsonObjectList.get(0);
+            }
+
+        }
+
+        if (index == (pathArrayLength -1)) {
+
+            if (currentJsonObjectMap != null
+                    && !currentJsonObjectMap.containsKey(path)) {
+                currentJsonObjectMap.put(path, GeneralUtils.generateUUID());
+            }
+
+            return Optional.empty();
+        }
+
+        if (currentJsonObjectMap.containsKey(path)) {
+            return Optional.of(currentJsonObjectMap.get(path));
+        }
+
+        return Optional.of(currentJsonObject);
+    }
+
+    Optional<String> findStateRecord(final List<Map<String, Object>> allState,
+                         final String[] pathArray,
+                         final String targetId) {
+
+        final StatefulServiceImpl.StatefulSearchResult result = new StatefulServiceImpl.StatefulSearchResult();
+
+        int index = 0;
+
+        for (Map<String, Object> m : allState) {
+
+            findStateIndex(pathArray, 0, targetId, m, result, "state[" + index++ + "]");
+
+            if (result.getFinalPath().isPresent()) {
+                return result.getFinalPath();
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    void findStateIndex(
+            final String[] pathArray,
+            final int pathLevel,
+            final String targetId,
+            final Object currentJsonObject,
+            final StatefulSearchResult result,
+            final String myPath) {
+
+        if (!(pathLevel >= pathArray.length)) {
+            System.out.println(pathArray[pathLevel]);
+        }
+        System.out.println(pathLevel);
+        System.out.println(targetId);
+        System.out.println(currentJsonObject);
+        System.out.println(" ");
+
+        if (currentJsonObject == null) {
+            return;
+        }
+
+        if (currentJsonObject instanceof String) {
+
+            if (pathLevel == pathArray.length
+                    && currentJsonObject instanceof String
+                    && StringUtils.equals(targetId, (String)currentJsonObject)) {
+                result.finalPath = Optional.of(myPath + "=" + currentJsonObject);
+            }
+
+            return;
+
+        } else if (currentJsonObject instanceof Map) {
+
+            if (pathLevel == pathArray.length) {
+                return;
+            }
+
+            final String currentField = pathArray[pathLevel];
+
+            Map<String, Object> data = ((Map<String, Object>)currentJsonObject);
+
+            findStateIndex(pathArray, pathLevel+1, targetId, data.get(currentField), result, myPath + "." + currentField);
+
+        } else if (currentJsonObject instanceof List) {
+
+            if (pathLevel == pathArray.length) {
+                return;
+            }
+
+            final List<Map<String, Object>> currentJsonObjectList = (List<Map<String, Object>>)currentJsonObject;
+
+            if (currentJsonObjectList.isEmpty()) {
+                return;
+            }
+
+            int index = 0;
+            for (Map<String, Object> mapElement : currentJsonObjectList) {
+                findStateIndex(pathArray, pathLevel, targetId, mapElement, result, myPath + "["+ (index++) + "]");
+            }
+
+        }
+
+    }
+
+    final static class StatefulSearchResult {
+
+        private Optional<String> finalPath = Optional.empty();
+
+        public Optional<String> getFinalPath() {
+            return finalPath;
+        }
+    }
+
     private final static class StatefulResponse {
 
         private final int httpResponseCode;
@@ -330,7 +597,6 @@ public class StatefulServiceImpl implements StatefulService {
             this.httpResponseCode = httpResponseCode;
             this.responseBody = responseBody;
         }
-
     }
 
 }
