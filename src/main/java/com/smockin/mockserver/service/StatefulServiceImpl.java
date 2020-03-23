@@ -8,7 +8,9 @@ import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -492,41 +495,137 @@ public class StatefulServiceImpl implements StatefulService {
         return Optional.of(currentJsonObject);
     }
 
-    Optional<String> findStateRecord(final List<Map<String, Object>> allState,
-                         final String[] pathArray,
-                         final String targetId) {
+    Optional<Map<String, Object>> findStateRecordByPath(
+            final List<Map<String, Object>> allStateDataSrc,
+            final String path) {
 
-        final StatefulServiceImpl.StatefulSearchResult result = new StatefulServiceImpl.StatefulSearchResult();
+        final List<Map<String, Object>> allStateDataCopy
+                = SerializationUtils.clone(new StatefulSearchData(allStateDataSrc)).getData();
+
+        final String[] pathArray = StringUtils.split(path,".");
+
+        Map<String, Object> mainDataRecord = null;
+        Object currentDataRecordObject = null;
+
+        for (String p : pathArray) {
+
+            if (mainDataRecord == null) {
+                final Integer arrayPosition = extractArrayPosition(p);
+                mainDataRecord = allStateDataCopy.get(arrayPosition);
+                currentDataRecordObject = mainDataRecord;
+                continue;
+            }
+
+            if (mainDataRecord == null || currentDataRecordObject == null) {
+                return Optional.empty();
+            }
+
+            if (p.contains("[") && p.contains("]")) {
+
+                // List
+
+                final Integer arrayPosition = extractArrayPosition(p);
+
+                if (arrayPosition == null) {
+                    return Optional.empty();
+                }
+
+                Iterator<Object> dataRecordListItr = ((List<Object>) currentDataRecordObject).iterator();
+
+                int dataRecordListItrIdx = 0;
+
+                while (dataRecordListItr.hasNext()) {
+
+                    Object o = dataRecordListItr.next();
+
+                    if (arrayPosition != dataRecordListItrIdx) {
+                        dataRecordListItr.remove();
+                    } else {
+                        currentDataRecordObject = o;
+                    }
+
+                    dataRecordListItrIdx++;
+                }
+
+            } else if (p.contains("=")) {
+
+                // ID matching
+
+                final String[] args = StringUtils.split(p,"=");
+                final String idName = args[0];
+                final String idValue = args[1];
+
+                final String actualIdValue = (String)((Map<String, Object>)currentDataRecordObject).get(idName);
+
+                if (!StringUtils.equals(idValue, actualIdValue)) {
+                    return Optional.empty();
+                }
+
+            } else {
+
+                // Map
+
+                currentDataRecordObject = ((Map<String, Object>) currentDataRecordObject).get(p);
+
+            }
+
+        }
+
+        return Optional.ofNullable(mainDataRecord);
+    }
+
+    Integer extractArrayPosition(final String pathElement) {
+
+        if (StringUtils.isBlank(pathElement)) {
+            return null;
+        }
+
+        final String s1 = StringUtils.remove(pathElement, "[");
+        final String s2 = StringUtils.remove(s1, "]");
+        final int result = NumberUtils.toInt(s2, -1);
+
+        return (result != -1) ? result : null;
+    }
+
+    Optional<String> findStateRecordPath(
+            final List<Map<String, Object>> allStateData,
+            final String[] pathArray,
+            final String targetId) {
+
+        final StatefulServiceImpl.StatefulSearchPathResult result = new StatefulServiceImpl.StatefulSearchPathResult();
 
         int index = 0;
 
-        for (Map<String, Object> m : allState) {
+        for (Map<String, Object> m : allStateData) {
 
-            findStateIndex(pathArray, 0, targetId, m, result, "state[" + index++ + "]");
+            findStateIndex(pathArray, 0, targetId, m, result, "[" + index++ + "]");
 
-            if (result.getFinalPath().isPresent()) {
-                return result.getFinalPath();
+            if (result.getPath().isPresent()) {
+                return result.getPath();
             }
         }
 
         return Optional.empty();
     }
 
-    void findStateIndex(
+    private void findStateIndex(
             final String[] pathArray,
             final int pathLevel,
             final String targetId,
             final Object currentJsonObject,
-            final StatefulSearchResult result,
+            final StatefulSearchPathResult result,
             final String myPath) {
 
+        /*
         if (!(pathLevel >= pathArray.length)) {
             System.out.println(pathArray[pathLevel]);
         }
+
         System.out.println(pathLevel);
         System.out.println(targetId);
         System.out.println(currentJsonObject);
         System.out.println(" ");
+        */
 
         if (currentJsonObject == null) {
             return;
@@ -537,7 +636,7 @@ public class StatefulServiceImpl implements StatefulService {
             if (pathLevel == pathArray.length
                     && currentJsonObject instanceof String
                     && StringUtils.equals(targetId, (String)currentJsonObject)) {
-                result.finalPath = Optional.of(myPath + "=" + currentJsonObject);
+                result.path = Optional.of(myPath + "=" + currentJsonObject);
             }
 
             return;
@@ -568,19 +667,32 @@ public class StatefulServiceImpl implements StatefulService {
 
             int index = 0;
             for (Map<String, Object> mapElement : currentJsonObjectList) {
-                findStateIndex(pathArray, pathLevel, targetId, mapElement, result, myPath + "["+ (index++) + "]");
+                findStateIndex(pathArray, pathLevel, targetId, mapElement, result, myPath + ".["+ (index++) + "]");
             }
 
         }
 
     }
 
-    final static class StatefulSearchResult {
+    final static class StatefulSearchPathResult {
 
-        private Optional<String> finalPath = Optional.empty();
+        private Optional<String> path = Optional.empty();
 
-        public Optional<String> getFinalPath() {
-            return finalPath;
+        public Optional<String> getPath() {
+            return path;
+        }
+    }
+
+    final static class StatefulSearchData implements Serializable {
+
+        private final List<Map<String, Object>> data;
+
+        public StatefulSearchData(final List<Map<String, Object>> data) {
+            this.data = data;
+        }
+
+        public List<Map<String, Object>> getData() {
+            return data;
         }
     }
 

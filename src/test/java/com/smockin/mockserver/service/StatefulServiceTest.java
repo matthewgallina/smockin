@@ -21,7 +21,7 @@ public class StatefulServiceTest {
     }
 
     @Test
-    public void findStateRecord_inMultipleMapRecords_Test() {
+    public void findStateRecordPath_inMultipleMapRecords_Test() {
 
         // Setup
         final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"},\"included\":[]}]";
@@ -33,25 +33,16 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[1].data.id=2", outcome.get());
+        Assert.assertEquals("[1].data.id=2", outcome.get());
 
-        /*
-        System.out.println(state);
-        Assert.assertNotNull(state);
-        Assert.assertNotNull(state.get("data"));
-        Assert.assertNotNull(state.get("data") instanceof Map);
-        Assert.assertNotNull(((Map)state.get("data")).get("id"));
-        Assert.assertNotNull(targetId, ((Map)state.get("data")).get("id"));
-        Assert.assertNotNull("Mike", ((Map)state.get("data")).get("name"));
-        */
     }
 
     @Test
-    public void findStateRecord_inMultipleMapRecordsWithDataLists_Test() {
+    public void findStateRecordPath_inMultipleMapRecordsWithDataLists_Test() {
 
         // Setup
         final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"}],\"included\":[]}]";
@@ -63,29 +54,16 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[2].data[0].id=3", outcome.get());
+        Assert.assertEquals("[2].data.[0].id=3", outcome.get());
 
-        // Assertions
-        /*
-        System.out.println(state);
-        Assert.assertNotNull(state);
-        Assert.assertNotNull(state.get("data"));
-        Assert.assertTrue(state.get("data") instanceof List);
-        final List<Map<String, Object>> records = (List)state.get("data");
-        Assert.assertEquals(1, records.size());
-        final Map<String, Object> record = records.get(0);
-        Assert.assertNotNull(record.get("id"));
-        Assert.assertNotNull(targetId, record.get("id"));
-        Assert.assertNotNull("Pete", record.get("name"));
-        */
     }
 
     @Test
-    public void findStateRecord_inSingleDataList_Test() {
+    public void findStateRecordPath_inSingleDataList_Test() {
 
         // Setup
         final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Billy\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Sally\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Jennifer\"}],\"included\":[]}]";
@@ -97,26 +75,16 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[0].data[2].id=3", outcome.get());
+        Assert.assertEquals("[0].data.[2].id=3", outcome.get());
 
-        /*
-        // Assertions
-        System.out.println(state);
-        Assert.assertNotNull(state);
-        Assert.assertNotNull(state.get("data"));
-        Assert.assertNotNull(state.get("data") instanceof List);
-        Assert.assertEquals(1, ((List)state.get("data")).size());
-        Assert.assertEquals(targetId, ((Map)((List)state.get("data")).get(0)).get("id"));
-        Assert.assertNotNull("Sally", ((Map)state.get("data")).get("name"));
-        */
     }
 
     @Test
-    public void findStateRecord_withOddNestedIdJsonStructure_Test() {
+    public void findStateRecordPath_withOddNestedIdJsonStructure_Test() {
 
         // Setup
         final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Billy\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Mike\"}],\"included\":[]}]";
@@ -128,27 +96,16 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[0].data[1].id=2", outcome.get());
-
-        /*
-        // Assertions
-        System.out.println(state);
-        Assert.assertNotNull(state);
-        Assert.assertNotNull(state.get("data"));
-        Assert.assertNotNull(state.get("data") instanceof List);
-        Assert.assertEquals(1, ((List)state.get("data")).size());
-        Assert.assertEquals(targetId, ((Map)((List)state.get("data")).get(0)).get("id"));
-        Assert.assertEquals("Billy", ((Map)((List)state.get("name")).get(0)).get("id"));
-        */
+        Assert.assertEquals("[0].data.[1].id=2", outcome.get());
 
     }
 
     @Test
-    public void findStateRecord_withComplexIdJsonStructure_Test() {
+    public void findStateRecordPath_withComplexIdJsonStructure_Test() {
 
         // Setup
         final String json = "[{\"foo1\":\"bar1\",\"foo2\":1,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"5\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"6\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]},{\"foo1\":\"bar2\",\"foo2\":2,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"7\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"8\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"9\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"10\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"11\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"12\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]}]";
@@ -160,29 +117,16 @@ public class StatefulServiceTest {
         final String targetId = "5";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[0].data[2].data1[0].id=5", outcome.get());
+        Assert.assertEquals("[0].data.[2].data1.[0].id=5", outcome.get());
 
-
-        /*
-        // Assertions
-System.out.println(state);
-        Assert.assertNotNull(state);
-        Assert.assertNotNull(state.get("data"));
-        Assert.assertNotNull(state.get("data") instanceof List);
-        Assert.assertEquals(1, ((List)state.get("data")).size());
-        Assert.assertTrue((((List)state.get("data")).get(0)) instanceof List);
-        Assert.assertEquals(1, ((List)(((List)state.get("data")).get(0))).size());
-        Assert.assertTrue(((List)(((List)state.get("data")).get(0))).get(0) instanceof Map);
-        Assert.assertEquals("Darren", ((Map)((List)(((List)state.get("data")).get(0))).get(0)).get("name"));
-        */
     }
 
     @Test
-    public void findStateRecord_withComplexIdJsonStructure_Test2() {
+    public void findStateRecordPath_withComplexIdJsonStructure_Test2() {
 
         // Setup
         final String json = "[{\"foo1\":\"bar1\",\"foo2\":1,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"5\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"6\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]},{\"foo1\":\"bar2\",\"foo2\":2,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"7\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"8\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"9\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"10\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"11\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"12\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]}]";
@@ -194,16 +138,16 @@ System.out.println(state);
         final String targetId = "7";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[1].data[0].data1[0].id=7", outcome.get());
+        Assert.assertEquals("[1].data.[0].data1.[0].id=7", outcome.get());
 
     }
 
     @Test
-    public void findStateRecord_withComplexIdJsonStructure_Test3() {
+    public void findStateRecordPath_withComplexIdJsonStructure_Test3() {
 
         // Setup
         final String json = "[{\"foo1\":\"bar1\",\"foo2\":1,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"5\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"6\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]},{\"foo1\":\"bar2\",\"foo2\":2,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"7\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"8\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"9\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"10\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"11\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"12\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]}]";
@@ -215,11 +159,226 @@ System.out.println(state);
         final String targetId = "10";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecord(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("state[1].data[1].data1[2].id=10", outcome.get());
+        Assert.assertEquals("[1].data.[1].data1.[2].id=10", outcome.get());
+
+    }
+
+    @Test
+    public void extractArrayPositionTest() {
+
+        // Test
+        final int positionOutcome1 = statefulServiceImpl.extractArrayPosition("[1]");
+        final int positionOutcome2 = statefulServiceImpl.extractArrayPosition("[2]");
+
+        // Assertions
+        Assert.assertEquals(1, positionOutcome1);
+        Assert.assertEquals(2, positionOutcome2);
+    }
+
+    @Test
+    public void extractArrayPositionNullTest() {
+
+        // Test & Assertions
+        Assert.assertNull(statefulServiceImpl.extractArrayPosition(null));
+    }
+
+    @Test
+    public void extractArrayPositionInvalidCharTest() {
+
+        // Test & Assertions
+        Assert.assertNull(statefulServiceImpl.extractArrayPosition("[x]"));
+    }
+
+    @Test
+    public void extractArrayPositionInvalidPathTest() {
+
+        // Test & Assertions
+        Assert.assertNull(statefulServiceImpl.extractArrayPosition("xxx"));
+    }
+
+    @Test
+    public void findStateRecordByPath_inSingleDataList_Test() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Billy\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Sally\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Jennifer\"}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[0].data.[1].id=2";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertTrue(result.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)result.get().get("data")).size());
+        Assert.assertEquals("2", ((Map)((List)result.get().get("data")).get(0)).get("id"));
+        Assert.assertEquals("Billy", ((Map)((List)result.get().get("data")).get(0)).get("name"));
+
+        // Ensure cached state list remains unmodified.
+        Assert.assertEquals(1, allState.size());
+        Assert.assertTrue(allState.get(0).get("data") instanceof List);
+        Assert.assertEquals(4, ((List)allState.get(0).get("data")).size());
+
+    }
+
+    @Test
+    public void findStateRecordByPath_inMultipleMapRecords_Test() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"},\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[1].data.id=2";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertTrue(result.get().get("data") instanceof Map);
+        Assert.assertEquals("2", ((Map)result.get().get("data")).get("id"));
+        Assert.assertEquals("Mike", ((Map)result.get().get("data")).get("name"));
+
+    }
+
+    @Test
+    public void findStateRecordByPath_inMultipleMapRecordsWithDataLists_Test() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[2].data.[0].id=3";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertTrue(result.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)result.get().get("data")).size());
+        Assert.assertEquals("3", ((Map)((List)result.get().get("data")).get(0)).get("id"));
+        Assert.assertEquals("Pete", ((Map)((List)result.get().get("data")).get(0)).get("name"));
+
+    }
+
+    @Test
+    public void findStateRecordByPath_withOddNestedIdJsonStructure_Test() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Billy\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Mike\"}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[0].data.[1].id=2";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertTrue(result.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)result.get().get("data")).size());
+        Assert.assertEquals("2", ((Map)((List)result.get().get("data")).get(0)).get("id"));
+        Assert.assertEquals("Billy", ((Map)((List)result.get().get("data")).get(0)).get("name"));
+
+    }
+
+    @Test
+    public void findStateRecordByPath_withComplexIdJsonStructure1_Test() {
+
+        // Setup
+        final String json = "[{\"foo1\":\"bar1\",\"foo2\":1,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"5\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"6\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]},{\"foo1\":\"bar2\",\"foo2\":2,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"7\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"8\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"9\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"10\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"11\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"12\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[1].data.[2].data1.[0].id=11";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertNotNull(result.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)result.get().get("data")).size());
+        Assert.assertTrue(((List)result.get().get("data")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)result.get().get("data")).get(0)).get("data1") instanceof List);
+        Assert.assertEquals(1, ((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).size());
+        Assert.assertTrue(((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0) instanceof Map);
+        Assert.assertEquals("11", ((Map)((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0)).get("id"));
+        Assert.assertEquals("Darren", ((Map)((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0)).get("name"));
+
+    }
+
+    @Test
+    public void findStateRecordByPath_withComplexIdJsonStructure2_Test() {
+
+        // Setup
+        final String json = "[{\"foo1\":\"bar1\",\"foo2\":1,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"4\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"5\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"6\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]},{\"foo1\":\"bar2\",\"foo2\":2,\"foo3\":true,\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"data1\":[{\"id\":\"7\",\"type\":\"customers\",\"name\":\"Bob\"}]},{\"data1\":[{\"id\":\"8\",\"type\":\"customers\",\"name\":\"Max\"},{\"id\":\"9\",\"type\":\"customers\",\"name\":\"Jane\"},{\"id\":\"10\",\"type\":\"customers\",\"name\":\"Sam\"}]},{\"data1\":[{\"id\":\"11\",\"type\":\"customers\",\"name\":\"Darren\"},{\"id\":\"12\",\"type\":\"customers\",\"name\":\"Mandy\"}]}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[1].data.[1].data1.[1].id=9";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertTrue(result.isPresent());
+        Assert.assertNotNull(result.get());
+        Assert.assertNotNull(result.get().get("data"));
+        Assert.assertNotNull(result.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)result.get().get("data")).size());
+        Assert.assertTrue(((List)result.get().get("data")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)result.get().get("data")).get(0)).get("data1") instanceof List);
+        Assert.assertEquals(1, ((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).size());
+        Assert.assertTrue(((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0) instanceof Map);
+        Assert.assertEquals("9", ((Map)((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0)).get("id"));
+        Assert.assertEquals("Jane", ((Map)((List)((Map)((List)result.get().get("data")).get(0)).get("data1")).get(0)).get("name"));
+
+    }
+
+    @Test
+    public void findStateRecordByPath_IdMisMatch_Test() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"}],\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":[{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        final String jsonPath = "[2].data.[0].id=2";
+
+        // Test
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+
+        // Assertions
+        Assert.assertFalse(result.isPresent());
 
     }
 
