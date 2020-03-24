@@ -33,7 +33,7 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -54,7 +54,7 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -75,7 +75,7 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -96,7 +96,7 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -117,7 +117,7 @@ public class StatefulServiceTest {
         final String targetId = "5";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -138,7 +138,7 @@ public class StatefulServiceTest {
         final String targetId = "7";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -159,7 +159,7 @@ public class StatefulServiceTest {
         final String targetId = "10";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findStateRecordPath(allState, pathArray, targetId);
+        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
@@ -212,7 +212,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[0].data.[1].id=2";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -243,7 +243,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[1].data.id=2";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -267,7 +267,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[2].data.[0].id=3";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -292,7 +292,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[0].data.[1].id=2";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -317,7 +317,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[1].data.[2].data1.[0].id=11";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -346,7 +346,7 @@ public class StatefulServiceTest {
         final String jsonPath = "[1].data.[1].data1.[1].id=9";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertTrue(result.isPresent());
@@ -375,11 +375,55 @@ public class StatefulServiceTest {
         final String jsonPath = "[2].data.[0].id=2";
 
         // Test
-        final Optional<Map<String, Object>> result = statefulServiceImpl.findStateRecordByPath(allState, jsonPath);
+        final Optional<Map<String, Object>> result = statefulServiceImpl.findDataStateRecordByPath(allState, jsonPath);
 
         // Assertions
         Assert.assertFalse(result.isPresent());
 
+    }
+
+    @Test
+    public void findDataStateRecordTest() {
+
+        // Setup
+        final String json = "[{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"1\",\"type\":\"customers\",\"name\":\"Bob\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"2\",\"type\":\"customers\",\"name\":\"Mike\"},\"included\":[]},{\"jsonapi\":{\"version\":\"1.0\"},\"data\":{\"id\":\"3\",\"type\":\"customers\",\"name\":\"Pete\"},\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        // Test
+        final Optional<Map<String, Object>> record = statefulServiceImpl.findDataStateRecord(allState, "data.id", "2");
+
+        // Assertions
+        Assert.assertTrue(record.isPresent());
+        Assert.assertNotNull(record.get());
+        Assert.assertTrue(record.get().get("data") instanceof Map);
+        Assert.assertEquals("2", ((Map)record.get().get("data")).get("id"));
+        Assert.assertEquals("Mike", ((Map)record.get().get("data")).get("name"));
+    }
+
+    @Test
+    public void findDataStateRecord_complexJson_Test() {
+
+        // Setup
+        final String json = "[{\"version\":1,\"system\":\"Foo1\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":null,\"keys\":[{\"name\":\"Sian\"}]}],\"included\":[]},{\"version\":1,\"system\":\"Foo2\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":[\"A\",\"B\",\"C\"],\"keys\":[{\"name\":\"Sam\"}]}],\"included\":[]},{\"version\":1,\"system\":\"Foo3\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":[\"A\",\"C\"],\"keys\":[{\"name\":\"Will\"}]}],\"included\":[]},{\"version\":1,\"system\":\"Foo4\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":null,\"keys\":[{\"name\":\"Billy\"}]}],\"included\":[]}]";
+
+        final List<Map<String, Object>> allState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<List<Map<String, Object>>>() {});
+
+        // Test
+        final Optional<Map<String, Object>> record = statefulServiceImpl.findDataStateRecord(allState, "data.keys.name", "Will");
+
+        // Assertions
+        Assert.assertTrue(record.isPresent());
+        Assert.assertNotNull(record.get());
+        Assert.assertTrue(record.get().get("data") instanceof List);
+        Assert.assertEquals(1, ((List)record.get().get("data")).size());
+        Assert.assertTrue(((List)record.get().get("data")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)record.get().get("data")).get(0)).get("keys") instanceof List);
+        Assert.assertEquals(1, ((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).size());
+        Assert.assertTrue(((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).get(0) instanceof Map);
+        Assert.assertEquals("Will", ((Map)((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).get(0)).get("name") );
     }
 
 }

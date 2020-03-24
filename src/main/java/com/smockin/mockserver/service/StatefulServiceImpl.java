@@ -495,7 +495,26 @@ public class StatefulServiceImpl implements StatefulService {
         return Optional.of(currentJsonObject);
     }
 
-    Optional<Map<String, Object>> findStateRecordByPath(
+    Optional<Map<String, Object>> findDataStateRecord(
+            final List<Map<String, Object>> allStateData,
+            final String fieldIdPathPattern,
+            final String targetId) {
+
+        final String[] pathArray =
+                (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1)
+                        ?  StringUtils.split(fieldIdPathPattern, ".")
+                        : null;
+
+        final Optional<String> jsonPath = findDataStateRecordPath(allStateData, pathArray, targetId);
+
+        if (!jsonPath.isPresent()) {
+            return Optional.empty();
+        }
+
+        return findDataStateRecordByPath(allStateData, jsonPath.get());
+    }
+
+    Optional<Map<String, Object>> findDataStateRecordByPath(
             final List<Map<String, Object>> allStateDataSrc,
             final String path) {
 
@@ -587,7 +606,7 @@ public class StatefulServiceImpl implements StatefulService {
         return (result != -1) ? result : null;
     }
 
-    Optional<String> findStateRecordPath(
+    Optional<String> findDataStateRecordPath(
             final List<Map<String, Object>> allStateData,
             final String[] pathArray,
             final String targetId) {
@@ -615,17 +634,6 @@ public class StatefulServiceImpl implements StatefulService {
             final Object currentJsonObject,
             final StatefulSearchPathResult result,
             final String myPath) {
-
-        /*
-        if (!(pathLevel >= pathArray.length)) {
-            System.out.println(pathArray[pathLevel]);
-        }
-
-        System.out.println(pathLevel);
-        System.out.println(targetId);
-        System.out.println(currentJsonObject);
-        System.out.println(" ");
-        */
 
         if (currentJsonObject == null) {
             return;
