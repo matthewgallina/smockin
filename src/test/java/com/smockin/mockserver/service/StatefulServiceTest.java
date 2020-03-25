@@ -1,6 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,11 +34,11 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[1].data.id=2", outcome.get());
+        Assert.assertEquals("[1].data.id=2", outcome.get().getPath());
 
     }
 
@@ -54,11 +55,11 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[2].data.[0].id=3", outcome.get());
+        Assert.assertEquals("[2].data.[0].id=3", outcome.get().getPath());
 
     }
 
@@ -75,11 +76,11 @@ public class StatefulServiceTest {
         final String targetId = "3";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[0].data.[2].id=3", outcome.get());
+        Assert.assertEquals("[0].data.[2].id=3", outcome.get().getPath());
 
     }
 
@@ -96,11 +97,11 @@ public class StatefulServiceTest {
         final String targetId = "2";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[0].data.[1].id=2", outcome.get());
+        Assert.assertEquals("[0].data.[1].id=2", outcome.get().getPath());
 
     }
 
@@ -117,11 +118,11 @@ public class StatefulServiceTest {
         final String targetId = "5";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[0].data.[2].data1.[0].id=5", outcome.get());
+        Assert.assertEquals("[0].data.[2].data1.[0].id=5", outcome.get().getPath());
 
     }
 
@@ -138,11 +139,11 @@ public class StatefulServiceTest {
         final String targetId = "7";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[1].data.[0].data1.[0].id=7", outcome.get());
+        Assert.assertEquals("[1].data.[0].data1.[0].id=7", outcome.get().getPath());
 
     }
 
@@ -159,11 +160,11 @@ public class StatefulServiceTest {
         final String targetId = "10";
 
         // Test
-        final Optional<String> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
+        final Optional<StatefulServiceImpl.StatefulPath> outcome = statefulServiceImpl.findDataStateRecordPath(allState, pathArray, targetId);
 
         // Assertions
         Assert.assertTrue(outcome.isPresent());
-        Assert.assertEquals("[1].data.[1].data1.[2].id=10", outcome.get());
+        Assert.assertEquals("[1].data.[1].data1.[2].id=10", outcome.get().getPath());
 
     }
 
@@ -424,6 +425,111 @@ public class StatefulServiceTest {
         Assert.assertEquals(1, ((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).size());
         Assert.assertTrue(((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).get(0) instanceof Map);
         Assert.assertEquals("Will", ((Map)((List)((Map)((List)record.get().get("data")).get(0)).get("keys")).get(0)).get("name") );
+    }
+
+    @Test
+    public void appendIdToJson_noIdPresentInComplexJson_Test() {
+
+        // Setup
+        final String json = "{\"version\":1,\"system\":\"Foo2\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":[\"A\",\"B\",\"C\"],\"keys\":[{\"name\":\"Sam\"}]}],\"included\":[]}";
+
+        final Map<String, Object> newState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<Map<String, Object>>() {});
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
+        restfulMockStatefulMeta.setIdFieldName("id");
+        restfulMockStatefulMeta.setIdFieldLocation("data.keys.id");
+
+        // Test
+        statefulServiceImpl.appendIdToJson(newState, restfulMockStatefulMeta);
+
+        // Assertions
+        Assert.assertNotNull(newState);
+        Assert.assertNotNull(newState.get("data"));
+        Assert.assertTrue(newState.get("data") instanceof List);
+        Assert.assertEquals(1, ((List)newState.get("data")).size());
+        Assert.assertNotNull(((List)newState.get("data")).get(0));
+        Assert.assertTrue(((List)newState.get("data")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)newState.get("data")).get(0)).containsKey("keys"));
+        Assert.assertNotNull(((Map)((List)newState.get("data")).get(0)).get("keys"));
+        Assert.assertTrue(((Map)((List)newState.get("data")).get(0)).get("keys") instanceof List);
+        Assert.assertEquals(1, ((List)((Map)((List)newState.get("data")).get(0)).get("keys")).size());
+        Assert.assertTrue(((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0)).containsKey("id"));
+        Assert.assertNotNull(((Map)((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0)).get("id"));
+    }
+
+    @Test
+    public void appendIdToJson_idAlreadyPresentInComplexJson_Test() {
+
+        // Setup
+        final String existingId = "12345";
+        final String json = "{\"version\":1,\"system\":\"Foo2\",\"active\":true,\"data\":[{\"type\":\"customers\",\"meta\":[\"A\",\"B\",\"C\"],\"keys\":[{\"id\":\""+ existingId +"\",\"name\":\"Sam\"}]}],\"included\":[]}";
+
+        final Map<String, Object> newState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<Map<String, Object>>() {});
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
+        restfulMockStatefulMeta.setIdFieldName("id");
+        restfulMockStatefulMeta.setIdFieldLocation("data.keys.id");
+
+        // Test
+        statefulServiceImpl.appendIdToJson(newState, restfulMockStatefulMeta);
+
+        // Assertions
+        Assert.assertNotNull(newState);
+        Assert.assertNotNull(newState.get("data"));
+        Assert.assertTrue(newState.get("data") instanceof List);
+        Assert.assertEquals(1, ((List)newState.get("data")).size());
+        Assert.assertNotNull(((List)newState.get("data")).get(0));
+        Assert.assertTrue(((List)newState.get("data")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)newState.get("data")).get(0)).containsKey("keys"));
+        Assert.assertNotNull(((Map)((List)newState.get("data")).get(0)).get("keys"));
+        Assert.assertTrue(((Map)((List)newState.get("data")).get(0)).get("keys") instanceof List);
+        Assert.assertEquals(1, ((List)((Map)((List)newState.get("data")).get(0)).get("keys")).size());
+        Assert.assertTrue(((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0) instanceof Map);
+        Assert.assertTrue(((Map)((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0)).containsKey("id"));
+        Assert.assertEquals(existingId, ((Map)((List)((Map)((List)newState.get("data")).get(0)).get("keys")).get(0)).get("id"));
+    }
+
+    @Test
+    public void appendIdToJson_noIdPresentInSimpleFlatJson_Test() {
+
+        // Setup
+        final String json = "{\"version\":1,\"system\":\"Foo2\",\"active\":true,\"name\":\"Sam\"}";
+
+        final Map<String, Object> newState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<Map<String, Object>>() {});
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
+        restfulMockStatefulMeta.setIdFieldName("id");
+
+        // Test
+        statefulServiceImpl.appendIdToJson(newState, restfulMockStatefulMeta);
+
+        // Assertions
+        Assert.assertNotNull(newState);
+        Assert.assertTrue(newState.containsKey("id"));
+        Assert.assertNotNull(newState.get("id"));
+    }
+
+    @Test
+    public void appendIdToJson_idAlreadyPresentInSimpleFlatJson_Test() {
+
+        // Setup
+        final String existingId = "12345";
+        final String json = "{\"version\":1,\"system\":\"Foo2\",\"active\":true,\"id\":\""+existingId+"\",\"name\":\"Sam\"}";
+
+        final Map<String, Object> newState = GeneralUtils.deserialiseJson(json,
+                new TypeReference<Map<String, Object>>() {});
+        final RestfulMockStatefulMeta restfulMockStatefulMeta = new RestfulMockStatefulMeta();
+        restfulMockStatefulMeta.setIdFieldName("id");
+
+        // Test
+        statefulServiceImpl.appendIdToJson(newState, restfulMockStatefulMeta);
+
+        // Assertions
+        Assert.assertNotNull(newState);
+        Assert.assertTrue(newState.containsKey("id"));
+        Assert.assertNotNull(newState.get("id"));
+        Assert.assertEquals(existingId, newState.get("id"));
     }
 
 }

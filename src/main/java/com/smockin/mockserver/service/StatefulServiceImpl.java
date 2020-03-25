@@ -133,10 +133,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
 
-        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
-
-        appendIdToJson(requestDataMap, fieldId, fieldIdPathPattern);
+        appendIdToJson(requestDataMap, restfulMockStatefulMeta);
 
         currentStateContentForMock.add(requestDataMap);
 
@@ -145,41 +142,57 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_CREATED);
     }
 
-    StatefulResponse handleDelete(final String dataId, final String parentExtId, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
+    StatefulResponse handleDelete(final String dataId,
+                                  final String parentExtId,
+                                  final List<Map<String, Object>> currentStateContentForMock,
+                                  final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
         }
 
-        final int originalDataStateSize = currentStateContentForMock.size();
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
+        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
 
-        final String[] pathArray =
-                (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1)
-                    ?  StringUtils.split(fieldIdPathPattern, ".")
-                    : null;
+            final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
+                    findDataStateRecordPath(currentStateContentForMock,
+                                            StringUtils.split(fieldIdPathPattern,"."),
+                                            dataId);
 
-        final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
-                .stream()
-                .filter(f -> {
+            if (!pathOpt.isPresent()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
 
-                    return !(StringUtils.equals(dataId, (String) f.get(fieldId)));
+            currentStateContentForMock.remove(pathOpt.get().getIndex());
 
-                })
-                .collect(Collectors.toList());
+            state.put(parentExtId, currentStateContentForMock);
 
-        state.put(parentExtId, filteredCurrentStateContentForMock);
+        } else {
 
-        if (filteredCurrentStateContentForMock.size() == originalDataStateSize) {
-            return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+            final int originalDataStateSize = currentStateContentForMock.size();
+
+            final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
+                    .stream()
+                    .filter(f -> !(StringUtils.equals(dataId, (String) f.get(fieldId))))
+                    .collect(Collectors.toList());
+
+            if (filteredCurrentStateContentForMock.size() == originalDataStateSize) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
+            state.put(parentExtId, filteredCurrentStateContentForMock);
         }
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
-    StatefulResponse handlePut(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
+    StatefulResponse handlePut(final String dataId,
+                               final String parentExtId,
+                               final String requestBody,
+                               final List<Map<String, Object>> currentStateContentForMock,
+                               final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
@@ -193,44 +206,28 @@ public class StatefulServiceImpl implements StatefulService {
                     "Invalid JSON in request body");
         }
 
-        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        // Check path and request body IDs match
-        final Map<String, Object> requestDataMap = requestDataMapOpt.get();
-        final String requestIdField = (String)requestDataMap.get(fieldId);
+        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
 
-        if (requestIdField == null || !StringUtils.equals(requestIdField, dataId)) {
-            return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
-                    "Missing matching id in request body");
+            final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
+                    findDataStateRecordPath(currentStateContentForMock,
+                            StringUtils.split(fieldIdPathPattern, "."),
+                            dataId);
+
+            if (!pathOpt.isPresent()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
+            currentStateContentForMock.remove(pathOpt.get().getIndex());
+
+            state.put(parentExtId, currentStateContentForMock);
+
+        } else {
+
+            
+
         }
-
-        // Locate state in cache
-        final Optional<Map<String, Object>> stateDataOpt = currentStateContentForMock
-                .stream()
-                .filter(f -> (StringUtils.equals(dataId, (String)f.get(fieldId))))
-                .findFirst();
-
-        if (!stateDataOpt.isPresent()) {
-            return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
-        }
-
-        /*
-        final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
-                .stream()
-                .map(f -> {
-                    if (StringUtils.equals(dataId, (String)f.get(ID_FIELD))) {
-                        return jsonDataMap;
-                    }
-                    return f;
-                })
-                .collect(Collectors.toList());
-*/
-
-        stateDataOpt.get().clear();
-        stateDataOpt.get().putAll(requestDataMap);
-
-        state.put(parentExtId, currentStateContentForMock);
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
@@ -282,10 +279,30 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
+
     Optional<Map<String, Object>> findStatefulDataById(final String id,
                                                        final List<Map<String, Object>> currentStateContent,
                                                        final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
+
+        if (fieldIdPathPattern != null
+                && fieldIdPathPattern.indexOf(".") > -1) {
+
+            return findDataStateRecord(currentStateContent, fieldIdPathPattern, id);
+
+        } else {
+
+            final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+
+            return currentStateContent
+                    .stream()
+                    .filter(f -> (StringUtils.equals(id, (String)f.get(fieldId))))
+                    .findFirst();
+
+        }
+
+            /*
         final String fieldId = restfulMockStatefulMeta.getIdFieldName();
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
@@ -352,7 +369,10 @@ public class StatefulServiceImpl implements StatefulService {
                 })
                 .findFirst();
 
+    */
+
     }
+
 
     List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
 
@@ -389,9 +409,14 @@ public class StatefulServiceImpl implements StatefulService {
 
     }
 
-    void appendIdToJson(final Map<String, Object> jsonDataMap, final String fieldId, final String fieldIdPathPattern) {
+    void appendIdToJson(final Map<String, Object> jsonDataMap,
+                        final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
-        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
+
+        if (fieldIdPathPattern != null
+                && fieldIdPathPattern.indexOf(".") > -1) {
+
             final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
 
             int index = 0;
@@ -448,6 +473,8 @@ public class StatefulServiceImpl implements StatefulService {
 
         } else {
 
+            final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+
             // Append ID if none present
             if (!jsonDataMap.containsKey(fieldId)) {
                 jsonDataMap.put(fieldId, GeneralUtils.generateUUID());
@@ -500,18 +527,15 @@ public class StatefulServiceImpl implements StatefulService {
             final String fieldIdPathPattern,
             final String targetId) {
 
-        final String[] pathArray =
-                (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1)
-                        ?  StringUtils.split(fieldIdPathPattern, ".")
-                        : null;
+        final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
 
-        final Optional<String> jsonPath = findDataStateRecordPath(allStateData, pathArray, targetId);
+        final Optional<StatefulPath> jsonPathOpt = findDataStateRecordPath(allStateData, pathArray, targetId);
 
-        if (!jsonPath.isPresent()) {
+        if (!jsonPathOpt.isPresent()) {
             return Optional.empty();
         }
 
-        return findDataStateRecordByPath(allStateData, jsonPath.get());
+        return findDataStateRecordByPath(allStateData, jsonPathOpt.get().getPath());
     }
 
     Optional<Map<String, Object>> findDataStateRecordByPath(
@@ -606,7 +630,7 @@ public class StatefulServiceImpl implements StatefulService {
         return (result != -1) ? result : null;
     }
 
-    Optional<String> findDataStateRecordPath(
+    Optional<StatefulPath> findDataStateRecordPath(
             final List<Map<String, Object>> allStateData,
             final String[] pathArray,
             final String targetId) {
@@ -620,7 +644,7 @@ public class StatefulServiceImpl implements StatefulService {
             findStateIndex(pathArray, 0, targetId, m, result, "[" + index++ + "]");
 
             if (result.getPath().isPresent()) {
-                return result.getPath();
+                return Optional.of(new StatefulPath(result.getPath().get(), index));
             }
         }
 
@@ -688,6 +712,24 @@ public class StatefulServiceImpl implements StatefulService {
 
         public Optional<String> getPath() {
             return path;
+        }
+    }
+
+    final static class StatefulPath {
+
+        private final String path;
+        private final Integer index;
+
+        public StatefulPath(String path, Integer index) {
+            this.path = path;
+            this.index = index;
+        }
+
+        public String getPath() {
+            return path;
+        }
+        public Integer getIndex() {
+            return index;
         }
     }
 
