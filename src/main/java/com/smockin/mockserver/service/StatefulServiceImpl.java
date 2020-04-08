@@ -7,6 +7,7 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.mockserver.service.enums.PatchCommandEnum;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -137,7 +138,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         currentStateContentForMock.add(requestDataMap);
 
-        state.put(parentExtId, currentStateContentForMock);
+        state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
         return new StatefulResponse(HttpStatus.SC_CREATED);
     }
@@ -166,7 +167,7 @@ public class StatefulServiceImpl implements StatefulService {
 
             currentStateContentForMock.remove(pathOpt.get().getIndex());
 
-            state.put(parentExtId, currentStateContentForMock);
+            state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
         } else {
 
@@ -182,7 +183,7 @@ public class StatefulServiceImpl implements StatefulService {
                 return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
             }
 
-            state.put(parentExtId, filteredCurrentStateContentForMock);
+            state.put(parentExtId, filteredCurrentStateContentForMock); // TODO use merge
         }
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
@@ -220,23 +221,41 @@ public class StatefulServiceImpl implements StatefulService {
             }
 
             currentStateContentForMock.remove(pathOpt.get().getIndex());
+            currentStateContentForMock.add(pathOpt.get().getIndex(), requestDataMapOpt.get());
 
-            state.put(parentExtId, currentStateContentForMock);
+            state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
         } else {
 
-            
+            final String fieldId = restfulMockStatefulMeta.getIdFieldName();
 
+            final List<Map<String, Object>> modifiedStateContentForMock = currentStateContentForMock
+                    .stream()
+                    .map(m ->
+                        (StringUtils.equals(dataId, (String) m.get(fieldId)))
+                            ? requestDataMapOpt.get()
+                            : m)
+                    .collect(Collectors.toList());
+
+            state.put(parentExtId, modifiedStateContentForMock); // TODO use merge
         }
+
+        state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
-    StatefulResponse handlePatch(final String dataId, final String parentExtId, final String requestBody, final List<Map<String, Object>> currentStateContentForMock, final RestfulMockStatefulMeta restfulMockStatefulMeta) {
+    StatefulResponse handlePatch(final String dataId,
+                                 final String parentExtId,
+                                 final String requestBody,
+                                 final List<Map<String, Object>> currentStateContentForMock,
+                                 final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
         }
+
+        // -H "Content-Type: application/json-patch+json"
 
         // Ensure json body is valid
         final Optional<Map<String, Object>> requestDataMapOpt = convertToJsonMap(requestBody);
@@ -246,35 +265,139 @@ public class StatefulServiceImpl implements StatefulService {
                     "Invalid JSON in request body");
         }
 
-        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation(); // TODO
-
-        // Check path and request body IDs match
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
-        final String reqIdField = (String)requestDataMap.get(fieldId);
+        final String op = (String)requestDataMap.get("op");
+        final String path = (String)requestDataMap.get("path");
+        final String from = (String)requestDataMap.get("from");
+        final String value = (String)requestDataMap.get("value");
 
-        if (reqIdField == null || !StringUtils.equals(reqIdField, dataId)) {
+        if (op == null || path == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
-                    "Missing matching id in request body");
+                    "Invalid JSON in request body, required 'op' and 'path' fields are missing");
         }
 
-        // Locate state in cache
-        final Optional<Map<String, Object>> stateDataOpt = currentStateContentForMock
-                .stream()
-                .filter(f -> (StringUtils.equals(dataId, (String)f.get(fieldId))))
-                .findFirst();
+        final PatchCommandEnum patchCommand = PatchCommandEnum.valueOf(op);
 
-        if (!stateDataOpt.isPresent()) {
-            return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+        // https://sookocheff.com/post/api/understanding-json-patch/
+        // https://www.baeldung.com/spring-rest-json-patch
+
+        // Valid operations are add, remove, replace, move, copy and test. Any other operation is considered an error.
+
+        switch (patchCommand) {
+            case ADD:
+
+                /*
+
+Add / Amend / Append to list:
+{ "op": "add", "path": "/orders", "value": {"id": 789} }
+{ "op": "add", "path": "/total", "value": 30.00 }
+
+                 */
+
+                break;
+            case REMOVE:
+
+                /*
+
+Remove:
+{ "op": "remove", "path": "/currency" }
+{ "op": "remove", "path": "/orders/1" } // where 1 is the index
+{ "op": "remove", "path": "/orders/-" } // where - is bottom of the list
+
+                 */
+
+                break;
+            case REPLACE:
+
+                /*
+
+Replace:
+{ "op": "replace", "path": "/total", "value": 30.00 }
+
+                 */
+
+                break;
+            case COPY:
+
+                /*
+
+Copy:
+{ "op": "copy", "from": "/orders/0", "path": "/rootOrder" }
+
+                 */
+
+                break;
+            case MOVE:
+
+                /*
+
+Move:
+{ "op": "move", "from": "/orders/0", "path": "/rootOrder" }
+
+                 */
+
+                break;
+            case TEST:
+
+                /*
+
+
+
+                 */
+
+                break;
+            default:
+
+                break;
         }
 
 
-        // TODO swap around child fields in 'stateData' with those from 'requestDataMap'
-        final Map<String, Object> stateData = stateDataOpt.get();
-        // requestDataMap;
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
+        if (fieldIdPathPattern != null
+                && fieldIdPathPattern.indexOf(".") > -1) {
 
-        state.put(parentExtId, currentStateContentForMock);
+            final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
+                    findDataStateRecordPath(currentStateContentForMock,
+                            StringUtils.split(fieldIdPathPattern, "."),
+                            dataId);
+
+            if (!pathOpt.isPresent()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
+            final Optional<Map<String, Object>> currentDataOpt = findDataStateRecordByPath(currentStateContentForMock, pathOpt.get().getPath());
+
+            if (!currentDataOpt.isPresent()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
+            // TODO
+
+            state.put(parentExtId, currentStateContentForMock); // TODO use merge
+
+        } else {
+
+            final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+
+            final List<Map<String, Object>> modifiedStateContentForMock = currentStateContentForMock
+                    .stream()
+                    .map(m -> {
+
+                        if (StringUtils.equals(dataId, (String) m.get(fieldId))) {
+
+                            requestDataMapOpt.get().entrySet().stream().forEach(nf ->
+                                m.put(nf.getKey(), nf.getValue()));
+
+                            return m;
+                        } else {
+                            return m;
+                        }
+                    })
+                    .collect(Collectors.toList());
+
+            state.put(parentExtId, modifiedStateContentForMock); // TODO use merge
+        }
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
@@ -302,75 +425,6 @@ public class StatefulServiceImpl implements StatefulService {
 
         }
 
-            /*
-        final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
-
-        return currentStateContent
-                .stream()
-                .filter(f -> {
-
-                    try {
-
-                        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
-
-                            final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
-
-                            int index = 0;
-                            Object currentJsonObject = f;
-
-                            for (String pathElement : pathArray) {
-
-                                if (currentJsonObject == null) {
-                                    return false;
-                                }
-
-                                Map<String, Object> currentJsonObjectMap = null;
-
-                                if (currentJsonObject instanceof Map) {
-
-                                    currentJsonObjectMap = (Map<String, Object>)currentJsonObject;
-
-                                } else if (currentJsonObject instanceof List) {
-
-                                    final List<Map<String, Object>> currentJsonObjectList = (List<Map<String, Object>>)currentJsonObject;
-
-                                    if (!currentJsonObjectList.isEmpty()) {
-                                        currentJsonObjectMap = currentJsonObjectList.get(0); // TODO make this recursive
-                                    }
-
-                                }
-
-                                if (index == (pathArray.length -1)) {
-
-                                    return (currentJsonObjectMap != null
-                                            && StringUtils.equals(id, (String)currentJsonObjectMap.get(pathElement)));
-
-                                } else {
-
-                                    if (currentJsonObjectMap != null
-                                            && currentJsonObjectMap.containsKey(pathElement)) {
-                                        currentJsonObject = currentJsonObjectMap.get(pathElement);
-                                    }
-
-                                }
-
-                                index++;
-                            }
-
-                        } else {
-
-                            return (StringUtils.equals(id, (String)f.get(fieldId)));
-                        }
-
-                    } catch (Throwable ex) {}
-
-                    return false;
-                })
-                .findFirst();
-
-    */
-
     }
 
 
@@ -382,9 +436,9 @@ public class StatefulServiceImpl implements StatefulService {
 
             if (initialBody != null) {
                 state.put(parent.getExtId(), GeneralUtils.deserialiseJson(initialBody,
-                        new TypeReference<List<Map<String, Object>>>() {}));
+                        new TypeReference<List<Map<String, Object>>>() {})); // TODO use merge
             } else {
-                state.put(parent.getExtId(), new ArrayList<>());
+                state.put(parent.getExtId(), new ArrayList<>()); // TODO use merge
             }
         }
 

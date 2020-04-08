@@ -1242,7 +1242,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         if (!utils.isBlank($scope.endpoint.statefulIdFieldName)
                 && !utils.isBlank($scope.endpoint.statefulIdFieldLocation)) {
 
-            var locPos = $scope.endpoint.statefulIdFieldLocation.indexOf(".");
+            var locPos = $scope.endpoint.statefulIdFieldLocation.lastIndexOf(".");
 
             var idLocationValue = (locPos > -1)
                 ? $scope.endpoint.statefulIdFieldLocation.substring(locPos + 1)
