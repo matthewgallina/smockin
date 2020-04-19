@@ -1,6 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.service.StatefulService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class HttpStatefulController {
     @RequestMapping(path="/stateful/{extId}/clear", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> clearDataState(@PathVariable("extId") final String extId,
                                                         @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-                                                            throws RecordNotFoundException {
+                                                            throws RecordNotFoundException, ValidationException {
 
         statefulService.resetState(extId, GeneralUtils.extractOAuthToken(bearerToken));
 

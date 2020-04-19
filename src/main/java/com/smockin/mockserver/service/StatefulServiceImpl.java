@@ -2,10 +2,12 @@ package com.smockin.mockserver.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.enums.PatchCommandEnum;
 import com.smockin.utils.GeneralUtils;
@@ -23,6 +25,7 @@ import spark.Request;
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +43,10 @@ public class StatefulServiceImpl implements StatefulService {
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
+    @Autowired
+    private UserTokenServiceUtils userTokenServiceUtils;
+
+
     @Override
     public RestfulResponseDTO process(final Request req, final RestfulMock mock) {
 
@@ -50,33 +57,39 @@ public class StatefulServiceImpl implements StatefulService {
         final String fieldId = parent.getRestfulMockStatefulMeta().getIdFieldName();
         final String dataId = pathVars.get(fieldId);
 
-        final StatefulResponse statefulResponse;
+        StatefulResponse statefulResponse;
 
-        switch (RestMethodEnum.findByName(req.requestMethod())) {
+        try {
 
-            case GET:
-                statefulResponse = handleGet(dataId, mockStateContent, parent.getRestfulMockStatefulMeta());
-                break;
+            switch (RestMethodEnum.findByName(req.requestMethod())) {
 
-            case POST:
-                statefulResponse = handlePost(parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
-                break;
+                case GET:
+                    statefulResponse = handleGet(dataId, mockStateContent, parent.getRestfulMockStatefulMeta());
+                    break;
 
-            case PUT:
-                statefulResponse = handlePut(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
-                break;
+                case POST:
+                    statefulResponse = handlePost(parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    break;
 
-            case PATCH:
-                statefulResponse = handlePatch(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
-                break;
+                case PUT:
+                    statefulResponse = handlePut(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    break;
 
-            case DELETE:
-                statefulResponse = handleDelete(dataId, parent.getExtId(), mockStateContent, parent.getRestfulMockStatefulMeta());
-                break;
+                case PATCH:
+                    statefulResponse = handlePatch(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    break;
 
-            default:
-                statefulResponse = new StatefulResponse(HttpStatus.SC_NOT_FOUND, "Invalid JSON in request body");
-                break;
+                case DELETE:
+                    statefulResponse = handleDelete(dataId, parent.getExtId(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    break;
+
+                default:
+                    statefulResponse = new StatefulResponse(HttpStatus.SC_NOT_FOUND, "Invalid JSON in request body");
+                    break;
+            }
+
+        } catch (StatefulValidationException ex) {
+            statefulResponse = new StatefulResponse(HttpStatus.SC_BAD_REQUEST, ex.getMessage());
         }
 
         return new RestfulResponseDTO(statefulResponse.httpResponseCode,
@@ -85,7 +98,7 @@ public class StatefulServiceImpl implements StatefulService {
     }
 
     @Override
-    public void resetState(final String externalId, final String userToken) throws RecordNotFoundException {
+    public void resetState(final String externalId, final String userToken) throws RecordNotFoundException, ValidationException {
         logger.debug("resetState called");
 
         final RestfulMock restfulMock = restfulMockDAO.findByExtId(externalId);
@@ -94,9 +107,9 @@ public class StatefulServiceImpl implements StatefulService {
             throw new RecordNotFoundException();
         }
 
-        // TODO userToken
-
         final RestfulMock parent = loadStatefulParent(restfulMock);
+
+        userTokenServiceUtils.validateRecordOwner(parent.getCreatedBy(), userToken);
 
         state.remove(parent.getExtId());
 
@@ -134,11 +147,26 @@ public class StatefulServiceImpl implements StatefulService {
 
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
 
+        // TODO amend id handler here to add id according to the path...
         appendIdToJson(requestDataMap, restfulMockStatefulMeta);
 
-        currentStateContentForMock.add(requestDataMap);
+        final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        state.put(parentExtId, currentStateContentForMock); // TODO use merge
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
+
+            // TODO
+            // Amend POST to add items according to path...
+
+            state.put(parentExtId, currentStateContentForMock); // TODO use merge
+
+        } else {
+
+            state.merge(parentExtId, currentStateContentForMock, (currentValue, p) -> {
+                currentValue.add(requestDataMap);
+                return currentValue;
+            });
+
+        }
 
         return new StatefulResponse(HttpStatus.SC_CREATED);
     }
@@ -154,7 +182,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
 
             final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
                     findDataStateRecordPath(currentStateContentForMock,
@@ -165,7 +193,8 @@ public class StatefulServiceImpl implements StatefulService {
                 return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
             }
 
-            currentStateContentForMock.remove(pathOpt.get().getIndex());
+            // Drills down into path and removes specific object.
+            removeDataStateRecordByPath(currentStateContentForMock, pathOpt.get().getPath());
 
             state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
@@ -174,16 +203,18 @@ public class StatefulServiceImpl implements StatefulService {
             final String fieldId = restfulMockStatefulMeta.getIdFieldName();
             final int originalDataStateSize = currentStateContentForMock.size();
 
-            final List<Map<String, Object>> filteredCurrentStateContentForMock = currentStateContentForMock
-                    .stream()
-                    .filter(f -> !(StringUtils.equals(dataId, (String) f.get(fieldId))))
-                    .collect(Collectors.toList());
+            final List<Map<String, Object>> filteredCurrentStateContentForMock
+                    = state.merge(parentExtId, currentStateContentForMock, (currentValue, p) ->
+                        currentValue
+                            .stream()
+                            .filter(f -> !(StringUtils.equals(dataId, (String) f.get(fieldId))))
+                            .collect(Collectors.toList())
+            );
 
             if (filteredCurrentStateContentForMock.size() == originalDataStateSize) {
                 return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
             }
 
-            state.put(parentExtId, filteredCurrentStateContentForMock); // TODO use merge
         }
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
@@ -209,7 +240,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        if (fieldIdPathPattern != null && fieldIdPathPattern.indexOf(".") > -1) {
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
 
             final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
                     findDataStateRecordPath(currentStateContentForMock,
@@ -220,7 +251,7 @@ public class StatefulServiceImpl implements StatefulService {
                 return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
             }
 
-            currentStateContentForMock.remove(pathOpt.get().getIndex());
+            currentStateContentForMock.remove(pathOpt.get().getIndex().intValue());
             currentStateContentForMock.add(pathOpt.get().getIndex(), requestDataMapOpt.get());
 
             state.put(parentExtId, currentStateContentForMock); // TODO use merge
@@ -228,19 +259,40 @@ public class StatefulServiceImpl implements StatefulService {
         } else {
 
             final String fieldId = restfulMockStatefulMeta.getIdFieldName();
+            final Object bodyId = requestDataMapOpt.get().get(fieldId);
 
-            final List<Map<String, Object>> modifiedStateContentForMock = currentStateContentForMock
-                    .stream()
-                    .map(m ->
-                        (StringUtils.equals(dataId, (String) m.get(fieldId)))
-                            ? requestDataMapOpt.get()
-                            : m)
-                    .collect(Collectors.toList());
+            // Ensure ids in url and body match
+            if (bodyId == null
+                    || !(bodyId instanceof String)
+                    || !StringUtils.equals((String)bodyId, dataId)) {
+                return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
+            }
 
-            state.put(parentExtId, modifiedStateContentForMock); // TODO use merge
+            final AtomicBoolean recordFound = new AtomicBoolean(false);
+
+            state.merge(parentExtId, currentStateContentForMock, (currentValue, p) ->
+                currentValue
+                        .stream()
+                        .map(m -> {
+
+                            final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                            if (match) {
+                                recordFound.set(true);
+                            }
+
+                            return (match)
+                                    ? requestDataMapOpt.get()
+                                    : m;
+                        })
+                        .collect(Collectors.toList())
+            );
+
+            if (!recordFound.get()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
         }
-
-        state.put(parentExtId, currentStateContentForMock); // TODO use merge
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
@@ -249,7 +301,7 @@ public class StatefulServiceImpl implements StatefulService {
                                  final String parentExtId,
                                  final String requestBody,
                                  final List<Map<String, Object>> currentStateContentForMock,
-                                 final RestfulMockStatefulMeta restfulMockStatefulMeta) {
+                                 final RestfulMockStatefulMeta restfulMockStatefulMeta) throws StatefulValidationException {
 
         if (dataId == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
@@ -267,95 +319,40 @@ public class StatefulServiceImpl implements StatefulService {
 
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
         final String op = (String)requestDataMap.get("op");
-        final String path = (String)requestDataMap.get("path");
+        final String prefixedPath = (String)requestDataMap.get("path");
         final String from = (String)requestDataMap.get("from");
-        final String value = (String)requestDataMap.get("value");
+        final Object value = requestDataMap.get("value");
 
-        if (op == null || path == null) {
+        if (op == null || prefixedPath == null) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                     "Invalid JSON in request body, required 'op' and 'path' fields are missing");
         }
 
-        final PatchCommandEnum patchCommand = PatchCommandEnum.valueOf(op);
+        final PatchCommandEnum patchCommand;
+
+        try {
+            patchCommand = PatchCommandEnum.valueOf(op);
+        } catch (IllegalArgumentException ex) {
+            return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                    "Invalid 'op' value in JSON request body");
+        }
+
+        if (!prefixedPath.startsWith("/")) {
+            return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                    "Invalid 'path' value JSON in request body, path should begin with \"/\" (e.g \"/age\")");
+        }
+
+        final String path = prefixedPath.substring(1);
 
         // https://sookocheff.com/post/api/understanding-json-patch/
         // https://www.baeldung.com/spring-rest-json-patch
 
-        // Valid operations are add, remove, replace, move, copy and test. Any other operation is considered an error.
-
-        switch (patchCommand) {
-            case ADD:
-
-                /*
-
-Add / Amend / Append to list:
-{ "op": "add", "path": "/orders", "value": {"id": 789} }
-{ "op": "add", "path": "/total", "value": 30.00 }
-
-                 */
-
-                break;
-            case REMOVE:
-
-                /*
-
-Remove:
-{ "op": "remove", "path": "/currency" }
-{ "op": "remove", "path": "/orders/1" } // where 1 is the index
-{ "op": "remove", "path": "/orders/-" } // where - is bottom of the list
-
-                 */
-
-                break;
-            case REPLACE:
-
-                /*
-
-Replace:
-{ "op": "replace", "path": "/total", "value": 30.00 }
-
-                 */
-
-                break;
-            case COPY:
-
-                /*
-
-Copy:
-{ "op": "copy", "from": "/orders/0", "path": "/rootOrder" }
-
-                 */
-
-                break;
-            case MOVE:
-
-                /*
-
-Move:
-{ "op": "move", "from": "/orders/0", "path": "/rootOrder" }
-
-                 */
-
-                break;
-            case TEST:
-
-                /*
-
-
-
-                 */
-
-                break;
-            default:
-
-                break;
-        }
+        // Valid PATCH operations are add, remove, replace, move, copy and test. Any other operation is considered an error.
 
 
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        if (fieldIdPathPattern != null
-                && fieldIdPathPattern.indexOf(".") > -1) {
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
 
             final Optional<StatefulServiceImpl.StatefulPath> pathOpt =
                     findDataStateRecordPath(currentStateContentForMock,
@@ -380,23 +377,196 @@ Move:
 
             final String fieldId = restfulMockStatefulMeta.getIdFieldName();
 
-            final List<Map<String, Object>> modifiedStateContentForMock = currentStateContentForMock
-                    .stream()
-                    .map(m -> {
+            final AtomicBoolean recordFound = new AtomicBoolean(false);
 
-                        if (StringUtils.equals(dataId, (String) m.get(fieldId))) {
+            switch (patchCommand) {
+                case ADD:
 
-                            requestDataMapOpt.get().entrySet().stream().forEach(nf ->
-                                m.put(nf.getKey(), nf.getValue()));
+                    if (value == null) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                "Invalid JSON in request body, 'value' is required");
+                    }
 
-                            return m;
-                        } else {
-                            return m;
-                        }
-                    })
-                    .collect(Collectors.toList());
+                    state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
+                            currentValue
+                                    .stream()
+                                    .map(m -> {
 
-            state.put(parentExtId, modifiedStateContentForMock); // TODO use merge
+                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                                        if (match) {
+                                            recordFound.set(true);
+                                        }
+
+                                        if (match) {
+
+                                            if (path.contains("/")) {
+
+                                                final String[] paths = path.split("/");
+
+                                                Object obj = m;
+
+                                                for (int i=0; i < paths.length; i++) {
+
+                                                    final String p = paths[i];
+                                                    final boolean lastIteration = (i == (paths.length - 1));
+
+                                                    if (obj instanceof List) {
+
+                                                        final int indx = NumberUtils.toInt(p, -1);
+
+                                                        if (indx == -1) {
+                                                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                        }
+
+                                                        final List l = ((List)obj);
+
+                                                        if (lastIteration) {
+
+                                                            if (l.size() < indx) {
+                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
+                                                            }
+
+                                                            if (!l.isEmpty()
+                                                                    && !l.get(0).getClass().equals(value.getClass())) {
+                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                                                            }
+
+                                                            l.add(indx, value);
+
+                                                        } else {
+
+                                                            if (l.size() <= indx) {
+                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
+                                                            }
+
+                                                            obj = l.get(indx);
+
+                                                        }
+
+                                                    } else if (obj instanceof Map) {
+
+                                                        final Map map = ((Map)obj);
+
+                                                        if (lastIteration) {
+
+                                                            if (map.containsKey(p)) {
+                                                                throw new StatefulValidationException("path value '" + path + "' already exists");
+                                                            }
+
+                                                            //                                                             if (map.containsKey(p)
+                                                            //                                                                    && !map.get(p).getClass().equals(value.getClass())) {
+                                                            //                                                                throw new StatefulValidationException("'value' has an incompatible data type with existing attribute '" + path + "'");
+                                                            //                                                            }
+
+                                                            map.put(p, value);
+                                                        } else {
+                                                            obj = map.get(p);
+                                                        }
+
+                                                    } else {
+                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                    }
+
+                                                }
+
+                                            } else {
+
+                                                if (m.get(path) instanceof List) {
+
+                                                    final List l = ((List)m.get(path));
+
+                                                    if (!l.isEmpty()
+                                                            && !l.get(0).getClass().equals(value.getClass())) {
+                                                        throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                                                    }
+
+                                                    l.add(value);
+
+                                                } else {
+
+                                                    // Map, String, Int, etc...
+
+                                                    if (m.containsKey(path)) {
+                                                        throw new StatefulValidationException("path value '" + path + "' already exists");
+                                                    }
+
+                                                    m.put(path, value);
+                                                }
+
+                                            }
+
+                                            return m;
+                                        } else {
+                                            return m;
+                                        }
+                                    })
+                                    .collect(Collectors.toList())
+                    );
+
+                    break;
+                case REMOVE:
+
+                /*
+
+Remove:
+{ "op": "remove", "path": "/currency" }
+{ "op": "remove", "path": "/orders/1" } // where 1 is the index
+{ "op": "remove", "path": "/orders/-" } // where - is bottom of the list
+
+                 */
+
+                    break;
+                case REPLACE:
+
+                /*
+
+Replace:
+{ "op": "replace", "path": "/total", "value": 30.00 }
+
+                 */
+
+                    break;
+                case COPY:
+
+                /*
+
+Copy:
+{ "op": "copy", "from": "/orders/0", "path": "/rootOrder" }
+
+                 */
+
+                    break;
+                case MOVE:
+
+                /*
+
+Move:
+{ "op": "move", "from": "/orders/0", "path": "/rootOrder" }
+
+                 */
+
+                    break;
+                case TEST:
+
+                    /*
+
+
+
+                     */
+
+                    break;
+                default:
+
+                    break;
+            }
+
+
+
+            if (!recordFound.get()) {
+                return new StatefulResponse(HttpStatus.SC_NOT_FOUND);
+            }
+
         }
 
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
@@ -409,8 +579,7 @@ Move:
 
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        if (fieldIdPathPattern != null
-                && fieldIdPathPattern.indexOf(".") > -1) {
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
 
             return findDataStateRecord(currentStateContent, fieldIdPathPattern, id);
 
@@ -430,6 +599,20 @@ Move:
 
     List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
 
+//        if (state.containsKey(parent.getExtId())) {
+//            return state.get(parent.getExtId());
+//        }
+
+        return state.computeIfAbsent(parent.getExtId(), k -> {
+
+            final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
+
+            return (initialBody != null)
+                    ? GeneralUtils.deserialiseJson(initialBody, new TypeReference<List<Map<String, Object>>>() {})
+                    : new ArrayList<>();
+        });
+
+/*
         if (!state.containsKey(parent.getExtId())) {
 
             final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
@@ -443,6 +626,7 @@ Move:
         }
 
         return state.get(parent.getExtId());
+        */
     }
 
     RestfulMock loadStatefulParent(final RestfulMock mock) {
@@ -468,8 +652,7 @@ Move:
 
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
-        if (fieldIdPathPattern != null
-                && fieldIdPathPattern.indexOf(".") > -1) {
+        if (isComplexJsonStructure(fieldIdPathPattern)) {
 
             final String[] pathArray = StringUtils.split(fieldIdPathPattern, ".");
 
@@ -671,6 +854,63 @@ Move:
         return Optional.ofNullable(mainDataRecord);
     }
 
+    void removeDataStateRecordByPath(
+            final List<Map<String, Object>> allStateDataSrc,
+            final String path) {
+
+        final int lastArrayEndPos = path.lastIndexOf("].");
+
+        if (lastArrayEndPos == -1) {
+            return;
+        }
+
+        final String amendedPath = StringUtils.substring(path, 0, (lastArrayEndPos + 1));
+        final String[] pathArray = StringUtils.split(amendedPath,".");
+
+        Object currentDataRecordObject = null;
+
+        for (int i=0; i < pathArray.length; i++ ) {
+
+            final String p = pathArray[i];
+
+            if (i == 0 && currentDataRecordObject == null) {
+                final Integer arrayPosition = extractArrayPosition(p);
+                currentDataRecordObject = allStateDataSrc.get(arrayPosition);
+                continue;
+            }
+
+            if (currentDataRecordObject == null) {
+                return;
+            }
+
+            if (p.contains("[") && p.contains("]")) {
+
+                // List
+
+                final Integer arrayPosition = extractArrayPosition(p);
+
+                if (arrayPosition == null) {
+                    return;
+                }
+
+                if (i == (pathArray.length - 1)) {
+                    ((List<Object>) currentDataRecordObject).remove(arrayPosition.intValue());
+                } else {
+                    currentDataRecordObject = ((List<Object>) currentDataRecordObject).get(arrayPosition);
+                }
+
+            } else {
+
+                // Map
+
+                currentDataRecordObject = ((Map<String, Object>) currentDataRecordObject).get(p);
+
+            }
+
+        }
+
+    }
+
     Integer extractArrayPosition(final String pathElement) {
 
         if (StringUtils.isBlank(pathElement)) {
@@ -695,10 +935,12 @@ Move:
 
         for (Map<String, Object> m : allStateData) {
 
+            final int thisIndex = index;
+
             findStateIndex(pathArray, 0, targetId, m, result, "[" + index++ + "]");
 
             if (result.getPath().isPresent()) {
-                return Optional.of(new StatefulPath(result.getPath().get(), index));
+                return Optional.of(new StatefulPath(result.getPath().get(), thisIndex));
             }
         }
 
@@ -760,6 +1002,11 @@ Move:
 
     }
 
+    private boolean isComplexJsonStructure(final String fieldIdPathPattern) {
+        return fieldIdPathPattern != null
+                && fieldIdPathPattern.indexOf(".") > -1;
+    }
+
     final static class StatefulSearchPathResult {
 
         private Optional<String> path = Optional.empty();
@@ -812,6 +1059,16 @@ Move:
         public StatefulResponse(int httpResponseCode, String responseBody) {
             this.httpResponseCode = httpResponseCode;
             this.responseBody = responseBody;
+        }
+    }
+
+    private class StatefulValidationException extends RuntimeException {
+
+        private static final String PATH_STRUCTURE_MISALIGN = "Invalid path '%s' does align with structure of existing JSON";
+        private static final String OUT_OF_RANGE_LIST_INDEX = "Invalid path '%s', list index %s is out of range";
+
+        public StatefulValidationException(final String msg) {
+            super(msg);
         }
     }
 

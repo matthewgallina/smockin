@@ -37,6 +37,8 @@ USE_INMEM_DB=false
 RESET_SYS_ADMIN=false
 MULTI_USER_MODE=false
 USE_CONSOLE=false
+H2_CONSOLE_PORT=9099
+H2_OPTS=""
 
 
 if [ ! -d "${APP_DIR_PATH}" ]
@@ -74,6 +76,7 @@ H2_PORT=$(echo "$APP_PROPS_FILE" | grep "H2_PORT" | awk '{ print $3 }')
 APP_PORT=$(echo "$APP_PROPS_FILE" | grep "APP_PORT" | awk '{ print $3 }')
 MULTI_USER_MODE_CONF=$(echo "$APP_PROPS_FILE" | grep "MULTI_USER_MODE" | awk '{ print $3 }')
 
+
 if ([ ! -z $MULTI_USER_MODE_CONF ] && [ $MULTI_USER_MODE_CONF = "TRUE" ])
 then
     MULTI_USER_MODE=true
@@ -100,6 +103,12 @@ echo "#  v$APP_VERSION"
 echo "#  "
 
 
+
+if ( $USE_CONSOLE ); then
+    H2_OPTS="-web -webAllowOthers -webPort $H2_CONSOLE_PORT"
+fi
+
+
 #
 # Check for H2 DB Server driver and start it up (in TCP server mode) if not already running
 #
@@ -114,7 +123,7 @@ then
     echo "#  H2 TCP Database is already running..."
   else
     echo "#  Starting H2 TCP Database..."
-    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME -DSmockinH2DB org.h2.tools.Server -tcp -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
+    java -cp $DB_DRIVER_DIR_PATH/$H2_JAR_NAME -DSmockinH2DB org.h2.tools.Server $H2_OPTS -tcp -tcpAllowOthers -tcpPort $H2_PORT > /dev/null 2>&1 &
     echo "$!" > $H2_DB_PID_FILE
   fi
 
@@ -158,6 +167,12 @@ echo "#"
 echo "#  Please Note:"
 echo "#  - Application logs are available from: .smockin/log (under the user.home directory)"
 echo "#  - Navigate to: 'http://localhost:$APP_PORT/index.html' to access the Smockin Admin UI."
+
+if ( $USE_CONSOLE ); then
+    echo "#  - Enabling H2 web console: http://localhost:$H2_CONSOLE_PORT/"
+    echo "     Please consult your db.properties file under your user home, for JDBC connection values..."
+    echo " "
+fi
 
 
 ####### Modes #######

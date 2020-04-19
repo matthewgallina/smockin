@@ -1,5 +1,6 @@
 package com.smockin.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

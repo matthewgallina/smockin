@@ -63,8 +63,7 @@ public class RestfulMockServiceUtils {
                 (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null,
                 (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getInitialResponseBody() : null,
                 (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getIdFieldName() : null,
-                (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getIdFieldLocation() : null,
-                (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().isEnforceDataStructure() : false);
+                (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getIdFieldLocation() : null);
 
         // Definitions
         for (RestfulMockDefinitionOrder order : rmd.getDefinitions()) {
@@ -339,7 +338,6 @@ public class RestfulMockServiceUtils {
             mock.setRestfulMockStatefulMeta(null); // only set this in the parent
 
             restfulMockDAO.save(mock);
-
         }
 
     }
@@ -452,7 +450,6 @@ public class RestfulMockServiceUtils {
         restfulMockStatefulMeta.setIdFieldName(dto.getStatefulIdFieldName());
         restfulMockStatefulMeta.setInitialResponseBody(formatInitialStateBody(dto.getStatefulDefaultResponseBody()));
         restfulMockStatefulMeta.setIdFieldLocation(dto.getStatefulIdFieldLocation());
-        restfulMockStatefulMeta.setEnforceDataStructure(dto.isStatefulEnforceDataStructure());
         restfulMockStatefulMeta.setRestfulMock(mock);
 
         mock.setRestfulMockStatefulMeta(restfulMockStatefulMeta);

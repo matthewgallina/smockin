@@ -17,6 +17,11 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
         return /\s/g.test(value);
     };
 
+    this.isAlpha = function (value) {
+        var letters = /^[a-zA-Z]+$/;
+        return (value.match(letters));
+    };
+
 
     //
     // Tools

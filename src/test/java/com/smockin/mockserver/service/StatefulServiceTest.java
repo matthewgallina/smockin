@@ -39,6 +39,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[1].data.id=2", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(1), outcome.get().getIndex());
 
     }
 
@@ -60,6 +61,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[2].data.[0].id=3", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(2), outcome.get().getIndex());
 
     }
 
@@ -81,6 +83,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[0].data.[2].id=3", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(0), outcome.get().getIndex());
 
     }
 
@@ -102,6 +105,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[0].data.[1].id=2", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(0), outcome.get().getIndex());
 
     }
 
@@ -123,6 +127,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[0].data.[2].data1.[0].id=5", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(0), outcome.get().getIndex());
 
     }
 
@@ -144,6 +149,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[1].data.[0].data1.[0].id=7", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(1), outcome.get().getIndex());
 
     }
 
@@ -165,6 +171,7 @@ public class StatefulServiceTest {
         // Assertions
         Assert.assertTrue(outcome.isPresent());
         Assert.assertEquals("[1].data.[1].data1.[2].id=10", outcome.get().getPath());
+        Assert.assertEquals(Integer.valueOf(1), outcome.get().getIndex());
 
     }
 

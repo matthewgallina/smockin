@@ -178,7 +178,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
             final RestfulMockDTO dto = new RestfulMockDTO(path, method, RecordStatusEnum.ACTIVE, RestMockTypeEnum.SEQ,
                     false, 0, 0, 0, false,
                     false, false, false, 0,
-                    0, null, null, null, null, null, false);
+                    0, null, null, null, null, null);
 
             //
             // Responses
