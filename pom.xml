@@ -28,7 +28,7 @@
         <commons-io.version>2.6</commons-io.version>
         <junit.version>4.12</junit.version>
         <mockito-core.version>3.2.0</mockito-core.version>
-        <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <ftpserver-core.version>1.1.1</ftpserver-core.version>
         <raml-parser.version>1.0.25</raml-parser.version>
         <openapi-generator.version>4.2.2</openapi-generator.version>

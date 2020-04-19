@@ -14,6 +14,7 @@ import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -89,7 +90,14 @@ public class StatefulServiceImpl implements StatefulService {
             }
 
         } catch (StatefulValidationException ex) {
-            statefulResponse = new StatefulResponse(HttpStatus.SC_BAD_REQUEST, ex.getMessage());
+
+            final int status = (ex.getStatus() != null)
+                    ? ex.getStatus()
+                    : HttpStatus.SC_BAD_REQUEST;
+
+            statefulResponse = (ex.getMessage() != null)
+                    ? new StatefulResponse(status, ex.getMessage())
+                    : new StatefulResponse(status);
         }
 
         return new RestfulResponseDTO(statefulResponse.httpResponseCode,
@@ -297,6 +305,10 @@ public class StatefulServiceImpl implements StatefulService {
         return new StatefulResponse(HttpStatus.SC_NO_CONTENT);
     }
 
+    // https://sookocheff.com/post/api/understanding-json-patch/
+    // https://www.baeldung.com/spring-rest-json-patch
+
+    // Valid PATCH operations are add, remove, replace, move, copy and test. Any other operation is considered an error.
     StatefulResponse handlePatch(final String dataId,
                                  final String parentExtId,
                                  final String requestBody,
@@ -307,9 +319,9 @@ public class StatefulServiceImpl implements StatefulService {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST);
         }
 
+        // TODO Should only accept following header content type, but will ignore this rule for now...
         // -H "Content-Type: application/json-patch+json"
 
-        // Ensure json body is valid
         final Optional<Map<String, Object>> requestDataMapOpt = convertToJsonMap(requestBody);
 
         if (!requestDataMapOpt.isPresent()) {
@@ -343,13 +355,6 @@ public class StatefulServiceImpl implements StatefulService {
         }
 
         final String path = prefixedPath.substring(1);
-
-        // https://sookocheff.com/post/api/understanding-json-patch/
-        // https://www.baeldung.com/spring-rest-json-patch
-
-        // Valid PATCH operations are add, remove, replace, move, copy and test. Any other operation is considered an error.
-
-
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
         if (isComplexJsonStructure(fieldIdPathPattern)) {
@@ -376,7 +381,6 @@ public class StatefulServiceImpl implements StatefulService {
         } else {
 
             final String fieldId = restfulMockStatefulMeta.getIdFieldName();
-
             final AtomicBoolean recordFound = new AtomicBoolean(false);
 
             switch (patchCommand) {
@@ -454,11 +458,6 @@ public class StatefulServiceImpl implements StatefulService {
                                                                 throw new StatefulValidationException("path value '" + path + "' already exists");
                                                             }
 
-                                                            //                                                             if (map.containsKey(p)
-                                                            //                                                                    && !map.get(p).getClass().equals(value.getClass())) {
-                                                            //                                                                throw new StatefulValidationException("'value' has an incompatible data type with existing attribute '" + path + "'");
-                                                            //                                                            }
-
                                                             map.put(p, value);
                                                         } else {
                                                             obj = map.get(p);
@@ -507,14 +506,105 @@ public class StatefulServiceImpl implements StatefulService {
                     break;
                 case REMOVE:
 
-                /*
+                    /*
 
-Remove:
-{ "op": "remove", "path": "/currency" }
-{ "op": "remove", "path": "/orders/1" } // where 1 is the index
-{ "op": "remove", "path": "/orders/-" } // where - is bottom of the list
+                        Remove:
+                        { "op": "remove", "path": "/currency" }
+                        { "op": "remove", "path": "/orders/1" } // where 1 is the index
+                        { "op": "remove", "path": "/orders/-" } // where - is bottom of the list
 
-                 */
+                     */
+
+                    state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
+                            currentValue
+                                    .stream()
+                                    .map(m -> {
+
+                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                                        if (match) {
+                                            recordFound.set(true);
+                                        }
+
+                                        if (match) {
+
+                                            if (path.contains("/")) {
+
+                                                final String[] paths = path.split("/");
+
+                                                Object obj = m;
+
+                                                for (int i=0; i < paths.length; i++) {
+
+                                                    final String p = paths[i];
+                                                    final boolean lastIteration = (i == (paths.length - 1));
+
+                                                    if (obj instanceof List) {
+
+                                                        final List l = ((List)obj);
+
+                                                        if (lastIteration && "-".equals(p)) {
+
+                                                            l.remove(0);
+
+                                                        } else {
+
+                                                            final int indx = NumberUtils.toInt(p, -1);
+
+                                                            if (indx == -1) {
+                                                                throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                            }
+
+                                                            if (l.size() <= indx) {
+                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
+                                                            }
+
+                                                            if (lastIteration) {
+                                                                l.remove(indx);
+                                                            } else {
+                                                                obj = l.get(indx);
+                                                            }
+
+                                                        }
+
+                                                    } else if (obj instanceof Map) {
+
+                                                        final Map map = ((Map)obj);
+
+                                                        if (lastIteration) {
+
+                                                            if (!map.containsKey(p)) {
+                                                                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                                                            }
+
+                                                            map.remove(p);
+                                                        } else {
+                                                            obj = map.get(p);
+                                                        }
+
+                                                    } else {
+                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                    }
+
+                                                }
+
+                                            } else {
+
+                                                if (!m.containsKey(path)) {
+                                                    throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                                                }
+
+                                                m.remove(path);
+
+                                            }
+
+                                            return m;
+                                        } else {
+                                            return m;
+                                        }
+                                    })
+                                    .collect(Collectors.toList())
+                    );
 
                     break;
                 case REPLACE:
@@ -1067,8 +1157,25 @@ Move:
         private static final String PATH_STRUCTURE_MISALIGN = "Invalid path '%s' does align with structure of existing JSON";
         private static final String OUT_OF_RANGE_LIST_INDEX = "Invalid path '%s', list index %s is out of range";
 
+        private final Integer status;
+
         public StatefulValidationException(final String msg) {
             super(msg);
+            this.status = null;
+        }
+
+        public StatefulValidationException(final Integer status) {
+            super();
+            this.status = status;
+        }
+
+        public StatefulValidationException(final String msg, final Integer status) {
+            super(msg);
+            this.status = status;
+        }
+
+        public Integer getStatus() {
+            return status;
         }
     }
 
