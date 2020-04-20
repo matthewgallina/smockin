@@ -14,7 +14,6 @@ import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
@@ -346,12 +345,12 @@ public class StatefulServiceImpl implements StatefulService {
             patchCommand = PatchCommandEnum.valueOf(op);
         } catch (IllegalArgumentException ex) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
-                    "Invalid 'op' value in JSON request body");
+                    String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'op' is not a valid value"));
         }
 
         if (!prefixedPath.startsWith("/")) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
-                    "Invalid 'path' value JSON in request body, path should begin with \"/\" (e.g \"/age\")");
+                    String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path should begin with '/' (e.g '/age'"));
         }
 
         final String path = prefixedPath.substring(1);
@@ -388,7 +387,7 @@ public class StatefulServiceImpl implements StatefulService {
 
                     if (value == null) {
                         return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
-                                "Invalid JSON in request body, 'value' is required");
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'value' is required"));
                     }
 
                     state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
@@ -433,7 +432,9 @@ public class StatefulServiceImpl implements StatefulService {
 
                                                             if (!l.isEmpty()
                                                                     && !l.get(0).getClass().equals(value.getClass())) {
-                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                                                                throw new StatefulValidationException(
+                                                                        String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
+                                                                                "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
                                                             }
 
                                                             l.add(indx, value);
@@ -455,7 +456,8 @@ public class StatefulServiceImpl implements StatefulService {
                                                         if (lastIteration) {
 
                                                             if (map.containsKey(p)) {
-                                                                throw new StatefulValidationException("path value '" + path + "' already exists");
+                                                                throw new StatefulValidationException(
+                                                                        String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path value '" + path + "' already exists"));
                                                             }
 
                                                             map.put(p, value);
@@ -477,7 +479,9 @@ public class StatefulServiceImpl implements StatefulService {
 
                                                     if (!l.isEmpty()
                                                             && !l.get(0).getClass().equals(value.getClass())) {
-                                                        throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                                                        throw new StatefulValidationException(
+                                                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
+                                                                        "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
                                                     }
 
                                                     l.add(value);
@@ -487,7 +491,8 @@ public class StatefulServiceImpl implements StatefulService {
                                                     // Map, String, Int, etc...
 
                                                     if (m.containsKey(path)) {
-                                                        throw new StatefulValidationException("path value '" + path + "' already exists");
+                                                        throw new StatefulValidationException(
+                                                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path value '" + path + "' already exists"));
                                                     }
 
                                                     m.put(path, value);
@@ -505,15 +510,6 @@ public class StatefulServiceImpl implements StatefulService {
 
                     break;
                 case REMOVE:
-
-                    /*
-
-                        Remove:
-                        { "op": "remove", "path": "/currency" }
-                        { "op": "remove", "path": "/orders/1" } // where 1 is the index
-                        { "op": "remove", "path": "/orders/-" } // where - is bottom of the list
-
-                     */
 
                     state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
                             currentValue
@@ -613,8 +609,118 @@ public class StatefulServiceImpl implements StatefulService {
 
 Replace:
 { "op": "replace", "path": "/total", "value": 30.00 }
+{ "op": "replace", "path": "/total/1", "value": 30.00 }
 
                  */
+
+                    if (value == null) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'value' is required"));
+                    }
+
+                    state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
+                            currentValue
+                                    .stream()
+                                    .map(m -> {
+
+                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                                        if (match) {
+                                            recordFound.set(true);
+                                        }
+
+                                        if (match) {
+
+                                            if (path.contains("/")) {
+
+                                                final String[] paths = path.split("/");
+
+                                                Object obj = m;
+
+                                                for (int i=0; i < paths.length; i++) {
+
+                                                    final String p = paths[i];
+                                                    final boolean lastIteration = (i == (paths.length - 1));
+
+                                                    if (obj instanceof List) {
+
+                                                        final int indx = NumberUtils.toInt(p, -1);
+
+                                                        if (indx == -1) {
+                                                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                        }
+
+                                                        final List l = ((List)obj);
+
+                                                        if (l.size() <= indx) {
+                                                            throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
+                                                        }
+
+                                                        if (lastIteration) {
+
+                                                            if (!l.isEmpty()
+                                                                    && !l.get(0).getClass().equals(value.getClass())) {
+                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                                                            }
+
+                                                            l.set(indx, value);
+
+                                                        } else {
+
+                                                            if (l.size() <= indx) {
+                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
+                                                            }
+
+                                                            obj = l.get(indx);
+
+                                                        }
+
+                                                    } else if (obj instanceof Map) {
+
+                                                        final Map map = ((Map)obj);
+
+                                                        if (lastIteration) {
+
+                                                            if (!map.containsKey(p)) {
+                                                                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                                                            }
+                                                            if (!map.get(p).getClass().equals(value.getClass())) {
+                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
+                                                            }
+
+                                                            map.remove(p);
+                                                            map.put(p, value);
+
+                                                        } else {
+                                                            obj = map.get(p);
+                                                        }
+
+                                                    } else {
+                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                                                    }
+
+                                                }
+
+                                            } else {
+
+                                                if (!m.containsKey(path)) {
+                                                    throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                                                }
+                                                if (!m.get(path).getClass().equals(value.getClass())) {
+                                                    throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
+                                                }
+
+                                                m.put(path, value);
+
+                                            }
+
+                                            return m;
+                                        } else {
+                                            return m;
+                                        }
+                                    })
+                                    .collect(Collectors.toList())
+                    );
 
                     break;
                 case COPY:
@@ -645,7 +751,7 @@ Move:
 
                      */
 
-                    break;
+                    return new StatefulResponse(HttpStatus.SC_NOT_IMPLEMENTED, "PATCH 'TEST' is not supported");
                 default:
 
                     break;
@@ -1156,6 +1262,7 @@ Move:
 
         private static final String PATH_STRUCTURE_MISALIGN = "Invalid path '%s' does align with structure of existing JSON";
         private static final String OUT_OF_RANGE_LIST_INDEX = "Invalid path '%s', list index %s is out of range";
+        private static final String INVALID_PATCH_INSTRUCTION = "Invalid PATCH instruction in request body, %s";
 
         private final Integer status;
 
