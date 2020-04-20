@@ -331,7 +331,7 @@ public class StatefulServiceImpl implements StatefulService {
         final Map<String, Object> requestDataMap = requestDataMapOpt.get();
         final String op = (String)requestDataMap.get("op");
         final String prefixedPath = (String)requestDataMap.get("path");
-        final String from = (String)requestDataMap.get("from");
+        final String prefixedFrom = (String)requestDataMap.get("from");
         final Object value = requestDataMap.get("value");
 
         if (op == null || prefixedPath == null) {
@@ -395,110 +395,15 @@ public class StatefulServiceImpl implements StatefulService {
                                     .stream()
                                     .map(m -> {
 
-                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+                                        final boolean matchOnIdMade = StringUtils.equals(dataId, (String) m.get(fieldId));
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
                                             recordFound.set(true);
                                         }
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
 
-                                            if (path.contains("/")) {
-
-                                                final String[] paths = path.split("/");
-
-                                                Object obj = m;
-
-                                                for (int i=0; i < paths.length; i++) {
-
-                                                    final String p = paths[i];
-                                                    final boolean lastIteration = (i == (paths.length - 1));
-
-                                                    if (obj instanceof List) {
-
-                                                        final int indx = NumberUtils.toInt(p, -1);
-
-                                                        if (indx == -1) {
-                                                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                        }
-
-                                                        final List l = ((List)obj);
-
-                                                        if (lastIteration) {
-
-                                                            if (l.size() < indx) {
-                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
-                                                            }
-
-                                                            if (!l.isEmpty()
-                                                                    && !l.get(0).getClass().equals(value.getClass())) {
-                                                                throw new StatefulValidationException(
-                                                                        String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
-                                                                                "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
-                                                            }
-
-                                                            l.add(indx, value);
-
-                                                        } else {
-
-                                                            if (l.size() <= indx) {
-                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
-                                                            }
-
-                                                            obj = l.get(indx);
-
-                                                        }
-
-                                                    } else if (obj instanceof Map) {
-
-                                                        final Map map = ((Map)obj);
-
-                                                        if (lastIteration) {
-
-                                                            if (map.containsKey(p)) {
-                                                                throw new StatefulValidationException(
-                                                                        String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path value '" + path + "' already exists"));
-                                                            }
-
-                                                            map.put(p, value);
-                                                        } else {
-                                                            obj = map.get(p);
-                                                        }
-
-                                                    } else {
-                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                    }
-
-                                                }
-
-                                            } else {
-
-                                                if (m.get(path) instanceof List) {
-
-                                                    final List l = ((List)m.get(path));
-
-                                                    if (!l.isEmpty()
-                                                            && !l.get(0).getClass().equals(value.getClass())) {
-                                                        throw new StatefulValidationException(
-                                                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
-                                                                        "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
-                                                    }
-
-                                                    l.add(value);
-
-                                                } else {
-
-                                                    // Map, String, Int, etc...
-
-                                                    if (m.containsKey(path)) {
-                                                        throw new StatefulValidationException(
-                                                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path value '" + path + "' already exists"));
-                                                    }
-
-                                                    m.put(path, value);
-                                                }
-
-                                            }
+                                            patchAddOperation(path, m, value, false);
 
                                             return m;
                                         } else {
@@ -516,83 +421,15 @@ public class StatefulServiceImpl implements StatefulService {
                                     .stream()
                                     .map(m -> {
 
-                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+                                        final boolean matchOnIdMade = StringUtils.equals(dataId, (String) m.get(fieldId));
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
                                             recordFound.set(true);
                                         }
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
 
-                                            if (path.contains("/")) {
-
-                                                final String[] paths = path.split("/");
-
-                                                Object obj = m;
-
-                                                for (int i=0; i < paths.length; i++) {
-
-                                                    final String p = paths[i];
-                                                    final boolean lastIteration = (i == (paths.length - 1));
-
-                                                    if (obj instanceof List) {
-
-                                                        final List l = ((List)obj);
-
-                                                        if (lastIteration && "-".equals(p)) {
-
-                                                            l.remove(0);
-
-                                                        } else {
-
-                                                            final int indx = NumberUtils.toInt(p, -1);
-
-                                                            if (indx == -1) {
-                                                                throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                            }
-
-                                                            if (l.size() <= indx) {
-                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
-                                                            }
-
-                                                            if (lastIteration) {
-                                                                l.remove(indx);
-                                                            } else {
-                                                                obj = l.get(indx);
-                                                            }
-
-                                                        }
-
-                                                    } else if (obj instanceof Map) {
-
-                                                        final Map map = ((Map)obj);
-
-                                                        if (lastIteration) {
-
-                                                            if (!map.containsKey(p)) {
-                                                                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
-                                                            }
-
-                                                            map.remove(p);
-                                                        } else {
-                                                            obj = map.get(p);
-                                                        }
-
-                                                    } else {
-                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                    }
-
-                                                }
-
-                                            } else {
-
-                                                if (!m.containsKey(path)) {
-                                                    throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
-                                                }
-
-                                                m.remove(path);
-
-                                            }
+                                            patchRemoveOperation(path, m);
 
                                             return m;
                                         } else {
@@ -605,14 +442,6 @@ public class StatefulServiceImpl implements StatefulService {
                     break;
                 case REPLACE:
 
-                /*
-
-Replace:
-{ "op": "replace", "path": "/total", "value": 30.00 }
-{ "op": "replace", "path": "/total/1", "value": 30.00 }
-
-                 */
-
                     if (value == null) {
                         return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'value' is required"));
@@ -623,96 +452,15 @@ Replace:
                                     .stream()
                                     .map(m -> {
 
-                                        final boolean match = StringUtils.equals(dataId, (String) m.get(fieldId));
+                                        final boolean matchOnIdMade = StringUtils.equals(dataId, (String) m.get(fieldId));
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
                                             recordFound.set(true);
                                         }
 
-                                        if (match) {
+                                        if (matchOnIdMade) {
 
-                                            if (path.contains("/")) {
-
-                                                final String[] paths = path.split("/");
-
-                                                Object obj = m;
-
-                                                for (int i=0; i < paths.length; i++) {
-
-                                                    final String p = paths[i];
-                                                    final boolean lastIteration = (i == (paths.length - 1));
-
-                                                    if (obj instanceof List) {
-
-                                                        final int indx = NumberUtils.toInt(p, -1);
-
-                                                        if (indx == -1) {
-                                                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                        }
-
-                                                        final List l = ((List)obj);
-
-                                                        if (l.size() <= indx) {
-                                                            throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
-                                                        }
-
-                                                        if (lastIteration) {
-
-                                                            if (!l.isEmpty()
-                                                                    && !l.get(0).getClass().equals(value.getClass())) {
-                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
-                                                            }
-
-                                                            l.set(indx, value);
-
-                                                        } else {
-
-                                                            if (l.size() <= indx) {
-                                                                throw new StatefulValidationException(String.format(StatefulValidationException.OUT_OF_RANGE_LIST_INDEX, path, indx));
-                                                            }
-
-                                                            obj = l.get(indx);
-
-                                                        }
-
-                                                    } else if (obj instanceof Map) {
-
-                                                        final Map map = ((Map)obj);
-
-                                                        if (lastIteration) {
-
-                                                            if (!map.containsKey(p)) {
-                                                                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
-                                                            }
-                                                            if (!map.get(p).getClass().equals(value.getClass())) {
-                                                                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
-                                                            }
-
-                                                            map.remove(p);
-                                                            map.put(p, value);
-
-                                                        } else {
-                                                            obj = map.get(p);
-                                                        }
-
-                                                    } else {
-                                                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
-                                                    }
-
-                                                }
-
-                                            } else {
-
-                                                if (!m.containsKey(path)) {
-                                                    throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
-                                                }
-                                                if (!m.get(path).getClass().equals(value.getClass())) {
-                                                    throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
-                                                }
-
-                                                m.put(path, value);
-
-                                            }
+                                            addReplaceOperation(path, m, value);
 
                                             return m;
                                         } else {
@@ -725,36 +473,92 @@ Replace:
                     break;
                 case COPY:
 
-                /*
+                    if (prefixedFrom == null) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' is required"));
+                    }
 
-Copy:
-{ "op": "copy", "from": "/orders/0", "path": "/rootOrder" }
+                    if (!prefixedFrom.startsWith("/")) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' should begin with '/' (e.g '/age'"));
+                    }
 
-                 */
+                    final String fromInCopyOp = prefixedFrom.substring(1);
+
+                    state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
+                            currentValue
+                                    .stream()
+                                    .map(m -> {
+
+                                        final boolean matchOnIdMade = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                                        if (matchOnIdMade) {
+                                            recordFound.set(true);
+                                        }
+
+                                        if (matchOnIdMade) {
+
+                                            patchCopyOperation(fromInCopyOp, m, path);
+
+                                            return m;
+                                        } else {
+                                            return m;
+                                        }
+                                    })
+                                    .collect(Collectors.toList())
+                    );
 
                     break;
                 case MOVE:
 
-                /*
+/*
+    Move:
+    { "op": "move", "from": "/orders/0", "path": "/rootOrder" }
+*/
 
-Move:
-{ "op": "move", "from": "/orders/0", "path": "/rootOrder" }
+                    if (prefixedFrom == null) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' is required"));
+                    }
 
-                 */
+                    if (!prefixedFrom.startsWith("/")) {
+                        return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
+                                String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' should begin with '/' (e.g '/age'"));
+                    }
+
+                    final String fromInMoveOp = prefixedFrom.substring(1);
+
+
+                    state.merge(parentExtId, currentStateContentForMock, (currentValue, nu) ->
+                            currentValue
+                                    .stream()
+                                    .map(m -> {
+
+                                        final boolean matchOnIdMade = StringUtils.equals(dataId, (String) m.get(fieldId));
+
+                                        if (matchOnIdMade) {
+                                            recordFound.set(true);
+                                        }
+
+                                        if (matchOnIdMade) {
+
+                                            patchMoveOperation(fromInMoveOp, m, path);
+
+                                            return m;
+                                        } else {
+                                            return m;
+                                        }
+                                    })
+                                    .collect(Collectors.toList())
+                    );
 
                     break;
                 case TEST:
 
-                    /*
-
-
-
-                     */
-
-                    return new StatefulResponse(HttpStatus.SC_NOT_IMPLEMENTED, "PATCH 'TEST' is not supported");
+                    return new StatefulResponse(HttpStatus.SC_NOT_IMPLEMENTED, "PATCH 'TEST' operation is not supported");
                 default:
 
-                    break;
+                    return new StatefulResponse(HttpStatus.SC_NOT_IMPLEMENTED, "PATCH operation is not supported");
             }
 
 
@@ -795,10 +599,6 @@ Move:
 
     List<Map<String, Object>> loadStateForMock(final RestfulMock parent) {
 
-//        if (state.containsKey(parent.getExtId())) {
-//            return state.get(parent.getExtId());
-//        }
-
         return state.computeIfAbsent(parent.getExtId(), k -> {
 
             final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
@@ -808,21 +608,6 @@ Move:
                     : new ArrayList<>();
         });
 
-/*
-        if (!state.containsKey(parent.getExtId())) {
-
-            final String initialBody = parent.getRestfulMockStatefulMeta().getInitialResponseBody();
-
-            if (initialBody != null) {
-                state.put(parent.getExtId(), GeneralUtils.deserialiseJson(initialBody,
-                        new TypeReference<List<Map<String, Object>>>() {})); // TODO use merge
-            } else {
-                state.put(parent.getExtId(), new ArrayList<>()); // TODO use merge
-            }
-        }
-
-        return state.get(parent.getExtId());
-        */
     }
 
     RestfulMock loadStatefulParent(final RestfulMock mock) {
@@ -1143,6 +928,429 @@ Move:
         return Optional.empty();
     }
 
+    private void patchAddOperation(final String path, final Map<String, Object> matchedMap, final Object value, final boolean canOverwriteExisting) {
+
+        if (path.contains("/")) {
+
+            final String[] paths = path.split("/");
+
+            Object obj = matchedMap;
+
+            for (int i=0; i < paths.length; i++) {
+
+                final String p = paths[i];
+                final boolean lastIteration = (i == (paths.length - 1));
+
+                if (obj instanceof List) {
+
+                    final int indx = NumberUtils.toInt(p, -1);
+
+                    if (indx == -1) {
+                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                    }
+
+                    final List l = ((List)obj);
+
+                    if (lastIteration) {
+
+                        if (l.size() < indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_OUT_OF_RANGE_LIST_INDEX, path, indx));
+                        }
+
+                        if (!l.isEmpty()
+                                && !l.get(0).getClass().equals(value.getClass())) {
+                            throw new StatefulValidationException(
+                                    String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
+                                            "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
+                        }
+
+                        l.add(indx, value);
+
+                    } else {
+
+                        if (l.size() <= indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_OUT_OF_RANGE_LIST_INDEX, path, indx));
+                        }
+
+                        obj = l.get(indx);
+
+                    }
+
+                } else if (obj instanceof Map) {
+
+                    final Map map = ((Map)obj);
+
+                    if (lastIteration) {
+
+                        if (!canOverwriteExisting && map.containsKey(p)) {
+                            throw new StatefulValidationException(
+                                    String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'path' value '" + path + "' already exists"));
+                        }
+
+                        map.put(p, value);
+                    } else {
+                        obj = map.get(p);
+                    }
+
+                } else {
+                    throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                }
+
+            }
+
+        } else {
+
+            if (matchedMap.get(path) instanceof List) {
+
+                final List l = ((List)matchedMap.get(path));
+
+                if (!l.isEmpty()
+                        && !l.get(0).getClass().equals(value.getClass())) {
+                    throw new StatefulValidationException(
+                            String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION,
+                                    "'value' in path '" + path + "' has an incompatible data type with existing values in list"));
+                }
+
+                l.add(value);
+
+            } else {
+
+                // Map, String, Int, etc...
+
+                if (!canOverwriteExisting && matchedMap.containsKey(path)) {
+                    throw new StatefulValidationException(
+                            String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'path' value '" + path + "' already exists"));
+                }
+
+                matchedMap.put(path, value);
+            }
+
+        }
+
+    }
+
+    private void patchRemoveOperation(final String path, final Map<String, Object> matchedMap) {
+
+        if (path.contains("/")) {
+
+            final String[] paths = path.split("/");
+
+            Object obj = matchedMap;
+
+            for (int i=0; i < paths.length; i++) {
+
+                final String p = paths[i];
+                final boolean lastIteration = (i == (paths.length - 1));
+
+                if (obj instanceof List) {
+
+                    final List l = ((List)obj);
+
+                    if (lastIteration && "-".equals(p)) {
+
+                        l.remove(0);
+
+                    } else {
+
+                        final int indx = NumberUtils.toInt(p, -1);
+
+                        if (indx == -1) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                        }
+
+                        if (l.size() <= indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_OUT_OF_RANGE_LIST_INDEX, path, indx));
+                        }
+
+                        if (lastIteration) {
+                            l.remove(indx);
+                        } else {
+                            obj = l.get(indx);
+                        }
+
+                    }
+
+                } else if (obj instanceof Map) {
+
+                    final Map map = ((Map)obj);
+
+                    if (lastIteration) {
+
+                        if (!map.containsKey(p)) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+
+                        map.remove(p);
+                    } else {
+                        obj = map.get(p);
+                    }
+
+                } else {
+                    throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                }
+
+            }
+
+        } else {
+
+            if (!matchedMap.containsKey(path)) {
+                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+            }
+
+            matchedMap.remove(path);
+
+        }
+
+    }
+
+    private void patchCopyOperation(final String from, final Map<String, Object> matchedMap, final String path) {
+
+        if (from.contains("/")) {
+
+            final String[] fromPaths = from.split("/");
+
+            Object obj = matchedMap;
+
+            for (int i=0; i < fromPaths.length; i++) {
+
+                final String fp = fromPaths[i];
+                final boolean lastIteration = (i == (fromPaths.length - 1));
+
+                if (obj instanceof List) {
+
+                    final int indx = NumberUtils.toInt(fp, -1);
+
+                    if (indx == -1) {
+                        throw new StatefulValidationException(String.format(StatefulValidationException.FROM_STRUCTURE_MISALIGN, from));
+                    }
+
+                    final List l = ((List)obj);
+
+                    if (lastIteration) {
+
+                        if (l.size() < indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.FROM_OUT_OF_RANGE_LIST_INDEX, from, indx));
+                        }
+
+                        if (l.get(indx) == null) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+
+                        patchAddOperation(path, matchedMap, l.get(indx), true);
+
+                    } else {
+
+                        if (l.size() <= indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.FROM_OUT_OF_RANGE_LIST_INDEX, from, indx));
+                        }
+
+                        obj = l.get(indx);
+
+                    }
+
+                } else if (obj instanceof Map) {
+
+                    final Map map = ((Map)obj);
+
+                    if (lastIteration) {
+
+                        if (!map.containsKey(fp)) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+
+                        patchAddOperation(path, matchedMap, map.get(from), true);
+
+                    } else {
+                        obj = map.get(fp);
+                    }
+
+                } else {
+                    throw new StatefulValidationException(String.format(StatefulValidationException.FROM_STRUCTURE_MISALIGN, from));
+                }
+
+            }
+
+        } else {
+
+            if (!matchedMap.containsKey(from)) {
+                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+            }
+
+            patchAddOperation(path, matchedMap, matchedMap.get(from), true);
+
+        }
+
+    }
+
+    private void patchMoveOperation(final String from, final Map<String, Object> matchedMap, final String path) {
+
+        if (from.contains("/")) {
+
+            final String[] fromPaths = from.split("/");
+
+            Object obj = matchedMap;
+
+            for (int i=0; i < fromPaths.length; i++) {
+
+                final String fp = fromPaths[i];
+                final boolean lastIteration = (i == (fromPaths.length - 1));
+
+                if (obj instanceof List) {
+
+                    final int indx = NumberUtils.toInt(fp, -1);
+
+                    if (indx == -1) {
+                        throw new StatefulValidationException(String.format(StatefulValidationException.FROM_STRUCTURE_MISALIGN, from));
+                    }
+
+                    final List l = ((List)obj);
+
+                    if (lastIteration) {
+
+                        if (l.size() < indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.FROM_OUT_OF_RANGE_LIST_INDEX, from, indx));
+                        }
+
+                        if (l.get(indx) == null) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+
+                        patchAddOperation(path, matchedMap, l.get(indx), true);
+                        patchRemoveOperation(from, matchedMap);
+
+                    } else {
+
+                        if (l.size() <= indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.FROM_OUT_OF_RANGE_LIST_INDEX, from, indx));
+                        }
+
+                        obj = l.get(indx);
+
+                    }
+
+                } else if (obj instanceof Map) {
+
+                    final Map map = ((Map)obj);
+
+                    if (lastIteration) {
+
+                        if (!map.containsKey(fp)) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+
+                        patchAddOperation(path, matchedMap, map.get(from), true);
+                        patchRemoveOperation(from, matchedMap);
+
+                    } else {
+                        obj = map.get(fp);
+                    }
+
+                } else {
+                    throw new StatefulValidationException(String.format(StatefulValidationException.FROM_STRUCTURE_MISALIGN, from));
+                }
+
+            }
+
+        } else {
+
+            if (!matchedMap.containsKey(from)) {
+                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+            }
+
+            patchAddOperation(path, matchedMap, matchedMap.get(from), true);
+            patchRemoveOperation(from, matchedMap);
+
+        }
+
+    }
+
+    private void addReplaceOperation(final String path, final Map<String, Object> matchedMap, final Object value) {
+
+        if (path.contains("/")) {
+
+            final String[] paths = path.split("/");
+
+            Object obj = matchedMap;
+
+            for (int i=0; i < paths.length; i++) {
+
+                final String p = paths[i];
+                final boolean lastIteration = (i == (paths.length - 1));
+
+                if (obj instanceof List) {
+
+                    final int indx = NumberUtils.toInt(p, -1);
+
+                    if (indx == -1) {
+                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                    }
+
+                    final List l = ((List)obj);
+
+                    if (l.size() <= indx) {
+                        throw new StatefulValidationException(String.format(StatefulValidationException.PATH_OUT_OF_RANGE_LIST_INDEX, path, indx));
+                    }
+
+                    if (lastIteration) {
+
+                        if (!l.isEmpty()
+                                && !l.get(0).getClass().equals(value.getClass())) {
+                            throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing values in list");
+                        }
+
+                        l.set(indx, value);
+
+                    } else {
+
+                        if (l.size() <= indx) {
+                            throw new StatefulValidationException(String.format(StatefulValidationException.PATH_OUT_OF_RANGE_LIST_INDEX, path, indx));
+                        }
+
+                        obj = l.get(indx);
+
+                    }
+
+                } else if (obj instanceof Map) {
+
+                    final Map map = ((Map)obj);
+
+                    if (lastIteration) {
+
+                        if (!map.containsKey(p)) {
+                            throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+                        }
+                        if (!map.get(p).getClass().equals(value.getClass())) {
+                            throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
+                        }
+
+                        map.remove(p);
+                        map.put(p, value);
+
+                    } else {
+                        obj = map.get(p);
+                    }
+
+                } else {
+                    throw new StatefulValidationException(String.format(StatefulValidationException.PATH_STRUCTURE_MISALIGN, path));
+                }
+
+            }
+
+        } else {
+
+            if (!matchedMap.containsKey(path)) {
+                throw new StatefulValidationException(HttpStatus.SC_NOT_FOUND);
+            }
+            if (!matchedMap.get(path).getClass().equals(value.getClass())) {
+                throw new StatefulValidationException("'value' in path '" + path + "' has an incompatible data type with existing value");
+            }
+
+            matchedMap.put(path, value);
+
+        }
+
+    }
+
     private void findStateIndex(
             final String[] pathArray,
             final int pathLevel,
@@ -1261,7 +1469,9 @@ Move:
     private class StatefulValidationException extends RuntimeException {
 
         private static final String PATH_STRUCTURE_MISALIGN = "Invalid path '%s' does align with structure of existing JSON";
-        private static final String OUT_OF_RANGE_LIST_INDEX = "Invalid path '%s', list index %s is out of range";
+        private static final String FROM_STRUCTURE_MISALIGN = "Invalid from '%s' does align with structure of existing JSON";
+        private static final String PATH_OUT_OF_RANGE_LIST_INDEX = "Invalid path '%s', list index %s is out of range";
+        private static final String FROM_OUT_OF_RANGE_LIST_INDEX = "Invalid from '%s', list index %s is out of range";
         private static final String INVALID_PATCH_INSTRUCTION = "Invalid PATCH instruction in request body, %s";
 
         private final Integer status;
