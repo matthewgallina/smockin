@@ -21,7 +21,9 @@ import spark.Request;
 import spark.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -103,8 +105,11 @@ public class MockedRestServerEngineUtils {
 
         } catch (Exception ex) {
             logger.error("Error processing mock request", ex);
+
             response.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return Optional.of("Oops, looks like something went wrong with this mock!");
+            response.body((ex instanceof IllegalArgumentException) ? ex.getMessage() : "Oops, looks like something went wrong with this mock!");
+
+            return Optional.of("Oops"); // this message does not come through to caller when it is a 500 for some reason, so setting in body above
         }
 
     }

@@ -511,11 +511,6 @@ public class StatefulServiceImpl implements StatefulService {
                     break;
                 case MOVE:
 
-/*
-    Move:
-    { "op": "move", "from": "/orders/0", "path": "/rootOrder" }
-*/
-
                     if (prefixedFrom == null) {
                         return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' is required"));

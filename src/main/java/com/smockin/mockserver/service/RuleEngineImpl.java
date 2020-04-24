@@ -4,17 +4,17 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
-import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
-import org.apache.commons.lang3.math.NumberUtils;
+import com.smockin.utils.GeneralUtils;
+import com.smockin.utils.RuleEngineUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
+
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by gallina.
@@ -79,20 +79,9 @@ public class RuleEngineImpl implements RuleEngine {
             case PATH_VARIABLE:
                 return GeneralUtils.findPathVarIgnoreCase(req, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
-
-                final int argPosition = NumberUtils.toInt(fieldName, -1);
-
-                if (argPosition == -1
-                        || req.splat().length < argPosition) {
-                    throw new IllegalArgumentException("Unable to perform wildcard matching on the mocked endpoint '" + req.pathInfo() + "'. Path variable arg count does not align.");
-                }
-
-                return req.splat()[(argPosition - 1)];
+                return RuleEngineUtils.matchOnPathVariable(fieldName, req);
             case REQUEST_BODY_JSON_ANY:
-
-                final Map<String, ?> json = GeneralUtils.deserialiseJSONToMap(req.body());
-
-                return (json != null)?(String)json.get(fieldName):null;
+                return RuleEngineUtils.matchOnJsonField(fieldName, req.body(), req.pathInfo());
             default:
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }

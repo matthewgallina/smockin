@@ -230,6 +230,10 @@ public final class GeneralUtils {
         return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
     }
 
+    public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
+        return deserialiseJson(jsonStr);
+    }
+
     public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
         return deserialiseJson(jsonStr);
     }
