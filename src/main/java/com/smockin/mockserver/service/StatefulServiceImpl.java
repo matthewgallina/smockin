@@ -1,12 +1,14 @@
 package com.smockin.mockserver.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockStatefulMeta;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.enums.PatchCommandEnum;
@@ -22,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
+
 import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,14 +49,22 @@ public class StatefulServiceImpl implements StatefulService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
 
     @Override
     public RestfulResponseDTO process(final Request req, final RestfulMock mock) {
 
         final RestfulMock parent = loadStatefulParent(mock);
 
+        final String sanitizedInboundPath =
+            ( UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode()) && StringUtils.isNotBlank(mock.getCreatedBy().getCtxPath()) )
+                ? StringUtils.remove(req.pathInfo(), mock.getCreatedBy().getCtxPath())
+                : req.pathInfo();
+
         final List<Map<String, Object>> mockStateContent = loadStateForMock(parent);
-        final Map<String, String> pathVars = GeneralUtils.findAllPathVars(req.pathInfo(), mock.getPath());
+        final Map<String, String> pathVars = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath());
         final String fieldId = parent.getRestfulMockStatefulMeta().getIdFieldName();
         final String dataId = pathVars.get(fieldId);
 
@@ -572,6 +583,7 @@ public class StatefulServiceImpl implements StatefulService {
                                                        final List<Map<String, Object>> currentStateContent,
                                                        final RestfulMockStatefulMeta restfulMockStatefulMeta) {
 
+
         final String fieldIdPathPattern = restfulMockStatefulMeta.getIdFieldLocation();
 
         if (isComplexJsonStructure(fieldIdPathPattern)) {
@@ -584,7 +596,7 @@ public class StatefulServiceImpl implements StatefulService {
 
             return currentStateContent
                     .stream()
-                    .filter(f -> (StringUtils.equals(id, (String)f.get(fieldId))))
+                    .filter(f -> (StringUtils.equals(id, String.valueOf(f.get(fieldId)))))
                     .findFirst();
 
         }

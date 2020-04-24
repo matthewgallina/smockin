@@ -293,6 +293,9 @@ public class RestfulMockServiceUtils {
         final RestMethodEnum method = mock.getMethod();
         final String originalPath = dto.getPath();
         final boolean isParent = (mock.getStatefulParent() == null);
+
+        applyRestfulMockStatefulMeta(dto, mock);
+
         final String idFieldName = (!isParent)
                 ? mock.getStatefulParent().getRestfulMockStatefulMeta().getIdFieldName()
                 : null; // if not the parent then we don't need the idFieldName anyway
@@ -309,8 +312,6 @@ public class RestfulMockServiceUtils {
         }
 
         mock.setStatus(dto.getStatus());
-
-        applyRestfulMockStatefulMeta(dto, mock);
 
         restfulMockDAO.save(mock);
     }

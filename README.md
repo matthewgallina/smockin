@@ -18,7 +18,7 @@
 
 New in **version 2.7** of sMockin
 
-- Introducing the 'Stateful REST' mocking type. Endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
+- Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 
 
 <br />

@@ -897,8 +897,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             reqData.method = 'GET';
             reqData.statefulDefaultResponseBody = (!utils.isBlank($scope.endpoint.responseBody)) ? $scope.endpoint.responseBody : "[]";
             reqData.statefulIdFieldName = (!utils.isBlank($scope.endpoint.statefulIdFieldName)) ? $scope.endpoint.statefulIdFieldName : "id";
-            reqData.statefulIdFieldLocation = (!utils.isBlank($scope.endpoint.statefulIdFieldLocation)) ? $scope.endpoint.statefulIdFieldLocation : reqData.statefulIdFieldName;
-
+//            reqData.statefulIdFieldLocation = (!utils.isBlank($scope.endpoint.statefulIdFieldLocation)) ? $scope.endpoint.statefulIdFieldLocation : reqData.statefulIdFieldName;
+            reqData.statefulIdFieldLocation = reqData.statefulIdFieldName;
         }
 
         if (!isNew) {
@@ -1241,6 +1241,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return false;
         }
 
+        /*
         if (!utils.isBlank($scope.endpoint.statefulIdFieldName)
                 && !utils.isBlank($scope.endpoint.statefulIdFieldLocation)) {
 
@@ -1255,6 +1256,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 return false;
             }
         }
+        */
 
         return true;
     }
