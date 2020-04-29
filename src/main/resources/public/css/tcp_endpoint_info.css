@@ -37,6 +37,10 @@
     min-height: 200px;
 }
 
+#stateful-response-body {
+    min-height: 200px;
+}
+
 .default-label-color {
     color: cadetblue;
 }
@@ -147,6 +151,10 @@
 }
 
 #clear-proxy-button {
+    width: 100%;
+}
+
+#clear-data-state-button {
     width: 100%;
 }
 

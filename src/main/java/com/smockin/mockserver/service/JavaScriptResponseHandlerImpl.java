@@ -1,6 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
@@ -9,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,9 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
     private final Logger logger = LoggerFactory.getLogger(JavaScriptResponseHandlerImpl.class);
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
     public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
         logger.debug("executeUserResponse called");
 
@@ -36,7 +41,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
             engineResponse = executeJS(
                     defaultRequestObject
-                        + populateRequestObjectWithInbound(req, mock.getPath())
+                        + populateRequestObjectWithInbound(req, mock.getPath(), mock.getCreatedBy().getCtxPath())
                         + defaultResponseObject
                         + userResponseFunctionInvoker
                         + mock.getJavaScriptHandler().getSyntax());
@@ -67,7 +72,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return buildEngine().eval(js);
     }
 
-    String populateRequestObjectWithInbound(final Request req, final String mockPath) {
+    String populateRequestObjectWithInbound(final Request req, final String mockPath, final String ctxPath) {
 
         final Map<String, String> reqHeaders =
                 req.headers()
@@ -86,7 +91,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
                     .append(";");
         }
 
-        applyMapValuesToStringBuilder("request.pathVars", GeneralUtils.findAllPathVars(req.pathInfo(), mockPath), reqObject);
+        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), ctxPath);
+        applyMapValuesToStringBuilder("request.pathVars", GeneralUtils.findAllPathVars(sanitizedInboundPath, mockPath), reqObject);
         applyMapValuesToStringBuilder("request.parameters", extractAllRequestParams(req), reqObject);
         applyMapValuesToStringBuilder("request.headers", reqHeaders, reqObject);
 

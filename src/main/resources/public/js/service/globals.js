@@ -55,7 +55,7 @@ app.service('globalVars', function() {
         MockTypeProxySse : 'PROXY_SSE',
         MockTypeCustomJs : 'CUSTOM_JS',
         MockTypeRuleWs : 'RULE_WS',
-        MockTypePushWs : 'PUSH_WS'
+        MockTypeStateful : 'STATEFUL'
     };
 
     this.RuleComparators = [

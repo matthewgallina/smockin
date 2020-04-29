@@ -89,6 +89,16 @@ public class RestfulMock extends Identifier {
     @JoinColumn(name="CREATED_BY", nullable = true)
     private SmockinUser createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="STATEFUL_PARENT", nullable = true)
+    private RestfulMock statefulParent;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "statefulParent", orphanRemoval = true)
+    private List<RestfulMock> statefulChildren = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "restfulMock", orphanRemoval = true)
+    private RestfulMockStatefulMeta restfulMockStatefulMeta;
+
     public RestfulMock() {
     }
 
@@ -245,6 +255,27 @@ public class RestfulMock extends Identifier {
     }
     public void setCreatedBy(SmockinUser createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public RestfulMock getStatefulParent() {
+        return statefulParent;
+    }
+    public void setStatefulParent(RestfulMock statefulParent) {
+        this.statefulParent = statefulParent;
+    }
+
+    public List<RestfulMock> getStatefulChildren() {
+        return statefulChildren;
+    }
+    public void setStatefulChildren(List<RestfulMock> statefulChildren) {
+        this.statefulChildren = statefulChildren;
+    }
+
+    public RestfulMockStatefulMeta getRestfulMockStatefulMeta() {
+        return restfulMockStatefulMeta;
+    }
+    public void setRestfulMockStatefulMeta(RestfulMockStatefulMeta restfulMockStatefulMeta) {
+        this.restfulMockStatefulMeta = restfulMockStatefulMeta;
     }
 
 }

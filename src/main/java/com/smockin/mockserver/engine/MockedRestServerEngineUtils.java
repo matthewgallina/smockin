@@ -21,7 +21,9 @@ import spark.Request;
 import spark.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -53,6 +55,10 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private ServerSideEventService serverSideEventService;
 
+    @Autowired
+    private StatefulService statefulService;
+
+
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode) {
@@ -70,6 +76,7 @@ public class MockedRestServerEngineUtils {
                                     RestMockTypeEnum.PROXY_HTTP,
                                     RestMockTypeEnum.SEQ,
                                     RestMockTypeEnum.RULE,
+                                    RestMockTypeEnum.STATEFUL,
                                     RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                             RestMethodEnum.findByName(request.requestMethod()),
@@ -78,6 +85,7 @@ public class MockedRestServerEngineUtils {
                                           RestMockTypeEnum.PROXY_HTTP,
                                           RestMockTypeEnum.SEQ,
                                           RestMockTypeEnum.RULE,
+                                          RestMockTypeEnum.STATEFUL,
                                           RestMockTypeEnum.CUSTOM_JS));
 
             if (mock == null) {
@@ -97,8 +105,11 @@ public class MockedRestServerEngineUtils {
 
         } catch (Exception ex) {
             logger.error("Error processing mock request", ex);
+
             response.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            return Optional.of("Oops, looks like something went wrong with this mock!");
+            response.body((ex instanceof IllegalArgumentException) ? ex.getMessage() : "Oops, looks like something went wrong with this mock!");
+
+            return Optional.of("Oops"); // this message does not come through to caller when it is a 500 for some reason, so setting in body above
         }
 
     }
@@ -117,6 +128,9 @@ public class MockedRestServerEngineUtils {
                 break;
             case CUSTOM_JS:
                 outcome = javaScriptResponseHandler.executeUserResponse(req, mock);
+                break;
+            case STATEFUL:
+                outcome = statefulService.process(req, mock);
                 break;
             case SEQ:
             default:
@@ -139,7 +153,7 @@ public class MockedRestServerEngineUtils {
             res.header(e.getKey(), e.getValue())
         );
 
-        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody());
+        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath());
 
         handleLatency(mock);
 

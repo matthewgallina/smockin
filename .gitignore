@@ -28,3 +28,5 @@ launch.sh
 /src/test/java/com/smockin/temp
 sMockin.app
 *.zip
+debug.sh
+SmockinLocalTests.java

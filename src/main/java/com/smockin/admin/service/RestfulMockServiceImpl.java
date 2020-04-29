@@ -8,11 +8,10 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDefinitionRuleDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.mockserver.service.MockOrderingCounterService;
-import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +43,6 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Autowired
     private SmockinUserService smockinUserService;
 
-    @Autowired
-    private ProjectService projectService;
-
-    @Autowired
-    private MockOrderingCounterService mockOrderingCounterService;
 
     @Override
     public RestfulMockResponseDTO loadEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
@@ -69,33 +63,17 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
-        RestfulMock mock = new RestfulMock(
-                restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()),
-                dto.getMethod(),
-                dto.getStatus(),
-                dto.getMockType(),
-                dto.getProxyTimeoutInMillis(),
-                dto.getWebSocketTimeoutInMillis(),
-                dto.getSseHeartBeatInMillis(),
-                dto.isProxyPushIdOnConnect(),
-                dto.isRandomiseDefinitions(),
-                dto.isProxyForwardWhenNoRuleMatch(),
-                smockinUser,
-                dto.isRandomiseLatency(),
-                dto.getRandomiseLatencyRangeMinMillis(),
-                dto.getRandomiseLatencyRangeMaxMillis(),
-                (dto.getProjectId() != null) ? projectService.loadByExtId(dto.getProjectId()) : null);
+        RestfulMock mainMock = restfulMockServiceUtils.buildRestfulMock(dto, smockinUser);
 
-        restfulMockServiceUtils.handleCustomJsSyntax(dto, mock);
+        mainMock = restfulMockServiceUtils.handleCreateStatefulMockType(dto, mainMock, smockinUser);
+        restfulMockServiceUtils.handleCustomJsSyntax(dto, mainMock);
+        restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mainMock);
 
-        restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
-
-        // Reassign entity variable, as spring data does not enrich the passed in entity instance with any generated ids.
-        mock = restfulMockDAO.save(mock);
+        mainMock = restfulMockDAO.save(mainMock);
 
         restfulMockServiceUtils.handleEndpointOrdering();
 
-        return mock.getExtId();
+        return mainMock.getExtId();
     }
 
     @Override
@@ -110,36 +88,21 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         final boolean pathChanged = (!mock.getPath().equalsIgnoreCase(dto.getPath()));
 
-        mock.getDefinitions().clear();
-        mock.getRules().clear();
-        restfulMockDAO.saveAndFlush(mock);
+        if (RestMockTypeEnum.STATEFUL.equals(mock.getMockType())) { // existing mock is STATEFUL...
 
-        mock.setMockType(dto.getMockType());
-        mock.setPath(restfulMockServiceUtils.formatInboundPathVarArgs(dto.getPath()));
-        mock.setMethod(dto.getMethod());
-        mock.setStatus(dto.getStatus());
-        mock.setProxyTimeOutInMillis(dto.getProxyTimeoutInMillis());
-        mock.setWebSocketTimeoutInMillis(dto.getWebSocketTimeoutInMillis());
-        mock.setSseHeartBeatInMillis(dto.getSseHeartBeatInMillis());
-        mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
-        mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
-        mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
-        mock.setLastUpdated(GeneralUtils.getCurrentDate()); // force update to lastUpdated, as changes to child records do not otherwise change this
-        mock.setRandomiseLatency(dto.isRandomiseLatency());
-        mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());
-        mock.setRandomiseLatencyRangeMaxMillis(dto.getRandomiseLatencyRangeMaxMillis());
+            restfulMockServiceUtils.handleExistingStatefulMockUpdate(dto, mock);
 
-        if (dto.getProjectId() != null)
-            mock.setProject(projectService.loadByExtId(dto.getProjectId()));
+        } else if (RestMockTypeEnum.STATEFUL.equals(dto.getMockType())) { // existing mock IS NOT STATEFUL but being updated to a STATEFUL type...
 
-        restfulMockServiceUtils.handleCustomJsSyntax(dto, mock);
+            dto.setMethod(RestMethodEnum.GET);
+            restfulMockServiceUtils.handleMockFieldsUpdate(dto, mock);
 
-        restfulMockServiceUtils.populateEndpointDefinitionsAndRules(dto, mock);
+            restfulMockServiceUtils.createStatefulChildMocks(dto, mock, mock.getCreatedBy());
 
-        restfulMockDAO.save(mock);
+        } else {
 
-        if (RestMockTypeEnum.SEQ.equals(mock.getMockType())) {
-            mockOrderingCounterService.clearMockStateById(mock.getExtId());
+            restfulMockServiceUtils.handleMockFieldsUpdate(dto, mock);
+
         }
 
         if (pathChanged) {
@@ -155,6 +118,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         final RestfulMock mock = loadRestMock(mockExtId);
 
         userTokenServiceUtils.validateRecordOwner(mock.getCreatedBy(), token);
+
+        restfulMockServiceUtils.handleDeleteStatefulMock(mock);
 
         restfulMockDAO.delete(mock);
     }

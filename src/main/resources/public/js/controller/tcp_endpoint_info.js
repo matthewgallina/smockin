@@ -22,6 +22,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     var WebSocketPathPlaceHolderTxt = 'e.g. (/hello/connect)';
     var SsePathPlaceHolderTxt = 'e.g. (/hello)';
 
+    var GetMethod = 'GET';
+    var AllMethods = 'ALL METHODS';
+
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
 
@@ -38,7 +41,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.mockTypeProxySse = MockTypeDefinitions.MockTypeProxySse;
     $scope.mockTypeCustomJs = MockTypeDefinitions.MockTypeCustomJs;
     $scope.mockTypeRuleWs = MockTypeDefinitions.MockTypeRuleWs;
-    $scope.mockTypePushWs = MockTypeDefinitions.MockTypePushWs;
+    $scope.mockTypeStateful = MockTypeDefinitions.MockTypeStateful;
     $scope.endpointHeading = (isNew) ? 'New HTTP Endpoint' : 'HTTP Endpoint';
     $scope.pathPlaceHolderTxt = HttpPathPlaceHolderTxt;
     $scope.pathLabel = 'Path';
@@ -49,6 +52,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.defaultHttpStatusCodeLabel = 'Default HTTP Status Code';
     $scope.defaultHttpStatusCodePlaceholderTxt = 'e.g. (200, 201, 404)';
     $scope.defaultResponseBodyLabel = 'Default Response Body';
+    $scope.initialDataStateLabel = 'Initial Data State';
     $scope.proxyContentTypeLabel = 'Content Type';
     $scope.proxyHttpStatusCodeLabel = 'HTTP Status Code';
     $scope.proxyResponseBodyLabel = 'Response Body';
@@ -94,7 +98,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.option2Label = 'Option 2';
     $scope.option1Text = 'Endpoint for pushing responses to queue';
     $scope.option2Text = 'Input form for pushing responses to queue';
-    $scope.clockValueLabel = 'Offset (ms)';
+    $scope.statefulIdFieldNameLabel = 'ID Field Name';
+    $scope.statefulIdFieldLocationLabel = 'JSON Path to ID Field';
+    $scope.statefulIdFieldLocationPlaceholderLabel = 'e.g use data.id where your json format is { data : [{ "id" : "123" }] }';
 
 
     //
@@ -104,7 +110,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.cancelButtonLabel = 'Cancel';
     $scope.addRuleButtonLabel = 'Add Rule';
     $scope.addSequenceButtonLabel = 'Add Seq Response';
-//    $scope.addWsPushResponseButtonLabel = 'Add Response';
     $scope.viewButtonLabel = "View";
     $scope.removeResponseHeaderButtonLabel = 'X';
     $scope.addResponseHeaderButtonLabel = 'New Row';
@@ -113,6 +118,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.clearProxyResponseFieldsButtonLabel = 'Clear Fields';
     $scope.postProxyResponseButtonLabel = 'Post Response';
     $scope.messageButtonLabel = 'Message';
+    $scope.clearStateButtonLabel = 'Reset Data State';
 
 
     //
@@ -169,8 +175,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
        { "name" : "Custom JavaScript", "value" : MockTypeDefinitions.MockTypeCustomJs },
        { "name" : "SSE Proxied", "value" : MockTypeDefinitions.MockTypeProxySse },
        { "name" : "WebSocket Proxied", "value" : MockTypeDefinitions.MockTypeWebSocket },
-       { "name" : "WebSocket Rules Based", "value" : MockTypeDefinitions.MockTypeRuleWs }
-//       { "name" : "WebSocket Periodic Push", "value" : MockTypeDefinitions.MockTypePushWs }
+       { "name" : "WebSocket Rules Based", "value" : MockTypeDefinitions.MockTypeRuleWs },
+       { "name" : "Stateful REST", "value" : MockTypeDefinitions.MockTypeStateful }
     ];
 
     $scope.isNew = isNew;
@@ -199,7 +205,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         "randomiseLatencyRangeMaxMillis" : 0,
         "definitions" : [],
         "customJsSyntax" : null,
-        "rules" : []
+        "rules" : [],
+        "statefulIdFieldName" : "id",
+        "statefulIdFieldLocation" : null
     };
 
     $scope.proxyEndpoint = {
@@ -244,7 +252,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
                 "definitions" : endpoint.definitions,
                 "customJsSyntax" : endpoint.customJsSyntax,
                 "rules" : endpoint.rules,
-                "createdBy" : endpoint.createdBy
+                "createdBy" : endpoint.createdBy,
+                "statefulIdFieldName" : endpoint.statefulIdFieldName,
+                "statefulIdFieldLocation" : endpoint.statefulIdFieldLocation
             };
 
             $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
@@ -266,22 +276,15 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             if (endpoint.mockType == MockTypeDefinitions.MockTypeCustomJs) {
             	initJSEditor(endpoint.customJsSyntax);
             }
-/*
-            if (endpoint.mockType == MockTypeDefinitions.MockTypePushWs) {
-                
-                for (var r = 0; r < endpoint.rules.length; r++) {
-            		var originalHeaders = endpoint.rules[r].responseHeaders;
-            		endpoint.rules[r].responseHeaders = {"0":{
-            			"name":"type",
-            			"value":originalHeaders.type || "clock"
-            		},"1":{
-            			"name":"clock",
-            			"value": Number(originalHeaders.clock) || 1000
-            		}};
-            	}
+
+            if (endpoint.mockType == MockTypeDefinitions.MockTypeStateful) {
+                $scope.endpoint.method = AllMethods;
+                $scope.endpoint.contentType = globalVars.JsonContentType;
+                $scope.endpoint.responseBody = endpoint.statefulDefaultResponseBody;
             }
-*/
+
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
+
         };
 
         loadMockData(extId, handleLoadedMock);
@@ -294,17 +297,24 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     // Scoped Functions
     $scope.doSelectMockType = function(et) {
 
+        if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeStateful) {
+            $scope.endpoint.method = null;
+        }
+
         $scope.endpoint.mockType = et;
 
         switch (et.value) {
             case MockTypeDefinitions.MockTypeWebSocket :
                 $scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
-                $scope.endpoint.method = 'GET';
+                $scope.endpoint.method = GetMethod;
                 break;
                 
             case MockTypeDefinitions.MockTypeProxySse :
                 $scope.pathPlaceHolderTxt = SsePathPlaceHolderTxt;
-                $scope.endpoint.method = 'GET';
+                $scope.endpoint.method = GetMethod;
                 break;
                 
             case MockTypeDefinitions.MockTypeCustomJs :
@@ -317,9 +327,14 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
                 break;
             case MockTypeDefinitions.MockTypeRuleWs :
-//            case MockTypeDefinitions.MockTypePushWs :
             	$scope.pathPlaceHolderTxt = WebSocketPathPlaceHolderTxt;
-                $scope.endpoint.method = 'GET';
+                $scope.endpoint.method = GetMethod;
+
+            	break;
+            case MockTypeDefinitions.MockTypeStateful :
+                $scope.endpoint.method = AllMethods;
+                $scope.endpoint.contentType = "application/json";
+                $scope.endpoint.responseBody = "[]";
 
             	break;
             default :
@@ -679,58 +694,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         });
 
     };
-    
-    // This is very similar to add rule, except that Push Notifications are sent on a trigger.
-    // Trigger can be time based, or HTTP/WS request based.
-/*
-    $scope.doOpenAddWsPushResponse = function() {
-        var modalInstance = $uibModal.open({
-            templateUrl: 'endpoint_info_ws_push.html',
-            controller: 'endpointInfoWsPushController',
-            backdrop  : 'static',
-            keyboard  : false,
-            resolve: {
-              data: function () {
-                return {
-                    "mockType" : $scope.endpoint.mockType.value
-                };
-              }
-            }
-          });
-
-          modalInstance.result.then(function (rule) {
-              rule.orderNo = ( $scope.endpoint.rules.length + 1 );
-              $scope.endpoint.rules.push(rule);
-          }, function () {
-
-          });
-    };
-    
-    $scope.doOpenViewPush = function(notification) {
-
-       var modalInstance = $uibModal.open({
-            templateUrl: 'endpoint_info_ws_push.html',
-            controller: 'endpointInfoWsPushController',
-            backdrop  : 'static',
-            keyboard  : false,
-            resolve: {
-              data: function () {
-                return {
-                  "rule" : notification,
-                  "mockType" : $scope.endpoint.mockType.value,
-                  "createdBy" : $scope.endpoint.createdBy
-                };
-              }
-            }
-          });
-
-          modalInstance.result.then(function () {
-
-          }, function () {
-
-          });
-    };
-    */
 
     $scope.doOpenViewSequence = function(seq) {
 
@@ -829,6 +792,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             return;
         } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeCustomJs && !validateCustomJS()) {
             return;
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeStateful && !validateStateful()) {
+            return;
         }
 
         if ($scope.endpoint.randomiseLatency) {
@@ -870,7 +835,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
             "randomiseLatencyRangeMaxMillis" : $scope.endpoint.randomiseLatencyRangeMaxMillis,
             "definitions" : [],
             "rules" : [],
-            "customJsSyntax" : null
+            "customJsSyntax" : null,
+            "statefulDefaultResponseBody" : null
         };
 
         // Handle Sequence specifics
@@ -931,23 +897,14 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             reqData.customJsSyntax = jsEditor.getValue();
 
-/*
-        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypePushWs) {
-        
-            // Rules
-            angular.copy($scope.endpoint.rules, reqData.rules); // deep copy rules array
-            // Convert all local rule headers objects to DTO
-            for (var r=0; r < $scope.endpoint.rules.length; r++) {
-            	reqData.rules[r].responseHeaders = { "type" : "", "clock": 1000};
-            	// Ensure that there are two headers
-            	if ($scope.endpoint.rules[r].responseHeaders['0'] && $scope.endpoint.rules[r].responseHeaders['1']) {
-            		var type = $scope.endpoint.rules[r].responseHeaders['0'];
-                	var clock = $scope.endpoint.rules[r].responseHeaders['1'];
-                	reqData.rules[r].responseHeaders.type = type.value;
-                	reqData.rules[r].responseHeaders.clock = clock.value;
-            	}
-            }
-*/
+        } else if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeStateful) {
+
+            // Use GET as a placeholder for stateful mock parent
+            reqData.method = 'GET';
+            reqData.statefulDefaultResponseBody = (!utils.isBlank($scope.endpoint.responseBody)) ? $scope.endpoint.responseBody : "[]";
+            reqData.statefulIdFieldName = (!utils.isBlank($scope.endpoint.statefulIdFieldName)) ? $scope.endpoint.statefulIdFieldName : "id";
+//            reqData.statefulIdFieldLocation = (!utils.isBlank($scope.endpoint.statefulIdFieldLocation)) ? $scope.endpoint.statefulIdFieldLocation : reqData.statefulIdFieldName;
+            reqData.statefulIdFieldLocation = reqData.statefulIdFieldName;
         }
 
         if (!isNew) {
@@ -1065,6 +1022,31 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         modalInstance.result.then(function (editorContent) {
             jsEditor.setValue(editorContent);
         }, function () {
+
+        });
+
+    };
+
+    $scope.doClearDataState = function() {
+
+        utils.openWarningConfirmation("Clear all data state for this mock?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                var reqData = {};
+
+                restClient.doPost($http, '/stateful/' + extId + '/clear', reqData, function(status, data) {
+
+                    if (status != 204) {
+                         showAlert(globalVars.GeneralErrorMessage);
+                         return;
+                    }
+
+                    showAlert("State data has been successfully cleared", "success");
+
+                });
+
+            }
 
         });
 
@@ -1241,6 +1223,48 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
       }
 
       return true;
+    }
+
+    function validateStateful() {
+
+        var path = $scope.endpoint.path;
+        var lastSlash = path.lastIndexOf("/");
+
+        if (lastSlash != -1 && path.substring(lastSlash).indexOf(":") != -1) {
+            showAlert("Stateful mock cannot end with a path variable");
+            return false;
+        }
+
+        if (!utils.isBlank($scope.endpoint.responseBody)
+                && utils.validateJson($scope.endpoint.responseBody) != null) {
+            showAlert("'Initial Data State' must contain a valid JSON value");
+            return false;
+        }
+
+        if ($scope.endpoint.statefulIdFieldName != null
+                && !utils.isAlpha($scope.endpoint.statefulIdFieldName)) {
+            showAlert("'ID Field Name' may only contain a single character name");
+            return false;
+        }
+
+        /*
+        if (!utils.isBlank($scope.endpoint.statefulIdFieldName)
+                && !utils.isBlank($scope.endpoint.statefulIdFieldLocation)) {
+
+            var locPos = $scope.endpoint.statefulIdFieldLocation.lastIndexOf(".");
+
+            var idLocationValue = (locPos > -1)
+                ? $scope.endpoint.statefulIdFieldLocation.substring(locPos + 1)
+                : $scope.endpoint.statefulIdFieldLocation;
+
+            if (idLocationValue != $scope.endpoint.statefulIdFieldName) {
+                showAlert("ID field name '" + $scope.endpoint.statefulIdFieldName + "' and ID in location '" + idLocationValue + "' do not match");
+                return false;
+            }
+        }
+        */
+
+        return true;
     }
 
     var serverCallbackFunc = function (status, data) {

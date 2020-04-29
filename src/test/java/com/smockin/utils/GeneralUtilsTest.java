@@ -9,6 +9,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -138,7 +139,7 @@ public class GeneralUtilsTest {
         Mockito.when(req.pathInfo()).thenReturn("/person/Bob");
 
         // Test
-        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{name}", "NAME");
+        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req.pathInfo(), "/person/{name}", "NAME");
 
         // Assertions
         Assert.assertNotNull(nameResult);
@@ -153,7 +154,7 @@ public class GeneralUtilsTest {
         Mockito.when(req.pathInfo()).thenReturn("/person/21");
 
         // Test
-        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{age}", "agE");
+        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req.pathInfo(), "/person/{age}", "agE");
 
         // Assertions
         Assert.assertNotNull(ageResult);
@@ -479,6 +480,62 @@ public class GeneralUtilsTest {
         // Assertions
         Assert.assertNotNull(results);
         Assert.assertEquals(0, results.size());
+
+    }
+
+    @Test
+    public void deserialiseJSONToListTest() {
+
+        // Test
+        final List<Map<String, ?>> result = GeneralUtils.deserialiseJSONToList("[{\"fruit\":{\"name\":\"pear\"}},{\"fruit\":{\"name\":\"apple\"}}]");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals(2, result.size());
+        Assert.assertNotNull(result.get(0));
+        Assert.assertNotNull(result.get(1));
+        Assert.assertNotNull(result.get(0).get("fruit"));
+        Assert.assertNotNull(result.get(1).get("fruit"));
+        Assert.assertTrue(result.get(0).get("fruit") instanceof Map);
+        Assert.assertTrue(result.get(1).get("fruit") instanceof Map);
+        Assert.assertTrue(((Map)result.get(0).get("fruit")).get("name") != null);
+        Assert.assertTrue(((Map)result.get(1).get("fruit")).get("name") != null);
+        Assert.assertEquals("pear", ((Map)result.get(0).get("fruit")).get("name"));
+        Assert.assertEquals("apple", ((Map)result.get(1).get("fruit")).get("name"));
+
+    }
+
+    @Test
+    public void deserialiseJSONToListEmptyTest() {
+
+        // Test
+        final List<Map<String, ?>> result = GeneralUtils.deserialiseJSONToList("[]");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertTrue(result.isEmpty());
+
+    }
+
+    @Test
+    public void deserialiseJSONToListNullTest() {
+
+        // Test
+        final List<Map<String, ?>> result = GeneralUtils.deserialiseJSONToList(null);
+
+        // Assertions
+        Assert.assertNull(result);
+
+    }
+
+    @Test
+    public void deserialiseJSONToListBlankTest() {
+
+        // Test
+        final List<Map<String, ?>> result = GeneralUtils.deserialiseJSONToList(" ");
+
+        // Assertions
+        Assert.assertNull(result);
 
     }
 

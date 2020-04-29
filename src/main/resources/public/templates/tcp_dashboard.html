@@ -87,7 +87,11 @@
                         <tbody>
                             <tr ng-repeat="x in rs.data">
                                 <td><input type="checkbox" ng-checked="doesSelectionContain(x.extId)" ng-click="toggleSelection(x)" /></td>
-                                <td>{{ x.method }}<br/>{{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
+                                <td>
+                                    <span ng-if="x.mockType == 'STATEFUL'">{{ allMethodsLabel }}</span>
+                                    <span ng-if="x.mockType != 'STATEFUL'">{{ x.method }}</span>
+                                    <br/>
+                                    {{ (x.userCtxPath.length > 0) ? ('/' + x.userCtxPath) : '' }}<b>{{ x.path }}</b></td>
                                 <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                                 <td>{{ translate(x.mockType) }}</td>
                                 <td class="status-{{x.status | lowercase}}">

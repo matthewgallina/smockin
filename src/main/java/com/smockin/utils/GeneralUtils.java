@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.smockin.admin.enums.UserModeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import spark.Request;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
@@ -142,13 +144,13 @@ public final class GeneralUtils {
         return null;
     }
 
-    public static String findPathVarIgnoreCase(final Request request, final String mockPath, final String pathVarName) {
+    public static String findPathVarIgnoreCase(final String inboundPath, final String mockPath, final String pathVarName) {
 
         if (pathVarName == null) {
             return null;
         }
 
-        return findAllPathVars(request.pathInfo(), mockPath).get(pathVarName.toLowerCase());
+        return findAllPathVars(inboundPath, mockPath).get(pathVarName.toLowerCase());
     }
 
     public static Map<String, String> findAllPathVars(final String inboundPath, final String mockPath) {
@@ -184,6 +186,13 @@ public final class GeneralUtils {
         }
 
         return pathVars;
+    }
+
+    public static String sanitizeMultiUserPath(final UserModeEnum usermode, final String pathInfo, final String ctxPath) {
+
+        return ( UserModeEnum.ACTIVE.equals(usermode) && StringUtils.isNotBlank(ctxPath) )
+                    ? StringUtils.removeFirst(pathInfo, ctxPath)
+                    : pathInfo;
     }
 
     public static void checkForAndHandleSleep(final long sleepInMillis) {
@@ -230,18 +239,32 @@ public final class GeneralUtils {
         return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
     }
 
+    public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
+        return deserialiseJson(jsonStr);
+    }
+
     public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
         return deserialiseJson(jsonStr);
     }
 
     public static <T> T deserialiseJson(final String jsonStr) {
+        return deserialiseJson(jsonStr, true);
+    }
+
+    public static Map<String, ?> deserialiseJSONToMap(final String jsonStr, final boolean logFailure) {
+        return deserialiseJson(jsonStr, logFailure);
+    }
+
+    public static <T> T deserialiseJson(final String jsonStr, final boolean logFailure) {
 
         if (jsonStr != null) {
             try {
                 return JSON_MAPPER.readValue(jsonStr, new TypeReference<T>() {});
             } catch (IOException e) {
-                logger.error("Error de-serialising json", e);
-                // fail silently
+                if (logFailure) {
+                    logger.error("Error de-serialising json", e);
+                }
+                // always fail silently
             }
         }
 

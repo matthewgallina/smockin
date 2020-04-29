@@ -11,5 +11,5 @@ public enum RestMockTypeEnum {
     PROXY_WS,
     CUSTOM_JS,
     RULE_WS,
-    PUSH_WS
+    STATEFUL
 }

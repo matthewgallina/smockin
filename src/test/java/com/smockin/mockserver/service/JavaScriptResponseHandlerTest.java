@@ -1,5 +1,7 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.enums.UserModeEnum;
+import com.smockin.admin.service.SmockinUserService;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -7,24 +9,35 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import spark.Request;
 import javax.script.ScriptException;
 import java.util.*;
 
+@RunWith(MockitoJUnitRunner.class)
 public class JavaScriptResponseHandlerTest {
 
-    private JavaScriptResponseHandlerImpl javaScriptResponseHandler;
-    private Request req;
+    @Mock
+    private SmockinUserService smockinUserService;
+
+    @Spy
+    @InjectMocks
+    private JavaScriptResponseHandlerImpl javaScriptResponseHandler = new JavaScriptResponseHandlerImpl();
 
     @Rule
     public ExpectedException expect = ExpectedException.none();
 
+    private Request req;
+
     @Before
     public void setUp() {
         req = Mockito.mock(Request.class);
-        javaScriptResponseHandler = new JavaScriptResponseHandlerImpl();
     }
 
     @Test
@@ -250,12 +263,37 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(req.queryParams("name")).thenReturn("joe");
         Mockito.when(req.queryParams("age")).thenReturn("35");
 
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.INACTIVE);
+
         // Test
-        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}");
+        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}", "");
 
         // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals("request.path='/hello/james'; request.body='xxx'; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
+    }
+
+    @Test
+    public void populateRequestObjectWithInbound_multiUserCtx_Test() {
+
+        // Setup
+        Mockito.when(req.headers()).thenReturn(new HashSet<>(Arrays.asList("one", "two")));
+        Mockito.when(req.headers("one")).thenReturn("1");
+        Mockito.when(req.headers("two")).thenReturn("2");
+        Mockito.when(req.pathInfo()).thenReturn("/bob/hello/james");
+        Mockito.when(req.body()).thenReturn("xxx");
+        Mockito.when(req.queryParams()).thenReturn(new HashSet<>(Arrays.asList("name", "age")));
+        Mockito.when(req.queryParams("name")).thenReturn("joe");
+        Mockito.when(req.queryParams("age")).thenReturn("35");
+
+        Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
+
+        // Test
+        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}", "/bob");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("request.path='/bob/hello/james'; request.body='xxx'; request.pathVars['name']='james'; request.parameters['name']='joe'; request.parameters['age']='35'; request.headers['one']='1'; request.headers['two']='2';", result.trim());
     }
 
     @Test

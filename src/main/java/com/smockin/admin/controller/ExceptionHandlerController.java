@@ -6,6 +6,8 @@ import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.exception.MockServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +22,8 @@ import java.io.IOException;
  */
 @ControllerAdvice
 public class ExceptionHandlerController {
+
+    private final Logger logger = LoggerFactory.getLogger(ExceptionHandlerController.class);
 
     // NOTE Removed the use of the @ResponseStatus annotation and explicitly returning a ResponseEntity, as a workaround
     // to a problem with the the Jetty container, which seems to automatically wrap exceptions where no response is present.
@@ -54,6 +58,7 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(MockServerException.class)
     public ResponseEntity<String> handleMockServerException(MockServerException ex) {
+        logger.error(ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
                 .build();
@@ -68,6 +73,7 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<String> handleIOException(IOException ex) {
+        logger.error(ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
                 .build();

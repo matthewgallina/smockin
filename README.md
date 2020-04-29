@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.6.0
+  version 2.7.0
 </p>
 
 <br />
@@ -16,17 +16,10 @@
 
 <br />
 
-**Version 2** of sMockin brings about a few significant changes...
+New in **version 2.7** of sMockin
 
-- The JMS and FTP mocking servers have been removed (as no one was using them) and we are now purely focused on HTTP based API mocking.
+- Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 
-- Adding and editing mocks no longer requires the mock server to be continuously restarted, providing a much more seamless experience.
-
-- Multi user mode has been improved based on user feedback and suggestions.
-
-- Users can now utilise JavaScript to deliver mock functionality.
-
-- There will also be a greater focus on supporting more API document specs such as RAML and OpenAPI, which will be used to automatically generate mocks.
 
 <br />
 
