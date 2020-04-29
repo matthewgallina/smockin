@@ -4,6 +4,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.RuleEngineUtils;
@@ -28,6 +29,10 @@ public class RuleEngineImpl implements RuleEngine {
     @Autowired
     private RuleResolver ruleResolver;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
+
     public RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules) {
         logger.debug("process called");
 
@@ -39,7 +44,11 @@ public class RuleEngineImpl implements RuleEngine {
 
                 for (RestfulMockDefinitionRuleGroupCondition condition : group.getConditions()) {
 
-                    final String inboundValue = extractInboundValue(condition.getRuleMatchingType(), condition.getField(), req, rule.getRestfulMock().getPath());
+                    final String inboundValue = extractInboundValue(condition.getRuleMatchingType(),
+                            condition.getField(),
+                            req,
+                            rule.getRestfulMock().getPath(),
+                            rule.getRestfulMock().getCreatedBy().getCtxPath());
 
                     if (logger.isDebugEnabled()) {
                         logger.debug("Rule Matching Type: " + condition.getRuleMatchingType());
@@ -67,7 +76,7 @@ public class RuleEngineImpl implements RuleEngine {
         return null;
     }
 
-    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req, final String mockPath) {
+    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req, final String mockPath, final String userCtxPath) {
 
         switch (matchingType) {
             case REQUEST_HEADER:
@@ -77,7 +86,8 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
-                return GeneralUtils.findPathVarIgnoreCase(req, mockPath, fieldName);
+                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), userCtxPath);
+                return GeneralUtils.findPathVarIgnoreCase(sanitizedInboundPath, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
                 return RuleEngineUtils.matchOnPathVariable(fieldName, req);
             case REQUEST_BODY_JSON_ANY:

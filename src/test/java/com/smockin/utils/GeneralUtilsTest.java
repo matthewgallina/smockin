@@ -139,7 +139,7 @@ public class GeneralUtilsTest {
         Mockito.when(req.pathInfo()).thenReturn("/person/Bob");
 
         // Test
-        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{name}", "NAME");
+        final String nameResult = GeneralUtils.findPathVarIgnoreCase(req.pathInfo(), "/person/{name}", "NAME");
 
         // Assertions
         Assert.assertNotNull(nameResult);
@@ -154,7 +154,7 @@ public class GeneralUtilsTest {
         Mockito.when(req.pathInfo()).thenReturn("/person/21");
 
         // Test
-        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req, "/person/{age}", "agE");
+        final String ageResult = GeneralUtils.findPathVarIgnoreCase(req.pathInfo(), "/person/{age}", "agE");
 
         // Assertions
         Assert.assertNotNull(ageResult);

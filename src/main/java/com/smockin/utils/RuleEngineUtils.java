@@ -3,7 +3,6 @@ package com.smockin.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import spark.Request;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,16 +53,22 @@ public final class RuleEngineUtils {
                         currentJsonObject = ((Map) currentJsonObject).get(listFieldNameOpt.get());
 
                         if (!(currentJsonObject instanceof List)) {
-                            throw new IllegalArgumentException(String.format("Unable to perform JSON field matching on the mocked endpoint '%s'. JSON field '%s' does not align with request body.", path, fieldName));
+                            return null;
                         }
                     }
 
-                    currentJsonObject = ((List)currentJsonObject).get(extractJSONFieldListPosition(f, path, fieldName));
+                    final Integer fieldListPos = extractJSONFieldListPosition(f);
+
+                    if (fieldListPos == null) {
+                        return null;
+                    }
+
+                    currentJsonObject = ((List)currentJsonObject).get(fieldListPos);
 
                 } else if (currentJsonObject instanceof Map) {
                     currentJsonObject = ((Map)currentJsonObject).get(f);
                 } else {
-                    throw new IllegalArgumentException(String.format("Unable to perform JSON field matching on the mocked endpoint '%s'. JSON field '%s' does not align with request body.", path, fieldName));
+                    return null;
                 }
 
             }
@@ -103,13 +108,13 @@ public final class RuleEngineUtils {
         return Optional.of(field.substring(0, field.indexOf("[")));
     }
 
-    static int extractJSONFieldListPosition(final String field, final String pathInfo, final String fieldName) {
+    static Integer extractJSONFieldListPosition(final String field) {
 
         int bracketStart = field.indexOf("[");
         final String positionStr = field.substring( (bracketStart + 1), (field.length() - 1) );
 
         if (!NumberUtils.isDigits(positionStr)) {
-            throw new IllegalArgumentException(String.format("Unable to perform JSON field matching on the mocked endpoint '%s'. JSON field '%s' does not align with request body.", pathInfo, fieldName));
+            return null;
         }
 
         return Integer.valueOf(positionStr);

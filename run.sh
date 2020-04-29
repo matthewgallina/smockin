@@ -190,7 +190,7 @@ fi
 
 
 if ( $USE_CONSOLE ); then
-  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG"
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG -Dlogging.level.com.smockin=DEBUG"
 else
   echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
   mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &

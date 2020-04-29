@@ -1,7 +1,6 @@
 package com.smockin.mockserver.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -58,10 +57,7 @@ public class StatefulServiceImpl implements StatefulService {
 
         final RestfulMock parent = loadStatefulParent(mock);
 
-        final String sanitizedInboundPath =
-            ( UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode()) && StringUtils.isNotBlank(mock.getCreatedBy().getCtxPath()) )
-                ? StringUtils.remove(req.pathInfo(), mock.getCreatedBy().getCtxPath())
-                : req.pathInfo();
+        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), mock.getCreatedBy().getCtxPath());
 
         final List<Map<String, Object>> mockStateContent = loadStateForMock(parent);
         final Map<String, String> pathVars = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath());

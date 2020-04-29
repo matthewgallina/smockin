@@ -297,7 +297,13 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     // Scoped Functions
     $scope.doSelectMockType = function(et) {
 
-        $scope.endpoint.method = null;
+        if ($scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeWebSocket
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeProxySse
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeRuleWs
+                || $scope.endpoint.mockType.value == MockTypeDefinitions.MockTypeStateful) {
+            $scope.endpoint.method = null;
+        }
+
         $scope.endpoint.mockType = et;
 
         switch (et.value) {

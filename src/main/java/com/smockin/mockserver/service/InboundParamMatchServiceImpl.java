@@ -1,12 +1,15 @@
 package com.smockin.mockserver.service;
 
-import com.smockin.utils.GeneralUtils;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
+import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import spark.Request;
+
 import java.text.SimpleDateFormat;
 
 /**
@@ -15,12 +18,17 @@ import java.text.SimpleDateFormat;
 @Service
 public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
     @Override
-    public String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody) {
+    public String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody, final String userCtxPath) {
 
         if (responseBody == null) {
             return null;
         }
+
+        final String sanitizedUserCtxInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), userCtxPath);
 
         String enrichedResponseBody = responseBody;
 
@@ -33,7 +41,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                 throw new StackOverflowError("Error MAX iterations reached in 'while loop', whilst trying to swap out inbound param tokens.");
             }
 
-            final String r = processParamMatch(req, mockPath, enrichedResponseBody);
+            final String r = processParamMatch(req, mockPath, enrichedResponseBody, sanitizedUserCtxInboundPath);
 
             if (r == null) {
                 break;
@@ -47,7 +55,10 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
         return enrichedResponseBody;
     }
 
-    String processParamMatch(final Request req, final String mockPath, final String responseBody) {
+    String processParamMatch(final Request req,
+                             final String mockPath,
+                             final String responseBody,
+                             final String sanitizedUserCtxInboundPath) {
 
         // Look up for any 'inbound param token' matches
         final String matchResult = GeneralUtils.findFirstInboundParamMatch(responseBody);
@@ -75,7 +86,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
         if (matchResult.startsWith(ParamMatchTypeEnum.PATH_VAR.name())) {
 
             final String pathVariableName = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.PATH_VAR.name() + "="));
-            final String pathVariableValue = GeneralUtils.findPathVarIgnoreCase(req, mockPath, pathVariableName);
+            final String pathVariableValue = GeneralUtils.findPathVarIgnoreCase(sanitizedUserCtxInboundPath, mockPath, pathVariableName);
             return StringUtils.replace(responseBody, "${" + matchResult + "}", (pathVariableValue != null)?pathVariableValue:"", 1);
         }
 
