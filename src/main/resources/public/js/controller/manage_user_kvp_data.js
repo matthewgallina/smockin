@@ -5,42 +5,41 @@ app.controller('manageUserKvpDataController', function($scope, $window, $uibModa
     //
     // Labels
     $scope.heading = 'Manage Key/Value Data';
-    $scope.usernameTableLabel = "Username";
-    $scope.fullNameTableLabel = "Full Name";
-    $scope.roleTableLabel = "Role";
-    $scope.dateCreatedTableLabel = "Date Created";
+    $scope.keyTableLabel = "Key";
+    $scope.valueTableLabel = "Value";
     $scope.actionTableLabel = "Action";
+    $scope.noDataFoundLabel = "No Data Found";
 
 
     //
     // Buttons
-    $scope.addUserButtonLabel = "Add User";
-    $scope.viewUserButtonLabel = "View";
+    $scope.addKvpDataButtonLabel = "Add New Key/Value Pair";
+    $scope.viewKvpDataButtonLabel = "View";
 
 
     //
     // Data
-    $scope.users = [];
+    $scope.kvpData = [];
 
 
     //
     // Scoped Functions
-    $scope.doViewUser = function(userData) {
-        doOpenUser(userData);
+    $scope.doViewKvpData = function(kvpData) {
+        doOpenAddKvp(kvpData);
     };
 
-    $scope.doOpenNewUser = function() {
-        doOpenUser();
+    $scope.doOpenAddKvpData = function() {
+        doOpenAddKvp();
     };
 
 
     //
     // Internal Functions
-    function doOpenUser(data) {
+    function doOpenAddKvp(data) {
 
         var modalInstance = $uibModal.open({
-            templateUrl: 'user.html',
-            controller: 'userController',
+            templateUrl: 'user_kvp_data.html',
+            controller: 'userKvpDataController',
             backdrop  : 'static',
             keyboard  : false,
             resolve: {
@@ -52,7 +51,7 @@ app.controller('manageUserKvpDataController', function($scope, $window, $uibModa
 
         modalInstance.result.then(function (response) {
             if (response != null) {
-                loadTableData();
+                loadTableKvpData();
             }
         }, function () {
 
@@ -60,11 +59,11 @@ app.controller('manageUserKvpDataController', function($scope, $window, $uibModa
 
     }
 
-    function loadTableData() {
+    function loadTableKvpData() {
 
-        $scope.users = [];
+        $scope.kvpData = [];
 
-        restClient.doGet($http, '/user', function(status, data) {
+        restClient.doGet($http, '/keyvaluedata', function(status, data) {
 
             if (status == 401) {
                 redirectToHome();
@@ -74,7 +73,7 @@ app.controller('manageUserKvpDataController', function($scope, $window, $uibModa
                 return;
             }
 
-            $scope.users = data;
+            $scope.kvpData = data;
         });
 
     }
@@ -83,13 +82,9 @@ app.controller('manageUserKvpDataController', function($scope, $window, $uibModa
         $window.location.href = "/index.html";
     }
 
+
     //
     // Init Page
-    if (!auth.isLoggedIn() || !auth.isAdmin()) {
-        redirectToHome();
-        return;
-    }
-
-    loadTableData();
+    loadTableKvpData();
 
 });

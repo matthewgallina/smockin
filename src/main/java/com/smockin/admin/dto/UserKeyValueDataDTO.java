@@ -2,7 +2,7 @@ package com.smockin.admin.dto;
 
 public class UserKeyValueDataDTO {
 
-    private String id;
+    private String extId;
     private String key;
     private String value;
 
@@ -10,17 +10,17 @@ public class UserKeyValueDataDTO {
 
     }
 
-    public UserKeyValueDataDTO(final String id, final String key, final String value) {
-        this.id = id;
+    public UserKeyValueDataDTO(final String extId, final String key, final String value) {
+        this.extId = extId;
         this.key = key;
         this.value = value;
     }
 
-    public String getId() {
-        return id;
+    public String getExtId() {
+        return extId;
     }
-    public void setId(String id) {
-        this.id = id;
+    public void setExtId(String extId) {
+        this.extId = extId;
     }
 
     public String getKey() {

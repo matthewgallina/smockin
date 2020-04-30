@@ -32,7 +32,7 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
         return userKeyValueDataDAO
                 .findAllByUser(user.getId())
                 .stream()
-                .map(kvp -> new UserKeyValueDataDTO())
+                .map(kvp -> new UserKeyValueDataDTO(kvp.getExtId(), kvp.getKey(), kvp.getValue()))
                 .collect(Collectors.toList());
     }
 
@@ -61,7 +61,8 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
             throw new RecordNotFoundException();
         }
 
-        return new UserKeyValueDataDTO(userKeyValueData.getExtId(),
+        return new UserKeyValueDataDTO(
+                userKeyValueData.getExtId(),
                 userKeyValueData.getKey(),
                 userKeyValueData.getValue());
     }
