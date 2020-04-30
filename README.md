@@ -63,9 +63,9 @@ You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id..
 
 > curl -i -X GET http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
 
-> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "name" : "Minty", "age" : 7, "type" : "CAT" }'
+> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "id" : "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5", "name" : "Minty", "age" : 7, "type" : "CAT" }'
 
-> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "name" : "Minty", "age" : 7, "type" : "CAT" }'
+> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "op" : "REPLACE", "path" : "/name", "value" : "Minty Mi" }'
 
 > curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
 
