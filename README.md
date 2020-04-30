@@ -24,6 +24,8 @@ New in **version 2.7** of sMockin
 
 To give it a go, simply create a new mock (e.g /pets) selecting the 'Stateful REST' type and save.
 
+<br />
+
 Then run the following calls to see it immediately action:
 
 > curl -i -X GET http://localhost:8001/pets
@@ -32,15 +34,42 @@ Then run the following calls to see it immediately action:
 
 > curl -i -X POST http://localhost:8001/pets -d '{ "name" : "minty", "age" : 6, "type" : "CAT" }'
 
+<br />
 
 Your next call to GET /pets should return the following:
 
 > curl -i -X GET http://localhost:8001/pets
 
-```json
-[{"name":"fido","age":4,"type":"DOG","id":"223af502-ae81-4274-9101-4886821ea823"},{"name":"minty","age":6,"type":"CAT","id":"0a1c837a-8cd5-4a3c-b2e8-a519933e99d5"}]
+```
+[
+  {
+    "name": "fido",
+    "age": 4,
+    "type": "DOG",
+    "id": "223af502-ae81-4274-9101-4886821ea823"
+  },
+  {
+    "name": "minty",
+    "age": 6,
+    "type": "CAT",
+    "id": "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5"
+  }
+]
 ```
 
+<br />
+
+You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id...
+
+> curl -i -X GET http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
+
+> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "name" : "Minty", "age" : 7, "type" : "CAT" }'
+
+> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "name" : "Minty", "age" : 7, "type" : "CAT" }'
+
+> curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
+
+<br />
 
 
 
