@@ -1,0 +1,43 @@
+<link rel="stylesheet" href="../css/manage_users.css" crossorigin="anonymous" />
+
+<div ng-controller="manageUserKvpDataController">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-10">
+                <h3>{{ heading }}</h3>
+            </div>
+            <div class="col-sm-2 add-user-button-div">
+                <button id="add-user-button" type="button" class="btn btn-primary" ng-click="doOpenNewUser()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addUserButtonLabel }}</button>
+            </div>
+        </div>
+
+        <br />
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>{{ usernameTableLabel }}</th>
+                <th>{{ fullNameTableLabel }}</th>
+                <th>{{ roleTableLabel }}</th>
+                <th>{{ dateCreatedTableLabel }}</th>
+                <th>{{ actionTableLabel }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="u in users">
+                <td>{{ u.username }}</td>
+                <td>{{ u.fullName }}</td>
+                <td>{{ u.role }}</td>
+                <th>{{ u.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</th>
+                <td>
+                    <button type="button" class="btn btn-primary" ng-click="doViewUser(u)">{{ viewUserButtonLabel }}</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

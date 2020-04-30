@@ -16,6 +16,9 @@ app.config(function($routeProvider) {
         .when("/manage_users", {
             templateUrl : "manage_users.html",
             controller : "manageUsersController"
+        })
+        .when("/manage_user_kvp_data", {
+            templateUrl : "manage_user_kvp_data.html",
+            controller : "manageUserKvpDataController"
         });
-
 });
