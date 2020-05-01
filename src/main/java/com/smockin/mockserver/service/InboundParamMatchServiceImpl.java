@@ -1,6 +1,8 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.dto.UserKeyValueDataDTO;
 import com.smockin.admin.service.SmockinUserService;
+import com.smockin.admin.service.UserKeyValueDataService;
 import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -21,8 +23,11 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
     @Autowired
     private SmockinUserService smockinUserService;
 
+    @Autowired
+    private UserKeyValueDataService userKeyValueDataService;
+
     @Override
-    public String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody, final String userCtxPath) {
+    public String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody, final String userCtxPath, final long mockOwnerUserId) {
 
         if (responseBody == null) {
             return null;
@@ -41,7 +46,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                 throw new StackOverflowError("Error MAX iterations reached in 'while loop', whilst trying to swap out inbound param tokens.");
             }
 
-            final String r = processParamMatch(req, mockPath, enrichedResponseBody, sanitizedUserCtxInboundPath);
+            final String r = processParamMatch(req, mockPath, enrichedResponseBody, sanitizedUserCtxInboundPath, mockOwnerUserId);
 
             if (r == null) {
                 break;
@@ -58,7 +63,8 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
     String processParamMatch(final Request req,
                              final String mockPath,
                              final String responseBody,
-                             final String sanitizedUserCtxInboundPath) {
+                             final String sanitizedUserCtxInboundPath,
+                             final long mockOwnerUserId) {
 
         // Look up for any 'inbound param token' matches
         final String matchResult = GeneralUtils.findFirstInboundParamMatch(responseBody);
@@ -111,6 +117,13 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
             final String range = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.RANDOM_NUMBER.name() + "="));
 
             return StringUtils.replace(responseBody, "${" + matchResult + "}", String.valueOf(generateRandomForRange(range)), 1);
+        }
+
+        if (matchResult.startsWith(ParamMatchTypeEnum.KVP.name())) {
+
+            final String kvpKey = StringUtils.trim(StringUtils.remove(matchResult, ParamMatchTypeEnum.KVP.name() + "="));
+            final UserKeyValueDataDTO userKeyValueDataDTO = userKeyValueDataService.loadByKey(kvpKey, mockOwnerUserId);
+            return StringUtils.replace(responseBody, "${" + matchResult + "}", (userKeyValueDataDTO != null)?userKeyValueDataDTO.getValue():"", 1);
         }
 
         throw new IllegalArgumentException("Unsupported token : " + matchResult);

@@ -14,7 +14,7 @@ public interface UserKeyValueDataDAO extends JpaRepository<UserKeyValueData, Lon
 
     UserKeyValueData findByExtId(final String extId);
 
-    @Query("FROM UserKeyValueData kvp WHERE kvp.key = :key AND kvp.createdBy.id = :userId")
+    @Query("FROM UserKeyValueData kvp WHERE LOWER(kvp.key) = LOWER(:key) AND kvp.createdBy.id = :userId")
     UserKeyValueData findByKey(@Param("key") final String key, @Param("userId") final long userId);
 
 }

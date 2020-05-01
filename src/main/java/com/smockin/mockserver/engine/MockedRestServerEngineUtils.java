@@ -153,7 +153,7 @@ public class MockedRestServerEngineUtils {
             res.header(e.getKey(), e.getValue())
         );
 
-        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath());
+        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath(), mock.getCreatedBy().getId());
 
         handleLatency(mock);
 

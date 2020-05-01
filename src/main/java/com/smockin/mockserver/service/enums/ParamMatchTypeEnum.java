@@ -10,5 +10,6 @@ public enum ParamMatchTypeEnum {
     ISO_DATE,
     ISO_DATETIME,
     UUID,
-    RANDOM_NUMBER;
+    RANDOM_NUMBER,
+    KVP
 }

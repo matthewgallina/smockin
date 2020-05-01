@@ -9,7 +9,7 @@ public interface UserKeyValueDataService {
 
     List<UserKeyValueDataDTO> loadAll(final String token) throws RecordNotFoundException;
     UserKeyValueDataDTO loadById(final String externalId, final String token) throws RecordNotFoundException, ValidationException;
-    UserKeyValueDataDTO loadByKey(final String key, final long userId) throws RecordNotFoundException;
+    UserKeyValueDataDTO loadByKey(final String key, final long userId);
     String save(final UserKeyValueDataDTO dto, final String token) throws RecordNotFoundException, ValidationException;
     void update(final String externalId, final UserKeyValueDataDTO dto, final String token) throws RecordNotFoundException, ValidationException;
     void delete(final String externalId, final String token) throws RecordNotFoundException, ValidationException;

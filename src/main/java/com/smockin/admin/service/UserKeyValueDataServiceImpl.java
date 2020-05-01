@@ -53,12 +53,12 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
     }
 
     @Override
-    public UserKeyValueDataDTO loadByKey(final String key, final long userId) throws RecordNotFoundException {
+    public UserKeyValueDataDTO loadByKey(final String key, final long userId) {
 
         final UserKeyValueData userKeyValueData = userKeyValueDataDAO.findByKey(key, userId);
 
         if (userKeyValueData == null) {
-            throw new RecordNotFoundException();
+            return null;
         }
 
         return new UserKeyValueDataDTO(
