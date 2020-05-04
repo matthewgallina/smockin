@@ -9,3 +9,15 @@
 #kvp-value {
     min-height: 200px;
 }
+
+#kvp-bulk-value {
+    min-height: 200px;
+}
+
+.entry-mode-panel {
+    width: 100%;
+}
+
+.entry-mode-btn {
+    width: 50%;
+}

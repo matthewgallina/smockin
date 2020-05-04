@@ -8,13 +8,16 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
     $scope.keyLabel = 'Key';
     $scope.valueLabel = 'Value';
     $scope.keyPlaceholderTxt = 'Enter the key of this data pair...';
+    $scope.bulkValuePlaceholderTxt = 'Please enter your key/value pairs, 1 pair per line using the \'=\' operator like so:\n\nname=joe\nage=32\nlang=en';
 
 
     //
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
     $scope.saveButtonLabel = 'Save';
-    $scope.deleteButtonLabel = "Delete";
+    $scope.deleteButtonLabel = 'Delete';
+    $scope.singleEntryButtonLabel = 'Single Entry';
+    $scope.bulkEntryButtonLabel = 'Bulk Entry';
 
 
     //
@@ -45,7 +48,8 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
     $scope.kvpData = {
         "extId" : null,
         "key" : null,
-        "value" : null
+        "value" : null,
+        "bulkValue" : null
     };
 
     if (data != null) {
@@ -57,6 +61,10 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
         $scope.kvpData.value = data.value;
 
     };
+
+    $scope.singleEntryMode = 'SINGLE';
+    $scope.bulkEntryMode = 'BULK';
+    $scope.entryMode = $scope.singleEntryMode;
 
 
     //
@@ -106,21 +114,59 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
     // Internal Functions
     function doCreateKvp() {
 
-        // Validation
-        if (utils.isBlank($scope.kvpData.key)) {
-            showAlert("'Key' is required");
-            return;
-        }
-        if (utils.isBlank($scope.kvpData.value)) {
-            showAlert("'Value' is required");
-            return;
-        }
+        var reqBody = [];
 
-        var reqBody = {
-            "extId" : null,
-            "key" : $scope.kvpData.key,
-            "value" : $scope.kvpData.value
-        };
+        if ($scope.entryMode == $scope.singleEntryMode) {
+
+            // Validation
+            if (utils.isBlank($scope.kvpData.key)) {
+                showAlert("'Key' is required");
+                return;
+            }
+            if (utils.isBlank($scope.kvpData.value)) {
+                showAlert("'Value' is required");
+                return;
+            }
+
+            reqBody.push({
+                "extId" : null,
+                "key" : $scope.kvpData.key,
+                "value" : $scope.kvpData.value
+            });
+
+        } else if ($scope.entryMode == $scope.bulkEntryMode) {
+
+            // Validation
+            if (utils.isBlank($scope.kvpData.bulkValue)
+                    || ($scope.kvpData.bulkValue.indexOf("\n") == -1
+                            && $scope.kvpData.bulkValue.indexOf("=") == -1)) {
+                showAlert("At least 1 key/value pair entry is required");
+                return;
+            }
+
+            var pairs = $scope.kvpData.bulkValue.split("\n");
+
+            for (var i=0; i < pairs.length; i++) {
+
+                var kvp = pairs[i].split("=");
+
+                if (kvp == null
+                        || kvp.length != 2
+                        || utils.isBlank(kvp[0])
+                        || utils.isBlank(kvp[1])) {
+                    showAlert("Invalid key/value pair entry found");
+                    return;
+                }
+
+                reqBody.push({
+                    "extId" : null,
+                    "key" : kvp[0].trim(),
+                    "value" : kvp[1].trim()
+                });
+
+            }
+
+        }
 
         // Send
         restClient.doPost($http, '/keyvaluedata', reqBody, function(status, data) {
@@ -130,6 +176,15 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
                 return;
             } else if (status == 400) {
                 showAlert(data.message);
+                return;
+            } else if (status == 409) {
+
+                if ($scope.entryMode == $scope.singleEntryMode) {
+                    showAlert("Unable to save the key '" + $scope.kvpData.key + "' already exists");
+                } else {
+                    showAlert("Unable to save as one of you keys already exists");
+                }
+
                 return;
             }
 

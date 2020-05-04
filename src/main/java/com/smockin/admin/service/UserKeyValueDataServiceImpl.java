@@ -10,6 +10,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -68,16 +69,19 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
     }
 
     @Override
-    public String save(final UserKeyValueDataDTO dto, final String token) throws RecordNotFoundException, ValidationException {
+    public void save(final List<UserKeyValueDataDTO> dtos, final String token) throws RecordNotFoundException, ValidationException {
 
         final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
 
-        final UserKeyValueData userKeyValueData = new UserKeyValueData();
-        userKeyValueData.setKey(dto.getKey());
-        userKeyValueData.setValue(dto.getValue());
-        userKeyValueData.setCreatedBy(user);
+        dtos.stream().forEach(dto -> {
 
-        return userKeyValueDataDAO.save(userKeyValueData).getExtId();
+            final UserKeyValueData userKeyValueData = new UserKeyValueData();
+            userKeyValueData.setKey(dto.getKey());
+            userKeyValueData.setValue(dto.getValue());
+            userKeyValueData.setCreatedBy(user);
+
+            userKeyValueDataDAO.save(userKeyValueData);
+        });
     }
 
     @Override

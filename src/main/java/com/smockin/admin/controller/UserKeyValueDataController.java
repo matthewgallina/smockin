@@ -32,11 +32,13 @@ public class UserKeyValueDataController {
     }
 
     @RequestMapping(path="/keyvaluedata", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final UserKeyValueDataDTO dto,
+    public @ResponseBody ResponseEntity<SimpleMessageResponseDTO<String>> create(@RequestBody final List<UserKeyValueDataDTO> dtos,
                                                                                  @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                                     throws RecordNotFoundException, ValidationException {
 
-        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(userKeyValueDataService.save(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        userKeyValueDataService.save(dtos, GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(path = "/keyvaluedata/{extId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
