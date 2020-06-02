@@ -17,7 +17,7 @@
 <br />
 <br />
 
-**An Announcement** regarding the upcoming release of **version 2.8** of sMockin. 
+**An Announcement regarding the upcoming release of version 2.8**. 
 
 This will feature the ability to save  Key / Value pair data which can be recalled in your mock responses.
 
@@ -34,7 +34,7 @@ More details to follow...
 <br />
 <br />
 
-New in **version 2.7** of sMockin
+**New in version 2.7**
 
 - Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 
