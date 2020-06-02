@@ -7,6 +7,7 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import org.apache.commons.lang3.RandomUtils;
@@ -149,13 +150,21 @@ public class MockedRestServerEngineUtils {
         res.type(outcome.getResponseContentType());
 
         // Apply any response headers
-        outcome.getHeaders().entrySet().forEach(e ->
-            res.header(e.getKey(), e.getValue())
-        );
+        outcome.getHeaders()
+                .entrySet()
+                .forEach(e ->
+                            res.header(e.getKey(), e.getValue()));
 
-        final String response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath(), mock.getCreatedBy().getId());
+        String response;
 
-        handleLatency(mock);
+        try {
+            response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath(), mock.getCreatedBy().getId());
+            handleLatency(mock);
+        } catch (InboundParamMatchException e) {
+            logger.error(e.getMessage());
+            res.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            response = e.getMessage();
+        }
 
         if (logger.isDebugEnabled()) {
             logger.debug("final response " + response);

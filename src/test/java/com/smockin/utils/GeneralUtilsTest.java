@@ -36,44 +36,6 @@ public class GeneralUtilsTest {
     }
 
     @Test
-    public void findFirstInboundParamMatch_singleTokenWithSpace_Test() {
-        final String result = GeneralUtils.findFirstInboundParamMatch("hello ${REQ_HEAD= joe }. how are you?");
-        Assert.assertEquals("REQ_HEAD= joe ", result);
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_singleTokenWithSpaces_Test() {
-        final String result = GeneralUtils.findFirstInboundParamMatch("hello ${  REQ_HEAD=   joe   }. how are you?");
-        Assert.assertEquals("  REQ_HEAD=   joe   ", result);
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_multiToken_Test() {
-        final String result = GeneralUtils.findFirstInboundParamMatch("hello ${REQ_HEAD= max}. how are you ${REQ_HEAD bob }?");
-        Assert.assertEquals("REQ_HEAD= max", result);
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_NoToken_Test() {
-        Assert.assertNull(GeneralUtils.findFirstInboundParamMatch("hello world"));
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_Null_Test() {
-        Assert.assertNull(GeneralUtils.findFirstInboundParamMatch(null));
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_Blank_Test() {
-        Assert.assertNull(GeneralUtils.findFirstInboundParamMatch(""));
-    }
-
-    @Test
-    public void findFirstInboundParamMatch_Empty_Test() {
-        Assert.assertNull(GeneralUtils.findFirstInboundParamMatch("  "));
-    }
-
-    @Test
     public void findHeaderIgnoreCaseTest() {
 
         // Setup
@@ -537,6 +499,83 @@ public class GeneralUtilsTest {
         // Assertions
         Assert.assertNull(result);
 
+    }
+
+    @Test
+    public void removeJsCommentsTest() {
+
+        // Setup
+        final String jsSrc = "function doSomething(a,b) {\n"
+                + "  var c = a;\n"
+                + "  // hide this line\n"
+                + "  var d = b; // hide this half of the line\n"
+                + "  var e = c+d;\n"
+                + "} // end of function";
+
+        // Test
+        final String result = GeneralUtils.removeJsComments(jsSrc);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("function doSomething(a,b) {\n" +
+                "  var c = a;\n" +
+                "  var d = b; \n" +
+                "  var e = c+d;\n" +
+                "}", result);
+    }
+
+    @Test
+    public void removeJsComments_noCommentsPresent_Test() {
+
+        // Setup
+        final String jsSrc = "function doSomething(a,b) {\n"
+                + "  var c = a;\n"
+                + "  var d = b;\n"
+                + "  var e = c+d;\n"
+                + "}";
+
+        // Test
+        final String result = GeneralUtils.removeJsComments(jsSrc);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("function doSomething(a,b) {\n" +
+                "  var c = a;\n" +
+                "  var d = b;\n" +
+                "  var e = c+d;\n" +
+                "}", result);
+    }
+
+    @Test
+    public void removeJsComments_singleLine_Test() {
+
+        // Setup
+        final String jsSrc = "function doSomething(a,b) { var c = a; var d = b; var e = c+d; } // end of line";
+
+        // Test
+        final String result = GeneralUtils.removeJsComments(jsSrc);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("function doSomething(a,b) { var c = a; var d = b; var e = c+d; }", result);
+    }
+
+    @Test
+    public void removeJsComments_nullInput_Test() {
+
+        // Test & Assertions
+        Assert.assertNull(GeneralUtils.removeJsComments(null));
+    }
+
+    @Test
+    public void removeJsComments_BlankInput_Test() {
+
+        // Test
+        final String result = GeneralUtils.removeJsComments("");
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("", result);
     }
 
 }
