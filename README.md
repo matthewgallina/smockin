@@ -15,6 +15,7 @@
    - Contact: info@smockin.com
 
 <br />
+<br />
 
 **An Announcement** regarding the upcoming release of **version 2.8** of sMockin. 
 
@@ -24,7 +25,9 @@ Version 2.8 will also feature a change to the way **Response Variables** are exp
 
 For example, 
 
-**${REQ_PARAM=firstName}** will now be expressed as **$requestParameter(firstName)**
+```
+${REQ_PARAM=firstName} will now be expressed as $requestParameter(firstName)
+```
 
 More details to follow...
 
