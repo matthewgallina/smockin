@@ -144,7 +144,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 <br />
 
 
-### LATEST RELEASE CHANGES
+### RECENT RELEASE CHANGES
 
 <br />
 
@@ -221,9 +221,8 @@ You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id..
 
 
 <br />
-
-
 <br/>
+
 
 ### ABOUT
 
