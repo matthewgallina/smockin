@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -47,10 +47,6 @@ public final class GeneralUtils {
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
 
-    // Looks for values within the brace format ${}. So ${bob} would return the value 'bob'.
-    static final String INBOUND_TOKEN_PATTERN = "\\$\\{(.*?)\\}";
-
-    // Thread safe class, provided all config is defined before it's use.
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     static {
@@ -83,23 +79,6 @@ public final class GeneralUtils {
     public final static String createFileNameUniqueTimeStamp() {
         return new SimpleDateFormat(UNIQUE_TIMESTAMP_FORMAT)
                 .format(getCurrentDate());
-    }
-
-    // NOTE It is important that this preserves any whitespaces around the token
-    public static String findFirstInboundParamMatch(final String input) {
-
-        if (input == null) {
-            return null;
-        }
-
-        final Pattern pattern = Pattern.compile(INBOUND_TOKEN_PATTERN);
-        final Matcher matcher = pattern.matcher(input);
-
-        while (matcher.find()) {
-            return matcher.group(1);
-        }
-
-        return null;
     }
 
     /**
@@ -460,6 +439,38 @@ public final class GeneralUtils {
         }
 
         return allParams;
+    }
+
+    public static String removeJsComments(final String jsSrc) {
+
+        final String carriage = "\n";
+        final String comment = "//";
+
+        if (jsSrc == null
+                || StringUtils.indexOf(jsSrc, comment) == -1) {
+            return jsSrc;
+        }
+
+        // i.e single line
+        if (StringUtils.indexOf(jsSrc, carriage) == -1) {
+            return StringUtils.substring(jsSrc, 0, StringUtils.indexOf(jsSrc, comment)).trim();
+        }
+
+        final String[] lines = StringUtils.split(jsSrc, carriage);
+
+        return Stream.of(lines)
+                .filter(l ->
+                    !l.trim().startsWith(comment))
+                .map(l -> {
+
+                    final int commentInLine = StringUtils.indexOf(l, comment);
+
+                    return (commentInLine > -1)
+                            ? StringUtils.substring(l, 0, commentInLine)
+                            : l;
+                })
+                .collect(Collectors.joining(carriage))
+                .trim();
     }
 
 }

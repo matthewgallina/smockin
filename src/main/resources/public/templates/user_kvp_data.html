@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="../css/user_kvp_data.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ heading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="btn-group entry-mode-panel" ng-show="kvpData.extId == null">
+        <label class="btn btn-default entry-mode-btn" ng-model="entryMode" uib-btn-radio="'{{ singleEntryMode }}'">{{ singleEntryButtonLabel }}</label>
+        <label class="btn btn-default entry-mode-btn" ng-model="entryMode" uib-btn-radio="'{{ bulkEntryMode }}'">{{ bulkEntryButtonLabel }}</label>
+    </div>
+
+    <br ng-if="kvpData.extId == null" />
+    <br ng-if="kvpData.extId == null" />
+
+    <div ng-if="entryMode == singleEntryMode">
+
+        <div class="form-group">
+            <label for="kvpKey" class="ng-binding">{{ keyLabel }}</label>
+            <input id="kvpKey" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="kvpData.key" focus="kvpData.extId == null" placeholder="{{ keyPlaceholderTxt }}" type="text" />
+        </div>
+
+        <div class="form-group">
+            <label for="kvp-value" class="ng-binding">{{ valueLabel }}</label>
+            <textarea id="kvp-value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="kvpData.value"></textarea>
+        </div>
+
+    </div>
+
+    <div ng-if="entryMode == bulkEntryMode">
+
+        <div class="form-group">
+            <label for="kvp-bulk-value" class="ng-binding">{{ bulkValueLabel }}</label>
+            <textarea id="kvp-bulk-value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="kvpData.bulkValue" focus="kvpData.extId == null" placeholder="{{ bulkValuePlaceholderTxt }}"></textarea>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-danger" type="button" ng-click="doDeleteKvp()" ng-if="kvpData.extId != null">{{ deleteButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveKvp()">{{ saveButtonLabel }}</button>
+</div>

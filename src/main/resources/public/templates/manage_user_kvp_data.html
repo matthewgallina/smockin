@@ -1,0 +1,45 @@
+<link rel="stylesheet" href="../css/manage_user_kvp_data.css" crossorigin="anonymous" />
+
+<div ng-controller="manageUserKvpDataController">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-9">
+                <h3>{{ heading }}</h3>
+            </div>
+            <div class="col-sm-3 add-kvpdata-button-div">
+                <button id="add-kvpdata-button" type="button" class="btn btn-primary" ng-click="doOpenAddKvpData()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addKvpDataButtonLabel }}</button>
+            </div>
+        </div>
+
+        <br />
+
+        <hr ng-if="kvpData.length == 0" />
+
+        <h4 class="no-kvpdata-found" ng-if="kvpData.length == 0">
+            {{ noDataFoundLabel }}
+        </h4>
+
+        <table class="table table-striped" ng-if="kvpData.length > 0">
+            <thead>
+            <tr>
+                <th>{{ keyTableLabel }}</th>
+                <th>{{ valueTableLabel }}</th>
+                <th>{{ actionTableLabel }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="kvp in kvpData">
+                <td class="key-tbl-col">{{ kvp.key }}</td>
+                <td class="value-tbl-col">{{ kvp.value }}</td>
+                <td class="action-tbl-col">
+                    <button type="button" class="btn btn-primary" ng-click="doViewKvpData(kvp)">{{ viewKvpDataButtonLabel }}</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

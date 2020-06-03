@@ -16,6 +16,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
+    $scope.userKvpDataLink = "Manage Key/Value Data";
 
 
     //
@@ -108,6 +109,11 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
         $location.path("/manage_users");
 
+    };
+
+    $scope.doOpenKvpUserData = function() {
+
+        $location.path("/manage_user_kvp_data");
     };
 
     $scope.doLogout = function() {

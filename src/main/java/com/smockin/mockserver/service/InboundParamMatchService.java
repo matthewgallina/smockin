@@ -1,5 +1,6 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.mockserver.exception.InboundParamMatchException;
 import spark.Request;
 
 /**
@@ -8,9 +9,10 @@ import spark.Request;
 
 public interface InboundParamMatchService {
 
-    String TO_ARG = "TO";
-    String UNTIL_ARG = "UNTIL";
-
-    String enrichWithInboundParamMatches(final Request req, final String mockPath, final String responseBody, final String userCtxPath);
+    String enrichWithInboundParamMatches(final Request req,
+                                         final String mockPath,
+                                         final String responseBody,
+                                         final String userCtxPath,
+                                         final long mockOwnerUserId) throws InboundParamMatchException;
 
 }

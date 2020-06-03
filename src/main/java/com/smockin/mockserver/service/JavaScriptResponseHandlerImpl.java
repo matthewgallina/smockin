@@ -1,7 +1,9 @@
 package com.smockin.mockserver.service;
 
+import com.smockin.admin.dto.UserKeyValueDataDTO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.service.SmockinUserService;
+import com.smockin.admin.service.UserKeyValueDataService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
@@ -32,6 +34,10 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     @Autowired
     private SmockinUserService smockinUserService;
 
+    @Autowired
+    private UserKeyValueDataService userKeyValueDataService;
+
+
     public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
         logger.debug("executeUserResponse called");
 
@@ -42,6 +48,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
             engineResponse = executeJS(
                     defaultRequestObject
                         + populateRequestObjectWithInbound(req, mock.getPath(), mock.getCreatedBy().getCtxPath())
+                        + populateKVPs(req, mock)
+                        + keyValuePairFindFunc
                         + defaultResponseObject
                         + userResponseFunctionInvoker
                         + mock.getJavaScriptHandler().getSyntax());
@@ -69,6 +77,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     }
 
     Object executeJS(final String js) throws ScriptException {
+        if (logger.isDebugEnabled())
+            logger.debug(js);
         return buildEngine().eval(js);
     }
 
@@ -146,6 +156,132 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         }
 
         return responseHeaders.entrySet();
+    }
+
+    String populateKVPs(final Request req, final RestfulMock mock) throws ScriptException {
+        logger.debug("populateKVPs called");
+
+        final String handleResponseFunc = GeneralUtils.removeJsComments(mock.getJavaScriptHandler().getSyntax());
+        final long mockOwnerUserId = mock.getCreatedBy().getId();
+
+        final int MAX_PASSES = 500;
+        int currentPos = 0;
+        final String keyValuePairFuncPrefix = keyValuePairFindFuncName + "(";
+
+        final Map<String, String> kvps = new HashMap<>();
+
+        for (int i=0; i < MAX_PASSES; i++) {
+
+            final int startPos = StringUtils.indexOf(handleResponseFunc, keyValuePairFuncPrefix, currentPos);
+
+            if (startPos == -1) {
+                break;
+            }
+
+            final int closingParenthesisPos = StringUtils.indexOf(handleResponseFunc, ")", startPos);
+            final String sanitizedKey = findKvpKey(startPos, closingParenthesisPos, req, mock, keyValuePairFuncPrefix, handleResponseFunc);
+
+            if (sanitizedKey != null) {
+                final UserKeyValueDataDTO userKeyValueDataDTO = userKeyValueDataService.loadByKey(sanitizedKey, mockOwnerUserId);
+                kvps.put(sanitizedKey, (userKeyValueDataDTO != null) ? userKeyValueDataDTO.getValue() : "");
+            }
+
+            currentPos = closingParenthesisPos;
+        }
+
+        if (!kvps.isEmpty()) {
+            return defaultKeyValuePairStoreObjectStart
+                    + GeneralUtils.serialiseJson(kvps)
+                    + ";";
+        }
+
+        return defaultKeyValuePairStoreObject;
+    }
+
+    private String findKvpKey(final int startPos, final int closingParenthesisPos, final Request req, final RestfulMock mock, final String keyValuePairFuncPrefix, final String handleResponseFunc)
+            throws ScriptException {
+        logger.debug("findKvpKey called");
+
+        final String invalidMsgPrefix = "Invalid lookUpKvp(...) syntax. ";
+
+        if (closingParenthesisPos == -1) {
+            throw new ScriptException(invalidMsgPrefix + "Unable to determine closing parenthesis position");
+        }
+
+        final String keyName = StringUtils.substring(handleResponseFunc, (startPos + keyValuePairFuncPrefix.length()), closingParenthesisPos);
+
+        if (StringUtils.isBlank(keyName)) {
+            throw new ScriptException(invalidMsgPrefix + "key within find parenthesis is undefined");
+        }
+
+        logger.debug(String.format("keyName: %s", keyName));
+
+        final String sanitizedKey;
+
+        if (keyName.startsWith("'") && keyName.endsWith("'")) {
+            sanitizedKey = StringUtils.remove(keyName, "'");
+        } else if (keyName.startsWith("\"") && keyName.endsWith("\"")) {
+            sanitizedKey = StringUtils.remove(keyName, "\"");
+        } else if (keyName.indexOf("request.") > -1) {
+
+            final String requestObjectField = StringUtils.remove(keyName, "request.").trim();
+
+            if (requestObjectField.startsWith("pathVars")) {
+
+                final String pathVarsObjectField = StringUtils.remove(requestObjectField, "pathVars").trim();
+                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), mock.getCreatedBy().getCtxPath());
+                sanitizedKey = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath())
+                        .get(extractObjectField(StringUtils.lowerCase(pathVarsObjectField)));
+
+            } else if ("body".equals(requestObjectField)) {
+
+                if (StringUtils.isBlank(req.body())) {
+                    throw new ScriptException(invalidMsgPrefix + "request.body is undefined");
+                }
+
+                sanitizedKey = req.body();
+
+            } else if (requestObjectField.startsWith("headers")) {
+
+                final String headersObjectField = StringUtils.remove(requestObjectField, "headers").trim();
+
+                sanitizedKey = req.headers()
+                        .stream()
+                        .collect(Collectors.toMap(k -> k, k -> req.headers(k)))
+                        .get(extractObjectField(headersObjectField));
+
+            } else if (requestObjectField.startsWith("parameters")) {
+
+                final String parametersObjectField = StringUtils.remove(requestObjectField, "parameters").trim();
+
+                sanitizedKey = extractAllRequestParams(req).get(extractObjectField(parametersObjectField));
+
+            } else {
+                throw new ScriptException(invalidMsgPrefix + "Unable to determine request based key look up");
+            }
+
+        } else {
+            throw new ScriptException(invalidMsgPrefix + "Unable to determine key lookup type");
+        }
+
+        return (sanitizedKey != null)
+                ? sanitizedKey.trim()
+                : null;
+
+    }
+
+    private String extractObjectField(final String objectField) {
+
+        if (StringUtils.startsWith(objectField, ".")) {
+
+            return StringUtils.remove(objectField, ".");
+        } else if (StringUtils.startsWith(objectField, "[")) {
+
+            final String objectFieldP1 = StringUtils.remove(objectField, "['");
+            return StringUtils.remove(objectFieldP1, "']");
+        }
+
+        return null;
     }
 
     private ScriptEngine buildEngine() {

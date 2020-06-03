@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.7.0
+  version 2.8.0
 </p>
 
 <br />
@@ -35,6 +35,7 @@ More details to follow...
 <br />
 
 **New in version 2.7**
+
 
 - Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 
@@ -87,11 +88,9 @@ You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id..
 
 > curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
 
-<br />
-
-
 
 <br />
+
 
 ### OVERVIEW
 
