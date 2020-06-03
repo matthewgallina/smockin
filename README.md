@@ -15,8 +15,27 @@
    - Contact: info@smockin.com
 
 <br />
+<br />
 
-### Latest additions to sMockin!
+**An Announcement regarding the upcoming release of version 2.8**. 
+
+This will feature the ability to save  Key / Value pair data which can be recalled in your mock responses.
+
+Version 2.8 will also feature a change to the way **Response Variables** are expressed using a new syntax format. If you are currently using **Response Variables**, then you will need to modify any existing declarations inline with this new format.
+
+For example, 
+
+```
+${REQ_PARAM=firstName} will now be expressed as $requestParameter(firstName)
+```
+
+More details to follow...
+
+<br />
+<br />
+
+**New in version 2.7**
+
 
 - Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 
