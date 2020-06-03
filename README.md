@@ -17,80 +17,6 @@
 <br />
 <br />
 
-**An Announcement regarding the upcoming release of version 2.8**. 
-
-This will feature the ability to save  Key / Value pair data which can be recalled in your mock responses.
-
-Version 2.8 will also feature a change to the way **Response Variables** are expressed using a new syntax format. If you are currently using **Response Variables**, then you will need to modify any existing declarations inline with this new format.
-
-For example, 
-
-```
-${REQ_PARAM=firstName} will now be expressed as $requestParameter(firstName)
-```
-
-More details to follow...
-
-<br />
-<br />
-
-**New in version 2.7**
-
-
-- Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
-
-<br />
-
-To give it a go, simply create a new mock (e.g /pets) selecting the 'Stateful REST' type and save.
-
-<br />
-
-Then run the following calls to see it immediately action:
-
-> curl -i -X GET http://localhost:8001/pets
-
-> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "fido", "age" : 4, "type" : "DOG" }'
-
-> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "minty", "age" : 6, "type" : "CAT" }'
-
-<br />
-
-Your next call to GET /pets should return the following:
-
-> curl -i -X GET http://localhost:8001/pets
-
-```
-[
-  {
-    "name": "fido",
-    "age": 4,
-    "type": "DOG",
-    "id": "223af502-ae81-4274-9101-4886821ea823"
-  },
-  {
-    "name": "minty",
-    "age": 6,
-    "type": "CAT",
-    "id": "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5"
-  }
-]
-```
-
-<br />
-
-You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id...
-
-> curl -i -X GET http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
-
-> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "id" : "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5", "name" : "Minty", "age" : 7, "type" : "CAT" }'
-
-> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "op" : "REPLACE", "path" : "/name", "value" : "Minty Mi" }'
-
-> curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
-
-
-<br />
-
 
 ### OVERVIEW
 
@@ -213,6 +139,85 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
         Code Mirror                 -       https://codemirror.net/
+<br/>
+
+### LATEST RELEASE CHANGES
+
+**New in version 2.8**
+
+- Added the ability to save Key / Value pair data which can be recalled in your mock responses.
+
+- Changed the syntax format used in **Response Variables**.
+
+For example, 
+
+```
+${REQ_PARAM=firstName} will now be expressed as $requestParameter(firstName)
+```
+
+More details to follow at https://help.smockin.com
+
+<br />
+<br />
+
+**New in version 2.7**
+
+
+- Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
+
+<br />
+
+To give it a go, simply create a new mock (e.g /pets) selecting the 'Stateful REST' type and save.
+
+<br />
+
+Then run the following calls to see it immediately action:
+
+> curl -i -X GET http://localhost:8001/pets
+
+> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "fido", "age" : 4, "type" : "DOG" }'
+
+> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "minty", "age" : 6, "type" : "CAT" }'
+
+<br />
+
+Your next call to GET /pets should return the following:
+
+> curl -i -X GET http://localhost:8001/pets
+
+```
+[
+  {
+    "name": "fido",
+    "age": 4,
+    "type": "DOG",
+    "id": "223af502-ae81-4274-9101-4886821ea823"
+  },
+  {
+    "name": "minty",
+    "age": 6,
+    "type": "CAT",
+    "id": "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5"
+  }
+]
+```
+
+<br />
+
+You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id...
+
+> curl -i -X GET http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
+
+> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "id" : "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5", "name" : "Minty", "age" : 7, "type" : "CAT" }'
+
+> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "op" : "REPLACE", "path" : "/name", "value" : "Minty Mi" }'
+
+> curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
+
+
+<br />
+
+
 <br/>
 
 ### ABOUT
