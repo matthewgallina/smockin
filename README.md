@@ -139,9 +139,14 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
         Code Mirror                 -       https://codemirror.net/
+
 <br/>
+<br />
+
 
 ### LATEST RELEASE CHANGES
+
+<br />
 
 **New in version 2.8**
 
