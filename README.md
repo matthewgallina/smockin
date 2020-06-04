@@ -152,22 +152,34 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 - Added the ability to save Key / Value pair data which can be recalled in your mock responses.
 
-This can be achieved used the following **Response Variables** syntax:
+To add Key / Value data, click on the drop down box list from the top right hand corner of the UI and select **Manage Key/Value Data**. 
+
+To then reference your Key / Value data in your mock responses, this can be achieved as follows:
+
+For **Response Variables** syntax:
 
 ```
 $lookUpKvp(kvpKeyName)
 ```
 
-Or like so if using a JavaScript based mock:
+Or if using a **Custom JavaScript** based mock:
 
 ```
-lookUpKvp('kvpKeyName')
+lookUpKvp('kvpKeyName');
 ```
 
-For greater flexibility, you can also reference request values as part of your lookup:
+For greater flexibility, you can also reference inbound request values as part of your lookup like so:
+
+**Response Variables** syntax:
 
 ```
 $lookUpKvp($requestParameter(firstName))
+```
+
+**Custom JavaScript** syntax:
+
+```
+lookUpKvp(request.parameters.firstName);
 ```
 
 <br />
@@ -187,7 +199,6 @@ ${ISO_DATE} is expressed as $isoDate
 ${UUID} is expressed as $uuid
 
 $requestBody has been added as a new option
-
 ```
 
 More details to follow at https://help.smockin.com
