@@ -1,5 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
+import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -33,8 +34,16 @@ public class ServerConfig extends Identifier {
     @Column(name = "AUTO_START", nullable = false)
     private boolean autoStart;
 
+    @ColumnDefault("false")
+    @Column(name = "PROXY_MODE", nullable = false)
+    private boolean proxyMode;
+
+    @Column(name = "PROXY_MODE_TYPE", length = 8)
+    @Enumerated(EnumType.STRING)
+    private ProxyModeTypeEnum proxyModeType;
+
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> nativeProperties = new HashMap<String, String>();
+    private Map<String, String> nativeProperties = new HashMap<>();
 
     public ServerConfig() {
 
@@ -84,6 +93,20 @@ public class ServerConfig extends Identifier {
     }
     public void setAutoStart(boolean autoStart) {
         this.autoStart = autoStart;
+    }
+
+    public boolean isProxyMode() {
+        return proxyMode;
+    }
+    public void setProxyMode(boolean proxyMode) {
+        this.proxyMode = proxyMode;
+    }
+
+    public ProxyModeTypeEnum getProxyModeType() {
+        return proxyModeType;
+    }
+    public void setProxyModeType(ProxyModeTypeEnum proxyModeType) {
+        this.proxyModeType = proxyModeType;
     }
 
     public Map<String, String> getNativeProperties() {

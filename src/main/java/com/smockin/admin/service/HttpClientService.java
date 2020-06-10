@@ -9,6 +9,7 @@ import com.smockin.admin.exception.ValidationException;
  */
 public interface HttpClientService {
 
-    HttpClientResponseDTO handleCall(final HttpClientCallDTO httpClientCallDTO) throws ValidationException;
+    HttpClientResponseDTO handleExternalCall(final HttpClientCallDTO httpClientCallDTO) throws ValidationException;
+    HttpClientResponseDTO handleCallToMock(final HttpClientCallDTO httpClientCallDTO) throws ValidationException;
 
 }

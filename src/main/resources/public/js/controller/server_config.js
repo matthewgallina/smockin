@@ -8,6 +8,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.RestfulServerType = globalVars.RestfulServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
+    $scope.ActiveStatus = 'ACTIVE';
+    $scope.ReactiveStatus = 'REACTIVE';
 
 
     //
@@ -24,6 +26,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
+    $scope.proxyModeLabel = 'Enable Proxy Mode';
+    $scope.proxyModeTypeLabel = 'Proxy Interceptor Mode';
 
 
     //
@@ -65,11 +69,17 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "timeOutMillis" : 0,
         "autoStart" : false,
         "enableCors" : false,
+        "proxyMode" : false,
+        "proxyModeType" : $scope.ActiveStatus
     };
 
 
     //
     // Scoped Functions
+    $scope.doSetProxyModeType = function(mode) {
+        $scope.serverConfig.proxyModeType = mode;
+    };
+
     $scope.doSaveConfig = function() {
 
         if ($scope.readOnly) {
@@ -108,6 +118,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             "minThreads" : $scope.serverConfig.minThreads,
             "timeOutMillis" : $scope.serverConfig.timeOutMillis,
             "autoStart" : $scope.serverConfig.autoStart,
+            "proxyMode" : $scope.serverConfig.proxyMode,
+            "proxyModeType" : $scope.serverConfig.proxyModeType,
             "nativeProperties" : {}
         }
 
@@ -155,6 +167,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
+                    "proxyMode" : data.proxyMode,
+                    "proxyModeType" : data.proxyModeType,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE")
                 };
 

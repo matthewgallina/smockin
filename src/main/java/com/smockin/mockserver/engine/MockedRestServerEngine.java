@@ -2,6 +2,7 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
@@ -10,7 +11,6 @@ import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.utils.HttpClientUtils;
 import com.smockin.utils.LiveLoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-import java.util.*;
+
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -85,7 +87,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler(isMultiUserMode);
+        buildGlobalHttpEndpointsHandler(isMultiUserMode, config.isProxyMode(), config.getProxyModeType());
 
         applyTrafficLogging();
 
@@ -206,11 +208,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode) {
+    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode, final boolean proxyMode, final ProxyModeTypeEnum proxyModeType) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
         Spark.head(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.get(wildcardPath, (request, response) -> {
@@ -220,24 +222,24 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                     .orElseGet(() -> handleNotFoundResponse(response));
         });
 
         Spark.post(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.put(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.delete(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.patch(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
     }

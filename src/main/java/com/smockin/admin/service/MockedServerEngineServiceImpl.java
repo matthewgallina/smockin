@@ -130,6 +130,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.getMinThreads(),
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
+                serverConfig.isProxyMode(),
+                serverConfig.getProxyModeType(),
                 serverConfig.getNativeProperties()
         );
 
@@ -154,6 +156,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setMinThreads(config.getMinThreads());
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
+        serverConfig.setProxyMode(config.isProxyMode());
+        serverConfig.setProxyModeType(config.getProxyModeType());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());

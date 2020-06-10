@@ -33,8 +33,40 @@ public class HttpClientServiceImpl implements HttpClientService {
     private MockedServerEngineService mockedServerEngineService;
 
     @Override
-    public HttpClientResponseDTO handleCall(final HttpClientCallDTO dto) throws ValidationException {
-        logger.debug("handleCall called");
+    public HttpClientResponseDTO handleExternalCall(final HttpClientCallDTO dto) throws ValidationException {
+        logger.debug("handleExternalCall called");
+
+        debugDTO(dto);
+        validateRequest(dto);
+
+        try {
+
+            dto.setUrl(dto.getUrl());
+
+            switch (dto.getMethod()) {
+                case GET:
+                    return get(dto);
+                case POST:
+                    return post(dto);
+                case PUT:
+                    return put(dto);
+                case DELETE:
+                    return delete(dto);
+                case PATCH:
+                    return patch(dto);
+                default:
+                    throw new ValidationException("Invalid / Unsupported method: " + dto.getMethod());
+            }
+
+        } catch (IOException | MockServerException ex) {
+            return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
+        }
+
+    }
+
+    @Override
+    public HttpClientResponseDTO handleCallToMock(final HttpClientCallDTO dto) throws ValidationException {
+        logger.debug("handleCallToMock called");
 
         debugDTO(dto);
 

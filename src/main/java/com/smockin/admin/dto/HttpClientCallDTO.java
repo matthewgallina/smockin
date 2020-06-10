@@ -11,7 +11,7 @@ import java.util.Map;
 public class HttpClientCallDTO {
 
     private RestMethodEnum method;
-    private Map<String, String> headers = new HashMap<String, String>();
+    private Map<String, String> headers = new HashMap<>();
     private String url;
     private String body;
 
