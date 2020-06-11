@@ -19,9 +19,9 @@ public final class LiveLoggingUtils {
         return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.REQUEST, viaProxy, new LiveLoggingInboundContentDTO(headers, method, url, StringUtils.defaultIfBlank(reqBody, NOT_AVAILABLE), requestParams));
     }
 
-    public static LiveLoggingDTO buildLiveLogOutboundDTO(final String reqId, final Integer status, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxyMockedResponse) {
+    public static LiveLoggingDTO buildLiveLogOutboundDTO(final String reqId, final Integer status, final Map<String, String> headers, final String responseBody, final boolean viaProxy, final boolean isProxiedResponse) {
 
-        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.RESPONSE, viaProxy, new LiveLoggingOutboundContentDTO(headers, StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE), status, isProxyMockedResponse));
+        return new LiveLoggingDTO(reqId, LiveLoggingDirectionEnum.RESPONSE, viaProxy, new LiveLoggingOutboundContentDTO(headers, StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE), status, isProxiedResponse));
     }
 
 }

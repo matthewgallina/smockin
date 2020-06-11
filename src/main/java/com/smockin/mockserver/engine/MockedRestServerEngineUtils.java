@@ -15,16 +15,19 @@ import com.smockin.admin.service.HttpClientService;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -40,6 +43,8 @@ import java.util.stream.Collectors;
 public class MockedRestServerEngineUtils {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngineUtils.class);
+
+
 
     @Autowired
     private RestfulMockDAO restfulMockDAO;
@@ -73,18 +78,16 @@ public class MockedRestServerEngineUtils {
                                                final Response response,
                                                final boolean isMultiUserMode,
                                                final boolean proxyMode,
-                                               final ProxyModeTypeEnum proxyModeType) {
+                                               final ProxyModeTypeEnum proxyModeType,
+                                               final String proxyForwardUrl) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        if (proxyMode) {
-            return handleProxyInterceptorMode(proxyModeType, request, response, isMultiUserMode);
-        }
-
-        return handleMockLookup(request, response, isMultiUserMode);
-
+        return (proxyMode && !isMultiUserMode)
+            ? handleProxyInterceptorMode(proxyModeType, proxyForwardUrl, request, response)
+            : handleMockLookup(request, response, isMultiUserMode);
     }
 
     Optional<String> handleMockLookup(final Request request,
@@ -135,40 +138,41 @@ public class MockedRestServerEngineUtils {
     }
 
     Optional<String> handleProxyInterceptorMode(final ProxyModeTypeEnum proxyModeType,
+                                                final String proxyForwardUrl,
                                                 final Request request,
-                                                final Response response,
-                                                final boolean isMultiUserMode) {
+                                                final Response response) {
 
         try {
+
+            if (StringUtils.isBlank(proxyForwardUrl)) {
+                throw new Exception("Unable to use proxy mode. Proxy Forwarding Url is undefined");
+            }
 
             if (ProxyModeTypeEnum.ACTIVE.equals(proxyModeType)) {
 
                 // Look for mock...
-                final Optional<String> result = handleMockLookup(request, response, isMultiUserMode);
+                final Optional<String> result = handleMockLookup(request, response, false);
 
                 if (result.isPresent()) {
                     return result;
                 }
 
                 // Make downstream client call of no mock was found
-                return handleClientDownstreamProxyCallResponse(executeClientDownstreamProxyCall(request), response);
-
-            } else if (ProxyModeTypeEnum.REACTIVE.equals(proxyModeType)) {
-
-                final HttpClientResponseDTO httpClientResponse = executeClientDownstreamProxyCall(request);
-
-                if (HttpStatus.NOT_FOUND.equals(httpClientResponse.getStatus())) {
-
-                    // Look for mock substitute if downstream client returns a 404
-                    return handleMockLookup(request, response, isMultiUserMode);
-                }
-
-                // Pass back downstream client response directly back to caller
-                return handleClientDownstreamProxyCallResponse(httpClientResponse, response);
-
-            } else {
-                throw new Exception("Unable to determine proxy mode type " + proxyModeType);
+                return handleClientDownstreamProxyCallResponse(executeClientDownstreamProxyCall(proxyForwardUrl, request), response);
             }
+
+            // Default to REACTIVE mode...
+
+            final HttpClientResponseDTO httpClientResponse = executeClientDownstreamProxyCall(proxyForwardUrl, request);
+
+            if (HttpStatus.NOT_FOUND.equals(httpClientResponse.getStatus())) {
+
+                // Look for mock substitute if downstream client returns a 404
+                return handleMockLookup(request, response, false);
+            }
+
+            // Pass back downstream client response directly back to caller
+            return handleClientDownstreamProxyCallResponse(httpClientResponse, response);
 
         } catch (Exception ex) {
             return handleFailure(ex, response);
@@ -176,24 +180,40 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    HttpClientResponseDTO executeClientDownstreamProxyCall(final Request request)
+    HttpClientResponseDTO executeClientDownstreamProxyCall(final String proxyForwardUrl, final Request request)
             throws ValidationException {
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Initiating proxied call to downstream client: " + proxyForwardUrl + request.pathInfo());
+        }
+
+
         final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
-        httpClientCallDTO.setUrl(request.url());
+        final String reqParams = (request.queryString() != null)
+                ? ( "?" + request.queryString() )
+                : "";
+        httpClientCallDTO.setUrl(proxyForwardUrl + request.pathInfo() + reqParams);
         httpClientCallDTO.setMethod(RestMethodEnum.valueOf(request.requestMethod()));
         httpClientCallDTO.setBody(request.body());
+
         httpClientCallDTO.setHeaders(request
                 .headers()
                 .stream()
-                .collect(Collectors.toMap(k -> k, k -> request.headers(k))));
+                .collect(Collectors.toMap(k -> k, v -> request.headers(v))));
 
+        String host = StringUtils.remove(proxyForwardUrl, HttpClientService.HTTPS_PROTOCOL);
+        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
+        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
 
         return httpClientService.handleExternalCall(httpClientCallDTO);
     }
 
     Optional<String> handleClientDownstreamProxyCallResponse(final HttpClientResponseDTO httpClientResponse,
                                            final Response response) throws ValidationException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Downstream client response status: " + httpClientResponse.getStatus());
+        }
 
         response.status(httpClientResponse.getStatus());
         response.type(httpClientResponse.getContentType());
@@ -203,6 +223,8 @@ public class MockedRestServerEngineUtils {
                 .entrySet()
                 .forEach(e ->
                         response.header(e.getKey(), e.getValue()));
+
+        response.header(GeneralUtils.PROXIED_RESPONSE_HEADER, Boolean.TRUE.toString());
 
         return Optional.of(StringUtils.defaultIfBlank(httpClientResponse.getBody(),""));
     }
@@ -352,10 +374,16 @@ public class MockedRestServerEngineUtils {
 
         if (logger.isDebugEnabled()) {
 
+            logger.debug("inbound request url: " + request.url());
+            logger.debug("inbound request query string : " + request.queryString());
             logger.debug("inbound request method: " + request.requestMethod());
             logger.debug("inbound request path: " + request.pathInfo());
             logger.debug("inbound request body: " + request.body());
 
+            request.headers()
+                .stream()
+                .forEach(h ->
+                    logger.debug("inbound request header: " + h + " = " + request.headers(h)));
         }
 
     }

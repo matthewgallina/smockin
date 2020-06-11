@@ -45,7 +45,7 @@ public final class GeneralUtils {
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
 
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
-    public static final String PROXY_MOCK_INTERCEPT_HEADER = "X-Proxy-Mock-Intercept";
+    public static final String PROXIED_RESPONSE_HEADER = "X-Proxied-Response";
 
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 

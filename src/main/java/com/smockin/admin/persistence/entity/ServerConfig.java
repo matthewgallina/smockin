@@ -42,6 +42,9 @@ public class ServerConfig extends Identifier {
     @Enumerated(EnumType.STRING)
     private ProxyModeTypeEnum proxyModeType;
 
+    @Column(name = "PROXY_FORWARD_URL", length = 200)
+    private String proxyForwardUrl;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> nativeProperties = new HashMap<>();
 
@@ -107,6 +110,13 @@ public class ServerConfig extends Identifier {
     }
     public void setProxyModeType(ProxyModeTypeEnum proxyModeType) {
         this.proxyModeType = proxyModeType;
+    }
+
+    public String getProxyForwardUrl() {
+        return proxyForwardUrl;
+    }
+    public void setProxyForwardUrl(String proxyForwardUrl) {
+        this.proxyForwardUrl = proxyForwardUrl;
     }
 
     public Map<String, String> getNativeProperties() {

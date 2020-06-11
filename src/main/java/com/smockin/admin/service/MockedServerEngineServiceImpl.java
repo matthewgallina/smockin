@@ -132,6 +132,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.isAutoStart(),
                 serverConfig.isProxyMode(),
                 serverConfig.getProxyModeType(),
+                serverConfig.getProxyForwardUrl(),
                 serverConfig.getNativeProperties()
         );
 
@@ -158,6 +159,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setAutoStart(config.isAutoStart());
         serverConfig.setProxyMode(config.isProxyMode());
         serverConfig.setProxyModeType(config.getProxyModeType());
+        serverConfig.setProxyForwardUrl(config.getProxyForwardUrl());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());

@@ -18,13 +18,16 @@ public class MockedServerConfigDTO {
     private boolean autoStart;
     private boolean proxyMode;
     private ProxyModeTypeEnum proxyModeType;
+    private String proxyForwardUrl;
     private Map<String, String> nativeProperties = new HashMap<>();
 
     public MockedServerConfigDTO() {
+
     }
 
     public MockedServerConfigDTO(final ServerTypeEnum serverType, Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis,
-                                 boolean autoStart, boolean proxyMode, ProxyModeTypeEnum proxyModeType, Map<String, String> nativeProperties) {
+                                 boolean autoStart, boolean proxyMode, ProxyModeTypeEnum proxyModeType,
+                                 final String proxyForwardUrl, Map<String, String> nativeProperties) {
         this.serverType = serverType;
         this.port = port;
         this.maxThreads = maxThreads;
@@ -33,6 +36,7 @@ public class MockedServerConfigDTO {
         this.autoStart = autoStart;
         this.proxyMode = proxyMode;
         this.proxyModeType = proxyModeType;
+        this.proxyForwardUrl = proxyForwardUrl;
         this.nativeProperties = nativeProperties;
     }
 
@@ -92,6 +96,13 @@ public class MockedServerConfigDTO {
         this.proxyModeType = proxyModeType;
     }
 
+    public String getProxyForwardUrl() {
+        return proxyForwardUrl;
+    }
+    public void setProxyForwardUrl(String proxyForwardUrl) {
+        this.proxyForwardUrl = proxyForwardUrl;
+    }
+
     public Map<String, String> getNativeProperties() {
         return nativeProperties;
     }
@@ -109,6 +120,7 @@ public class MockedServerConfigDTO {
                 + ", TimeOutMillis : " + timeOutMillis
                 + ", AutoStart : " + autoStart
                 + ", ProxyMode : " + proxyMode
-                + ", ProxyModeType : " + proxyModeType;
+                + ", ProxyModeType : " + proxyModeType
+                + ", proxyForwardUrl : " + proxyForwardUrl;
     }
 }

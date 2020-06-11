@@ -22,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -87,9 +86,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler(isMultiUserMode, config.isProxyMode(), config.getProxyModeType());
+        buildGlobalHttpEndpointsHandler(isMultiUserMode, config.isProxyMode(), config.getProxyModeType(), config.getProxyForwardUrl());
 
-        applyTrafficLogging();
+        applyTrafficLogging(config.isProxyMode());
 
         initServer(config.getPort());
     }
@@ -167,52 +166,78 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService, isMultiUserMode));
     }
 
-    private void applyTrafficLogging() {
+    private void applyTrafficLogging(final boolean isUsingProxyMode) {
 
         // Live logging filter
         Spark.before((request, response) -> {
 
-            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)) {
-                return;
-            }
-
             final String traceId = GeneralUtils.generateUUID();
 
             request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
-            response.raw().addHeader(GeneralUtils.LOG_REQ_ID, traceId);
+            response.raw()
+                    .addHeader(GeneralUtils.LOG_REQ_ID, traceId);
 
-            final Map<String, String> reqHeaders = request.headers()
+            final Map<String, String> reqHeaders = request
+                    .headers()
                     .stream()
                     .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
 
             reqHeaders.put(GeneralUtils.LOG_REQ_ID, traceId);
 
-            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogInboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), request.requestMethod(), request.pathInfo(), reqHeaders, request.body(), false, GeneralUtils.extractAllRequestParams(request)));
+            liveLoggingHandler.broadcast(
+                    LiveLoggingUtils.buildLiveLogInboundDTO(
+                        request.attribute(GeneralUtils.LOG_REQ_ID),
+                        request.requestMethod(),
+                        request.pathInfo(),
+                        reqHeaders,
+                        request.body(),
+                        isUsingProxyMode,
+                        GeneralUtils.extractAllRequestParams(request)));
         });
 
         Spark.afterAfter((request, response) -> {
 
-            if (request.headers().contains(GeneralUtils.PROXY_MOCK_INTERCEPT_HEADER)
-                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
+            if (serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
                 return;
             }
 
-            final Map<String, String> respHeaders = response.raw().getHeaderNames()
+            boolean isProxiedResponse = isProxiedResponse(isUsingProxyMode, response);
+
+            final Map<String, String> respHeaders = response
+                    .raw()
+                    .getHeaderNames()
                     .stream()
+                    .filter(h -> !GeneralUtils.PROXIED_RESPONSE_HEADER.equalsIgnoreCase(h))
                     .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
 
             respHeaders.put(GeneralUtils.LOG_REQ_ID, request.attribute(GeneralUtils.LOG_REQ_ID));
 
-            liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(request.attribute(GeneralUtils.LOG_REQ_ID), response.raw().getStatus(), respHeaders, response.body(), false, false));
+            liveLoggingHandler.broadcast(
+                    LiveLoggingUtils.buildLiveLogOutboundDTO(
+                        request.attribute(GeneralUtils.LOG_REQ_ID),
+                        response.raw().getStatus(),
+                        respHeaders,
+                        response.body(),
+                        isUsingProxyMode,
+                        isProxiedResponse));
         });
 
     }
 
-    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode, final boolean proxyMode, final ProxyModeTypeEnum proxyModeType) {
+    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode,
+                                         final boolean proxyMode,
+                                         final ProxyModeTypeEnum proxyModeType,
+                                         final String proxyForwardUrl) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
+        if (logger.isDebugEnabled()) {
+            logger.debug("Proxy Mode: " + proxyMode);
+            logger.debug("Proxy Mode Type: "+ proxyModeType);
+            logger.debug("Proxy Forward Url: " + proxyForwardUrl);
+        }
+
         Spark.head(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.get(wildcardPath, (request, response) -> {
@@ -222,24 +247,24 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                     .orElseGet(() -> handleNotFoundResponse(response));
         });
 
         Spark.post(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.put(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.delete(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.patch(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
     }
@@ -300,6 +325,18 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             response.header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, wildcardPath);
         });
 
+    }
+
+    boolean isProxiedResponse(final boolean isUsingProxyMode, final Response response) {
+
+        if (!isUsingProxyMode) {
+            return false;
+        }
+
+        final String proxyHeader = response
+                .raw()
+                .getHeader(GeneralUtils.PROXIED_RESPONSE_HEADER);
+        return (proxyHeader != null && Boolean.TRUE.toString().equals(proxyHeader));
     }
 
 }
