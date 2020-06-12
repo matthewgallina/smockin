@@ -148,6 +148,20 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 <br />
 
+**New in version 2.9**
+
+- Added ability to run sMockin as a proxy server so this can sit between any application in development and the downstream server it would normally make API calls too.
+
+- Proxy mode can be run in 2 ways:
+
+...
+
+- Please note, proxy mode is not available when running sMockin in 'multi user' mode.
+
+<br />
+<br />
+
+
 **New in version 2.8**
 
 - Added the ability to save Key / Value pair data which can be recalled in your mock responses.
@@ -207,8 +221,8 @@ More details to follow at https://help.smockin.com
 <br />
 <br />
 
-**New in version 2.7**
 
+**New in version 2.7**
 
 - Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
 

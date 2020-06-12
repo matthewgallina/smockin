@@ -45,6 +45,10 @@ public class ServerConfig extends Identifier {
     @Column(name = "PROXY_FORWARD_URL", length = 200)
     private String proxyForwardUrl;
 
+    @ColumnDefault("false")
+    @Column(name = "NO_FORWARD_WHEN_404_MOCK", nullable = false)
+    private boolean doNotForwardWhen404Mock;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> nativeProperties = new HashMap<>();
 
@@ -117,6 +121,13 @@ public class ServerConfig extends Identifier {
     }
     public void setProxyForwardUrl(String proxyForwardUrl) {
         this.proxyForwardUrl = proxyForwardUrl;
+    }
+
+    public boolean isDoNotForwardWhen404Mock() {
+        return doNotForwardWhen404Mock;
+    }
+    public void setDoNotForwardWhen404Mock(boolean doNotForwardWhen404Mock) {
+        this.doNotForwardWhen404Mock = doNotForwardWhen404Mock;
     }
 
     public Map<String, String> getNativeProperties() {

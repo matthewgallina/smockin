@@ -133,6 +133,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.isProxyMode(),
                 serverConfig.getProxyModeType(),
                 serverConfig.getProxyForwardUrl(),
+                serverConfig.isDoNotForwardWhen404Mock(),
                 serverConfig.getNativeProperties()
         );
 
@@ -160,6 +161,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setProxyMode(config.isProxyMode());
         serverConfig.setProxyModeType(config.getProxyModeType());
         serverConfig.setProxyForwardUrl(config.getProxyForwardUrl());
+        serverConfig.setDoNotForwardWhen404Mock(config.isDoNotForwardWhen404Mock());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());

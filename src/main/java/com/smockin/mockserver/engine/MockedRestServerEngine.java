@@ -2,7 +2,6 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockServerState;
@@ -22,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,7 +86,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         handleCORS(config);
 
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler(isMultiUserMode, config.isProxyMode(), config.getProxyModeType(), config.getProxyForwardUrl());
+        buildGlobalHttpEndpointsHandler(isMultiUserMode, config);
 
         applyTrafficLogging(config.isProxyMode());
 
@@ -225,19 +225,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode,
-                                         final boolean proxyMode,
-                                         final ProxyModeTypeEnum proxyModeType,
-                                         final String proxyForwardUrl) {
+                                         final MockedServerConfigDTO config) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Proxy Mode: " + proxyMode);
-            logger.debug("Proxy Mode Type: "+ proxyModeType);
-            logger.debug("Proxy Forward Url: " + proxyForwardUrl);
-        }
-
         Spark.head(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.get(wildcardPath, (request, response) -> {
@@ -247,24 +239,24 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                     .orElseGet(() -> handleNotFoundResponse(response));
         });
 
         Spark.post(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.put(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.delete(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
         Spark.patch(wildcardPath, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, proxyMode, proxyModeType, proxyForwardUrl)
+                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, config)
                         .orElseGet(() -> handleNotFoundResponse(response)));
 
     }

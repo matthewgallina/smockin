@@ -75,6 +75,7 @@ public class CoreDataHandler {
             restServerConfig.setAutoStart(false);
             restServerConfig.setProxyMode(false);
             restServerConfig.setProxyModeType(ProxyModeTypeEnum.ACTIVE);
+            restServerConfig.setDoNotForwardWhen404Mock(false);
             restServerConfig.getNativeProperties().put(GeneralUtils.ENABLE_CORS_PARAM, "false");
 
             serverConfigDAO.save(restServerConfig);

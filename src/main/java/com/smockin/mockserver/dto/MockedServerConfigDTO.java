@@ -19,6 +19,7 @@ public class MockedServerConfigDTO {
     private boolean proxyMode;
     private ProxyModeTypeEnum proxyModeType;
     private String proxyForwardUrl;
+    private boolean doNotForwardWhen404Mock;
     private Map<String, String> nativeProperties = new HashMap<>();
 
     public MockedServerConfigDTO() {
@@ -27,7 +28,7 @@ public class MockedServerConfigDTO {
 
     public MockedServerConfigDTO(final ServerTypeEnum serverType, Integer port, Integer maxThreads, Integer minThreads, Integer timeOutMillis,
                                  boolean autoStart, boolean proxyMode, ProxyModeTypeEnum proxyModeType,
-                                 final String proxyForwardUrl, Map<String, String> nativeProperties) {
+                                 final String proxyForwardUrl, final boolean doNotForwardWhen404Mock, Map<String, String> nativeProperties) {
         this.serverType = serverType;
         this.port = port;
         this.maxThreads = maxThreads;
@@ -37,6 +38,7 @@ public class MockedServerConfigDTO {
         this.proxyMode = proxyMode;
         this.proxyModeType = proxyModeType;
         this.proxyForwardUrl = proxyForwardUrl;
+        this.doNotForwardWhen404Mock = doNotForwardWhen404Mock;
         this.nativeProperties = nativeProperties;
     }
 
@@ -103,6 +105,13 @@ public class MockedServerConfigDTO {
         this.proxyForwardUrl = proxyForwardUrl;
     }
 
+    public boolean isDoNotForwardWhen404Mock() {
+        return doNotForwardWhen404Mock;
+    }
+    public void setDoNotForwardWhen404Mock(boolean doNotForwardWhen404Mock) {
+        this.doNotForwardWhen404Mock = doNotForwardWhen404Mock;
+    }
+
     public Map<String, String> getNativeProperties() {
         return nativeProperties;
     }
@@ -121,6 +130,7 @@ public class MockedServerConfigDTO {
                 + ", AutoStart : " + autoStart
                 + ", ProxyMode : " + proxyMode
                 + ", ProxyModeType : " + proxyModeType
-                + ", proxyForwardUrl : " + proxyForwardUrl;
+                + ", proxyForwardUrl : " + proxyForwardUrl
+                + ", doNotForwardWhen404Mock : " + doNotForwardWhen404Mock;
     }
 }

@@ -33,7 +33,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.proxyForwardUrlPlaceholderTxt = 'e.g http://www.smockin.com';
     $scope.proxyModeActiveTypeLabel = 'Look for MOCK first, if nothing found, then forward to DOWNSTREAM';
     $scope.proxyModeReactiveTypeLabel = 'Call DOWNSTREAM first, if nothing found, then try to MOCK';
-    $scope.proxyMode404HandlingLabel = 'Do not downstream when 404 is from mock';
+    $scope.activeProxy404MockDoNotForwardLabel = 'Do forward to downstream when 404 is deliberate mock response';
 
 
     //
@@ -77,6 +77,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "enableCors" : false,
         "proxyMode" : false,
         "proxyModeType" : $scope.ActiveStatus,
+        "doNotForwardWhen404Mock" : false,
         "proxyForwardUrl" : null,
     };
 
@@ -134,6 +135,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             "proxyMode" : $scope.serverConfig.proxyMode,
             "proxyModeType" : $scope.serverConfig.proxyModeType,
             "proxyForwardUrl" : $scope.serverConfig.proxyForwardUrl,
+            "doNotForwardWhen404Mock" : $scope.serverConfig.doNotForwardWhen404Mock,
             "nativeProperties" : {}
         }
 
@@ -184,6 +186,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "proxyMode" : data.proxyMode,
                     "proxyModeType" : data.proxyModeType,
                     "proxyForwardUrl" : data.proxyForwardUrl,
+                    "doNotForwardWhen404Mock" : data.doNotForwardWhen404Mock,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE")
                 };
 

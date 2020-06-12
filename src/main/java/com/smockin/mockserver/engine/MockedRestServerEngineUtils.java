@@ -12,6 +12,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.HttpClientService;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -44,8 +45,6 @@ public class MockedRestServerEngineUtils {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngineUtils.class);
 
-
-
     @Autowired
     private RestfulMockDAO restfulMockDAO;
 
@@ -77,22 +76,26 @@ public class MockedRestServerEngineUtils {
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode,
-                                               final boolean proxyMode,
-                                               final ProxyModeTypeEnum proxyModeType,
-                                               final String proxyForwardUrl) {
+                                               final MockedServerConfigDTO config) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        return (proxyMode && !isMultiUserMode)
-            ? handleProxyInterceptorMode(proxyModeType, proxyForwardUrl, request, response)
-            : handleMockLookup(request, response, isMultiUserMode);
+        return (config.isProxyMode() && !isMultiUserMode)
+            ? handleProxyInterceptorMode(config.getProxyModeType(),
+                                         config.getProxyForwardUrl(),
+                                         config.isDoNotForwardWhen404Mock(),
+                                         request,
+                                         response)
+            : handleMockLookup(request, response, isMultiUserMode, false);
     }
 
     Optional<String> handleMockLookup(final Request request,
                            final Response response,
-                           final boolean isMultiUserMode) {
+                           final boolean isMultiUserMode,
+                           final boolean ignore404MockResponses) {
+        logger.debug("handleMockLookup called");
 
         try {
 
@@ -129,7 +132,12 @@ public class MockedRestServerEngineUtils {
 
             removeSuspendedResponses(mock);
 
-            return Optional.of(processRequest(mock, request, response));
+            final String responseBody = processRequest(mock, request, response, ignore404MockResponses);
+
+            // Yuk! Bit of a hacky work around returning null from processRequest, so as to distinguish an ignored 404...
+            return (responseBody != null)
+                    ? Optional.of(responseBody)
+                    : Optional.empty();
 
         } catch (Exception ex) {
             return handleFailure(ex, response);
@@ -139,8 +147,10 @@ public class MockedRestServerEngineUtils {
 
     Optional<String> handleProxyInterceptorMode(final ProxyModeTypeEnum proxyModeType,
                                                 final String proxyForwardUrl,
+                                                final boolean doNotForwardWhen404Mock,
                                                 final Request request,
                                                 final Response response) {
+        logger.debug("handleProxyInterceptorMode called");
 
         try {
 
@@ -151,7 +161,7 @@ public class MockedRestServerEngineUtils {
             if (ProxyModeTypeEnum.ACTIVE.equals(proxyModeType)) {
 
                 // Look for mock...
-                final Optional<String> result = handleMockLookup(request, response, false);
+                final Optional<String> result = handleMockLookup(request, response, false, !doNotForwardWhen404Mock);
 
                 if (result.isPresent()) {
                     return result;
@@ -165,10 +175,10 @@ public class MockedRestServerEngineUtils {
 
             final HttpClientResponseDTO httpClientResponse = executeClientDownstreamProxyCall(proxyForwardUrl, request);
 
-            if (HttpStatus.NOT_FOUND.equals(httpClientResponse.getStatus())) {
+            if (HttpStatus.NOT_FOUND.value() == httpClientResponse.getStatus()) {
 
                 // Look for mock substitute if downstream client returns a 404
-                return handleMockLookup(request, response, false);
+                return handleMockLookup(request, response, false, false);
             }
 
             // Pass back downstream client response directly back to caller
@@ -229,7 +239,10 @@ public class MockedRestServerEngineUtils {
         return Optional.of(StringUtils.defaultIfBlank(httpClientResponse.getBody(),""));
     }
 
-    String processRequest(final RestfulMock mock, final Request req, final Response res) {
+    String processRequest(final RestfulMock mock,
+                          final Request req,
+                          final Response res,
+                          final boolean ignore404MockResponses) {
         logger.debug("processRequest called");
 
         RestfulResponseDTO outcome;
@@ -256,6 +269,10 @@ public class MockedRestServerEngineUtils {
         if (outcome == null) {
             // Load in default values
             outcome = getDefault(mock);
+        } else if (ignore404MockResponses
+                        && HttpStatus.NOT_FOUND.value() == outcome.getHttpStatusCode()) {
+            // Yuk! Bit of a hacky work around returning null so as to distinguish an ignored 404...
+            return null;
         }
 
         debugOutcome(outcome);
