@@ -217,6 +217,11 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
         }
+        if (dto.getProxyForwardUrl() != null
+                && (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
+                        && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL))) {
+            throw new ValidationException("'proxyForwardUrl' config value is invalid");
+        }
 
     }
 

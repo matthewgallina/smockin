@@ -28,12 +28,11 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
     $scope.proxyModeLabel = 'Enable Proxy Mode';
-//    $scope.proxyModeTypeLabel = 'Proxy Interceptor Mode';
     $scope.proxyForwardUrlLabel = 'Downstream Forwarding URL';
     $scope.proxyForwardUrlPlaceholderTxt = 'e.g http://www.smockin.com';
     $scope.proxyModeActiveTypeLabel = 'Look for MOCK first, if nothing found, then forward to DOWNSTREAM';
     $scope.proxyModeReactiveTypeLabel = 'Call DOWNSTREAM first, if nothing found, then try to MOCK';
-    $scope.activeProxy404MockDoNotForwardLabel = 'Do forward to downstream when 404 is deliberate mock response';
+    $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
 
 
     //
@@ -122,6 +121,13 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         if ($scope.serverConfig.proxyMode
                 && utils.isBlank($scope.serverConfig.proxyForwardUrl)) {
             showAlert("'Proxy Forwarding URL' is required if enabling proxy mode");
+            return;
+        }
+
+        if ($scope.serverConfig.proxyMode
+                && $scope.serverConfig.proxyForwardUrl != null
+                && (!$scope.serverConfig.proxyForwardUrl.startsWith("https://") && !$scope.serverConfig.proxyForwardUrl.startsWith("http://"))) {
+            showAlert("'Proxy Forwarding URL' entered is not a valid URL");
             return;
         }
 
