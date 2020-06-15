@@ -154,8 +154,9 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 - Proxy mode can be run in 2 ways:
 
-  A. sMockin will attempt to find a mock first and only forward the request to your server downstream if a mock could not be found
-  B. sMockin will forward the request to the server downstream first and then try to find a suitable mock if the downstream server returns a 404.
+**Option A** sMockin will attempt to find a mock first and only forward the request to your server downstream if a mock could not be found.
+
+**Option B** sMockin will forward the request to the server downstream first and then try to find a suitable mock if the downstream server returns a 404.
 
 - Please note, proxy mode is not available when running sMockin in 'multi user' mode.
 
