@@ -1,5 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
+import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -33,8 +34,23 @@ public class ServerConfig extends Identifier {
     @Column(name = "AUTO_START", nullable = false)
     private boolean autoStart;
 
+    @ColumnDefault("false")
+    @Column(name = "PROXY_MODE", nullable = false)
+    private boolean proxyMode;
+
+    @Column(name = "PROXY_MODE_TYPE", length = 8)
+    @Enumerated(EnumType.STRING)
+    private ProxyModeTypeEnum proxyModeType;
+
+    @Column(name = "PROXY_FORWARD_URL", length = 200)
+    private String proxyForwardUrl;
+
+    @ColumnDefault("false")
+    @Column(name = "NO_FORWARD_WHEN_404_MOCK", nullable = false)
+    private boolean doNotForwardWhen404Mock;
+
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> nativeProperties = new HashMap<String, String>();
+    private Map<String, String> nativeProperties = new HashMap<>();
 
     public ServerConfig() {
 
@@ -84,6 +100,34 @@ public class ServerConfig extends Identifier {
     }
     public void setAutoStart(boolean autoStart) {
         this.autoStart = autoStart;
+    }
+
+    public boolean isProxyMode() {
+        return proxyMode;
+    }
+    public void setProxyMode(boolean proxyMode) {
+        this.proxyMode = proxyMode;
+    }
+
+    public ProxyModeTypeEnum getProxyModeType() {
+        return proxyModeType;
+    }
+    public void setProxyModeType(ProxyModeTypeEnum proxyModeType) {
+        this.proxyModeType = proxyModeType;
+    }
+
+    public String getProxyForwardUrl() {
+        return proxyForwardUrl;
+    }
+    public void setProxyForwardUrl(String proxyForwardUrl) {
+        this.proxyForwardUrl = proxyForwardUrl;
+    }
+
+    public boolean isDoNotForwardWhen404Mock() {
+        return doNotForwardWhen404Mock;
+    }
+    public void setDoNotForwardWhen404Mock(boolean doNotForwardWhen404Mock) {
+        this.doNotForwardWhen404Mock = doNotForwardWhen404Mock;
     }
 
     public Map<String, String> getNativeProperties() {

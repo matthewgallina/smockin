@@ -1,30 +1,40 @@
 package com.smockin.mockserver.engine;
 
+import com.smockin.admin.dto.HttpClientCallDTO;
+import com.smockin.admin.dto.response.HttpClientResponseDTO;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
+import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.service.HttpClientService;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by mgallina.
@@ -59,35 +69,55 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private StatefulService statefulService;
 
+    @Autowired
+    private HttpClientService httpClientService;
+
 
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
-                                               final boolean isMultiUserMode) {
+                                               final boolean isMultiUserMode,
+                                               final MockedServerConfigDTO config) {
+
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
+
+        return (config.isProxyMode() && !isMultiUserMode)
+            ? handleProxyInterceptorMode(config.getProxyModeType(),
+                                         config.getProxyForwardUrl(),
+                                         config.isDoNotForwardWhen404Mock(),
+                                         request,
+                                         response)
+            : handleMockLookup(request, response, isMultiUserMode, false);
+    }
+
+    Optional<String> handleMockLookup(final Request request,
+                           final Response response,
+                           final boolean isMultiUserMode,
+                           final boolean ignore404MockResponses) {
+        logger.debug("handleMockLookup called");
 
         try {
 
             final RestfulMock mock = (isMultiUserMode)
                     ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
-                            RestMethodEnum.findByName(request.requestMethod()),
-                            request.pathInfo(),
-                            Arrays.asList(RestMockTypeEnum.PROXY_SSE,
-                                    RestMockTypeEnum.PROXY_HTTP,
-                                    RestMockTypeEnum.SEQ,
-                                    RestMockTypeEnum.RULE,
-                                    RestMockTypeEnum.STATEFUL,
-                                    RestMockTypeEnum.CUSTOM_JS))
+                    RestMethodEnum.findByName(request.requestMethod()),
+                    request.pathInfo(),
+                    Arrays.asList(RestMockTypeEnum.PROXY_SSE,
+                            RestMockTypeEnum.PROXY_HTTP,
+                            RestMockTypeEnum.SEQ,
+                            RestMockTypeEnum.RULE,
+                            RestMockTypeEnum.STATEFUL,
+                            RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
-                            RestMethodEnum.findByName(request.requestMethod()),
-                            request.pathInfo(),
-                            Arrays.asList(RestMockTypeEnum.PROXY_SSE,
-                                          RestMockTypeEnum.PROXY_HTTP,
-                                          RestMockTypeEnum.SEQ,
-                                          RestMockTypeEnum.RULE,
-                                          RestMockTypeEnum.STATEFUL,
-                                          RestMockTypeEnum.CUSTOM_JS));
+                    RestMethodEnum.findByName(request.requestMethod()),
+                    request.pathInfo(),
+                    Arrays.asList(RestMockTypeEnum.PROXY_SSE,
+                            RestMockTypeEnum.PROXY_HTTP,
+                            RestMockTypeEnum.SEQ,
+                            RestMockTypeEnum.RULE,
+                            RestMockTypeEnum.STATEFUL,
+                            RestMockTypeEnum.CUSTOM_JS));
 
             if (mock == null) {
                 logger.debug("no mock was found");
@@ -102,20 +132,117 @@ public class MockedRestServerEngineUtils {
 
             removeSuspendedResponses(mock);
 
-            return Optional.of(processRequest(mock, request, response));
+            final String responseBody = processRequest(mock, request, response, ignore404MockResponses);
+
+            // Yuk! Bit of a hacky work around returning null from processRequest, so as to distinguish an ignored 404...
+            return (responseBody != null)
+                    ? Optional.of(responseBody)
+                    : Optional.empty();
 
         } catch (Exception ex) {
-            logger.error("Error processing mock request", ex);
-
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
-            response.body((ex instanceof IllegalArgumentException) ? ex.getMessage() : "Oops, looks like something went wrong with this mock!");
-
-            return Optional.of("Oops"); // this message does not come through to caller when it is a 500 for some reason, so setting in body above
+            return handleFailure(ex, response);
         }
 
     }
 
-    String processRequest(final RestfulMock mock, final Request req, final Response res) {
+    Optional<String> handleProxyInterceptorMode(final ProxyModeTypeEnum proxyModeType,
+                                                final String proxyForwardUrl,
+                                                final boolean doNotForwardWhen404Mock,
+                                                final Request request,
+                                                final Response response) {
+        logger.debug("handleProxyInterceptorMode called");
+
+        try {
+
+            if (StringUtils.isBlank(proxyForwardUrl)) {
+                throw new Exception("Unable to use proxy mode. Proxy Forwarding Url is undefined");
+            }
+
+            if (ProxyModeTypeEnum.ACTIVE.equals(proxyModeType)) {
+
+                // Look for mock...
+                final Optional<String> result = handleMockLookup(request, response, false, !doNotForwardWhen404Mock);
+
+                if (result.isPresent()) {
+                    return result;
+                }
+
+                // Make downstream client call of no mock was found
+                return handleClientDownstreamProxyCallResponse(executeClientDownstreamProxyCall(proxyForwardUrl, request), response);
+            }
+
+            // Default to REACTIVE mode...
+
+            final HttpClientResponseDTO httpClientResponse = executeClientDownstreamProxyCall(proxyForwardUrl, request);
+
+            if (HttpStatus.NOT_FOUND.value() == httpClientResponse.getStatus()) {
+
+                // Look for mock substitute if downstream client returns a 404
+                return handleMockLookup(request, response, false, false);
+            }
+
+            // Pass back downstream client response directly back to caller
+            return handleClientDownstreamProxyCallResponse(httpClientResponse, response);
+
+        } catch (Exception ex) {
+            return handleFailure(ex, response);
+        }
+
+    }
+
+    HttpClientResponseDTO executeClientDownstreamProxyCall(final String proxyForwardUrl, final Request request)
+            throws ValidationException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Initiating proxied call to downstream client: " + proxyForwardUrl + request.pathInfo());
+        }
+
+
+        final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
+        final String reqParams = (request.queryString() != null)
+                ? ( "?" + request.queryString() )
+                : "";
+        httpClientCallDTO.setUrl(proxyForwardUrl + request.pathInfo() + reqParams);
+        httpClientCallDTO.setMethod(RestMethodEnum.valueOf(request.requestMethod()));
+        httpClientCallDTO.setBody(request.body());
+
+        httpClientCallDTO.setHeaders(request
+                .headers()
+                .stream()
+                .collect(Collectors.toMap(k -> k, v -> request.headers(v))));
+
+        String host = StringUtils.remove(proxyForwardUrl, HttpClientService.HTTPS_PROTOCOL);
+        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
+        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
+
+        return httpClientService.handleExternalCall(httpClientCallDTO);
+    }
+
+    Optional<String> handleClientDownstreamProxyCallResponse(final HttpClientResponseDTO httpClientResponse,
+                                           final Response response) throws ValidationException {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Downstream client response status: " + httpClientResponse.getStatus());
+        }
+
+        response.status(httpClientResponse.getStatus());
+        response.type(httpClientResponse.getContentType());
+        response.body(httpClientResponse.getBody());
+
+        httpClientResponse.getHeaders()
+                .entrySet()
+                .forEach(e ->
+                        response.header(e.getKey(), e.getValue()));
+
+        response.header(GeneralUtils.PROXIED_RESPONSE_HEADER, Boolean.TRUE.toString());
+
+        return Optional.of(StringUtils.defaultIfBlank(httpClientResponse.getBody(),""));
+    }
+
+    String processRequest(final RestfulMock mock,
+                          final Request req,
+                          final Response res,
+                          final boolean ignore404MockResponses) {
         logger.debug("processRequest called");
 
         RestfulResponseDTO outcome;
@@ -142,6 +269,10 @@ public class MockedRestServerEngineUtils {
         if (outcome == null) {
             // Load in default values
             outcome = getDefault(mock);
+        } else if (ignore404MockResponses
+                        && HttpStatus.NOT_FOUND.value() == outcome.getHttpStatusCode()) {
+            // Yuk! Bit of a hacky work around returning null so as to distinguish an ignored 404...
+            return null;
         }
 
         debugOutcome(outcome);
@@ -246,14 +377,30 @@ public class MockedRestServerEngineUtils {
         return mock.getPath();
     }
 
+    Optional<String> handleFailure(final Exception ex, final Response response) {
+        logger.error("Error processing mock request", ex);
+
+        response.status(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.body((ex instanceof IllegalArgumentException) ? ex.getMessage() : "Oops, looks like something went wrong with this mock!");
+
+        return Optional.of("Oops"); // this message does not come through to caller when it is a 500 for some reason, so setting in body above
+
+    }
+
     private void debugInboundRequest(final Request request) {
 
         if (logger.isDebugEnabled()) {
 
+            logger.debug("inbound request url: " + request.url());
+            logger.debug("inbound request query string : " + request.queryString());
             logger.debug("inbound request method: " + request.requestMethod());
             logger.debug("inbound request path: " + request.pathInfo());
             logger.debug("inbound request body: " + request.body());
 
+            request.headers()
+                .stream()
+                .forEach(h ->
+                    logger.debug("inbound request header: " + h + " = " + request.headers(h)));
         }
 
     }

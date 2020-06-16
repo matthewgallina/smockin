@@ -130,6 +130,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.getMinThreads(),
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
+                serverConfig.isProxyMode(),
+                serverConfig.getProxyModeType(),
+                serverConfig.getProxyForwardUrl(),
+                serverConfig.isDoNotForwardWhen404Mock(),
                 serverConfig.getNativeProperties()
         );
 
@@ -154,6 +158,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setMinThreads(config.getMinThreads());
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
+        serverConfig.setProxyMode(config.isProxyMode());
+        serverConfig.setProxyModeType(config.getProxyModeType());
+        serverConfig.setProxyForwardUrl(config.getProxyForwardUrl());
+        serverConfig.setDoNotForwardWhen404Mock(config.isDoNotForwardWhen404Mock());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());
@@ -208,6 +216,11 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         }
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
+        }
+        if (dto.getProxyForwardUrl() != null
+                && (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
+                        && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL))) {
+            throw new ValidationException("'proxyForwardUrl' config value is invalid");
         }
 
     }

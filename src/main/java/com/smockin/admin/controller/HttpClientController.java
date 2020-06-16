@@ -25,7 +25,7 @@ public class HttpClientController {
 
     @RequestMapping(path="/httpclientcall", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<HttpClientResponseDTO> httpClientCall(@RequestBody final HttpClientCallDTO httpClientCallDTO) throws ValidationException {
-        return new ResponseEntity<HttpClientResponseDTO>(httpClientService.handleCall(httpClientCallDTO), HttpStatus.OK);
+        return new ResponseEntity<>(httpClientService.handleCallToMock(httpClientCallDTO), HttpStatus.OK);
     }
 
 }

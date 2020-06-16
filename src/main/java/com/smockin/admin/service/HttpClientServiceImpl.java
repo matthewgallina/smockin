@@ -10,14 +10,28 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.fluent.Executor;
 import org.apache.http.client.fluent.Request;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,8 +47,38 @@ public class HttpClientServiceImpl implements HttpClientService {
     private MockedServerEngineService mockedServerEngineService;
 
     @Override
-    public HttpClientResponseDTO handleCall(final HttpClientCallDTO dto) throws ValidationException {
-        logger.debug("handleCall called");
+    public HttpClientResponseDTO handleExternalCall(final HttpClientCallDTO dto) throws ValidationException {
+        logger.debug("handleExternalCall called");
+
+        debugDTO(dto);
+        validateRequest(dto);
+
+        try {
+
+            switch (dto.getMethod()) {
+                case GET:
+                    return get(dto);
+                case POST:
+                    return post(dto);
+                case PUT:
+                    return put(dto);
+                case DELETE:
+                    return delete(dto);
+                case PATCH:
+                    return patch(dto);
+                default:
+                    throw new ValidationException("Invalid / Unsupported method: " + dto.getMethod());
+            }
+
+        } catch (IOException | MockServerException ex) {
+            return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
+        }
+
+    }
+
+    @Override
+    public HttpClientResponseDTO handleCallToMock(final HttpClientCallDTO dto) throws ValidationException {
+        logger.debug("handleCallToMock called");
 
         debugDTO(dto);
 
@@ -71,11 +115,15 @@ public class HttpClientServiceImpl implements HttpClientService {
 
     }
 
+    boolean isHttps(final String url) {
+        return StringUtils.startsWith(url, HTTPS_PROTOCOL);
+    }
+
     HttpClientResponseDTO get(final HttpClientCallDTO reqDto) throws IOException {
 
         final Request request = Request.Get(reqDto.getUrl());
 
-        return executeRequest(request, reqDto.getHeaders());
+        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO post(final HttpClientCallDTO reqDto) throws IOException {
@@ -84,7 +132,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
-        return executeRequest(request, reqDto.getHeaders());
+        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO put(final HttpClientCallDTO reqDto) throws IOException {
@@ -93,14 +141,14 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
-        return executeRequest(request, reqDto.getHeaders());
+        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO delete(final HttpClientCallDTO reqDto) throws IOException {
 
         final Request request = Request.Delete(reqDto.getUrl());
 
-        return executeRequest(request, reqDto.getHeaders());
+        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO patch(final HttpClientCallDTO reqDto) throws IOException {
@@ -108,7 +156,7 @@ public class HttpClientServiceImpl implements HttpClientService {
         final Request request = Request.Patch(reqDto.getUrl())
                 .bodyByteArray((reqDto.getBody() != null)?reqDto.getBody().getBytes():null);
 
-        return executeRequest(request, reqDto.getHeaders());
+        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
     }
 
     /**
@@ -136,8 +184,10 @@ public class HttpClientServiceImpl implements HttpClientService {
         if (requestHeaders == null)
             return;
 
-        requestHeaders.entrySet().forEach(h ->
-            request.addHeader(h.getKey(), h.getValue()));
+        requestHeaders
+            .entrySet()
+            .forEach(h ->
+                request.addHeader(h.getKey(), h.getValue()));
 
     }
 
@@ -157,11 +207,26 @@ public class HttpClientServiceImpl implements HttpClientService {
         return IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8.name());
     }
 
-    HttpClientResponseDTO executeRequest(final Request request, final Map<String, String> requestHeaders) throws IOException {
+    HttpClientResponseDTO executeRequest(final Request request, final Map<String, String> requestHeaders, final boolean isHttpsCall) throws IOException {
+
 
         applyRequestHeaders(request, requestHeaders);
 
-        final HttpResponse httpResponse = request.execute().returnResponse();
+        final HttpResponse httpResponse;
+
+        if (isHttpsCall) {
+
+            try {
+                final Executor executor = Executor.newInstance(noSslHttpClient());
+                httpResponse = executor.execute(request).returnResponse();
+            } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+                throw new IOException();
+            }
+
+        } else {
+
+            httpResponse = request.execute().returnResponse();
+        }
 
         return new HttpClientResponseDTO(
                 httpResponse.getStatusLine().getStatusCode(),
@@ -169,6 +234,25 @@ public class HttpClientServiceImpl implements HttpClientService {
                 extractResponseHeaders(httpResponse),
                 extractResponseBody(httpResponse)
         );
+    }
+
+    private CloseableHttpClient noSslHttpClient() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
+
+        final SSLContext sslContext = new SSLContextBuilder()
+                .loadTrustMaterial(null, (x509CertChain, authType) -> true)
+                .build();
+
+        return HttpClientBuilder.create()
+                .setSSLContext(sslContext)
+                .setConnectionManager(
+                        new PoolingHttpClientConnectionManager(
+                                RegistryBuilder.<ConnectionSocketFactory>create()
+                                        .register("http", PlainConnectionSocketFactory.INSTANCE)
+                                        .register("https", new SSLConnectionSocketFactory(sslContext,
+                                                NoopHostnameVerifier.INSTANCE))
+                                        .build()
+                        ))
+                .build();
     }
 
     private void debugDTO(final HttpClientCallDTO dto) {

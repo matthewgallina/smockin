@@ -186,7 +186,7 @@ public class HttpClientServiceTest {
         Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo", Charset.defaultCharset()));
 
         // Test
-        final HttpClientResponseDTO result = httpClientServiceImpl.executeRequest(request, requestHeaders);
+        final HttpClientResponseDTO result = httpClientServiceImpl.executeRequest(request, requestHeaders, false);
 
         // Assertions
         Assert.assertNotNull(result);

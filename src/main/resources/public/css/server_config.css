@@ -10,3 +10,15 @@
     font-style: italic;
     font-size: 12px;
 }
+
+#proxy-mode-type {
+    width: 100%;
+}
+
+#proxy-mode-type-button {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
