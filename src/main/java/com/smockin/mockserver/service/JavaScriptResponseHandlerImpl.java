@@ -97,7 +97,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
         if (StringUtils.isNotBlank(req.body())) {
             reqObject.append("request.body=")
-                    .append("'").append(req.body()).append("'")
+                    .append("'").append(removeLineBreaks(req.body())).append("'")
                     .append(";");
         }
 
@@ -239,7 +239,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
                     throw new ScriptException(invalidMsgPrefix + "request.body is undefined");
                 }
 
-                sanitizedKey = req.body();
+                sanitizedKey = removeLineBreaks(req.body());
 
             } else if (requestObjectField.startsWith("headers")) {
 
@@ -287,6 +287,14 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     private ScriptEngine buildEngine() {
         return new NashornScriptEngineFactory()
                 .getScriptEngine(engineSecurityArgs);
+    }
+
+    private String removeLineBreaks(final String input) {
+
+        final String systemCarriage = System.getProperty("line.separator");
+        final String carriage = "\\r\\n|\\r|\\n";
+
+        return StringUtils.replaceAll(input, (systemCarriage != null) ? systemCarriage : carriage, "");
     }
 
 }
