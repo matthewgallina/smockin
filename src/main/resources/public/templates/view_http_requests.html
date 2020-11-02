@@ -35,7 +35,9 @@
                 <div class="col-sm-3">
 
                     <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
-                            class="live-log-font activity-feed-table-row" ng-class="getRowStyle(af)" ng-click="doViewFeedRow(af)">
+                            class="live-log-font activity-feed-table-row"
+                            ng-class="{'selected-request': af.isSelected, 'response-through-proxy': af.content.proxiedResponse}"
+                            ng-click="doViewFeedRow(af)">
 
                         <div class="break-word">
                             <b>

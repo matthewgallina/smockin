@@ -99,7 +99,11 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     };
 
     $scope.doViewFeedRow = function(f) {
+        if ($scope.selectedFeedData) {
+            $scope.selectedFeedData.isSelected = false;
+        }
         $scope.selectedFeedData = f;
+        f.isSelected = true;
     };
 
     $scope.doClearFeed = function() {
@@ -111,16 +115,6 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         doTerminate();
         $uibModalInstance.close();
     };
-
-    $scope.getRowStyle = function(record) {
-        if ($scope.selectedFeedData != null && $scope.selectedFeedData.id == record.id) {
-            return 'selected-request';
-        }
-        if (record.proxied) {
-            return 'response-through-proxy';
-        }
-    };
-
 
     //
     // Internal Functions
@@ -240,7 +234,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
             'id' : req.id,
             'request' : req.content,
             'proxied' : req.proxied,
-            'response' : null
+            'response' : null,
+            'isSelected' : false
         };
 
         $scope.activityFeed.push(data);
