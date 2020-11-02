@@ -108,3 +108,12 @@
     }
 
 }
+
+.response-through-proxy {
+    background-color: #b2dba1;
+}
+
+.selected-request {
+    background-color: #FFEE80;
+}
+

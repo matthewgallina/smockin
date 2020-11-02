@@ -112,8 +112,13 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         $uibModalInstance.close();
     };
 
-    $scope.getRowStyle = function(recordId) {
-        return ($scope.selectedFeedData != null && $scope.selectedFeedData.id == recordId) ? 'info' : '';
+    $scope.getRowStyle = function(record) {
+        if ($scope.selectedFeedData != null && $scope.selectedFeedData.id == record.id) {
+            return 'selected-request';
+        }
+        if (record.proxied) {
+            return 'response-through-proxy';
+        }
     };
 
 
