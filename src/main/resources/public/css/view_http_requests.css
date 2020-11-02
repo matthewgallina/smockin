@@ -109,6 +109,11 @@
 
 }
 
+.request-ongoing {
+    border-style: dashed;
+    opacity: 50%;
+}
+
 .response-through-proxy {
     background-color: #b2dba1;
 }
