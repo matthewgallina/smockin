@@ -219,11 +219,11 @@ public final class GeneralUtils {
     }
 
     public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
-        return deserialiseJson(jsonStr);
+        return deserialiseJson(jsonStr, false);
     }
 
     public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
-        return deserialiseJson(jsonStr);
+        return deserialiseJson(jsonStr, false);
     }
 
     public static <T> T deserialiseJson(final String jsonStr) {
