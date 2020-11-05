@@ -12,7 +12,7 @@
 
    - Visit us: https://www.smockin.com
 
-   - Contact: info@smockin.com
+   - Contact us on Twitter <b>@smockin_com</b>
 
 <br />
 <br />
