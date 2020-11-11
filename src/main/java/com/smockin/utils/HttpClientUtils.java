@@ -8,7 +8,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -18,6 +20,11 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public final class HttpClientUtils {
+
+    /*
+
+    TODO are these used?
+
 
     public static HttpClientResponseDTO get(final HttpClientCallDTO reqDto) throws IOException {
 
@@ -58,6 +65,7 @@ public final class HttpClientUtils {
 
         return executeRequest(request, reqDto.getHeaders());
     }
+    */
 
     public static void applyRequestHeaders(final Request request, final Map<String, String> requestHeaders) {
 
@@ -103,35 +111,35 @@ public final class HttpClientUtils {
                                          final Map<String, String> requestHeaders,
                                          final HttpClientCallDTO reqDto) {
 
-        if (requestHeaders.containsValue(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
+        if (requestHeaders.containsKey(HttpHeaders.CONTENT_TYPE)
+                && requestHeaders.containsValue(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                && reqDto.getBody() != null
+                && reqDto.getBody().contains("&")) {
 
             final List<NameValuePair> postParameters = new ArrayList<>();
+            final String[] formParameterPairsArray = reqDto.getBody().split("&");
 
-            if (reqDto.getBody() != null && reqDto.getBody().contains("&")) {
+            Stream.of(formParameterPairsArray).forEach(pa -> {
 
-                final String[] formParameterPairsArray = reqDto.getBody().split("&");
+                if (pa.contains("=")) {
 
-                Stream.of(formParameterPairsArray).forEach(pa -> {
+                    final String[] pairArray = pa.split("=");
 
-                    if (pa.contains("=")) {
-
-                        final String[] pairArray = pa.split("=");
-
-                        if (pairArray.length == 2) {
-                            postParameters.add(new BasicNameValuePair(pairArray[0], pairArray[1]));
-                        }
-
+                    if (pairArray.length == 2) {
+                        postParameters.add(new BasicNameValuePair(pairArray[0], pairArray[1]));
                     }
 
-                });
+                }
 
-            }
+            });
 
             request.bodyForm(postParameters);
+
             return;
         }
 
-        request.bodyByteArray((reqDto.getBody() != null)?reqDto.getBody().getBytes():null);
+        request.bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes() : null);
+
     }
 
 }

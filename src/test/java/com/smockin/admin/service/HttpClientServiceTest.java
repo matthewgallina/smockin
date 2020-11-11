@@ -166,11 +166,8 @@ public class HttpClientServiceTest {
     public void executeRequestTest() throws IOException {
 
         // Setup
-        final Map<String, String> requestHeaders = new HashMap<String, String>() {
-            {
-                put("auth", "X");
-            }
-        };
+        final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
+        httpClientCallDTO.getHeaders().put("auth", "X");
 
         Mockito.when(request.execute()).thenReturn(response);
         Mockito.when(response.returnResponse()).thenReturn(httpResponse);
@@ -186,7 +183,7 @@ public class HttpClientServiceTest {
         Mockito.when(httpEntity.getContent()).thenReturn(IOUtils.toInputStream("Foo", Charset.defaultCharset()));
 
         // Test
-        final HttpClientResponseDTO result = httpClientServiceImpl.executeRequest(request, requestHeaders, false);
+        final HttpClientResponseDTO result = httpClientServiceImpl.executeRequest(request, httpClientCallDTO, false);
 
         // Assertions
         Assert.assertNotNull(result);

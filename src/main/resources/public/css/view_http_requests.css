@@ -114,11 +114,16 @@
     opacity: 50%;
 }
 
-.response-through-proxy {
+.mocked-response-through-proxy {
+    background-color: #E8E8E8;
+}
+
+.downstream-response-through-proxy {
     background-color: #b2dba1;
 }
 
 .selected-request {
-    background-color: #FFEE80;
+    border: 2px solid;
+    box-shadow: 3px 3px 3px 3px #888888;
 }
 

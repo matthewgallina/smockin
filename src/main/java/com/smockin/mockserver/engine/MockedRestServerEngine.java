@@ -1,7 +1,6 @@
 package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
-import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
@@ -66,9 +65,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Autowired
     private SmockinUserService smockinUserService;
-
-    @Autowired
-    private ProxyForwardMappingDAO proxyForwardMappingDAO;
 
 
     private final Object monitor = new Object();

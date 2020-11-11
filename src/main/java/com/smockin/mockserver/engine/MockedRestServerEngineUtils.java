@@ -77,16 +77,16 @@ public class MockedRestServerEngineUtils {
                                                final Response response,
                                                final boolean isMultiUserMode,
                                                final MockedServerConfigDTO serverConfig,
-                                               final ProxyForwardConfigDTO proxyForwardConfigDTO) {
+                                               final ProxyForwardConfigDTO proxyForwardConfig) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        return (proxyForwardConfigDTO.isProxyMode()
-                && !proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()
+        return (proxyForwardConfig.isProxyMode()
+                && !proxyForwardConfig.getProxyForwardMappings().isEmpty()
                 && !isMultiUserMode)
-            ? handleProxyInterceptorMode(proxyForwardConfigDTO,
+            ? handleProxyInterceptorMode(proxyForwardConfig,
                                          request,
                                          response)
             : handleMockLookup(request, response, isMultiUserMode, false);
@@ -213,6 +213,7 @@ public class MockedRestServerEngineUtils {
         }
 
         final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
+
         final String reqParams = (request.queryString() != null)
                 ? ( "?" + request.queryString() )
                 : "";

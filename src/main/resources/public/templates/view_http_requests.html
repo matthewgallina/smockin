@@ -36,7 +36,7 @@
 
                     <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
                             class="live-log-font activity-feed-table-row"
-                            ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'response-through-proxy': !af.response.isMockedResponse}"
+                            ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'downstream-response-through-proxy': af.proxied && !af.response.isMockedResponse, 'mocked-response-through-proxy': !af.proxied || af.response.isMockedResponse}"
                             ng-click="doViewFeedRow(af)">
 
                         <div class="break-word">

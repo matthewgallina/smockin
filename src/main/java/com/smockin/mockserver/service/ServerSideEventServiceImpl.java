@@ -15,6 +15,7 @@ import org.eclipse.jetty.io.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
@@ -138,8 +139,8 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     void applyHeaders(final Response res) {
 
        // Set SSE related headers
-       res.header("Content-Type", SSE_EVENT_STREAM_HEADER);
-       res.header("Cache-Control", "no-cache");
+       res.header(HttpHeaders.CONTENT_TYPE, SSE_EVENT_STREAM_HEADER);
+       res.header(HttpHeaders.CACHE_CONTROL, "no-cache");
 
     }
 

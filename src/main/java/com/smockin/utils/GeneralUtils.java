@@ -429,10 +429,10 @@ public final class GeneralUtils {
                         HashMap::putAll);
 
         if (req.contentType() != null
-            && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
+                && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
 
-            if (req.body() != null) {
+            if (req.body() != null && req.body().contains("=")) {
                 allParams.putAll(URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                                     .stream()
                                     .collect(HashMap::new, (m,v) -> m.put(v.getName(), v.getValue()), HashMap::putAll));
