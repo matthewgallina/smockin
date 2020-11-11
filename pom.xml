@@ -34,6 +34,8 @@
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
         <spring-boot-maven-plugin.version>2.2.1.RELEASE</spring-boot-maven-plugin.version>
+        <owasp.plugin.version>5.3.0</owasp.plugin.version>
+        <lombok.version>1.18.12</lombok.version>
     </properties>
 
     <dependencies>
@@ -120,6 +122,13 @@
             <version>${commons-io.version}</version>
         </dependency>
 
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+
         <!-- RAML -->
         <dependency>
             <groupId>org.raml</groupId>
@@ -190,11 +199,13 @@
                     </execution>
                 </executions>
                 <!-- For hot loading during development  -->
-                <!--
+
+
                 <configuration>
                     <addResources>true</addResources>
                 </configuration>
-                -->
+
+
             </plugin>
 
             <plugin>
@@ -242,7 +253,7 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>5.3.0</version>
+                        <version>${owasp.plugin.version}</version>
                         <executions>
                             <execution>
                                 <goals>

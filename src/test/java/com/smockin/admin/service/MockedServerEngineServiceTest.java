@@ -3,6 +3,7 @@ package com.smockin.admin.service;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ServerConfig;
@@ -12,6 +13,7 @@ import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
@@ -44,6 +46,9 @@ public class MockedServerEngineServiceTest {
 
     @Mock
     private UserTokenServiceUtils userTokenServiceUtils;
+
+    @Mock
+    private ProxyForwardMappingDAO proxyForwardMappingDAO;
 
     @Spy
     @InjectMocks
@@ -327,7 +332,7 @@ public class MockedServerEngineServiceTest {
         // Setup
         final ServerConfig serverConfig = Mockito.mock(ServerConfig.class);
         Mockito.when(serverConfigDAO.findByServerType(Mockito.any(ServerTypeEnum.class))).thenReturn(serverConfig);
-        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class));
+        Mockito.doThrow(new MockServerException("Startup Boom")).when(mockedRestServerEngine).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any(ProxyForwardConfigDTO.class));
 
         // Test
         mockedServerEngineService.startRest(token);
@@ -367,7 +372,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(ServerTypeEnum.RESTFUL);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.times(1)).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any(ProxyForwardConfigDTO.class));
 
     }
 
@@ -378,7 +383,7 @@ public class MockedServerEngineServiceTest {
         mockedServerEngineServiceImpl.autoStartManager(null);
 
         // Assertions
-        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class));
+        Mockito.verify(mockedRestServerEngine, Mockito.never()).start(Mockito.any(MockedServerConfigDTO.class), Mockito.any(ProxyForwardConfigDTO.class));
     }
 
     @Test

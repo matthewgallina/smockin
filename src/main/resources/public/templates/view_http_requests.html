@@ -36,14 +36,17 @@
 
                     <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
                             class="live-log-font activity-feed-table-row"
-                            ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'response-through-proxy': af.response.proxiedResponse}"
+                            ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'response-through-proxy': !af.response.isMockedResponse}"
                             ng-click="doViewFeedRow(af)">
 
                         <div class="break-word">
                             <b>
                                 {{ af.request.method }}
                                 {{ af.request.url }}
-                                <span ng-if="af.proxied"> (using proxy)</span>
+                                <span ng-if="af.proxied">
+                                    <span ng-if="af.response.isMockedResponse"> (origin: mock server) </span>
+                                    <span ng-if="!af.response.isMockedResponse"> (origin: downstream url) </span>
+                                </span>
                             </b>
                         </div>
 
@@ -108,11 +111,8 @@
                                                 ({{ selectedFeedData.response.date | date: 'HH:mm:ss sss' : 'UTC' }} ms)
                                             </span>
 
-                                            <span ng-if="selectedFeedData.response.proxiedResponse">
-                                                {{ proxiedDownstreamResponseTxt }}
-                                            </span>
-                                            <span ng-if="!selectedFeedData.response.proxiedResponse">
-                                                {{ proxiedMockResponseTxt }}
+                                            <span ng-if="selectedFeedData.proxied">
+                                                <b>{{ proxiedResponseOriginPrefix }}:</b> {{ selectedFeedData.response.origin }}
                                             </span>
 
                                             <br />

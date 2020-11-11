@@ -65,7 +65,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         // Register client and build messages collection
         clients.computeIfAbsent(clientId, k -> new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false));
 
         initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response);
     }
@@ -168,7 +168,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                         writer.write(body + messageSuffix);
                         messagesIterator.remove();
 
-                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false, false));
+                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false));
                     }
 
                 } else {
@@ -185,7 +185,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                     writer.close();
                     clients.remove(clientId);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false, false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false));
 
                     break;
                 }

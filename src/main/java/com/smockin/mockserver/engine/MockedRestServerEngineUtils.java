@@ -13,6 +13,8 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.HttpClientService;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
@@ -31,9 +33,7 @@ import spark.Response;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -76,16 +76,17 @@ public class MockedRestServerEngineUtils {
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode,
-                                               final MockedServerConfigDTO config) {
+                                               final MockedServerConfigDTO serverConfig,
+                                               final ProxyForwardConfigDTO proxyForwardConfigDTO) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        return (config.isProxyMode() && !isMultiUserMode)
-            ? handleProxyInterceptorMode(config.getProxyModeType(),
-                                         config.getProxyForwardUrl(),
-                                         config.isDoNotForwardWhen404Mock(),
+        return (proxyForwardConfigDTO.isProxyMode()
+                && !proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()
+                && !isMultiUserMode)
+            ? handleProxyInterceptorMode(proxyForwardConfigDTO,
                                          request,
                                          response)
             : handleMockLookup(request, response, isMultiUserMode, false);
@@ -145,44 +146,52 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    Optional<String> handleProxyInterceptorMode(final ProxyModeTypeEnum proxyModeType,
-                                                final String proxyForwardUrl,
-                                                final boolean doNotForwardWhen404Mock,
+    Optional<String> handleProxyInterceptorMode(final ProxyForwardConfigDTO proxyForwardConfig,
                                                 final Request request,
                                                 final Response response) {
+
         logger.debug("handleProxyInterceptorMode called");
 
         try {
 
-            if (StringUtils.isBlank(proxyForwardUrl)) {
-                throw new Exception("Unable to use proxy mode. Proxy Forwarding Url is undefined");
+            String proxyDownstreamURL = lookUpProxyMappingDownstreamUrl(request.pathInfo(), proxyForwardConfig.getProxyForwardMappings());
+
+            if (proxyDownstreamURL == null) {
+                proxyDownstreamURL = lookUpDefaultProxyMappingDownstreamUrl(proxyForwardConfig.getProxyForwardMappings());
             }
 
-            if (ProxyModeTypeEnum.ACTIVE.equals(proxyModeType)) {
+            if (ProxyModeTypeEnum.ACTIVE.equals(proxyForwardConfig.getProxyModeType())) {
 
                 // Look for mock...
-                final Optional<String> result = handleMockLookup(request, response, false, !doNotForwardWhen404Mock);
+                final Optional<String> result = handleMockLookup(request, response, false, !proxyForwardConfig.isDoNotForwardWhen404Mock());
 
                 if (result.isPresent()) {
                     return result;
                 }
 
                 // Make downstream client call of no mock was found
-                return handleClientDownstreamProxyCallResponse(executeClientDownstreamProxyCall(proxyForwardUrl, request), response);
+                return handleClientDownstreamProxyCallResponse(
+                        executeClientDownstreamProxyCall(request, proxyDownstreamURL),
+                        response,
+                        proxyDownstreamURL);
             }
 
             // Default to REACTIVE mode...
 
-            final HttpClientResponseDTO httpClientResponse = executeClientDownstreamProxyCall(proxyForwardUrl, request);
+            final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(request, proxyDownstreamURL);
 
-            if (HttpStatus.NOT_FOUND.value() == httpClientResponse.getStatus()) {
+            if (!httpClientResponse.isPresent()) {
+                return Optional.empty();
+            }
+
+            if (HttpStatus.NOT_FOUND.value() == httpClientResponse.get().getStatus()) {
 
                 // Look for mock substitute if downstream client returns a 404
                 return handleMockLookup(request, response, false, false);
             }
 
             // Pass back downstream client response directly back to caller
-            return handleClientDownstreamProxyCallResponse(httpClientResponse, response);
+            return handleClientDownstreamProxyCallResponse(httpClientResponse, response, proxyDownstreamURL);
 
         } catch (Exception ex) {
             return handleFailure(ex, response);
@@ -190,19 +199,29 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    HttpClientResponseDTO executeClientDownstreamProxyCall(final String proxyForwardUrl, final Request request)
-            throws ValidationException {
+    Optional<HttpClientResponseDTO> executeClientDownstreamProxyCall(final Request request,
+                                                                     final String proxyDownstreamURL) throws ValidationException {
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Initiating proxied call to downstream client: " + proxyForwardUrl + request.pathInfo());
+        if (proxyDownstreamURL == null) {
+            return Optional.empty();
         }
 
+        final String path = request.pathInfo();
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Initiating proxied call to downstream client for path: " + path);
+        }
 
         final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
         final String reqParams = (request.queryString() != null)
                 ? ( "?" + request.queryString() )
                 : "";
-        httpClientCallDTO.setUrl(proxyForwardUrl + request.pathInfo() + reqParams);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Forwarding call : " + proxyDownstreamURL + path + reqParams);
+        }
+
+        httpClientCallDTO.setUrl(proxyDownstreamURL + path + reqParams);
         httpClientCallDTO.setMethod(RestMethodEnum.valueOf(request.requestMethod()));
         httpClientCallDTO.setBody(request.body());
 
@@ -211,15 +230,22 @@ public class MockedRestServerEngineUtils {
                 .stream()
                 .collect(Collectors.toMap(k -> k, v -> request.headers(v))));
 
-        String host = StringUtils.remove(proxyForwardUrl, HttpClientService.HTTPS_PROTOCOL);
+        String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
         host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
         httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
 
-        return httpClientService.handleExternalCall(httpClientCallDTO);
+        return Optional.of(httpClientService.handleExternalCall(httpClientCallDTO));
     }
 
-    Optional<String> handleClientDownstreamProxyCallResponse(final HttpClientResponseDTO httpClientResponse,
-                                           final Response response) throws ValidationException {
+    Optional<String> handleClientDownstreamProxyCallResponse(final Optional<HttpClientResponseDTO> httpClientResponseOpt,
+                                                             final Response response,
+                                                             final String proxyDownstreamURL) {
+
+        if (!httpClientResponseOpt.isPresent()) {
+            return Optional.empty();
+        }
+
+        final HttpClientResponseDTO httpClientResponse = httpClientResponseOpt.get();
 
         if (logger.isDebugEnabled()) {
             logger.debug("Downstream client response status: " + httpClientResponse.getStatus());
@@ -234,7 +260,7 @@ public class MockedRestServerEngineUtils {
                 .forEach(e ->
                         response.header(e.getKey(), e.getValue()));
 
-        response.header(GeneralUtils.PROXIED_RESPONSE_HEADER, Boolean.TRUE.toString());
+        response.header(GeneralUtils.PROXIED_DOWNSTREAM_URL_HEADER, proxyDownstreamURL);
 
         return Optional.of(StringUtils.defaultIfBlank(httpClientResponse.getBody(),""));
     }
@@ -385,6 +411,24 @@ public class MockedRestServerEngineUtils {
 
         return Optional.of("Oops"); // this message does not come through to caller when it is a 500 for some reason, so setting in body above
 
+    }
+
+    String lookUpDefaultProxyMappingDownstreamUrl(final List<ProxyForwardMappingDTO> proxyForwardMappings) {
+
+        return lookUpProxyMappingDownstreamUrl(GeneralUtils.PATH_WILDCARD, proxyForwardMappings);
+    }
+
+    String lookUpProxyMappingDownstreamUrl(final String inboundPath,
+                                           final List<ProxyForwardMappingDTO> proxyForwardMappings) {
+
+        return proxyForwardMappings
+                .stream()
+                .filter(p ->
+                        StringUtils.equals(inboundPath, p.getPath()))
+                .map(p ->
+                        p.getProxyForwardUrl())
+                .findFirst()
+                .orElse(null);
     }
 
     private void debugInboundRequest(final Request request) {

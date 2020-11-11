@@ -42,9 +42,6 @@ public class ServerConfig extends Identifier {
     @Enumerated(EnumType.STRING)
     private ProxyModeTypeEnum proxyModeType;
 
-    @Column(name = "PROXY_FORWARD_URL", length = 200)
-    private String proxyForwardUrl;
-
     @ColumnDefault("false")
     @Column(name = "NO_FORWARD_WHEN_404_MOCK", nullable = false)
     private boolean doNotForwardWhen404Mock;
@@ -114,13 +111,6 @@ public class ServerConfig extends Identifier {
     }
     public void setProxyModeType(ProxyModeTypeEnum proxyModeType) {
         this.proxyModeType = proxyModeType;
-    }
-
-    public String getProxyForwardUrl() {
-        return proxyForwardUrl;
-    }
-    public void setProxyForwardUrl(String proxyForwardUrl) {
-        this.proxyForwardUrl = proxyForwardUrl;
     }
 
     public boolean isDoNotForwardWhen404Mock() {
