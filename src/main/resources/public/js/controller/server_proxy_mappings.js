@@ -124,9 +124,15 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
             for (var i=0; i < $scope.proxyMappingConfig.proxyForwardMappings.length; i++) {
 
+                var path = $scope.proxyMappingConfig.proxyForwardMappings[i].path;
                 var proxyForwardUrl = $scope.proxyMappingConfig.proxyForwardMappings[i].proxyForwardUrl;
 
-                if (proxyForwardUrl == null) {
+                if (utils.isBlank(path)) {
+                    showAlert("Please ensure the 'Path' is populated in all 'Path to URL Mappings'");
+                    return;
+                }
+
+                if (utils.isBlank(proxyForwardUrl)) {
                     showAlert("Please ensure the 'Downstream URL' is populated in all 'Path to URL Mappings'");
                     return;
                 }

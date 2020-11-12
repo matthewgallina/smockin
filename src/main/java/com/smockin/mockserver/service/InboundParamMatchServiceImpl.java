@@ -222,7 +222,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                     sanitisedKvpKey = GeneralUtils.findHeaderIgnoreCase(req, sanitiseArgName(nestedRequestKey));
                     break;
                 case requestParameter:
-                    sanitisedKvpKey = GeneralUtils.findRequestParamIgnoreCase(req, sanitiseArgName(nestedRequestKey));
+                    sanitisedKvpKey = GeneralUtils.extractRequestParamByName(req, sanitiseArgName(nestedRequestKey));
                     break;
                 case pathVar:
                     sanitisedKvpKey = GeneralUtils.findPathVarIgnoreCase(sanitizedUserCtxInboundPath, mockPath, sanitiseArgName(nestedRequestKey));
@@ -267,10 +267,12 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
                 1);
     }
 
-    String processRequestParameter(final int matchStartingPosition, final Request req, final String responseBody) {
+    String processRequestParameter(final int matchStartingPosition,
+                                   final Request req,
+                                   final String responseBody) {
 
         final String requestParamName = extractArgName(matchStartingPosition, ParamMatchTypeEnum.requestParameter, responseBody, false);
-        final String requestParamValue = GeneralUtils.findRequestParamIgnoreCase(req, sanitiseArgName(requestParamName));
+        final String requestParamValue = GeneralUtils.extractRequestParamByName(req, sanitiseArgName(requestParamName));
 
         if (logger.isDebugEnabled()) {
             logger.debug("RAW request param: " + requestParamName);

@@ -54,7 +54,6 @@
 .activity-feed-details-row {
 /*    height: 405px; */
     margin: 0px;
-    overflow-y : scroll;
 }
 
 .activity-feed-details-header {
@@ -69,7 +68,12 @@
     font-size: 16px;
 }
 
+.activity-feed-details-well-header {
+    font-size: 12px;
+}
+
 .activity-feed-details-well {
+    font-size: 12px;
     overflow-wrap: break-word;
     flex: 1;
 }

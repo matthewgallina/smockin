@@ -15,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -158,6 +159,7 @@ public class RuleEngineTest {
         final String reqResponse = "Hey Joe";
         final Map<String, String[]> params = new HashMap<>();
         params.put(fieldName, new String[] { reqResponse });
+        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.POST.name());
         Mockito.when(queryParamsMap.toMap()).thenReturn(params);
         Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
 
