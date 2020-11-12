@@ -87,6 +87,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
+        filterProxyConfigMappings(proxyForwardConfigDTO);
+
         // Next handle all HTTP RESTFul web service routes
         buildGlobalHttpEndpointsHandler(isMultiUserMode, config, proxyForwardConfigDTO);
 
@@ -313,6 +315,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.before((request, response) ->
             response.header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, GeneralUtils.PATH_WILDCARD));
+
+    }
+
+    void filterProxyConfigMappings(final ProxyForwardConfigDTO proxyForwardConfig) {
+
+        proxyForwardConfig.setProxyForwardMappings(
+            proxyForwardConfig.getProxyForwardMappings()
+            .stream()
+            .filter(p ->
+                    !p.isDisabled())
+            .collect(Collectors.toList()));
 
     }
 

@@ -61,12 +61,16 @@
                         <tbody>
                         <tr ng-repeat="m in proxyMappingConfig.proxyForwardMappings">
                             <td>
-                                <input type="text" ng-model="m.path" class="form-control ng-isolate-scope ng-pristine ng-valid" placeholder="{{ pathPlaceholderTxt }}" ng-disabled="m.path == '*'" />
+                                <input type="text" ng-model="m.path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="m.disabled" placeholder="{{ pathPlaceholderTxt }}" ng-disabled="m.path == '*'" />
                             </td>
                             <td>
-                                <input type="text" ng-model="m.proxyForwardUrl" class="form-control ng-isolate-scope ng-pristine ng-valid" placeholder="{{ ($index == 0) ? defaultProxyForwardPlaceholderTxt : proxyForwardUrlPlaceholderTxt }}" />
+                                <input type="text" ng-model="m.proxyForwardUrl" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="m.disabled" placeholder="{{ ($index == 0) ? defaultProxyForwardPlaceholderTxt : proxyForwardUrlPlaceholderTxt }}" />
                             </td>
                             <td class="remove-resp-head-row-button">
+                                <button type="button" class="btn" ng-click="doToggleMappingRowStatus(m.path)">
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-if="!m.disabled" />
+                                    <span class="glyphicon glyphicon-play" aria-hidden="true" ng-if="m.disabled" />
+                                </button>
                                 <button type="button" class="btn btn-warning" ng-click="doRemoveMappingRow($index)">{{ removeMappingRowButtonLabel }}</button>
                             </td>
                         </tr>

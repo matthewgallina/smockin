@@ -83,11 +83,19 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     };
 
     $scope.doAddMappingRow = function() {
-        $scope.proxyMappingConfig.proxyForwardMappings.push({ "path" : null, "proxyForwardUrl" : null });
+        $scope.proxyMappingConfig.proxyForwardMappings.push({ "path" : null, "proxyForwardUrl" : null, "disabled" : false });
     };
 
     $scope.doRemoveMappingRow = function(index) {
         $scope.proxyMappingConfig.proxyForwardMappings.splice(index, 1);
+    };
+
+    $scope.doToggleMappingRowStatus = function(path) {
+        for (var p=0; p < $scope.proxyMappingConfig.proxyForwardMappings.length; p++) {
+            if ($scope.proxyMappingConfig.proxyForwardMappings[p].path == path) {
+                $scope.proxyMappingConfig.proxyForwardMappings[p].disabled = !$scope.proxyMappingConfig.proxyForwardMappings[p].disabled;
+            }
+        }
     };
 
     $scope.doToggleDefaultProxyForwardRow = function() {
@@ -95,7 +103,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         if ($scope.proxyMappingConfig.defaultProxyForwardRow
                 && ($scope.proxyMappingConfig.proxyForwardMappings.length == 0
                         || ($scope.proxyMappingConfig.proxyForwardMappings[0] != null && $scope.proxyMappingConfig.proxyForwardMappings[0].path != PathWildcard))) {
-            $scope.proxyMappingConfig.proxyForwardMappings.unshift({ "path" : PathWildcard, "proxyForwardUrl" : null });
+            $scope.proxyMappingConfig.proxyForwardMappings.unshift({ "path" : PathWildcard, "proxyForwardUrl" : null, "disabled" : false });
             return;
         }
 
@@ -122,6 +130,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                 return;
             }
 
+            var duplicatePathCheckArray = [];
+
             for (var i=0; i < $scope.proxyMappingConfig.proxyForwardMappings.length; i++) {
 
                 var path = $scope.proxyMappingConfig.proxyForwardMappings[i].path;
@@ -143,6 +153,12 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                     return;
                 }
 
+                if (duplicatePathCheckArray.indexOf(path) > -1) {
+                    showAlert("The path '" + path + "' is duplicated in your 'Path to URL Mappings'");
+                    return;
+                }
+
+                duplicatePathCheckArray.push(path);
             }
 
         }

@@ -14,5 +14,6 @@ public class ProxyForwardMappingDTO {
 
     private String path;
     private String proxyForwardUrl;
+    private boolean disabled;
 
 }

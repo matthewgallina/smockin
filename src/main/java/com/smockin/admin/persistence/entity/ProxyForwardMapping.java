@@ -1,6 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,5 +20,9 @@ public class ProxyForwardMapping extends Identifier {
 
     @Column(name = "PROXY_FORWARD_URL", length = 500, nullable = false)
     private String proxyForwardUrl;
+
+    @ColumnDefault("false")
+    @Column(name = "IS_DISABLED", nullable = false)
+    private boolean disabled;
 
 }

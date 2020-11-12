@@ -203,7 +203,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         dto.setProxyForwardMappings(proxyForwardMappingDAO.findAll()
             .stream()
-            .map(m -> new ProxyForwardMappingDTO(m.getPath(), m.getProxyForwardUrl()))
+            .map(m -> new ProxyForwardMappingDTO(m.getPath(), m.getProxyForwardUrl(), m.isDisabled()))
             .collect(Collectors.toList()));
 
         return dto;
@@ -270,6 +270,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                         final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
                         proxyForwardMapping.setPath(dto.getPath());
                         proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
+                        proxyForwardMapping.setDisabled(dto.isDisabled());
 
                         return proxyForwardMapping;
 
