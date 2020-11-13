@@ -52,7 +52,7 @@ public class DataMigrationService {
     private MigrationPatch_290 migrationPatch_290;
 
     @Autowired
-    private MigrationPatch_210 migrationPatch_2110;
+    private MigrationPatch_2100 migrationPatch_2100;
 
 
     private final Set<MigrationPatch> patches = new HashSet<>();
@@ -101,7 +101,7 @@ public class DataMigrationService {
         patches.add(migrationPatch_200);
         patches.add(migrationPatch_210);
         patches.add(migrationPatch_290);
-        patches.add(migrationPatch_2110);
+        patches.add(migrationPatch_2100);
 
     }
 
