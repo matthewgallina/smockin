@@ -20,8 +20,6 @@ public class DataMigrationService {
 
     private final Logger logger = LoggerFactory.getLogger(DataMigrationService.class);
 
-    // NOTE
-    // Need to consider that some users may be using a different DB to H2 and factor that in when writing native SQL patches.
 
     @Autowired
     private MigrationPatch_121 migrationPatch_121;
@@ -52,6 +50,9 @@ public class DataMigrationService {
 
     @Autowired
     private MigrationPatch_290 migrationPatch_290;
+
+    @Autowired
+    private MigrationPatch_210 migrationPatch_2110;
 
 
     private final Set<MigrationPatch> patches = new HashSet<>();
@@ -100,6 +101,7 @@ public class DataMigrationService {
         patches.add(migrationPatch_200);
         patches.add(migrationPatch_210);
         patches.add(migrationPatch_290);
+        patches.add(migrationPatch_2110);
 
     }
 

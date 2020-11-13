@@ -1,0 +1,35 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.modal-dialog {
+    width: 50%;
+}
+
+#proxy-mode-type {
+    width: 100%;
+}
+
+#proxy-mode-type-button {
+    width: 100%;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+#add-response-header-row {
+    width: 100%;
+}
+
+.remove-resp-head-row-button {
+    text-align: center;
+}
+
+.hide-proxy-mapping-pause-button {
+    visibility: hidden;
+}

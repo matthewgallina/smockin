@@ -9,6 +9,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     var WebSocketHeartBeatMillis = 30000;
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
+    var ProxiedDownstreamUrlResponseHeader = 'X-Proxied-Downstream-Url';
     var LiveFeedUrl = "ws://"
         + location.host
         + "/liveLoggingFeed";
@@ -29,8 +30,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.requestLabel = 'Request';
     $scope.responseLabel = 'Response';
     $scope.httpResponseLabel = 'HTTP Response:';
-    $scope.proxiedDownstreamResponseTxt = 'Response is from downstream server';
-    $scope.proxiedMockResponseTxt = 'Response is a mock';
+    $scope.proxiedResponseOriginPrefix = 'Origin';
 
 
     //
@@ -90,7 +90,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         }
 
         for (var h in headers) {
-            if (headers.hasOwnProperty(h)) {
+            if (headers.hasOwnProperty(h)
+                    && h != ProxiedDownstreamUrlResponseHeader) {
               allHeaders.push(h + ": " + headers[h]);
             }
         }
@@ -246,12 +247,35 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
         for (var i=0; i < $scope.activityFeed.length; i++) {
             if ($scope.activityFeed[i].id == resp.id) {
+
                 resp.content.date = resp.date;
                 $scope.activityFeed[i].response = resp.content;
+
+                if ($scope.activityFeed[i].proxied) {
+                    applyProxiedResponseOrigin($scope.activityFeed[i].response);
+                }
+
                 $scope.$digest();
                 break;
             }
         }
+    }
+
+    function applyProxiedResponseOrigin(response) {
+
+        response.isMockedResponse = true;
+        response.origin = 'Mock Server';
+
+        var responseHeaders = response.headers;
+
+        for (var h in responseHeaders) {
+            if (responseHeaders.hasOwnProperty(h)
+                    && h == ProxiedDownstreamUrlResponseHeader) {
+                response.isMockedResponse = false;
+                response.origin = responseHeaders[h];
+            }
+        }
+
     }
 
 

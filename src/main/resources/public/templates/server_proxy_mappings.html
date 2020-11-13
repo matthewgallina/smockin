@@ -1,0 +1,96 @@
+<link rel="stylesheet" href="../css/server_proxy_mappings.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ proxyMappingsHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group" ng-if="!isLoggedIn">
+        <input id="proxyMode"  ng-model="proxyMappingConfig.proxyMode" type="checkbox" />
+        <label for="proxyMode" class="ng-binding">{{ proxyModeLabel }}</label>
+
+        <br />
+
+        <div id="proxy-mode-type" class="btn-group" ng-if="proxyMappingConfig.proxyMode" uib-dropdown>
+            <button id="proxy-mode-type-button" type="button" class="btn btn-default dropdown-toggle" uib-dropdown-toggle>
+                <span ng-if="proxyMappingConfig.proxyModeType == ActiveStatus">{{ proxyModeActiveTypeLabel }}</span>
+                <span ng-if="proxyMappingConfig.proxyModeType == ReactiveStatus">{{ proxyModeReactiveTypeLabel }}</span>
+                <span class="caret"></span>
+            </button>
+            <ul id="proxyModeTypeList" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                <li role="menuitem">
+                    <a ng-click="doSetProxyModeType(ActiveStatus)">{{ proxyModeActiveTypeLabel }}</a>
+                    <a ng-click="doSetProxyModeType(ReactiveStatus)">{{ proxyModeReactiveTypeLabel }}</a>
+                </li>
+            </ul>
+        </div>
+
+        <br />
+        <br />
+
+        <div class="form-group" ng-if="proxyMappingConfig.proxyMode && proxyMappingConfig.proxyModeType == ActiveStatus">
+            <input id="doNotForwardWhen404Mock"  ng-model="proxyMappingConfig.doNotForwardWhen404Mock" type="checkbox" />
+            <label for="doNotForwardWhen404Mock" class="ng-binding">{{ activeProxy404MockDoNotForwardLabel }}</label>
+        </div>
+
+        <div class="form-group" ng-if="proxyMappingConfig.proxyMode">
+
+
+            <label for="pathUrlMappings" class="ng-binding default-label-color">{{ pathUrlMappingsLabel }}</label>
+
+            <span class="pull-right">
+                <input id="useDefaultForwardingUrl"  ng-model="proxyMappingConfig.defaultProxyForwardRow" type="checkbox" ng-change="doToggleDefaultProxyForwardRow()" />
+                <label for="useDefaultForwardingUrl" class="ng-binding">{{ useDefaultForwardingUrlLabel }}</label>
+            </span>
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <table id="pathUrlMappings" class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th class="default-label-color">{{ pathLabel }}</th>
+                            <th class="default-label-color">{{ proxyForwardUrlLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="m in proxyMappingConfig.proxyForwardMappings">
+                            <td>
+                                <input type="text" ng-model="m.path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="m.disabled" placeholder="{{ pathPlaceholderTxt }}" ng-disabled="m.path == '*'" />
+                            </td>
+                            <td>
+                                <input type="text" ng-model="m.proxyForwardUrl" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="m.disabled" placeholder="{{ ($index == 0) ? defaultProxyForwardPlaceholderTxt : proxyForwardUrlPlaceholderTxt }}" />
+                            </td>
+                            <td class="remove-resp-head-row-button">
+                                <button type="button" class="btn" ng-click="doToggleMappingRowStatus(m.path)" ng-class="{'hide-proxy-mapping-pause-button' : isBlank(m.path) || isBlank(m.proxyForwardUrl)}" >
+                                    <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-if="!m.disabled" />
+                                    <span class="glyphicon glyphicon-play" aria-hidden="true" ng-if="m.disabled" />
+                                </button>
+                                <button type="button" class="btn btn-warning" ng-click="doRemoveMappingRow($index)">{{ removeMappingRowButtonLabel }}</button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <button id="add-response-header-row" type="button" class="btn btn-info" ng-click="doAddMappingRow()">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        {{ addMappingRowButtonLabel }}
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doSaveProxyMappings()">{{ saveButtonLabel }}</button>
+</div>

@@ -24,8 +24,10 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -71,6 +73,7 @@ public class HttpClientServiceImpl implements HttpClientService {
             }
 
         } catch (IOException | MockServerException ex) {
+            logger.error("Error performing external call ", ex);
             return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 
@@ -110,6 +113,7 @@ public class HttpClientServiceImpl implements HttpClientService {
             }
 
         } catch (IOException | MockServerException ex) {
+            logger.error("Error performing external call ", ex);
             return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 
@@ -123,7 +127,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         final Request request = Request.Get(reqDto.getUrl());
 
-        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
+        return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO post(final HttpClientCallDTO reqDto) throws IOException {
@@ -132,7 +136,7 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
-        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
+        return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO put(final HttpClientCallDTO reqDto) throws IOException {
@@ -141,22 +145,22 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         HttpClientUtils.handleRequestData(request, reqDto.getHeaders(), reqDto);
 
-        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
+        return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO delete(final HttpClientCallDTO reqDto) throws IOException {
 
         final Request request = Request.Delete(reqDto.getUrl());
 
-        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
+        return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }
 
     HttpClientResponseDTO patch(final HttpClientCallDTO reqDto) throws IOException {
 
         final Request request = Request.Patch(reqDto.getUrl())
-                .bodyByteArray((reqDto.getBody() != null)?reqDto.getBody().getBytes():null);
+                .bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes() : null);
 
-        return executeRequest(request, reqDto.getHeaders(), isHttps(reqDto.getUrl()));
+        return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }
 
     /**
@@ -191,6 +195,21 @@ public class HttpClientServiceImpl implements HttpClientService {
 
     }
 
+    /**
+     * BUG FIX: The apache client automatically sets CONTENT_LENGTH, causing a header duplication error.
+     */
+    void duplicateContentLengthBugFix(final HttpClientCallDTO reqDto) {
+
+        if (StringUtils.isBlank(reqDto.getBody())) {
+            return;
+        }
+
+        if (reqDto.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)) {
+            reqDto.getHeaders().remove(HttpHeaders.CONTENT_LENGTH);
+        }
+
+    }
+
     Map<String, String> extractResponseHeaders(final HttpResponse httpResponse) {
 
         return new HashMap<String, String>() {
@@ -207,10 +226,12 @@ public class HttpClientServiceImpl implements HttpClientService {
         return IOUtils.toString(httpResponse.getEntity().getContent(), StandardCharsets.UTF_8.name());
     }
 
-    HttpClientResponseDTO executeRequest(final Request request, final Map<String, String> requestHeaders, final boolean isHttpsCall) throws IOException {
+    HttpClientResponseDTO executeRequest(final Request request,
+                                         final HttpClientCallDTO reqDto,
+                                         final boolean isHttpsCall) throws IOException {
 
-
-        applyRequestHeaders(request, requestHeaders);
+        duplicateContentLengthBugFix(reqDto);
+        applyRequestHeaders(request, reqDto.getHeaders());
 
         final HttpResponse httpResponse;
 
@@ -230,9 +251,13 @@ public class HttpClientServiceImpl implements HttpClientService {
 
         return new HttpClientResponseDTO(
                 httpResponse.getStatusLine().getStatusCode(),
-                httpResponse.getEntity().getContentType().getValue(),
+                (httpResponse.getEntity() != null)
+                    ? httpResponse.getEntity().getContentType().getValue()
+                    : null, // i.e. 204
                 extractResponseHeaders(httpResponse),
-                extractResponseBody(httpResponse)
+                (httpResponse.getEntity() != null)
+                    ? extractResponseBody(httpResponse)
+                    : null // i.e. 204
         );
     }
 

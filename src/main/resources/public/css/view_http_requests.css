@@ -54,7 +54,6 @@
 .activity-feed-details-row {
 /*    height: 405px; */
     margin: 0px;
-    overflow-y : scroll;
 }
 
 .activity-feed-details-header {
@@ -69,7 +68,12 @@
     font-size: 16px;
 }
 
+.activity-feed-details-well-header {
+    font-size: 12px;
+}
+
 .activity-feed-details-well {
+    font-size: 12px;
     overflow-wrap: break-word;
     flex: 1;
 }
@@ -114,11 +118,16 @@
     opacity: 50%;
 }
 
-.response-through-proxy {
+.mocked-response-through-proxy {
+    background-color: #E8E8E8;
+}
+
+.downstream-response-through-proxy {
     background-color: #b2dba1;
 }
 
 .selected-request {
-    background-color: #FFEE80;
+    border: 2px solid;
+    box-shadow: 3px 3px 3px 3px #888888;
 }
 

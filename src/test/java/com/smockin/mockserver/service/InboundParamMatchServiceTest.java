@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.http.HttpMethod;
 import spark.Request;
 
 import java.text.SimpleDateFormat;
@@ -182,6 +183,7 @@ public class InboundParamMatchServiceTest {
         // Setup
         final String responseBody = "Hello " + ParamMatchTypeEnum.PARAM_PREFIX + ParamMatchTypeEnum.requestParameter.name() +"(NAME)";
 
+        Mockito.when(request.requestMethod()).thenReturn(HttpMethod.GET.name());
         Mockito.when(request.queryParams("name")).thenReturn("Roger");
         Mockito.when(request.queryParams()).thenReturn(new HashSet<String>() {
             {

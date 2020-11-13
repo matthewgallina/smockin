@@ -24,7 +24,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     //
     // Labels
     $scope.mockServerStatusLabel = 'HTTP Mock Server Status:';
-    $scope.serverConfigLabel = '(edit settings)';
+    $scope.serverConfigLabel = 'server config';
+    $scope.serverProxyMappingsLabel = 'proxy settings';
     $scope.portLabel = 'port';
     $scope.noDataFoundMsg = 'No Data Found';
     $scope.mockServerRunning = MockServerRunningStatus;
@@ -90,6 +91,33 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
      var modalInstance = $uibModal.open({
           templateUrl: 'server_config.html',
           controller: 'serverConfigController',
+          backdrop  : 'static',
+          keyboard  : false,
+          resolve: {
+            data: function () {
+              return { "serverType" : RestfulServerType };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null
+                    && response.restartReq
+                    && !$scope.readOnly) {
+                RestartServerRequired = true;
+                loadTcpServerStatus();
+            }
+        }, function () {
+
+        });
+
+    };
+
+    $scope.doOpenServerProxyMappings = function() {
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'server_proxy_mappings.html',
+          controller: 'serverProxyMappingsController',
           backdrop  : 'static',
           keyboard  : false,
           resolve: {

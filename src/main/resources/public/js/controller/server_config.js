@@ -9,8 +9,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.RestfulServerType = globalVars.RestfulServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.isLoggedIn = auth.isLoggedIn();
-    $scope.ActiveStatus = 'ACTIVE';
-    $scope.ReactiveStatus = 'REACTIVE';
 
 
     //
@@ -27,12 +25,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
-    $scope.proxyModeLabel = 'Enable Proxy Mode';
-    $scope.proxyForwardUrlLabel = 'Downstream Forwarding URL';
-    $scope.proxyForwardUrlPlaceholderTxt = 'e.g http://www.smockin.com';
-    $scope.proxyModeActiveTypeLabel = 'Look for MOCK first, if nothing found, then forward to DOWNSTREAM';
-    $scope.proxyModeReactiveTypeLabel = 'Call DOWNSTREAM first, if nothing found, then try to MOCK';
-    $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
 
 
     //
@@ -73,20 +65,12 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "minThreads" : 0,
         "timeOutMillis" : 0,
         "autoStart" : false,
-        "enableCors" : false,
-        "proxyMode" : false,
-        "proxyModeType" : $scope.ActiveStatus,
-        "doNotForwardWhen404Mock" : false,
-        "proxyForwardUrl" : null,
+        "enableCors" : false
     };
 
 
     //
     // Scoped Functions
-    $scope.doSetProxyModeType = function(mode) {
-        $scope.serverConfig.proxyModeType = mode;
-    };
-
     $scope.doSaveConfig = function() {
 
         if ($scope.readOnly) {
@@ -118,19 +102,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             return;
         }
 
-        if ($scope.serverConfig.proxyMode
-                && utils.isBlank($scope.serverConfig.proxyForwardUrl)) {
-            showAlert("'Proxy Forwarding URL' is required if enabling proxy mode");
-            return;
-        }
-
-        if ($scope.serverConfig.proxyMode
-                && $scope.serverConfig.proxyForwardUrl != null
-                && (!$scope.serverConfig.proxyForwardUrl.startsWith("https://") && !$scope.serverConfig.proxyForwardUrl.startsWith("http://"))) {
-            showAlert("'Proxy Forwarding URL' entered is not a valid URL");
-            return;
-        }
-
         var req = {
             "serverType" : $scope.serverConfig.serverType,
             "port" : $scope.serverConfig.port,
@@ -138,10 +109,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             "minThreads" : $scope.serverConfig.minThreads,
             "timeOutMillis" : $scope.serverConfig.timeOutMillis,
             "autoStart" : $scope.serverConfig.autoStart,
-            "proxyMode" : $scope.serverConfig.proxyMode,
-            "proxyModeType" : $scope.serverConfig.proxyModeType,
-            "proxyForwardUrl" : $scope.serverConfig.proxyForwardUrl,
-            "doNotForwardWhen404Mock" : $scope.serverConfig.doNotForwardWhen404Mock,
             "nativeProperties" : {}
         }
 
@@ -189,10 +156,6 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
-                    "proxyMode" : data.proxyMode,
-                    "proxyModeType" : data.proxyModeType,
-                    "proxyForwardUrl" : data.proxyForwardUrl,
-                    "doNotForwardWhen404Mock" : data.doNotForwardWhen404Mock,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE")
                 };
 

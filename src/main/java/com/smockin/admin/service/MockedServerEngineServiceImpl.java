@@ -3,20 +3,28 @@ package com.smockin.admin.service;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.entity.ProxyForwardMapping;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.stream.Collectors;
 
 /**
  * Created by mgallina.
@@ -42,6 +50,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
+    @Autowired
+    private ProxyForwardMappingDAO proxyForwardMappingDAO;
+
 
     //
     // Rest
@@ -58,8 +69,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         try {
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.RESTFUL);
+            final ProxyForwardConfigDTO proxyConfig = loadProxyForwardConfig(ServerTypeEnum.RESTFUL);
 
-            mockedRestServerEngine.start(configDTO);
+            mockedRestServerEngine.start(configDTO, proxyConfig);
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
@@ -130,10 +142,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 serverConfig.getMinThreads(),
                 serverConfig.getTimeOutMillis(),
                 serverConfig.isAutoStart(),
-                serverConfig.isProxyMode(),
-                serverConfig.getProxyModeType(),
-                serverConfig.getProxyForwardUrl(),
-                serverConfig.isDoNotForwardWhen404Mock(),
                 serverConfig.getNativeProperties()
         );
 
@@ -158,10 +166,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         serverConfig.setMinThreads(config.getMinThreads());
         serverConfig.setTimeOutMillis(config.getTimeOutMillis());
         serverConfig.setAutoStart(config.isAutoStart());
-        serverConfig.setProxyMode(config.isProxyMode());
-        serverConfig.setProxyModeType(config.getProxyModeType());
-        serverConfig.setProxyForwardUrl(config.getProxyForwardUrl());
-        serverConfig.setDoNotForwardWhen404Mock(config.isDoNotForwardWhen404Mock());
 
         serverConfig.getNativeProperties().clear();
         serverConfig.getNativeProperties().putAll(config.getNativeProperties());
@@ -181,6 +185,114 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 }
             }
         });
+
+    }
+
+    @Override
+    public ProxyForwardConfigDTO loadProxyForwardConfig(final ServerTypeEnum type) {
+
+        final ServerConfig serverConfig = serverConfigDAO.findByServerType(type);
+
+        if (serverConfig == null) {
+            throw new RecordNotFoundException();
+        }
+
+        final ProxyForwardConfigDTO dto = new ProxyForwardConfigDTO();
+
+        dto.setProxyMode(serverConfig.isProxyMode());
+        dto.setProxyModeType(serverConfig.getProxyModeType());
+        dto.setDoNotForwardWhen404Mock(serverConfig.isDoNotForwardWhen404Mock());
+
+        dto.setProxyForwardMappings(proxyForwardMappingDAO.findAll()
+            .stream()
+            .map(m -> new ProxyForwardMappingDTO(m.getPath(), m.getProxyForwardUrl(), m.isDisabled()))
+            .collect(Collectors.toList()));
+
+        return dto;
+    }
+
+    @Override
+    public void saveProxyForwardMappings(
+            final ServerTypeEnum serverType,
+            final ProxyForwardConfigDTO proxyForwardConfigDTO,
+            final String token)
+                throws AuthException, ValidationException, RecordNotFoundException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        if (proxyForwardConfigDTO.isProxyMode()) {
+
+            //
+            // Validation
+            if (proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()) {
+                throw new ValidationException("No proxy mappings have been defined");
+            }
+
+            for (ProxyForwardMappingDTO dto : proxyForwardConfigDTO.getProxyForwardMappings()) {
+
+                if (StringUtils.isBlank(dto.getPath())) {
+                    throw new ValidationException("A 'Path' value is missing");
+                }
+
+                if (StringUtils.isBlank(dto.getProxyForwardUrl())) {
+                    throw new ValidationException("A 'Proxy Forward Url' value is missing");
+                }
+
+                if (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
+                        && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL)) {
+                    throw new ValidationException("The 'Proxy Forward Url' value '" + dto.getProxyForwardUrl() + "' is invalid");
+                }
+
+            }
+
+        }
+
+        //
+        // Save proxy related server config
+        final ServerConfig serverConfig = serverConfigDAO.findByServerType(serverType);
+
+        if (serverConfig == null) {
+            throw new RecordNotFoundException();
+        }
+
+        serverConfig.setProxyMode(proxyForwardConfigDTO.isProxyMode());
+
+        // Only update if proxy mode is enabled so as to preserve previous values
+        if (proxyForwardConfigDTO.isProxyMode()) {
+            serverConfig.setProxyModeType(proxyForwardConfigDTO.getProxyModeType());
+            serverConfig.setDoNotForwardWhen404Mock(proxyForwardConfigDTO.isDoNotForwardWhen404Mock());
+        }
+
+        serverConfigDAO.save(serverConfig);
+
+
+        // Only update if proxy mode is enabled so as to preserve previous values
+        if (proxyForwardConfigDTO.isProxyMode()) {
+
+            // Delete all existing mappings
+            proxyForwardMappingDAO.deleteAll();
+            proxyForwardMappingDAO.flush();
+
+            // Save latest mappings
+            proxyForwardMappingDAO.saveAll(
+                proxyForwardConfigDTO.getProxyForwardMappings()
+                    .stream()
+                    .map(dto -> {
+
+                        final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
+                        proxyForwardMapping.setPath(
+                                (!StringUtils.startsWith(dto.getPath(), "/")
+                                    && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
+                                        + dto.getPath());
+                        proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
+                        proxyForwardMapping.setDisabled(dto.isDisabled());
+
+                        return proxyForwardMapping;
+
+                    }).collect(Collectors.toList())
+            );
+
+        }
 
     }
 
@@ -216,11 +328,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         }
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
-        }
-        if (dto.getProxyForwardUrl() != null
-                && (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
-                        && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL))) {
-            throw new ValidationException("'proxyForwardUrl' config value is invalid");
         }
 
     }

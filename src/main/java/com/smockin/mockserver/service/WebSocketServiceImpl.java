@@ -1,19 +1,5 @@
 package com.smockin.mockserver.service;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
@@ -30,8 +16,17 @@ import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
-
+import org.eclipse.jetty.websocket.api.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by mgallina.
@@ -123,7 +118,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null,
-                "Websocket established (clientId: " + assignedId + ")", false, false));
+                "Websocket established (clientId: " + assignedId + ")", false));
 
     }
     
@@ -204,7 +199,7 @@ public class WebSocketServiceImpl implements WebSocketService {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false, false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false));
 
                     return;
                 }
@@ -255,7 +250,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             .ifPresent(s -> {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false));
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }

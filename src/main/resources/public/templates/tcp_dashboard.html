@@ -13,7 +13,12 @@
                         <span id="server-status-running" ng-show="mockServerStatus == mockServerRunning">{{ mockServerRunning }}</span>
                         <span id="server-status-restarting" ng-show="mockServerStatus == mockServerRestarting">{{ mockServerRestarting }}</span>
                         <br />
-                        <a id="server-config" href="" ng-click="doOpenServerConfig()" ng-if="!readOnly">{{ serverConfigLabel }}</a>
+                        <span class="server-config-group">
+                            (
+                            <a id="server-config" href="" ng-click="doOpenServerConfig()" ng-if="!readOnly">{{ serverConfigLabel }}</a> |
+                            <a id="server-proxy-mappings" href="" ng-click="doOpenServerProxyMappings()" ng-if="!readOnly">{{ serverProxyMappingsLabel }}</a>
+                            )
+                        </span>
                     </h3>
                 </div>
                 <div class="col-sm-4" ng-if="!readOnly">

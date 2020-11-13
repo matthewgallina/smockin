@@ -10,6 +10,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import spark.Request;
 
@@ -45,7 +46,8 @@ public final class GeneralUtils {
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
 
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
-    public static final String PROXIED_RESPONSE_HEADER = "X-Proxied-Response";
+    public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
+    public static final String PATH_WILDCARD = "*";
 
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
@@ -96,27 +98,6 @@ public final class GeneralUtils {
         for (String h : request.headers()) {
             if (h.equalsIgnoreCase(headerName)) {
                 return request.headers(h);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     *
-     * Returns the request parameter value for the given name.
-     * Look up is case insensitive (as Java Spark handles request parameter look ups with case sensitivity. Unclear on what the standard is for this...)
-     *
-     * @param request
-     * @param requestParamName
-     * @returns String
-     *
-     */
-    public static String findRequestParamIgnoreCase(final Request request, final String requestParamName) {
-
-        for (String q : request.queryParams()) {
-            if (q.equalsIgnoreCase(requestParamName)) {
-                return request.queryParams(q);
             }
         }
 
@@ -219,11 +200,11 @@ public final class GeneralUtils {
     }
 
     public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
-        return deserialiseJson(jsonStr);
+        return deserialiseJson(jsonStr, false);
     }
 
     public static Map<String, ?> deserialiseJSONToMap(final String jsonStr) {
-        return deserialiseJson(jsonStr);
+        return deserialiseJson(jsonStr, false);
     }
 
     public static <T> T deserialiseJson(final String jsonStr) {
@@ -413,10 +394,31 @@ public final class GeneralUtils {
 
     public static String extractRequestParamByName(final Request req, final String fieldName) {
 
-        return extractAllRequestParams(req).get(fieldName);
+        return extractAllRequestParams(req)
+                .entrySet()
+                .stream()
+                .filter(p ->
+                        StringUtils.equalsIgnoreCase(fieldName, p.getKey()))
+                .map(p ->
+                        p.getValue())
+                .findFirst()
+                .orElse(null);
     }
 
     public static Map<String, String> extractAllRequestParams(final Request req) {
+
+        if (!StringUtils.equalsIgnoreCase(HttpMethod.POST.name(), req.requestMethod())
+                && !StringUtils.equalsIgnoreCase(HttpMethod.PUT.name(), req.requestMethod())
+                && !StringUtils.equalsIgnoreCase(HttpMethod.PATCH.name(), req.requestMethod())) {
+
+            if (req.queryParams().isEmpty()) {
+                return new HashMap<>();
+            }
+
+            return req.queryParams()
+                    .stream()
+                    .collect(Collectors.toMap(k -> k, k -> req.queryParams(k)));
+        }
 
         final Map<String, String> allParams = req.queryMap()
                 .toMap()
@@ -427,11 +429,12 @@ public final class GeneralUtils {
                             m.put(v.getKey(), (v.getValue() != null && v.getValue().length != 0) ? v.getValue()[0] : null),
                         HashMap::putAll);
 
-        if (req.contentType() != null
-            && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-            ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
 
-            if (req.body() != null) {
+        if (req.contentType() != null
+                && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
+
+            if (req.body() != null && req.body().contains("=")) {
                 allParams.putAll(URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
                                     .stream()
                                     .collect(HashMap::new, (m,v) -> m.put(v.getName(), v.getValue()), HashMap::putAll));

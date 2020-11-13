@@ -15,6 +15,7 @@ import org.eclipse.jetty.io.RuntimeIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
@@ -65,7 +66,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         // Register client and build messages collection
         clients.computeIfAbsent(clientId, k -> new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false, false));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false));
 
         initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response);
     }
@@ -138,8 +139,8 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
     void applyHeaders(final Response res) {
 
        // Set SSE related headers
-       res.header("Content-Type", SSE_EVENT_STREAM_HEADER);
-       res.header("Cache-Control", "no-cache");
+       res.header(HttpHeaders.CONTENT_TYPE, SSE_EVENT_STREAM_HEADER);
+       res.header(HttpHeaders.CACHE_CONTROL, "no-cache");
 
     }
 
@@ -168,7 +169,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                         writer.write(body + messageSuffix);
                         messagesIterator.remove();
 
-                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false, false));
+                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false));
                     }
 
                 } else {
@@ -185,7 +186,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                     writer.close();
                     clients.remove(clientId);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false, false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false));
 
                     break;
                 }

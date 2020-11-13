@@ -39,41 +39,6 @@
         <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
     </div>
 
-    <div class="form-group" ng-if="!isLoggedIn">
-        <input id="proxyMode"  ng-model="serverConfig.proxyMode" type="checkbox" />
-        <label for="proxyMode" class="ng-binding">{{ proxyModeLabel }}</label>
-
-        <br />
-
-        <div id="proxy-mode-type" class="btn-group" ng-if="serverConfig.proxyMode" uib-dropdown>
-            <button id="proxy-mode-type-button" type="button" class="btn btn-default dropdown-toggle" uib-dropdown-toggle>
-                <span ng-if="serverConfig.proxyModeType == ActiveStatus">{{ proxyModeActiveTypeLabel }}</span>
-                <span ng-if="serverConfig.proxyModeType == ReactiveStatus">{{ proxyModeReactiveTypeLabel }}</span>
-                <span class="caret"></span>
-            </button>
-            <ul id="proxyModeTypeList" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                <li role="menuitem">
-                    <a ng-click="doSetProxyModeType(ActiveStatus)">{{ proxyModeActiveTypeLabel }}</a>
-                    <a ng-click="doSetProxyModeType(ReactiveStatus)">{{ proxyModeReactiveTypeLabel }}</a>
-                </li>
-            </ul>
-        </div>
-
-        <br />
-        <br />
-
-        <div class="form-group" ng-if="serverConfig.proxyMode && serverConfig.proxyModeType == ActiveStatus">
-            <input id="doNotForwardWhen404Mock"  ng-model="serverConfig.doNotForwardWhen404Mock" type="checkbox" ng-disabled="readOnly" />
-            <label for="doNotForwardWhen404Mock" class="ng-binding">{{ activeProxy404MockDoNotForwardLabel }}</label>
-        </div>
-
-        <div class="form-group" ng-if="serverConfig.proxyMode">
-            <label for="proxyForwardUrl" class="ng-binding">{{ proxyForwardUrlLabel }}</label>
-            <input id="proxyForwardUrl" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.proxyForwardUrl" placeholder="{{ proxyForwardUrlPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
-        </div>
-
-    </div>
-
 </div>
 
 <div class="modal-footer">

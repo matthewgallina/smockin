@@ -5,6 +5,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.springframework.http.HttpMethod;
 import spark.QueryParamsMap;
 import spark.Request;
 import java.util.HashMap;
@@ -69,6 +70,7 @@ public class GeneralUtilsTest {
 
         // Setup
         final Request req = Mockito.mock(Request.class);
+        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.GET.name());
         Mockito.when(req.queryParams("name")).thenReturn("Bob");
         Mockito.when(req.queryParams("Age")).thenReturn("21");
         Mockito.when(req.queryParams()).thenReturn(new HashSet<String>() {
@@ -79,14 +81,14 @@ public class GeneralUtilsTest {
         });
 
         // Test
-        final String nameResult = GeneralUtils.findRequestParamIgnoreCase(req, "NAME");
+        final String nameResult = GeneralUtils.extractRequestParamByName(req, "NAME");
 
         // Assertions
         Assert.assertNotNull(nameResult);
         Assert.assertEquals("Bob", nameResult);
 
         // Test
-        final String ageResult = GeneralUtils.findRequestParamIgnoreCase(req, "age");
+        final String ageResult = GeneralUtils.extractRequestParamByName(req, "age");
 
         // Assertions
         Assert.assertNotNull(ageResult);
@@ -333,6 +335,8 @@ public class GeneralUtilsTest {
         final QueryParamsMap queryParamsMap = Mockito.mock(QueryParamsMap.class);
         final Map<String, String[]> params = new HashMap<>();
         params.put("name", new String[] { "bob" });
+
+        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.PUT.name());
         Mockito.when(queryParamsMap.toMap()).thenReturn(params);
         Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
 
@@ -390,6 +394,8 @@ public class GeneralUtilsTest {
         final Map<String, String[]> params = new HashMap<>();
         params.put("name", new String[] { "bob" });
         params.put("age", new String[] { "27" });
+
+        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.POST.name());
         Mockito.when(queryParamsMap.toMap()).thenReturn(params);
         Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
 
@@ -413,6 +419,8 @@ public class GeneralUtilsTest {
         final Map<String, String[]> params = new HashMap<>();
         params.put("name", null);
         params.put("age", null);
+
+        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.PATCH.name());
         Mockito.when(queryParamsMap.toMap()).thenReturn(params);
         Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
 

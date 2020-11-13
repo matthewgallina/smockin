@@ -10,6 +10,7 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.MockDefinitionImportExportService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -56,8 +57,8 @@ public class MockDefinitionImportExportController {
                 + mockDefinitionImportExportService.exportZipFileNameExt;
 
         return ResponseEntity.ok()
-                .header("Content-Type", "application/zip")
-                .header("Content-Disposition", "attachment; filename=\"" + exportFileName + "\"")
+                .header(HttpHeaders.CONTENT_TYPE, "application/zip")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportFileName + "\"")
                 .body(mockDefinitionImportExportService.export(exports, token));
     }
 

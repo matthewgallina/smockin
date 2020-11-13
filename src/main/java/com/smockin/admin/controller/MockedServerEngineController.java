@@ -7,6 +7,7 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockedServerEngineService;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class MockedServerEngineController {
     //
     // REST Server
     @RequestMapping(path="/mockedserver/rest/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> startRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.startRest(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
@@ -39,7 +40,7 @@ public class MockedServerEngineController {
     }
 
     @RequestMapping(path="/mockedserver/rest/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> restartRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.restartRest(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
@@ -52,13 +53,15 @@ public class MockedServerEngineController {
     //
     // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {
         final ServerTypeEnum type = convertServerType(serverType);
         return new ResponseEntity<>(mockedServerEngineService.loadServerConfig(type), HttpStatus.OK);
     }
 
-    @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<String> putServerConfig(@PathVariable("serverType") final String serverType,
+    @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> putServerConfig(@PathVariable("serverType") final String serverType,
                                                            @RequestBody final MockedServerConfigDTO dto,
                                                            @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                 throws RecordNotFoundException, AuthException, ValidationException {
@@ -74,6 +77,38 @@ public class MockedServerEngineController {
             throw new ValidationException("Invalid serverType value: " + serverType);
         }
 
+    }
+
+
+    //
+    // Proxy Forward Mappings
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/proxy",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<ProxyForwardConfigDTO> getServerConfigProxyConfig(@PathVariable("serverType") final String serverType)
+            throws ValidationException, RecordNotFoundException {
+
+        final ServerTypeEnum type = convertServerType(serverType);
+
+        return new ResponseEntity<>(mockedServerEngineService.loadProxyForwardConfig(type), HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/proxy",
+            method = RequestMethod.PUT,
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> putServerConfigProxyConfig(@PathVariable("serverType") final String serverType,
+                                                                      @RequestBody final ProxyForwardConfigDTO proxyForwardConfig,
+                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws RecordNotFoundException, AuthException, ValidationException {
+
+        final ServerTypeEnum type = convertServerType(serverType);
+
+        mockedServerEngineService.saveProxyForwardMappings(type, proxyForwardConfig, GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
 }
