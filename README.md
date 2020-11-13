@@ -12,7 +12,7 @@
 
    - Visit us: https://www.smockin.com
 
-   - Contact us on Twitter <b>@smockin_com</b>
+   - Contact us or follow us on Twitter: <b>@smockin_com</b>
 
 <br />
 <br />
@@ -147,6 +147,26 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 ### RECENT RELEASE CHANGES
 
 <br />
+
+**New in version 2.10.0**
+
+- The sMockin proxy server now supports multiple url destinations which can be mapped to specific paths.
+
+For example, say you are running 3 independent microservices for each of the following services:
+
+```
+/v1/product   -> localhost:9001
+/v1/customer  -> localhost:9002
+/v1/address   -> localhost:9003
+```
+
+You can now add these 'Path to URL' mappings to sMockin and then decide whether swap out any traffic between these services and the end user with mocked responses using various strategies.
+
+This can be highly useful for either temporarily modifying an existing API or adding (mocking) an entirely new endpoint.
+
+<br />
+<br />
+
 
 **New in version 2.9**
 
