@@ -191,6 +191,10 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     };
 
+    $scope.isBlank = function(input) {
+        return utils.isBlank(input);
+    }
+
     $scope.doCancel = function() {
         $uibModalInstance.dismiss('cancel');
     };

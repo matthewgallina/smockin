@@ -29,3 +29,7 @@
 .remove-resp-head-row-button {
     text-align: center;
 }
+
+.hide-proxy-mapping-pause-button {
+    visibility: hidden;
+}

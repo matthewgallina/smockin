@@ -67,7 +67,7 @@
                                 <input type="text" ng-model="m.proxyForwardUrl" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="m.disabled" placeholder="{{ ($index == 0) ? defaultProxyForwardPlaceholderTxt : proxyForwardUrlPlaceholderTxt }}" />
                             </td>
                             <td class="remove-resp-head-row-button">
-                                <button type="button" class="btn" ng-click="doToggleMappingRowStatus(m.path)">
+                                <button type="button" class="btn" ng-click="doToggleMappingRowStatus(m.path)" ng-class="{'hide-proxy-mapping-pause-button' : isBlank(m.path) || isBlank(m.proxyForwardUrl)}" >
                                     <span class="glyphicon glyphicon-pause" aria-hidden="true" ng-if="!m.disabled" />
                                     <span class="glyphicon glyphicon-play" aria-hidden="true" ng-if="m.disabled" />
                                 </button>
