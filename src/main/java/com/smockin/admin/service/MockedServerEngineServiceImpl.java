@@ -16,6 +16,8 @@ import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -227,10 +229,20 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             }
 
             for (ProxyForwardMappingDTO dto : proxyForwardConfigDTO.getProxyForwardMappings()) {
+
+                if (StringUtils.isBlank(dto.getPath())) {
+                    throw new ValidationException("A 'Path' value is missing");
+                }
+
+                if (StringUtils.isBlank(dto.getProxyForwardUrl())) {
+                    throw new ValidationException("A 'Proxy Forward Url' value is missing");
+                }
+
                 if (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
                         && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL)) {
-                    throw new ValidationException("'proxyForwardUrl' config value is invalid");
+                    throw new ValidationException("The 'Proxy Forward Url' value '" + dto.getProxyForwardUrl() + "' is invalid");
                 }
+
             }
 
         }
@@ -268,7 +280,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                     .map(dto -> {
 
                         final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
-                        proxyForwardMapping.setPath(dto.getPath());
+                        proxyForwardMapping.setPath(
+                                (!StringUtils.startsWith(dto.getPath(), "/")
+                                    && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
+                                        + dto.getPath());
                         proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
                         proxyForwardMapping.setDisabled(dto.isDisabled());
 

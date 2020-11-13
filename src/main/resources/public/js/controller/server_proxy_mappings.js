@@ -22,7 +22,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     $scope.proxyModeLabel = 'Enable Proxy Mode';
     $scope.proxyModeActiveTypeLabel = 'Look for matching MOCK first, if nothing found, then forward request DOWNSTREAM';
-    $scope.proxyModeReactiveTypeLabel = 'Forward request DOWNSTREAM first, if nothing found, then look for matching MOCK';
+    $scope.proxyModeReactiveTypeLabel = 'Forward request DOWNSTREAM first, if nothing found, then look for a matching MOCK';
     $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
     $scope.useDefaultForwardingUrlLabel = 'Include default (fallback) downstream URL';
     $scope.pathUrlMappingsLabel = 'Path to URL Mappings';
@@ -138,7 +138,12 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                 var proxyForwardUrl = $scope.proxyMappingConfig.proxyForwardMappings[i].proxyForwardUrl;
 
                 if (utils.isBlank(path)) {
-                    showAlert("Please ensure the 'Path' is populated in all 'Path to URL Mappings'");
+                    showAlert("Please ensure the 'Path' is populated in all your 'Path to URL Mappings'");
+                    return;
+                }
+
+                if (path != PathWildcard && !path.startsWith("/")) {
+                    showAlert("The path '" + path + "' requires a forward slash");
                     return;
                 }
 

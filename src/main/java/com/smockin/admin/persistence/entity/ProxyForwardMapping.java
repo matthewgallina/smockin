@@ -15,7 +15,7 @@ import javax.persistence.Table;
 @Data
 public class ProxyForwardMapping extends Identifier {
 
-    @Column(name = "PATH", length = 1000, nullable = false)
+    @Column(name = "PATH", length = 1000, nullable = false, unique = true)
     private String path;
 
     @Column(name = "PROXY_FORWARD_URL", length = 500, nullable = false)
