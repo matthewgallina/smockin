@@ -8,14 +8,14 @@ import org.springframework.stereotype.Component;
  * Created by gallina.
  */
 @Component
-public class MigrationPatch_2110 implements MigrationPatch {
+public class MigrationPatch_2100 implements MigrationPatch {
 
     @Autowired
     private MigrationDAO migrationDAO;
 
     @Override
     public String versionNo() {
-        return "2.1.10";
+        return "2.10.0";
     }
 
     @Override
