@@ -13,6 +13,8 @@
    - Visit us: https://www.smockin.com
 
    - Contact us or follow us on Twitter: <b>@smockin_com</b>
+   
+   - User Guide: https://help.smockin.com/
 
 <br />
 <br />
