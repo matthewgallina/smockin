@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsController', function($scope, $location, $timeout, $uibModal, $uibModalInstance, utils, globalVars) {
+app.controller('viewHttpRequestsController', function($rootScope, $scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
 
 
     //
@@ -9,6 +9,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     var WebSocketHeartBeatMillis = 30000;
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
+    var EnableLiveLogBlocking = 'ENABLE_LIVE_LOG_BLOCKING';
+    var DisableLiveLogBlocking = 'DISABLE_LIVE_LOG_BLOCKING';
     var ProxiedDownstreamUrlResponseHeader = 'X-Proxied-Downstream-Url';
     var LiveFeedUrl = "ws://"
         + location.host
@@ -36,7 +38,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     //
     // Buttons
     $scope.closeButtonLabel = 'Close';
-    $scope.clearFeedButtonLabel = "Clear List";
+    $scope.clearFeedButtonLabel = 'Clear List';
 
 
     //
@@ -77,6 +79,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.sortReverse = false;
     $scope.search = '';
     $scope.selectedFeedData = null;
+    $scope.responseInterceptorEnabled = false;
 
 
     //
@@ -116,6 +119,49 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         doTerminate();
         $uibModalInstance.close();
     };
+
+    $scope.doToggleResponseInterceptor = function() {
+
+        $scope.responseInterceptorEnabled = !$scope.responseInterceptorEnabled;
+
+        if (wsSocket != null
+                && wsSocket.readyState == wsSocket.OPEN) {
+
+            var payload = {
+                'type' : ($scope.responseInterceptorEnabled)
+                             ? EnableLiveLogBlocking
+                             : DisableLiveLogBlocking
+            };
+
+            wsSocket.send(JSON.stringify(payload));
+        }
+
+    };
+
+    $scope.doManageBlockedEndpoints = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'view_http_requests_block_endpoints.html',
+            controller: 'viewHttpRequestsBlockEndpointsController',
+            backdrop  : 'static',
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return {
+                        "wsSocket" : wsSocket
+                    };
+                }
+            }
+        });
+
+        modalInstance.result.then(function (state) {
+
+        }, function () {
+
+        });
+
+    };
+
 
     //
     // Internal Functions
@@ -158,6 +204,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function doTerminate() {
 
         if (wsSocket != null) {
+
             wsSocket.close();
             wsSocket = null;
         }
@@ -167,6 +214,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function applyWSListeners() {
 
        wsSocket.onopen = function (event) {
+
             $scope.doClearFeed();
             $scope.noActivityData = 'Listening for activity...';
             $scope.wsEstablished = true;
@@ -176,17 +224,21 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         };
 
         wsSocket.onmessage = function (event) {
+
             handleResponseMsg(JSON.parse(event.data));
         };
 
         wsSocket.onerror = function (event) {
+
             showAlert("Unable to establish connection to " + LiveFeedUrl);
+
             wsSocket = null;
             $scope.wsEstablished = false;
             $scope.$digest();
         };
 
         wsSocket.onclose = function (event) {
+
             wsSocket = null;
             $scope.wsEstablished = false;
             $scope.$digest();
@@ -217,12 +269,22 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         }
     }
 
-    function handleResponseMsg(liveLog) {
+    function handleResponseMsg(inboundMsg) {
 
-        if (liveLog.direction == RequestDirectionValue) {
-            buildInitialRequest(liveLog);
-        } else if (liveLog.direction == ResponseDirectionValue) {
-            appendResponse(liveLog);
+        if (inboundMsg.type == 'BLOCKED_RESPONSE') {
+
+            $rootScope.$broadcast("LIVE_LOG_BLOCKED_RESPONSE_PAYLOAD", inboundMsg.payload);
+
+        } else if (inboundMsg.type == 'TRAFFIC') {
+
+            var liveLog = inboundMsg.payload;
+
+            if (liveLog.direction == RequestDirectionValue) {
+                buildInitialRequest(liveLog);
+            } else if (liveLog.direction == ResponseDirectionValue) {
+                appendResponse(liveLog);
+            }
+
         }
 
     }

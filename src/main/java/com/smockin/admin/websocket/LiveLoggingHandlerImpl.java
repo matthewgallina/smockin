@@ -1,14 +1,21 @@
 package com.smockin.admin.websocket;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.smockin.admin.dto.LiveLoggingAction;
+import com.smockin.admin.dto.LiveLoggingBlockedResponseAmendmentDTO;
 import com.smockin.admin.dto.response.LiveLoggingDTO;
+import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
+import org.h2.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,20 +27,74 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     private final Logger logger = LoggerFactory.getLogger(LiveLoggingHandlerImpl.class);
     private final AtomicReference<List<WebSocketSession>> liveSessionsRef = new AtomicReference<>(new ArrayList<>());
 
+    private static final String ENABLE_LIVE_LOG_BLOCKING = "ENABLE_LIVE_LOG_BLOCKING";
+    private static final String DISABLE_LIVE_LOG_BLOCKING = "DISABLE_LIVE_LOG_BLOCKING";
+    private static final String LIVE_LOGGING_AMENDMENT = "LIVE_LOGGING_AMENDMENT";
+
+    @Autowired
+    private MockedRestServerEngine mockedRestServerEngine;
+
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         liveSessionsRef.get().add(session);
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(final WebSocketSession session,
+                                      final CloseStatus status) throws Exception {
         super.afterConnectionClosed(session, status);
 
+        logger.debug("Live logging WS connection closed");
+
         liveSessionsRef.get().remove(session);
+
+        mockedRestServerEngine.releaseBlockedLiveLoggingResponse(0,null,null, null);
+        mockedRestServerEngine.updateLiveBlockingMode(false);
+        mockedRestServerEngine.clearAllPathsFromLiveBlocking();
+
+    }
+
+    @Override
+    protected void handleTextMessage(final WebSocketSession session,
+                                     final TextMessage message) throws Exception {
+
+        final LiveLoggingAction clientAction
+                = GeneralUtils.deserialiseJson(message.getPayload(), new TypeReference<LiveLoggingAction<?>>() {});
+
+        if (clientAction == null) {
+            return;
+        }
+
+        final String type = clientAction.getType();
+
+        if (StringUtils.equals(ENABLE_LIVE_LOG_BLOCKING, type)) {
+
+            mockedRestServerEngine.updateLiveBlockingMode(true);
+
+        } else if (StringUtils.equals(DISABLE_LIVE_LOG_BLOCKING, type)) {
+
+            mockedRestServerEngine.updateLiveBlockingMode(false);
+
+        } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
+
+            final LiveLoggingAction liveLoggingAction
+                    = GeneralUtils.deserialiseJson(message.getPayload(), new TypeReference<LiveLoggingAction<LiveLoggingBlockedResponseAmendmentDTO>>() {});
+
+            final LiveLoggingBlockedResponseAmendmentDTO amendmentDTO = (LiveLoggingBlockedResponseAmendmentDTO)liveLoggingAction.getPayload();
+
+            mockedRestServerEngine.releaseBlockedLiveLoggingResponse(
+                    amendmentDTO.getStatus(),
+                    amendmentDTO.getContentType(),
+                    amendmentDTO.getHeaders(),
+                    amendmentDTO.getBody());
+        }
+
     }
 
     @Override
     public synchronized void broadcast(final LiveLoggingDTO dto) {
+
         final List<WebSocketSession> sessions = liveSessionsRef.get();
 
         if (sessions.isEmpty()) {

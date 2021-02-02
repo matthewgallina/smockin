@@ -1,0 +1,83 @@
+<link rel="stylesheet" href="../css/view_http_requests_block_endpoints.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ viewRequestsBlockedEndpointsHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body" window-dimensions-directive style="height: {{ (height - 200) }}px;">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group activity-feed-container" style="height: {{ (height - 225) }}px;">
+
+        <div class="row">
+            <div class="col-sm-6">
+
+                <div class="form-group">
+
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+
+                            <div class="no-endpoints" ng-show="endpoints.length == 0">
+                                {{ noEndpointsDefinedLabel }}
+                            </div>
+
+                            <table id="endpoints" class="table table-striped" ng-show="endpoints.length > 0">
+                                <thead>
+                                <tr>
+                                    <th>{{ endpointMethodLabel }}</th>
+                                    <th>{{ endpointPathLabel }}</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr ng-repeat="e in endpoints">
+                                    <td>
+                                        <input type="text" ng-model="e.method" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    </td>
+                                    <td>
+                                        <input type="text" ng-model="e.path" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                    </td>
+                                    <td class="">
+                                        <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e.id)">{{ removeEndpointRowButtonLabel }}</button>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+                    <button id="add-endpoint-row" type="button" class="btn btn-success pull-right" ng-click="doAddEndpointToBlock()"> {{ newEndpointRowButtonLabel }}</button>
+
+                </div>
+
+            </div>
+            <div class="col-sm-6">
+
+                <div class="form-group">
+                    <label for="httpStatusCode" class="ng-binding"> Status</label>
+                    <input id="httpStatusCode" type="text" ng-model="responseData.status" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="!responseData.receivedResponse" />
+                </div>
+
+                <div class="form-group">
+                    <label for="contentType" class="ng-binding"> Content Type </label>
+                    <input id="contentType" type="text" ng-model="responseData.contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="!responseData.receivedResponse" />
+                </div>
+
+                <textarea class="form-control ng-isolate-scope ng-pristine ng-valid" style="height: 230px;" ng-model="responseData.body" ng-disabled="!responseData.receivedResponse"></textarea>
+
+                <br />
+
+                <button type="button" class="btn btn-warning pull-right" ng-click="doReleaseBlockedLog()" ng-disabled="!responseData.receivedResponse"> Release Intercepted Response </button>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

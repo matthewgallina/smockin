@@ -13,7 +13,7 @@
         </encoder>
     </appender>
 
-    <logger name="com.smockin" level="WARN">
+    <logger name="com.smockin" level="ERROR">
         <appender-ref ref="smockin_appender" />
     </logger>
 

@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.util.AntPathMatcher;
 import spark.Request;
 
 import java.io.*;
@@ -474,6 +475,13 @@ public final class GeneralUtils {
                 })
                 .collect(Collectors.joining(carriage))
                 .trim();
+    }
+
+    public static boolean matchPaths(final String mockPath, final String inboundPath) {
+
+        final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
+
+        return matcher.match(mockPath, inboundPath);
     }
 
 }

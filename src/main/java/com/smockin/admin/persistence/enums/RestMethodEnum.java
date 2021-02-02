@@ -14,8 +14,10 @@ public enum RestMethodEnum {
 
     public static RestMethodEnum findByName(final String name) {
         return Stream.of(RestMethodEnum.values())
-                .filter(rm -> (rm.name().equalsIgnoreCase(name)))
-                .findFirst().orElse(null);
+                .filter(rm ->
+                        (rm.name().equalsIgnoreCase(name)))
+                .findFirst()
+                .orElse(null);
     }
 
 }

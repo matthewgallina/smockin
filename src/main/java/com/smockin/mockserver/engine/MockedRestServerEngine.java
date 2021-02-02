@@ -2,11 +2,10 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
-import com.smockin.mockserver.dto.MockServerState;
-import com.smockin.mockserver.dto.MockedServerConfigDTO;
-import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
@@ -23,8 +22,12 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -66,15 +69,21 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private SmockinUserService smockinUserService;
 
+    private final Object serverStateMonitor = new Object();
+    private final Object blockingMonitor = new Object();
+private boolean liveBlockActive;
+private LiveloggingUserOverrideResponse userOverrideResponse = null;
 
-    private final Object monitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
+    private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
+    private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
 
 
     @Override
     public void start(final MockedServerConfigDTO config,
                       final ProxyForwardConfigDTO proxyForwardConfigDTO) throws MockServerException {
+
         logger.debug("start called");
 
         initServerConfig(config);
@@ -99,7 +108,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     @Override
     public MockServerState getCurrentState() throws MockServerException {
-        synchronized (monitor) {
+        synchronized (serverStateMonitor) {
             return serverState;
         }
     }
@@ -120,7 +129,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             // Short of editing the Spark source to fix this, I have therefore had to add this hack to buy the 'stop' thread time to complete.
             Thread.sleep(3000);
 
-            synchronized (monitor) {
+            synchronized (serverStateMonitor) {
                 serverState.setRunning(false);
             }
 
@@ -144,7 +153,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             // Blocks the current thread (using a CountDownLatch under the hood) until the server is fully initialised.
             Spark.awaitInitialization();
 
-            synchronized (monitor) {
+            synchronized (serverStateMonitor) {
                 serverState.setRunning(true);
                 serverState.setPort(port);
             }
@@ -205,11 +214,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return;
             }
 
-            final Map<String, String> respHeaders = response
-                    .raw()
-                    .getHeaderNames()
-                    .stream()
-                    .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
+            final Map<String, String> respHeaders = mockedRestServerEngineUtils.extractResponseHeadersAsMap(response);
 
             respHeaders.put(GeneralUtils.LOG_REQ_ID, request.attribute(GeneralUtils.LOG_REQ_ID));
 
@@ -240,8 +245,37 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
+            String responseBody = mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
                     .orElseGet(() -> handleNotFoundResponse(response));
+
+            if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
+
+                logger.debug("Endpoint match made. Blocking response...");
+
+                synchronized (blockingMonitor) {
+
+                    this.liveBlockActive = true;
+
+                    while (liveBlockActive) {
+
+                        blockingMonitor.wait();
+
+                        if (userOverrideResponse != null) {
+
+                            userOverrideResponse.getResponseHeaders().entrySet().forEach(h ->
+                                response.header(h.getKey(), h.getValue()));
+
+                            response.type(userOverrideResponse.getContentType());
+                            response.status(userOverrideResponse.getStatus());
+                            response.body(userOverrideResponse.getBody());
+                            responseBody = userOverrideResponse.getBody();
+                        }
+
+                    }
+                }
+            }
+
+            return responseBody;
         });
 
         Spark.post(GeneralUtils.PATH_WILDCARD, (request, response) ->
@@ -265,6 +299,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private String handleNotFoundResponse(final Response response) {
 
         response.status(HttpStatus.NOT_FOUND.value());
+
         return "";
     }
 
@@ -275,6 +310,40 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         return headerNames.contains(HttpHeaders.UPGRADE)
                 && headerNames.contains("Sec-WebSocket-Key")
                 && "websocket".equalsIgnoreCase(request.headers(HttpHeaders.UPGRADE));
+    }
+
+    boolean blockLoggingResponse(final Request request,
+                          final Response response,
+                          final boolean proxyMode) {
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("liveBlockEnabled: " + liveBlockingModeEnabled.get());
+        }
+
+        if (this.liveBlockingModeEnabled.get()) {
+
+            // Check if this call matches any endpoints that should be blocked...
+            if (liveBlockPathsRef.get()
+                    .stream()
+                    .anyMatch(p ->
+                            p.getMethod().name().equalsIgnoreCase(request.requestMethod())
+                                    && GeneralUtils.matchPaths(p.getPath(), request.pathInfo()))) {
+
+                // If so then send response details to live logging console via WS...
+                liveLoggingHandler.broadcast(
+                        LiveLoggingUtils.buildLiveLogInterceptedResponseDTO(
+                                request.attribute(GeneralUtils.LOG_REQ_ID),
+                                response.raw().getStatus(),
+                                mockedRestServerEngineUtils.extractResponseHeadersAsMap(response),
+                                response.body(),
+                                proxyMode));
+
+                return true;
+            }
+
+        }
+
+        return false;
     }
 
     void clearState() {
@@ -327,6 +396,56 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     !p.isDisabled())
             .collect(Collectors.toList()));
 
+    }
+
+    public void releaseBlockedLiveLoggingResponse(final int status,
+                                                  final String contentType,
+                                                  final Map<String, String> responseHeaders,
+                                                  final String body) {
+
+        logger.debug("releasing blocked response...");
+
+        synchronized (blockingMonitor) {
+            this.liveBlockActive = false;
+            userOverrideResponse = new LiveloggingUserOverrideResponse(status, contentType, responseHeaders, body);
+            blockingMonitor.notify();
+        }
+
+        logger.debug("block released");
+    }
+
+    public void updateLiveBlockingMode(final boolean liveBlockEnabled) {
+
+        if (logger.isDebugEnabled())
+            logger.debug("Live blocking enabled: " + liveBlockEnabled);
+
+        this.liveBlockingModeEnabled.set(liveBlockEnabled);
+    }
+
+    public void addPathToLiveBlocking(final RestMethodEnum method,
+                                      final String path) {
+
+        if (logger.isDebugEnabled())
+            logger.debug("Adding blocking rule for: " + method.name() + " " + path);
+
+        liveBlockPathsRef.get().add(new LiveBlockPath(method, path));
+    }
+
+    public void removePathFromLiveBlocking(final RestMethodEnum method,
+                                           final String path) {
+
+        if (logger.isDebugEnabled())
+            logger.debug("Removing blocking rule for: " + method.name() + " " + path);
+
+        liveBlockPathsRef.get().remove(new LiveBlockPath(method, path));
+    }
+
+    public void clearAllPathsFromLiveBlocking() {
+
+        if (logger.isDebugEnabled())
+            logger.debug("clearing down all blocking rules...");
+
+        liveBlockPathsRef.get().clear();
     }
 
 }

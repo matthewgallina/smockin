@@ -19,6 +19,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
     $scope.removeRequestHeaderButtonLabel = 'X';
     $scope.addRequestHeaderButtonLabel = 'New Row';
     $scope.clientResponseLabel = "Response";
+    $scope.noHeadersDefinedLabel = "No Headers Defined";
 
 
     //

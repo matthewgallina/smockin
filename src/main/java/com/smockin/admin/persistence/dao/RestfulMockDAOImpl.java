@@ -6,6 +6,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.AntPathMatcher;
@@ -119,11 +120,9 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
             return null;
         }
 
-        final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
-
         return mocks.stream()
                 .filter(m ->
-                    matcher.match(buildMockMatchingPath(m, matchOnUserCtxPath), path))
+                    GeneralUtils.matchPaths(buildMockMatchingPath(m, matchOnUserCtxPath), path))
                 .findFirst()
                 .orElse(null);
     }

@@ -31,36 +31,36 @@
 
         <div class="activity-feed-details" style="height: {{ (height - 300) }}px;">
 
-            <div class="row activity-feed-details-row" ng-show="activityFeed.length > 0" style="height: {{ (height - 310) }}px;">
+            <div class="row activity-feed-details-row" ng-show="activityFeed.length > 0" style="height: {{ (height - 315) }}px;">
                 <div class="col-sm-3">
 
                     <div style="height: {{ (height - 310) }}px; overflow-y: scroll;">
 
-                    <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
-                            class="live-log-font activity-feed-table-row"
-                            ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'downstream-response-through-proxy': af.proxied && !af.response.isMockedResponse, 'mocked-response-through-proxy': !af.proxied || af.response.isMockedResponse}"
-                            ng-click="doViewFeedRow(af)">
+                        <div ng-repeat="af in activityFeed | orderBy:sortType:sortReverse | filter:search"
+                                class="live-log-font activity-feed-table-row"
+                                ng-class="{'request-ongoing': !af.response, 'selected-request': af.isSelected, 'downstream-response-through-proxy': af.proxied && !af.response.isMockedResponse, 'mocked-response-through-proxy': !af.proxied || af.response.isMockedResponse}"
+                                ng-click="doViewFeedRow(af)">
 
-                        <div class="break-word">
-                            <b>
-                                {{ af.request.method }}
-                                {{ af.request.url }}
-                                <span ng-if="af.proxied">
-                                    <span ng-if="af.response.isMockedResponse"> (origin: mock server) </span>
-                                    <span ng-if="!af.response.isMockedResponse"> (origin: downstream url) </span>
-                                </span>
-                            </b>
+                            <div class="break-word">
+                                <b>
+                                    {{ af.request.method }}
+                                    {{ af.request.url }}
+                                    <span ng-if="af.proxied">
+                                        <span ng-if="af.response.isMockedResponse"> (origin: mock server) </span>
+                                        <span ng-if="!af.response.isMockedResponse"> (origin: downstream url) </span>
+                                    </span>
+                                </b>
+                            </div>
+
+                            <br />
+
+                            {{ af.request.date | date: 'HH:mm:ss sss' : 'UTC' }} ms
+
+                            <span class="pull-right">
+                                {{ httpResponseLabel }} <b ng-if="af.response.status != null">{{ af.response.status }}</b>
+                            </span>
+
                         </div>
-
-                        <br />
-
-                        {{ af.request.date | date: 'HH:mm:ss sss' : 'UTC' }} ms
-
-                        <span class="pull-right">
-                            {{ httpResponseLabel }} <b ng-if="af.response.status != null">{{ af.response.status }}</b>
-                        </span>
-
-                    </div>
 
                     </div>
 
@@ -198,9 +198,21 @@
 
             <br />
 
-            <div class="live-log-font pull-right">
-                {{ connectionStatusLabel }}:
-                <span ng-class="(wsEstablished) ? 'logging-status-online' : 'logging-status-offline'">{{ wsEstablished ? connectionStatusOnlineLabel : connectionStatusOfflineLabel }}</span>
+            <div class="live-log-font">
+
+                <span ng-if="wsEstablished">
+
+                    <input type="checkbox" ng-checked="responseInterceptorEnabled" ng-click="doToggleResponseInterceptor()" />
+                    Enable Response Interceptor
+
+                    <a ng-click="doManageBlockedEndpoints()" ng-if="responseInterceptorEnabled" class="manage-blocked-endpoints">(Manage Endpoints to Intercept)</a>
+                </span>
+
+                <div class="pull-right">
+                    {{ connectionStatusLabel }}:
+                    <span ng-class="(wsEstablished) ? 'logging-status-online' : 'logging-status-offline'">{{ wsEstablished ? connectionStatusOnlineLabel : connectionStatusOfflineLabel }}</span>
+                </div>
+
             </div>
 
         </div>

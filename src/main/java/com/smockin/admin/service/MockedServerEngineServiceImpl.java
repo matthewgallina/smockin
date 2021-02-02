@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -8,6 +9,7 @@ import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ProxyForwardMapping;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
@@ -294,6 +296,21 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         }
 
+    }
+
+    @Override
+    public void addLiveLoggingPathToBlock(final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
+                                          final String token) throws AuthException {
+
+        mockedRestServerEngine.addPathToLiveBlocking(liveLoggingBlockingEndpoint.getMethod(), liveLoggingBlockingEndpoint.getPath());
+    }
+
+    @Override
+    public void removeLiveLoggingPathToBlock(final String method,
+                                             final String path,
+                                             final String token) throws AuthException {
+
+        mockedRestServerEngine.removePathFromLiveBlocking(RestMethodEnum.findByName(method), path);
     }
 
     void autoStartManager(final ServerTypeEnum serverType) throws MockServerException {
