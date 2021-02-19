@@ -47,6 +47,14 @@ app.service('globalVars', function() {
         this.XmlContentType
     ];
 
+    this.httpMethods = [
+        'GET',
+        'POST',
+        'PUT',
+        'DELETE',
+        'PATCH'
+    ];
+
     this.MockTypeDefinitions = {
         MockTypeSeq : 'SEQ',
         MockTypeRule : 'RULE',

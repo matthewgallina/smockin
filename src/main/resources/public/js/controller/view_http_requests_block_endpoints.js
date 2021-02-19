@@ -5,14 +5,11 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     // Constants / Vars
     var wsSocket = data.wsSocket;
     var LiveLoggingAmendment = 'LIVE_LOGGING_AMENDMENT';
+    var LiveLoggingAmendmentCancel = 'LIVE_LOGGING_AMENDMENT_CANCEL';
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
-    $scope.httpMethods = [
-        'GET',
-        'POST',
-        'PUT',
-        'DELETE',
-        'PATCH'
-    ];
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
+    $scope.httpMethods = globalVars.httpMethods;
 
 
     //
@@ -21,6 +18,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     $scope.noEndpointsDefinedLabel = 'No Endpoints Defined';
     $scope.endpointMethodLabel = 'Method';
     $scope.endpointPathLabel = 'Path';
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
 
 
     //
@@ -28,9 +27,9 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     $scope.addBlockingEndpointButtonLabel = 'Add';
     $scope.removeBlockingEndpointButtonLabel = 'Remove';
     $scope.releaseBlockedResponseButtonLabel = 'Release';
-    $scope.newEndpointRowButtonLabel = 'Apply Endpoint';
     $scope.removeEndpointRowButtonLabel = 'X';
     $scope.closeButtonLabel = 'Close';
+    $scope.releaseInterceptedResponseButton = 'Release Response';
 
 
     //
@@ -65,6 +64,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     //
     // Data Objects
     $scope.endpoints = [];
+    $scope.httpMethods = globalVars.httpMethods;
+    $scope.contentTypes = globalVars.ContentMimeTypes;
     $scope.responseData = {
         "receivedResponse" : false,
         "status" : null,
@@ -76,10 +77,24 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     //
     // Scoped Functions
     $scope.doClose = function() {
+
+        if ($scope.responseData.receivedResponse) {
+
+            var req = {
+                'type' : LiveLoggingAmendmentCancel,
+                'payload' : null
+            }
+
+            wsSocket.send(JSON.stringify(req));
+        }
+
         $uibModalInstance.close();
+
     };
 
     $scope.doReleaseBlockedLog = function() {
+
+        $scope.closeAlert();
 
         var req = {
             'type' : LiveLoggingAmendment,
@@ -87,7 +102,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
                 'status' : $scope.responseData.status,
                 'contentType' : $scope.responseData.contentType,
                 'headers' : {
-                    'Foo-Bar': 'yo yo'
+//                    'Foo-Bar': 'yo yo'
                 },
                 'body' : $scope.responseData.body
             }
@@ -98,20 +113,35 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
             wsSocket.send(JSON.stringify(req));
 
+            $scope.responseData.receivedResponse = false;
             $scope.responseData.status = null;
             $scope.responseData.contentType = null;
             $scope.responseData.body = null;
-            $scope.responseData.receivedResponse = false;
 
             showAlert("Response released", "success");
         }
 
     };
 
-    $scope.doAddEndpointToBlock = function() {
+    $scope.doAddEndpointToBlock = function(endpoint) {
 
-        var method = 'GET';
-        var path = '/helloworld';
+        var method = endpoint.method;
+        var path = endpoint.path;
+
+        $scope.closeAlert();
+
+        if (utils.isBlank(method)) {
+            showAlert("Method is required");
+            return;
+        }
+        if (utils.isBlank(path)) {
+            showAlert("Path is required");
+            return;
+        }
+        if (!path.startsWith("/")) {
+            showAlert("Path requires a forward slash prefix");
+            return;
+        }
 
         var req = {
             'method' : method,
@@ -125,6 +155,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
                  return;
             }
 
+            endpoint.id = utils.generateUUID();
             doAddNewEndpointRow();
 
             showAlert("Added endpoint: " + method + ' ' + path, "success");
@@ -133,6 +164,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     };
 
     $scope.doRemoveEndpointToBlock = function(id) {
+
+        $scope.closeAlert();
 
         var method = 'GET';
         var path = '/helloworld';
@@ -153,11 +186,57 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
     };
 
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.responseData.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.responseData.body);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome);
+            return;
+        }
+
+        $scope.responseData.body = utils.formatJson($scope.responseData.body);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.responseData.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.responseData.body);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax");
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1]);
+            return;
+        }
+
+        $scope.responseData.body = validationOutcome[1];
+    };
+
 
     //
     // Internal Functions
     function doAddNewEndpointRow() {
-        $scope.endpoints.push({ "id" : utils.generateUUID(), "method" : "GET", "path" : null });
+
+        $scope.endpoints.push({
+            "id" : null,
+            "method" : null,
+            "path" : null
+        });
     }
 
     function doRemoveNewEndpointRow(id) {

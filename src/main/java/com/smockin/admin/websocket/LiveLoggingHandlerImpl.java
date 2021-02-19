@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.LiveLoggingAction;
 import com.smockin.admin.dto.LiveLoggingBlockedResponseAmendmentDTO;
 import com.smockin.admin.dto.response.LiveLoggingDTO;
+import com.smockin.mockserver.dto.LiveloggingUserOverrideResponse;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
 import org.h2.util.StringUtils;
@@ -19,17 +20,21 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements LiveLoggingHandler {
 
     private final Logger logger = LoggerFactory.getLogger(LiveLoggingHandlerImpl.class);
-    private final AtomicReference<List<WebSocketSession>> liveSessionsRef = new AtomicReference<>(new ArrayList<>());
 
     private static final String ENABLE_LIVE_LOG_BLOCKING = "ENABLE_LIVE_LOG_BLOCKING";
     private static final String DISABLE_LIVE_LOG_BLOCKING = "DISABLE_LIVE_LOG_BLOCKING";
     private static final String LIVE_LOGGING_AMENDMENT = "LIVE_LOGGING_AMENDMENT";
+    private static final String LIVE_LOGGING_AMENDMENT_CANCEL = "LIVE_LOGGING_AMENDMENT_CANCEL";
+
+    private final AtomicReference<List<WebSocketSession>> liveSessionsRef = new AtomicReference<>(new ArrayList<>());
+
 
     @Autowired
     private MockedRestServerEngine mockedRestServerEngine;
@@ -49,9 +54,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
         liveSessionsRef.get().remove(session);
 
-        mockedRestServerEngine.releaseBlockedLiveLoggingResponse(0,null,null, null);
-        mockedRestServerEngine.updateLiveBlockingMode(false);
-        mockedRestServerEngine.clearAllPathsFromLiveBlocking();
+        stopLiveBlockingMode();
 
     }
 
@@ -69,25 +72,13 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         final String type = clientAction.getType();
 
         if (StringUtils.equals(ENABLE_LIVE_LOG_BLOCKING, type)) {
-
             mockedRestServerEngine.updateLiveBlockingMode(true);
-
         } else if (StringUtils.equals(DISABLE_LIVE_LOG_BLOCKING, type)) {
-
-            mockedRestServerEngine.updateLiveBlockingMode(false);
-
+            stopLiveBlockingMode();
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
-
-            final LiveLoggingAction liveLoggingAction
-                    = GeneralUtils.deserialiseJson(message.getPayload(), new TypeReference<LiveLoggingAction<LiveLoggingBlockedResponseAmendmentDTO>>() {});
-
-            final LiveLoggingBlockedResponseAmendmentDTO amendmentDTO = (LiveLoggingBlockedResponseAmendmentDTO)liveLoggingAction.getPayload();
-
-            mockedRestServerEngine.releaseBlockedLiveLoggingResponse(
-                    amendmentDTO.getStatus(),
-                    amendmentDTO.getContentType(),
-                    amendmentDTO.getHeaders(),
-                    amendmentDTO.getBody());
+            handleLiveLoggingAmendment(message);
+        } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT_CANCEL, type)) {
+            clearLiveBlockingMode();
         }
 
     }
@@ -101,13 +92,44 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
             return;
         }
 
-        sessions.stream().forEach(s -> {
-            try {
-                s.sendMessage(serialiseMessage(dto));
-            } catch (IOException e) {
-                logger.error("Error pushing message to connected web socket: " + s.getId(), e);
-            }
-        });
+        sessions.stream()
+                .forEach(s -> {
+                    try {
+                        s.sendMessage(serialiseMessage(dto));
+                    } catch (IOException e) {
+                        logger.error("Error pushing message to connected web socket: " + s.getId(), e);
+                    }
+                });
+
+    }
+
+    private void stopLiveBlockingMode() {
+
+        clearLiveBlockingMode();
+        mockedRestServerEngine.updateLiveBlockingMode(false);
+    }
+
+    private void clearLiveBlockingMode() {
+
+        mockedRestServerEngine.releaseBlockedLiveLoggingResponse(Optional.empty());
+        mockedRestServerEngine.clearAllPathsFromLiveBlocking();
+    }
+
+    private void handleLiveLoggingAmendment(final TextMessage message) {
+
+        final LiveLoggingAction liveLoggingAction
+                = GeneralUtils.deserialiseJson(message.getPayload(),
+                    new TypeReference<LiveLoggingAction<LiveLoggingBlockedResponseAmendmentDTO>>() {});
+
+        final LiveLoggingBlockedResponseAmendmentDTO amendmentDTO
+                = (LiveLoggingBlockedResponseAmendmentDTO)liveLoggingAction.getPayload();
+
+        mockedRestServerEngine.releaseBlockedLiveLoggingResponse(
+                Optional.of(new LiveloggingUserOverrideResponse(
+                                amendmentDTO.getStatus(),
+                                amendmentDTO.getContentType(),
+                                amendmentDTO.getHeaders(),
+                                amendmentDTO.getBody())));
 
     }
 

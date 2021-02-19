@@ -22,10 +22,7 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -69,13 +66,16 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private SmockinUserService smockinUserService;
 
-    private final Object serverStateMonitor = new Object();
-    private final Object blockingMonitor = new Object();
-private boolean liveBlockActive;
-private LiveloggingUserOverrideResponse userOverrideResponse = null;
 
+    // Server state
+    private final Object serverStateMonitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
 
+    // Live logging response blocker
+    // TODO find a smarter way to do this (i.e BlockingQueue...)
+    private final Object responseBlockingMonitor = new Object();
+    private boolean responseLocked;
+    private Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt = null;
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
 
@@ -252,23 +252,26 @@ private LiveloggingUserOverrideResponse userOverrideResponse = null;
 
                 logger.debug("Endpoint match made. Blocking response...");
 
-                synchronized (blockingMonitor) {
+                synchronized (responseBlockingMonitor) {
 
-                    this.liveBlockActive = true;
+                    this.responseLocked = true;
 
-                    while (liveBlockActive) {
+                    while (responseLocked) {
 
-                        blockingMonitor.wait();
+                        responseBlockingMonitor.wait();
 
-                        if (userOverrideResponse != null) {
+                        if (responseAmendmentOpt.isPresent()) {
 
-                            userOverrideResponse.getResponseHeaders().entrySet().forEach(h ->
+                            final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
+
+                            responseAmendment.getResponseHeaders().entrySet().forEach(h ->
                                 response.header(h.getKey(), h.getValue()));
 
-                            response.type(userOverrideResponse.getContentType());
-                            response.status(userOverrideResponse.getStatus());
-                            response.body(userOverrideResponse.getBody());
-                            responseBody = userOverrideResponse.getBody();
+                            response.type(responseAmendment.getContentType());
+                            response.status(responseAmendment.getStatus());
+                            response.body(responseAmendment.getBody());
+
+                            responseBody = responseAmendment.getBody();
                         }
 
                     }
@@ -398,20 +401,23 @@ private LiveloggingUserOverrideResponse userOverrideResponse = null;
 
     }
 
-    public void releaseBlockedLiveLoggingResponse(final int status,
-                                                  final String contentType,
-                                                  final Map<String, String> responseHeaders,
-                                                  final String body) {
+    public void releaseBlockedLiveLoggingResponse(final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt) {
 
-        logger.debug("releasing blocked response...");
+        logger.debug("Releasing blocked response...");
 
-        synchronized (blockingMonitor) {
-            this.liveBlockActive = false;
-            userOverrideResponse = new LiveloggingUserOverrideResponse(status, contentType, responseHeaders, body);
-            blockingMonitor.notify();
+        synchronized (responseBlockingMonitor) {
+
+            if (this.responseLocked) {
+
+                this.responseLocked = false;
+                this.responseAmendmentOpt = responseAmendmentOpt;
+
+                responseBlockingMonitor.notify();
+
+            }
         }
 
-        logger.debug("block released");
+        logger.debug("...response released");
     }
 
     public void updateLiveBlockingMode(final boolean liveBlockEnabled) {

@@ -157,14 +157,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.inActiveStatus = globalVars.InActiveStatus;
 
     $scope.contentTypes = globalVars.ContentMimeTypes;
-
-    $scope.httpMethods = [
-        'GET',
-        'POST',
-        'PUT',
-        'DELETE',
-        'PATCH'
-    ];
+    $scope.httpMethods = globalVars.httpMethods;
 
     $scope.responseBodyLimit = 100;
 
