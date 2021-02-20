@@ -10,7 +10,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
     //
     // Labels
-    $scope.viewRequestsBlockedEndpointsHeading = 'HTTP Live Feed - Endpoints To Block';
+    $scope.viewRequestsBlockedEndpointsHeading = 'Endpoints To Intercept';
     $scope.noEndpointsDefinedLabel = 'No Endpoints Defined';
     $scope.endpointMethodLabel = 'Method';
     $scope.endpointPathLabel = 'Path';

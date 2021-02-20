@@ -43,6 +43,8 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.formatJsonLabel = 'Validate & Format JSON';
     $scope.formatXmlLabel = 'Validate & Format XML';
     $scope.releaseInterceptedResponseButton = 'Release Response';
+    $scope.manageLabel = 'manage';
+    $scope.blockedLabel = '(intercepted)';
 
 
     //
@@ -90,7 +92,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.search = '';
     $scope.selectedFeedData = null;
     $scope.responseInterceptorEnabled = false;
-    var endpointsToBlock = [];
+    $scope.endpointsToBlock = [];
 
 
     //
@@ -159,16 +161,16 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
             resolve: {
                 data: function () {
                     return {
-                        "endpoints" : endpointsToBlock
+                        "endpoints" : $scope.endpointsToBlock
                     };
                 }
             }
         });
 
         modalInstance.result.then(function (endpoints) {
-            endpointsToBlock = endpoints;
+            $scope.endpointsToBlock = endpoints;
         }, function (data) {
-            endpointsToBlock = endpoints;
+            $scope.endpointsToBlock = endpoints;
         });
 
     };

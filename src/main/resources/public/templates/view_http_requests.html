@@ -114,7 +114,7 @@
                                         <div class="col-sm-6">
 
                                             <span ng-if="selectedFeedData.amendedResponse != null">
-                                                <b class="activity-feed-details-subheader">{{ responseLabel }}</b>
+                                                <b class="activity-feed-details-subheader">{{ responseLabel }} {{ blockedLabel }}</b>
                                             </span>
 
                                             <span ng-if="selectedFeedData.amendedResponse == null">
@@ -254,7 +254,7 @@
                     <input type="checkbox" ng-checked="responseInterceptorEnabled" ng-click="doToggleResponseInterceptor()" />
                     Enable Response Interceptor
 
-                    <a ng-click="doManageBlockedEndpoints()" ng-if="responseInterceptorEnabled" class="manage-blocked-endpoints">(Manage Endpoints to Intercept)</a>
+                    <a ng-click="doManageBlockedEndpoints()" ng-if="responseInterceptorEnabled" class="manage-blocked-endpoints"> ({{ manageLabel }}<span ng-if="( endpointsToBlock.length - 1 ) > 0"> ({{ ( endpointsToBlock.length - 1 ) }})</span>) </a>
                 </span>
 
                 <div class="pull-right">
