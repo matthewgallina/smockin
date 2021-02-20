@@ -10,69 +10,42 @@
 
     <div class="form-group activity-feed-container" style="height: {{ (height - 225) }}px;">
 
-        <div class="row">
-            <div class="col-sm-6">
+        <div class="form-group">
 
-                <div class="form-group">
+            <div class="panel panel-default">
+                <div class="panel-body">
 
-                    <div class="panel panel-default">
-                        <div class="panel-body">
-
-                            <div class="no-endpoints" ng-show="endpoints.length == 0">
-                                {{ noEndpointsDefinedLabel }}
-                            </div>
-
-                            <table id="endpoints" class="table table-striped" ng-show="endpoints.length > 0">
-                                <thead>
-                                <tr>
-                                    <th>{{ endpointMethodLabel }}</th>
-                                    <th>{{ endpointPathLabel }}</th>
-                                    <th></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr ng-repeat="e in endpoints">
-                                    <td>
-                                        <input type="text" ng-model="e.method" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="mth for mth in httpMethods | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
-                                    </td>
-                                    <td>
-                                        <input type="text" ng-model="e.path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="e.id != null" />
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e.id)" ng-if="e.id != null">{{ removeEndpointRowButtonLabel }}</button>
-                                        <button type="button" class="btn btn-success" ng-click="doAddEndpointToBlock(e)" ng-if="e.id == null"> > </button>
-                                    </td>
-                                </tr>
-                                </tbody>
-                            </table>
-
-                        </div>
+                    <div class="no-endpoints" ng-show="endpoints.length == 0">
+                        {{ noEndpointsDefinedLabel }}
                     </div>
 
-                </div>
+                    <table id="endpoints" class="table table-striped" ng-show="endpoints.length > 0">
+                        <thead>
+                        <tr>
+                            <th>{{ endpointMethodLabel }}</th>
+                            <th>{{ endpointPathLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="e in endpoints">
+                            <td>
+                                <input type="text" ng-model="e.method" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="mth for mth in httpMethods | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
+                            </td>
+                            <td>
+                                <input type="text" ng-model="e.path" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="p for p in paths | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e.id)" ng-if="e.id != null">{{ removeEndpointRowButtonLabel }}</button>
+                                <button type="button" class="btn btn-success" ng-click="doAddEndpointToBlock(e)" ng-if="e.id == null"> > </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
 
+                </div>
             </div>
-            <div class="col-sm-6">
 
-                <div class="form-group">
-                    <label for="httpStatusCode" class="ng-binding"> Status </label>
-                    <input id="httpStatusCode" type="text" ng-model="responseData.status" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-disabled="!responseData.receivedResponse" />
-                </div>
-
-                <div class="form-group">
-                    <label for="contentType" class="ng-binding"> Content Type </label>
-                    <input id="contentType" type="text" ng-model="responseData.contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" ng-disabled="!responseData.receivedResponse" />
-                </div>
-
-                <a href ng-click="doFormatJson()" class="pull-right" ng-if="responseData.contentType == JsonContentType">{{ formatJsonLabel }}</a>
-                <a href ng-click="doFormatXml()" class="pull-right" ng-if="responseData.contentType == XmlContentType">{{ formatXmlLabel }}</a>
-                <textarea class="form-control ng-isolate-scope ng-pristine ng-valid" style="height: 230px;" ng-model="responseData.body" ng-disabled="!responseData.receivedResponse"></textarea>
-
-                <br />
-
-                <button type="button" class="btn btn-warning pull-right" ng-click="doReleaseBlockedLog()" ng-disabled="!responseData.receivedResponse"> {{ releaseInterceptedResponseButton }} </button>
-
-            </div>
         </div>
 
     </div>

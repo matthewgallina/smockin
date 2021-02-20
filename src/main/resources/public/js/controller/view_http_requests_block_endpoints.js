@@ -3,12 +3,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
     //
     // Constants / Vars
-    var wsSocket = data.wsSocket;
-    var LiveLoggingAmendment = 'LIVE_LOGGING_AMENDMENT';
-    var LiveLoggingAmendmentCancel = 'LIVE_LOGGING_AMENDMENT_CANCEL';
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
-    $scope.JsonContentType = globalVars.JsonContentType;
-    $scope.XmlContentType = globalVars.XmlContentType;
+    $scope.httpMethods = globalVars.httpMethods;
     $scope.httpMethods = globalVars.httpMethods;
 
 
@@ -18,18 +14,14 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
     $scope.noEndpointsDefinedLabel = 'No Endpoints Defined';
     $scope.endpointMethodLabel = 'Method';
     $scope.endpointPathLabel = 'Path';
-    $scope.formatJsonLabel = 'Validate & Format JSON';
-    $scope.formatXmlLabel = 'Validate & Format XML';
 
 
     //
     // Buttons
     $scope.addBlockingEndpointButtonLabel = 'Add';
     $scope.removeBlockingEndpointButtonLabel = 'Remove';
-    $scope.releaseBlockedResponseButtonLabel = 'Release';
     $scope.removeEndpointRowButtonLabel = 'X';
     $scope.closeButtonLabel = 'Close';
-    $scope.releaseInterceptedResponseButton = 'Release Response';
 
 
     //
@@ -63,64 +55,15 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
     //
     // Data Objects
-    $scope.endpoints = [];
-    $scope.httpMethods = globalVars.httpMethods;
-    $scope.contentTypes = globalVars.ContentMimeTypes;
-    $scope.responseData = {
-        "receivedResponse" : false,
-        "status" : null,
-        "contentType" : null,
-        "body" : null
-    };
+    $scope.endpoints = data.endpoints;
+    $scope.paths = [];
 
 
     //
     // Scoped Functions
     $scope.doClose = function() {
 
-        if ($scope.responseData.receivedResponse) {
-
-            var req = {
-                'type' : LiveLoggingAmendmentCancel,
-                'payload' : null
-            }
-
-            wsSocket.send(JSON.stringify(req));
-        }
-
-        $uibModalInstance.close();
-
-    };
-
-    $scope.doReleaseBlockedLog = function() {
-
-        $scope.closeAlert();
-
-        var req = {
-            'type' : LiveLoggingAmendment,
-            'payload' : {
-                'status' : $scope.responseData.status,
-                'contentType' : $scope.responseData.contentType,
-                'headers' : {
-//                    'Foo-Bar': 'yo yo'
-                },
-                'body' : $scope.responseData.body
-            }
-        };
-
-        if (wsSocket != null
-                && wsSocket.readyState == wsSocket.OPEN) {
-
-            wsSocket.send(JSON.stringify(req));
-
-            $scope.responseData.receivedResponse = false;
-            $scope.responseData.status = null;
-            $scope.responseData.contentType = null;
-            $scope.responseData.body = null;
-
-            showAlert("Response released", "success");
-        }
-
+        $uibModalInstance.close($scope.endpoints);
     };
 
     $scope.doAddEndpointToBlock = function(endpoint) {
@@ -157,8 +100,6 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
 
             endpoint.id = utils.generateUUID();
             doAddNewEndpointRow();
-
-            showAlert("Added endpoint: " + method + ' ' + path, "success");
         });
 
     };
@@ -180,51 +121,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
             }
 
             doRemoveNewEndpointRow(id);
-
-            showAlert("Removed endpoint: " + method + ' ' + path, "success");
         });
 
-    };
-
-    $scope.doFormatJson = function() {
-
-        $scope.closeAlert();
-
-        if ($scope.responseData.body == null) {
-            return;
-        }
-
-        var validationOutcome = utils.validateJson($scope.responseData.body);
-
-        if (validationOutcome != null) {
-            showAlert(validationOutcome);
-            return;
-        }
-
-        $scope.responseData.body = utils.formatJson($scope.responseData.body);
-    };
-
-    $scope.doFormatXml = function() {
-
-        $scope.closeAlert();
-
-        if ($scope.responseData.body == null) {
-            return;
-        }
-
-        var validationOutcome = utils.validateAndFormatXml($scope.responseData.body);
-
-        if (validationOutcome == null) {
-            showAlert("Unable to format XML. Invalid syntax");
-            return;
-        }
-
-        if (validationOutcome[0] == 'ERROR') {
-            showAlert("Unable to format XML: " + validationOutcome[1]);
-            return;
-        }
-
-        $scope.responseData.body = validationOutcome[1];
     };
 
 
@@ -248,27 +146,47 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, 
         }
     }
 
+    function loadPathData() {
+
+        $scope.paths = [];
+
+        restClient.doGet($http, '/restmock', function(status, data) {
+
+            if (status == 401) {
+                showAlert(globalVars.AuthRequiredMessage);
+                return;
+            } else if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            for (var d=0; d < data.length; d++) {
+                $scope.paths.push(data[d].path);
+            }
+
+        });
+
+    }
+
+    function initPage() {
+
+        if ($scope.endpoints.length == 0) {
+            doAddNewEndpointRow();
+        }
+
+        loadPathData();
+
+        //
+        // Change width of second modal
+        jQuery(function() {
+            jQuery('.modal-dialog').first().addClass("blocked-endpoints-modal");
+        });
+
+    }
+
+
     //
     // Init Page
-    doAddNewEndpointRow();
-
-
-    //
-    // Event Listener
-    $rootScope.$on("LIVE_LOG_BLOCKED_RESPONSE_PAYLOAD", function(evt, data) {
-
-        $scope.responseData.receivedResponse = true;
-        $scope.responseData.status = data.content.status;
-        $scope.responseData.body = data.content.body;
-        $scope.responseData.contentType = data.content.headers['Content-Type'];
-
-    });
-
-
-    //
-    // Change width of second modal
-    jQuery(function() {
-        jQuery('.modal-dialog').first().addClass("blocked-endpoints-modal");
-    });
+    initPage();
 
 });

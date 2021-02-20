@@ -7,11 +7,15 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var InitPageTimeoutMillis = 1500;
     var WebSocketHeartBeatMillis = 30000;
+    var LiveLoggingAmendment = 'LIVE_LOGGING_AMENDMENT';
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
     var EnableLiveLogBlocking = 'ENABLE_LIVE_LOG_BLOCKING';
     var DisableLiveLogBlocking = 'DISABLE_LIVE_LOG_BLOCKING';
     var ProxiedDownstreamUrlResponseHeader = 'X-Proxied-Downstream-Url';
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
+    $scope.contentTypes = globalVars.ContentMimeTypes;
     var LiveFeedUrl = "ws://"
         + location.host
         + "/liveLoggingFeed";
@@ -21,6 +25,9 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     // Labels
     $scope.viewRequestsHeading = 'HTTP Live Feed';
     $scope.noActivityData = 'Listening for activity...';
+
+    $scope.statusLabel = 'Status';
+    $scope.contentTypeLabel = 'Content Type';
     $scope.headersLabel = 'Headers';
     $scope.parametersLabel = 'Parameters';
     $scope.bodyLabel = 'Body';
@@ -33,6 +40,9 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.responseLabel = 'Response';
     $scope.httpResponseLabel = 'HTTP Response:';
     $scope.proxiedResponseOriginPrefix = 'Origin';
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
+    $scope.releaseInterceptedResponseButton = 'Release Response';
 
 
     //
@@ -80,6 +90,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.search = '';
     $scope.selectedFeedData = null;
     $scope.responseInterceptorEnabled = false;
+    var endpointsToBlock = [];
 
 
     //
@@ -148,18 +159,86 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
             resolve: {
                 data: function () {
                     return {
-                        "wsSocket" : wsSocket
+                        "endpoints" : endpointsToBlock
                     };
                 }
             }
         });
 
-        modalInstance.result.then(function (state) {
-
-        }, function () {
-
+        modalInstance.result.then(function (endpoints) {
+            endpointsToBlock = endpoints;
+        }, function (data) {
+            endpointsToBlock = endpoints;
         });
 
+    };
+
+    $scope.doReleaseBlockedLog = function() {
+
+        $scope.closeAlert();
+
+        var req = {
+            'type' : LiveLoggingAmendment,
+            'payload' : {
+                'traceId' : $scope.selectedFeedData.amendedResponse.traceId,
+                'status' : $scope.selectedFeedData.amendedResponse.status,
+                'contentType' : $scope.selectedFeedData.amendedResponse.contentType,
+                'headers' : {
+//                    'Foo-Bar': 'yo yo'
+                },
+                'body' : $scope.selectedFeedData.amendedResponse.body
+            }
+        };
+
+        if (wsSocket != null
+                && wsSocket.readyState == wsSocket.OPEN) {
+
+            wsSocket.send(JSON.stringify(req));
+
+            $scope.selectedFeedData.amendedResponse = null
+        }
+
+    };
+
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.selectedFeedData.amendedResponse.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.selectedFeedData.amendedResponse.body);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome);
+            return;
+        }
+
+        $scope.selectedFeedData.amendedResponse.body = utils.formatJson($scope.selectedFeedData.amendedResponse.body);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.selectedFeedData.amendedResponse.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.selectedFeedData.amendedResponse.body);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax");
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1]);
+            return;
+        }
+
+        $scope.selectedFeedData.amendedResponse.body = validationOutcome[1];
     };
 
 
@@ -273,7 +352,9 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
 
         if (inboundMsg.type == 'BLOCKED_RESPONSE') {
 
-            $rootScope.$broadcast("LIVE_LOG_BLOCKED_RESPONSE_PAYLOAD", inboundMsg.payload);
+            highlightBlockedRequest(inboundMsg.payload);
+
+//            $rootScope.$broadcast("LIVE_LOG_BLOCKED_RESPONSE_PAYLOAD", inboundMsg.payload);
 
         } else if (inboundMsg.type == 'TRAFFIC') {
 
@@ -303,6 +384,25 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
 
         $scope.activityFeed.push(data);
         $scope.$digest();
+    }
+
+    function highlightBlockedRequest(data) {
+
+        for (var i=0; i < $scope.activityFeed.length; i++) {
+            if ($scope.activityFeed[i].id == data.id) {
+
+                $scope.activityFeed[i].amendedResponse = {
+                    'traceId' : data.id,
+                    'status' : data.content.status,
+                    'body' : data.content.body,
+                    'contentType' : data.content.headers['Content-Type']
+                };
+
+                $scope.$digest();
+                break;
+            }
+        }
+
     }
 
     function appendResponse(resp) {

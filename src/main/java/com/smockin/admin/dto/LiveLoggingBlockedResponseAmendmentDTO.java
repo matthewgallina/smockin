@@ -9,6 +9,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class LiveLoggingBlockedResponseAmendmentDTO {
 
+    private String traceId;
     private int status;
     private String contentType;
     private Map<String, String> headers;

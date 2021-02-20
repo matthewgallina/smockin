@@ -31,7 +31,6 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     private static final String ENABLE_LIVE_LOG_BLOCKING = "ENABLE_LIVE_LOG_BLOCKING";
     private static final String DISABLE_LIVE_LOG_BLOCKING = "DISABLE_LIVE_LOG_BLOCKING";
     private static final String LIVE_LOGGING_AMENDMENT = "LIVE_LOGGING_AMENDMENT";
-    private static final String LIVE_LOGGING_AMENDMENT_CANCEL = "LIVE_LOGGING_AMENDMENT_CANCEL";
 
     private final AtomicReference<List<WebSocketSession>> liveSessionsRef = new AtomicReference<>(new ArrayList<>());
 
@@ -77,8 +76,8 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
             stopLiveBlockingMode();
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
             handleLiveLoggingAmendment(message);
-        } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT_CANCEL, type)) {
-            clearLiveBlockingMode();
+//        } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT_CANCEL, type)) {
+//            clearLiveBlockingMode();
         }
 
     }
@@ -105,14 +104,8 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
     private void stopLiveBlockingMode() {
 
-        clearLiveBlockingMode();
-        mockedRestServerEngine.updateLiveBlockingMode(false);
-    }
-
-    private void clearLiveBlockingMode() {
-
-        mockedRestServerEngine.releaseBlockedLiveLoggingResponse(Optional.empty());
         mockedRestServerEngine.clearAllPathsFromLiveBlocking();
+        mockedRestServerEngine.updateLiveBlockingMode(false);
     }
 
     private void handleLiveLoggingAmendment(final TextMessage message) {
@@ -125,6 +118,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
                 = (LiveLoggingBlockedResponseAmendmentDTO)liveLoggingAction.getPayload();
 
         mockedRestServerEngine.releaseBlockedLiveLoggingResponse(
+                amendmentDTO.getTraceId(),
                 Optional.of(new LiveloggingUserOverrideResponse(
                                 amendmentDTO.getStatus(),
                                 amendmentDTO.getContentType(),
