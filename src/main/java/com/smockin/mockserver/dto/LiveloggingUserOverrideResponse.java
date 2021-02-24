@@ -12,7 +12,6 @@ import java.util.Map;
 public class LiveloggingUserOverrideResponse {
 
     private int status;
-    private String contentType;
     private Map<String, String> responseHeaders;
     private String body;
 

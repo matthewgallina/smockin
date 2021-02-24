@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
-
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,10 +72,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     // Live logging response blocker
     // TODO find a smarter way to do this (i.e BlockingQueue...)
-    private Map<String, Optional<LiveloggingUserOverrideResponse>> responseAmendments = new HashMap<>();
     private final Object responseBlockingMonitor = new Object();
-//    private boolean responseLocked;
-//    private Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt = null;
+    private Map<String, Optional<LiveloggingUserOverrideResponse>> responseAmendments = new HashMap<>();
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
 
@@ -247,7 +244,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             }
 
             String responseBody = mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                    .orElseGet(() -> handleNotFoundResponse(response));
+                    .orElseGet(() ->
+                            handleNotFoundResponse(response));
 
             if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
 
@@ -260,31 +258,42 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         // Wait for response amendment for this request (by traceId)
                         responseBlockingMonitor.wait();
 
+                        final String traceId = request.attribute(GeneralUtils.LOG_REQ_ID);
+
                         // Release request if liveBlocking is disabled at any stage
                         if (!liveBlockingModeEnabled.get()) {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Releasing blocked request with traceId: " + traceId + " as blocking mode has been disabled");
+                            }
                             break;
                         }
 
-                        if (!responseAmendments.containsKey(request.attribute(GeneralUtils.LOG_REQ_ID))) {
+                        if (!responseAmendments.containsKey(traceId)) {
                             // No amendment found so continue waiting...
                             continue;
                         }
 
-                        if (logger.isDebugEnabled())
-                            logger.debug("releasing blocked request with traceId " + request.attribute(GeneralUtils.LOG_REQ_ID));
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Releasing blocked request with traceId: " + traceId + " as response provided");
+                        }
 
                         final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt
-                                = responseAmendments.get(request.attribute(GeneralUtils.LOG_REQ_ID));
+                                = responseAmendments.get(traceId);
 
                         // Could be no amendment is provided (in which case this request will default to the original response)
                         if (responseAmendmentOpt.isPresent()) {
 
                             final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
 
-                            responseAmendment.getResponseHeaders().entrySet().forEach(h ->
-                                response.header(h.getKey(), h.getValue()));
+                            if (!responseAmendment.getResponseHeaders().isEmpty()) {
+//                                response
+                            }
 
-                            response.type(responseAmendment.getContentType());
+                            responseAmendment.getResponseHeaders()
+                                    .entrySet()
+                                    .forEach(h ->
+                                        response.header(h.getKey(), h.getValue()));
+
                             response.status(responseAmendment.getStatus());
                             response.body(responseAmendment.getBody());
 
@@ -439,7 +448,17 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         if (logger.isDebugEnabled())
             logger.debug("Live blocking enabled: " + liveBlockEnabled);
 
-        this.liveBlockingModeEnabled.set(liveBlockEnabled);
+        liveBlockingModeEnabled.set(liveBlockEnabled);
+
+        if (!liveBlockingModeEnabled.get()) {
+
+            logger.debug("releasing all outstanding blocked requests...");
+
+            synchronized (responseBlockingMonitor) {
+                responseBlockingMonitor.notifyAll(); // release up all blocked threads.
+            }
+
+        }
     }
 
     public void addPathToLiveBlocking(final RestMethodEnum method,
@@ -462,8 +481,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     public void clearAllPathsFromLiveBlocking() {
 
-        if (logger.isDebugEnabled())
-            logger.debug("clearing down all blocking rules...");
+        logger.debug("clearing down all blocking rules...");
 
         liveBlockPathsRef.get().clear();
     }

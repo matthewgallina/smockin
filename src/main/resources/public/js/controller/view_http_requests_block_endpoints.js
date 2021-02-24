@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsBlockEndpointsController', function($rootScope, $scope, $http, $timeout, $uibModalInstance, utils, restClient, globalVars, data) {
+app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $http, $timeout, $uibModalInstance, utils, restClient, globalVars, data) {
 
     //
     // Constants / Vars

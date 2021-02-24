@@ -142,3 +142,7 @@
 .manage-blocked-endpoints {
     cursor: pointer;
 }
+
+.add-amended-response-header {
+    cursor: pointer;
+}

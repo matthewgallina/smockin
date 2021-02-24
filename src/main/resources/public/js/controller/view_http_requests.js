@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsController', function($rootScope, $scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
+app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
 
 
     //
@@ -16,6 +16,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.JsonContentType = globalVars.JsonContentType;
     $scope.XmlContentType = globalVars.XmlContentType;
     $scope.contentTypes = globalVars.ContentMimeTypes;
+    $scope.SmockinTraceIdHeader = 'X-Smockin-Trace-ID';
     var LiveFeedUrl = "ws://"
         + location.host
         + "/liveLoggingFeed";
@@ -27,7 +28,6 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.noActivityData = 'Listening for activity...';
 
     $scope.statusLabel = 'Status';
-    $scope.contentTypeLabel = 'Content Type';
     $scope.headersLabel = 'Headers';
     $scope.parametersLabel = 'Parameters';
     $scope.bodyLabel = 'Body';
@@ -45,6 +45,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     $scope.releaseInterceptedResponseButton = 'Release Response';
     $scope.manageLabel = 'manage';
     $scope.blockedLabel = '(intercepted)';
+    $scope.addHeaderLabel = '+ Add Header';
 
 
     //
@@ -116,7 +117,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
     };
 
     $scope.doViewFeedRow = function(f) {
-        if ($scope.selectedFeedData) {
+        if ($scope.selectedFeedData != null) {
             $scope.selectedFeedData.isSelected = false;
         }
         $scope.selectedFeedData = f;
@@ -184,10 +185,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
             'payload' : {
                 'traceId' : $scope.selectedFeedData.amendedResponse.traceId,
                 'status' : $scope.selectedFeedData.amendedResponse.status,
-                'contentType' : $scope.selectedFeedData.amendedResponse.contentType,
-                'headers' : {
-//                    'Foo-Bar': 'yo yo'
-                },
+                'headers' : convertKVPListToMap($scope.selectedFeedData.amendedResponse.headers),
                 'body' : $scope.selectedFeedData.amendedResponse.body
             }
         };
@@ -241,6 +239,25 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
         }
 
         $scope.selectedFeedData.amendedResponse.body = validationOutcome[1];
+    };
+
+    $scope.doAddAmendedHeaderRow = function() {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)
+                || utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].value)) {
+                showAlert("Please populate all current headers first");
+                return;
+            }
+        }
+
+        $scope.selectedFeedData
+            .amendedResponse
+            .headers.push({
+                 "key" : null,
+                 "value" : null
+             });
+
     };
 
 
@@ -354,9 +371,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
 
         if (inboundMsg.type == 'BLOCKED_RESPONSE') {
 
-            highlightBlockedRequest(inboundMsg.payload);
-
-//            $rootScope.$broadcast("LIVE_LOG_BLOCKED_RESPONSE_PAYLOAD", inboundMsg.payload);
+            amendActivityFeedWithBlockedResponse(inboundMsg.payload);
 
         } else if (inboundMsg.type == 'TRAFFIC') {
 
@@ -388,7 +403,7 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
         $scope.$digest();
     }
 
-    function highlightBlockedRequest(data) {
+    function amendActivityFeedWithBlockedResponse(data) {
 
         for (var i=0; i < $scope.activityFeed.length; i++) {
             if ($scope.activityFeed[i].id == data.id) {
@@ -397,14 +412,48 @@ app.controller('viewHttpRequestsController', function($rootScope, $scope, $http,
                     'traceId' : data.id,
                     'status' : data.content.status,
                     'body' : data.content.body,
-                    'contentType' : data.content.headers['Content-Type']
+                    'headers' : convertMapToKVPList(data.content.headers)
                 };
 
                 $scope.$digest();
+
                 break;
             }
         }
 
+    }
+
+    function convertKVPListToMap(headersKvpList) {
+
+        var headersMap = {};
+
+        if (headersKvpList == null || headersKvpList.length == 0) {
+            return headersMap;
+        }
+
+        for (var h=0; h < headersKvpList.length; h++) {
+            headersMap[headersKvpList[h].key] = headersKvpList[h].value;
+        }
+
+        return headersMap;
+    }
+
+    function convertMapToKVPList(headersMap) {
+
+        var headersList = [];
+
+        if (headersMap == null || headersMap.length == 0) {
+            return headersList;
+        }
+
+        for (var h in headersMap) {
+            headersList.push({
+                "key" : h,
+                "value" : headersMap[h]
+            });
+        }
+
+        return headersList;
     }
 
     function appendResponse(resp) {

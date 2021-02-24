@@ -7,7 +7,7 @@ import com.smockin.admin.dto.response.LiveLoggingDTO;
 import com.smockin.mockserver.dto.LiveloggingUserOverrideResponse;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
-import org.h2.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +60,10 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     protected void handleTextMessage(final WebSocketSession session,
                                      final TextMessage message) throws Exception {
 
+        if (message == null || StringUtils.isBlank(message.getPayload())) {
+            return;
+        }
+
         final LiveLoggingAction clientAction
                 = GeneralUtils.deserialiseJson(message.getPayload(), new TypeReference<LiveLoggingAction<?>>() {});
 
@@ -76,8 +79,6 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
             stopLiveBlockingMode();
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
             handleLiveLoggingAmendment(message);
-//        } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT_CANCEL, type)) {
-//            clearLiveBlockingMode();
         }
 
     }
@@ -121,7 +122,6 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
                 amendmentDTO.getTraceId(),
                 Optional.of(new LiveloggingUserOverrideResponse(
                                 amendmentDTO.getStatus(),
-                                amendmentDTO.getContentType(),
                                 amendmentDTO.getHeaders(),
                                 amendmentDTO.getBody())));
 

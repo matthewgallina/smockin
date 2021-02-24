@@ -154,17 +154,26 @@
 
                                             <span ng-if="selectedFeedData.amendedResponse != null">
 
-                                                    <b class="activity-feed-details-well-header"> {{ statusLabel }} </b>
-                                                    <br />
-                                                    <br />
-                                                    <input id="httpStatusCode" type="text" ng-model="selectedFeedData.amendedResponse.status" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                                <b class="activity-feed-details-well-header"> {{ statusLabel }} </b>
+                                                <br />
+                                                <br />
+                                                <input id="httpStatusCode" type="text" ng-model="selectedFeedData.amendedResponse.status" class="form-control ng-isolate-scope ng-pristine ng-valid" />
 
-                                                    <br />
+                                                <br />
 
-                                                    <b class="activity-feed-details-well-header"> {{ contentTypeLabel }} </b>
-                                                    <br />
-                                                    <br />
-                                                    <input id="contentType" type="text" ng-model="selectedFeedData.amendedResponse.contentType" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                                                <b class="activity-feed-details-well-header">{{ responseLabel }} {{ headersLabel }}</b>
+                                                <br />
+                                                <br />
+
+                                                <div ng-repeat="arh in selectedFeedData.amendedResponse.headers">
+                                                    <div class="form-inline">
+                                                        <input type="text" ng-model="arh.key" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader" />
+                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader && arh.key != 'Content-Type'" />
+                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key == 'Content-Type'" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                                                    </div>
+                                                </div>
+
+                                                <a ng-click="doAddAmendedHeaderRow()" class="add-amended-response-header">{{ addHeaderLabel }}</a>
 
                                             </span>
 
