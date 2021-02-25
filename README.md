@@ -150,10 +150,9 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 **New in version 2.11.0**
 
-Introducing Block, mock and Swap!
+- Introducing Block, mock and Swap!
 
-With a number of users discovering sMockin as a great way to monitor live dev traffic, you can now intercept and manipulate any requests proxied through the mock server
-using the live logging tool.
+With a number of users discovering sMockin as a great way to monitor live dev traffic, you can now intercept and manipulate on the fly, any requests via the live logging tool.
 
 Combined with the proxy server, this now gives developers and QA engineers, complete visibility and control over all HTTP traffic running between your applications.
 
