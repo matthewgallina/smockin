@@ -148,6 +148,19 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 <br />
 
+**New in version 2.11.0**
+
+Introducing Block, mock and Swap!
+
+With a number of users discovering sMockin as a great way to monitor live dev traffic, you can now intercept and manipulate any requests proxied through the mock server
+using the live logging tool.
+
+Combined with the proxy server, this now gives developers and QA engineers, complete visibility and control over all HTTP traffic running between your applications.
+
+<br />
+<br />
+
+
 **New in version 2.10.0**
 
 - The sMockin proxy server now supports multiple url destinations which can be mapped to specific paths.
@@ -308,4 +321,4 @@ sMockin is designed and actively maintained by Matthew Gallina.
 
 Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'.
 
-...and yes, far too much time and thought went into it.
+...and yes, far too much thought and time went into it.
