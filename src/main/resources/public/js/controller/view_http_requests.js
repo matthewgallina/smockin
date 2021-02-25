@@ -17,6 +17,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.XmlContentType = globalVars.XmlContentType;
     $scope.contentTypes = globalVars.ContentMimeTypes;
     $scope.SmockinTraceIdHeader = 'X-Smockin-Trace-ID';
+    var ContentTypeHeader = 'Content-Type';
     var LiveFeedUrl = "ws://"
         + location.host
         + "/liveLoggingFeed";
@@ -52,6 +53,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     // Buttons
     $scope.closeButtonLabel = 'Close';
     $scope.clearFeedButtonLabel = 'Clear List';
+    $scope.removeResponseHeaderRowButtonLabel = 'X';
 
 
     //
@@ -180,6 +182,22 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
         $scope.closeAlert();
 
+        if (!utils.isNumeric($scope.selectedFeedData.amendedResponse.status)) {
+            showAlert("Amended response status must be a numeric value");
+            return;
+        }
+
+        if (!validateAmendedResponseHeadersAreAllPopulated()) {
+            showAlert("Amended response headers are not all defined");
+            return;
+        }
+
+        if (doAmendedResponseHeadersContainDuplicates()) {
+            showAlert("You have duplicated response headers");
+            return;
+        }
+
+
         var req = {
             'type' : LiveLoggingAmendment,
             'payload' : {
@@ -243,12 +261,11 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
     $scope.doAddAmendedHeaderRow = function() {
 
-        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
-            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)
-                || utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].value)) {
-                showAlert("Please populate all current headers first");
-                return;
-            }
+        $scope.closeAlert();
+
+        if (!validateAmendedResponseHeadersAreAllPopulated()) {
+            showAlert("Please populate all current headers first");
+            return;
         }
 
         $scope.selectedFeedData
@@ -259,6 +276,26 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
              });
 
     };
+
+    $scope.extractContentTypeHeaderValue = function(headers) {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if ($scope.selectedFeedData.amendedResponse.headers[h].key == ContentTypeHeader) {
+                return $scope.selectedFeedData.amendedResponse.headers[h].value;
+            }
+        }
+
+    };
+
+    $scope.doAddRemoveResponseHeader = function(key) {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if ($scope.selectedFeedData.amendedResponse.headers[h].key == key) {
+                $scope.selectedFeedData.amendedResponse.headers.splice(h, 1);
+            }
+        }
+
+    }
 
 
     //
@@ -489,6 +526,36 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
             }
         }
 
+    }
+
+    function validateAmendedResponseHeadersAreAllPopulated() {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)
+                    || utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function doAmendedResponseHeadersContainDuplicates() {
+
+        var keys = [];
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+
+            var key = $scope.selectedFeedData.amendedResponse.headers[h].key;
+
+            if (keys.indexOf(key) > -1) {
+                return true;
+            }
+
+            keys.push(key);
+        }
+
+        return false;
     }
 
 

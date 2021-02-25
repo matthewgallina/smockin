@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 import spark.Spark;
+
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -286,13 +288,19 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                             final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
 
                             if (!responseAmendment.getResponseHeaders().isEmpty()) {
-//                                response
-                            }
 
-                            responseAmendment.getResponseHeaders()
+                                final HttpServletResponse httpServletResponse = response.raw();
+
+                                responseAmendment.getResponseHeaders()
                                     .entrySet()
-                                    .forEach(h ->
-                                        response.header(h.getKey(), h.getValue()));
+                                    .forEach(h -> {
+                                        if (httpServletResponse.containsHeader(h.getKey())) {
+                                            httpServletResponse.setHeader(h.getKey(), h.getValue());
+                                        } else {
+                                            httpServletResponse.addHeader(h.getKey(), h.getValue());
+                                        }
+                                    });
+                            }
 
                             response.status(responseAmendment.getStatus());
                             response.body(responseAmendment.getBody());

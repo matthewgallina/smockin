@@ -167,13 +167,16 @@
 
                                                 <div ng-repeat="arh in selectedFeedData.amendedResponse.headers">
                                                     <div class="form-inline">
-                                                        <input type="text" ng-model="arh.key" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader" />
-                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader && arh.key != 'Content-Type'" />
-                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key == 'Content-Type'" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                                                        <input type="text" ng-model="arh.key" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader" style="width: 40%;" />
+                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader && arh.key != 'Content-Type'" style="width: 50%;" />
+                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key == 'Content-Type'" style="width: 50%;" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                                                        <button class="btn btn-warning" ng-click="doAddRemoveResponseHeader(arh.key)" ng-if="arh.key != SmockinTraceIdHeader"> {{ removeResponseHeaderRowButtonLabel }} </button>
                                                     </div>
                                                 </div>
 
-                                                <a ng-click="doAddAmendedHeaderRow()" class="add-amended-response-header">{{ addHeaderLabel }}</a>
+                                                <div class="add-amended-response-header-div">
+                                                    <a ng-click="doAddAmendedHeaderRow()" class="add-amended-response-header">{{ addHeaderLabel }}</a>
+                                                </div>
 
                                             </span>
 
@@ -216,8 +219,8 @@
 
                                             <span ng-if="selectedFeedData.amendedResponse != null">
 
-                                                <a href ng-click="doFormatJson()" class="pull-right" ng-if="selectedFeedData.amendedResponse.contentType == JsonContentType">{{ formatJsonLabel }}</a>
-                                                <a href ng-click="doFormatXml()" class="pull-right" ng-if="selectedFeedData.amendedResponse.contentType == XmlContentType">{{ formatXmlLabel }}</a>
+                                                <a href ng-click="doFormatJson()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == JsonContentType">{{ formatJsonLabel }}</a>
+                                                <a href ng-click="doFormatXml()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == XmlContentType">{{ formatXmlLabel }}</a>
                                                 <textarea class="form-control ng-isolate-scope ng-pristine ng-valid" style="height: 230px;" ng-model="selectedFeedData.amendedResponse.body"></textarea>
 
                                                 <br />

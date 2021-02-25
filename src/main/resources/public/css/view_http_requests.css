@@ -143,6 +143,11 @@
     cursor: pointer;
 }
 
+.add-amended-response-header-div {
+    width: 96%;
+    text-align: right;
+}
+
 .add-amended-response-header {
     cursor: pointer;
 }
