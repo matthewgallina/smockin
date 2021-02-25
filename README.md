@@ -304,8 +304,8 @@ You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id..
 
 ### ABOUT
 
-sMockin is designed and actively maintained by MG Tech Software Ltd.
+sMockin is designed and actively maintained by Matthew Gallina.
 
-Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra letter to play on the concept of software mocking and there you have it. 
+Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'.
 
-Yes, way too much thought went into that...
+...and yes, far too much time and thought went into it.
