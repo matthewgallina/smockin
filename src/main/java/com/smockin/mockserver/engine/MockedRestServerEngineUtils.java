@@ -160,6 +160,7 @@ public class MockedRestServerEngineUtils {
                 proxyDownstreamURL = lookUpDefaultProxyMappingDownstreamUrl(proxyForwardConfig.getProxyForwardMappings());
             }
 
+            // ACTIVE Mode...
             if (ProxyModeTypeEnum.ACTIVE.equals(proxyForwardConfig.getProxyModeType())) {
 
                 // Look for mock...
@@ -177,7 +178,6 @@ public class MockedRestServerEngineUtils {
             }
 
             // Default to REACTIVE mode...
-
             final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(request, proxyDownstreamURL);
 
             if (!httpClientResponse.isPresent()) {
@@ -235,7 +235,13 @@ public class MockedRestServerEngineUtils {
         host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
         httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
 
-        return Optional.of(httpClientService.handleExternalCall(httpClientCallDTO));
+        try {
+            return Optional.of(httpClientService.handleExternalCall(httpClientCallDTO));
+        } catch (Throwable ex) {
+            logger.error("Error making proxy downstream call: " + ex.getMessage());
+            return Optional.empty();
+        }
+
     }
 
     Optional<String> handleClientDownstreamProxyCallResponse(final Optional<HttpClientResponseDTO> httpClientResponseOpt,
@@ -256,10 +262,7 @@ public class MockedRestServerEngineUtils {
         response.type(httpClientResponse.getContentType());
         response.body(httpClientResponse.getBody());
 
-        httpClientResponse.getHeaders()
-                .entrySet()
-                .forEach(e ->
-                        response.header(e.getKey(), e.getValue()));
+        applyHeadersToResponse(httpClientResponse.getHeaders(), response);
 
         response.header(GeneralUtils.PROXIED_DOWNSTREAM_URL_HEADER, proxyDownstreamURL);
 
@@ -308,10 +311,7 @@ public class MockedRestServerEngineUtils {
         res.type(outcome.getResponseContentType());
 
         // Apply any response headers
-        outcome.getHeaders()
-                .entrySet()
-                .forEach(e ->
-                            res.header(e.getKey(), e.getValue()));
+        applyHeadersToResponse(outcome.getHeaders(), res);
 
         String response;
 
@@ -430,6 +430,24 @@ public class MockedRestServerEngineUtils {
                         p.getProxyForwardUrl())
                 .findFirst()
                 .orElse(null);
+    }
+
+    void applyHeadersToResponse(final Map<String, String> headers,
+                              final Response response) {
+
+        headers.entrySet()
+            .forEach(e ->
+                response.header(e.getKey(), e.getValue()));
+
+    }
+
+    Map<String, String> extractResponseHeadersAsMap(final Response response) {
+
+        return response
+                .raw()
+                .getHeaderNames()
+                .stream()
+                .collect(Collectors.toMap(h -> h, h -> response.raw().getHeader(h)));
     }
 
     private void debugInboundRequest(final Request request) {

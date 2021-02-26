@@ -41,7 +41,7 @@
                     <div class="panel-body">
 
                         <div class="no-request-headers" ng-show="clientRequest.headers.length == 0">
-                            No Headers Defined
+                            {{ noHeadersDefinedLabel }}
                         </div>
 
                         <table id="request-headers" class="table table-striped" ng-show="clientRequest.headers.length > 0">

@@ -19,6 +19,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
     $scope.removeRequestHeaderButtonLabel = 'X';
     $scope.addRequestHeaderButtonLabel = 'New Row';
     $scope.clientResponseLabel = "Response";
+    $scope.noHeadersDefinedLabel = "No Headers Defined";
 
 
     //
@@ -53,13 +54,7 @@ app.controller('httpClientController', function($scope, $location, $http, $timeo
 
     //
     // Data Objects
-    $scope.httpMethods = [
-        'GET',
-        'POST',
-        'PUT',
-        'DELETE',
-        'PATCH'
-    ];
+    $scope.httpMethods = globalVars.httpMethods;
 
     $scope.clientRequest = {
         "url" : null,

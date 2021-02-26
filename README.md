@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.10.0
+  version 2.11.0
 </p>
 
 <br />
@@ -149,6 +149,18 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 ### RECENT RELEASE CHANGES
 
 <br />
+
+**New in version 2.11.0**
+
+- Introducing Block, mock and Swap!
+
+With a number of users discovering sMockin as a great way to monitor live dev traffic, you can now intercept and manipulate on the fly, any requests via the live logging tool.
+
+Combined with the proxy server, this now gives developers and QA engineers, complete visibility and control over all HTTP traffic running between your applications.
+
+<br />
+<br />
+
 
 **New in version 2.10.0**
 
@@ -306,8 +318,8 @@ You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id..
 
 ### ABOUT
 
-sMockin is designed and actively maintained by MG Tech Software Ltd.
+sMockin is designed and actively maintained by Matthew Gallina.
 
-Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'. We then added the extra letter to play on the concept of software mocking and there you have it. 
+Why the name sMockin? Whilst it may sound like an old english middle ages embroidery technique, the name actually came about more in relation to a classic Jim Carey movie quote 'Smokin'.
 
-Yes, way too much thought went into that...
+...and yes, far too much thought and time went into it.

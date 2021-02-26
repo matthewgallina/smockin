@@ -99,6 +99,10 @@
     font-size: 20px;
 }
 
+#release-blocked-response-button {
+    width: 100%;
+}
+
 @media only screen and (min-width: 767px) {
 
     .row.display-flex {
@@ -126,8 +130,24 @@
     background-color: #b2dba1;
 }
 
+.request-blocked {
+    background-color: #ff6666;
+}
+
 .selected-request {
     border: 2px solid;
     box-shadow: 3px 3px 3px 3px #888888;
 }
 
+.manage-blocked-endpoints {
+    cursor: pointer;
+}
+
+.add-amended-response-header-div {
+    width: 96%;
+    text-align: right;
+}
+
+.add-amended-response-header {
+    cursor: pointer;
+}

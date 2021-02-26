@@ -1,0 +1,57 @@
+<link rel="stylesheet" href="../css/view_http_requests_block_endpoints.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ viewRequestsBlockedEndpointsHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body" window-dimensions-directive style="height: {{ (height - 200) }}px;">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <div class="form-group activity-feed-container" style="height: {{ (height - 225) }}px;">
+
+        <div class="form-group">
+
+            <div class="panel panel-default">
+                <div class="panel-body">
+
+                    <div class="no-endpoints" ng-show="endpoints.length == 0">
+                        {{ noEndpointsDefinedLabel }}
+                    </div>
+
+                    <table id="endpoints" class="table table-striped" ng-show="endpoints.length > 0">
+                        <thead>
+                        <tr>
+                            <th>{{ endpointMethodLabel }}</th>
+                            <th>{{ endpointPathLabel }}</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="e in endpoints">
+                            <td>
+                                <input type="text" ng-model="e.method" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="mth for mth in httpMethods | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
+                            </td>
+                            <td>
+                                <input type="text" ng-model="e.path" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="p for p in paths | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e.id)" ng-if="e.id != null">{{ removeEndpointRowButtonLabel }}</button>
+                                <button type="button" class="btn btn-success" ng-click="doAddEndpointToBlock(e)" ng-if="e.id == null"> > </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

@@ -438,7 +438,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     };
 
-    function loadTableData(showAll) {
+    function loadTableData() {
 
         allRestServices = [];
         $scope.restServices = [];
@@ -586,7 +586,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Init page
-    loadTableData(false);
+    loadTableData();
     loadTcpServerStatus();
 
 });

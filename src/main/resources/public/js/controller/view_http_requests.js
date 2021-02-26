@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsController', function($scope, $location, $timeout, $uibModal, $uibModalInstance, utils, globalVars) {
+app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
 
 
     //
@@ -7,9 +7,17 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var InitPageTimeoutMillis = 1500;
     var WebSocketHeartBeatMillis = 30000;
+    var LiveLoggingAmendment = 'LIVE_LOGGING_AMENDMENT';
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
+    var EnableLiveLogBlocking = 'ENABLE_LIVE_LOG_BLOCKING';
+    var DisableLiveLogBlocking = 'DISABLE_LIVE_LOG_BLOCKING';
     var ProxiedDownstreamUrlResponseHeader = 'X-Proxied-Downstream-Url';
+    $scope.JsonContentType = globalVars.JsonContentType;
+    $scope.XmlContentType = globalVars.XmlContentType;
+    $scope.contentTypes = globalVars.ContentMimeTypes;
+    $scope.SmockinTraceIdHeader = 'X-Smockin-Trace-ID';
+    var ContentTypeHeader = 'Content-Type';
     var LiveFeedUrl = "ws://"
         + location.host
         + "/liveLoggingFeed";
@@ -19,6 +27,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     // Labels
     $scope.viewRequestsHeading = 'HTTP Live Feed';
     $scope.noActivityData = 'Listening for activity...';
+
+    $scope.statusLabel = 'Status';
     $scope.headersLabel = 'Headers';
     $scope.parametersLabel = 'Parameters';
     $scope.bodyLabel = 'Body';
@@ -31,12 +41,19 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.responseLabel = 'Response';
     $scope.httpResponseLabel = 'HTTP Response:';
     $scope.proxiedResponseOriginPrefix = 'Origin';
+    $scope.formatJsonLabel = 'Validate & Format JSON';
+    $scope.formatXmlLabel = 'Validate & Format XML';
+    $scope.releaseInterceptedResponseButton = 'Release Response';
+    $scope.manageLabel = 'manage';
+    $scope.blockedLabel = '(intercepted)';
+    $scope.addHeaderLabel = '+ Add Header';
 
 
     //
     // Buttons
     $scope.closeButtonLabel = 'Close';
-    $scope.clearFeedButtonLabel = "Clear List";
+    $scope.clearFeedButtonLabel = 'Clear List';
+    $scope.removeResponseHeaderRowButtonLabel = 'X';
 
 
     //
@@ -77,6 +94,8 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     $scope.sortReverse = false;
     $scope.search = '';
     $scope.selectedFeedData = null;
+    $scope.responseInterceptorEnabled = false;
+    $scope.endpointsToBlock = [];
 
 
     //
@@ -100,7 +119,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     };
 
     $scope.doViewFeedRow = function(f) {
-        if ($scope.selectedFeedData) {
+        if ($scope.selectedFeedData != null) {
             $scope.selectedFeedData.isSelected = false;
         }
         $scope.selectedFeedData = f;
@@ -116,6 +135,168 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         doTerminate();
         $uibModalInstance.close();
     };
+
+    $scope.doToggleResponseInterceptor = function() {
+
+        $scope.responseInterceptorEnabled = !$scope.responseInterceptorEnabled;
+
+        if (wsSocket != null
+                && wsSocket.readyState == wsSocket.OPEN) {
+
+            var payload = {
+                'type' : ($scope.responseInterceptorEnabled)
+                             ? EnableLiveLogBlocking
+                             : DisableLiveLogBlocking
+            };
+
+            wsSocket.send(JSON.stringify(payload));
+        }
+
+    };
+
+    $scope.doManageBlockedEndpoints = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'view_http_requests_block_endpoints.html',
+            controller: 'viewHttpRequestsBlockEndpointsController',
+            backdrop  : 'static',
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return {
+                        "endpoints" : $scope.endpointsToBlock
+                    };
+                }
+            }
+        });
+
+        modalInstance.result.then(function (endpoints) {
+            $scope.endpointsToBlock = endpoints;
+        }, function (data) {
+            $scope.endpointsToBlock = endpoints;
+        });
+
+    };
+
+    $scope.doReleaseBlockedLog = function() {
+
+        $scope.closeAlert();
+
+        if (!utils.isNumeric($scope.selectedFeedData.amendedResponse.status)) {
+            showAlert("Amended response status must be a numeric value");
+            return;
+        }
+
+        if (!validateAmendedResponseHeadersAreAllPopulated()) {
+            showAlert("Amended response headers are not all defined");
+            return;
+        }
+
+        if (doAmendedResponseHeadersContainDuplicates()) {
+            showAlert("You have duplicated response headers");
+            return;
+        }
+
+
+        var req = {
+            'type' : LiveLoggingAmendment,
+            'payload' : {
+                'traceId' : $scope.selectedFeedData.amendedResponse.traceId,
+                'status' : $scope.selectedFeedData.amendedResponse.status,
+                'headers' : convertKVPListToMap($scope.selectedFeedData.amendedResponse.headers),
+                'body' : $scope.selectedFeedData.amendedResponse.body
+            }
+        };
+
+        if (wsSocket != null
+                && wsSocket.readyState == wsSocket.OPEN) {
+
+            wsSocket.send(JSON.stringify(req));
+
+            $scope.selectedFeedData.amendedResponse = null
+        }
+
+    };
+
+    $scope.doFormatJson = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.selectedFeedData.amendedResponse.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateJson($scope.selectedFeedData.amendedResponse.body);
+
+        if (validationOutcome != null) {
+            showAlert(validationOutcome);
+            return;
+        }
+
+        $scope.selectedFeedData.amendedResponse.body = utils.formatJson($scope.selectedFeedData.amendedResponse.body);
+    };
+
+    $scope.doFormatXml = function() {
+
+        $scope.closeAlert();
+
+        if ($scope.selectedFeedData.amendedResponse.body == null) {
+            return;
+        }
+
+        var validationOutcome = utils.validateAndFormatXml($scope.selectedFeedData.amendedResponse.body);
+
+        if (validationOutcome == null) {
+            showAlert("Unable to format XML. Invalid syntax");
+            return;
+        }
+
+        if (validationOutcome[0] == 'ERROR') {
+            showAlert("Unable to format XML: " + validationOutcome[1]);
+            return;
+        }
+
+        $scope.selectedFeedData.amendedResponse.body = validationOutcome[1];
+    };
+
+    $scope.doAddAmendedHeaderRow = function() {
+
+        $scope.closeAlert();
+
+        if (!validateAmendedResponseHeadersAreAllPopulated()) {
+            showAlert("Please populate all current headers first");
+            return;
+        }
+
+        $scope.selectedFeedData
+            .amendedResponse
+            .headers.push({
+                 "key" : null,
+                 "value" : null
+             });
+
+    };
+
+    $scope.extractContentTypeHeaderValue = function(headers) {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if ($scope.selectedFeedData.amendedResponse.headers[h].key == ContentTypeHeader) {
+                return $scope.selectedFeedData.amendedResponse.headers[h].value;
+            }
+        }
+
+    };
+
+    $scope.doAddRemoveResponseHeader = function(key) {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if ($scope.selectedFeedData.amendedResponse.headers[h].key == key) {
+                $scope.selectedFeedData.amendedResponse.headers.splice(h, 1);
+            }
+        }
+
+    }
+
 
     //
     // Internal Functions
@@ -158,6 +339,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function doTerminate() {
 
         if (wsSocket != null) {
+
             wsSocket.close();
             wsSocket = null;
         }
@@ -167,6 +349,7 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
     function applyWSListeners() {
 
        wsSocket.onopen = function (event) {
+
             $scope.doClearFeed();
             $scope.noActivityData = 'Listening for activity...';
             $scope.wsEstablished = true;
@@ -176,17 +359,21 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         };
 
         wsSocket.onmessage = function (event) {
+
             handleResponseMsg(JSON.parse(event.data));
         };
 
         wsSocket.onerror = function (event) {
+
             showAlert("Unable to establish connection to " + LiveFeedUrl);
+
             wsSocket = null;
             $scope.wsEstablished = false;
             $scope.$digest();
         };
 
         wsSocket.onclose = function (event) {
+
             wsSocket = null;
             $scope.wsEstablished = false;
             $scope.$digest();
@@ -217,12 +404,22 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
         }
     }
 
-    function handleResponseMsg(liveLog) {
+    function handleResponseMsg(inboundMsg) {
 
-        if (liveLog.direction == RequestDirectionValue) {
-            buildInitialRequest(liveLog);
-        } else if (liveLog.direction == ResponseDirectionValue) {
-            appendResponse(liveLog);
+        if (inboundMsg.type == 'BLOCKED_RESPONSE') {
+
+            amendActivityFeedWithBlockedResponse(inboundMsg.payload);
+
+        } else if (inboundMsg.type == 'TRAFFIC') {
+
+            var liveLog = inboundMsg.payload;
+
+            if (liveLog.direction == RequestDirectionValue) {
+                buildInitialRequest(liveLog);
+            } else if (liveLog.direction == ResponseDirectionValue) {
+                appendResponse(liveLog);
+            }
+
         }
 
     }
@@ -241,6 +438,59 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
 
         $scope.activityFeed.push(data);
         $scope.$digest();
+    }
+
+    function amendActivityFeedWithBlockedResponse(data) {
+
+        for (var i=0; i < $scope.activityFeed.length; i++) {
+            if ($scope.activityFeed[i].id == data.id) {
+
+                $scope.activityFeed[i].amendedResponse = {
+                    'traceId' : data.id,
+                    'status' : data.content.status,
+                    'body' : data.content.body,
+                    'headers' : convertMapToKVPList(data.content.headers)
+                };
+
+                $scope.$digest();
+
+                break;
+            }
+        }
+
+    }
+
+    function convertKVPListToMap(headersKvpList) {
+
+        var headersMap = {};
+
+        if (headersKvpList == null || headersKvpList.length == 0) {
+            return headersMap;
+        }
+
+        for (var h=0; h < headersKvpList.length; h++) {
+            headersMap[headersKvpList[h].key] = headersKvpList[h].value;
+        }
+
+        return headersMap;
+    }
+
+    function convertMapToKVPList(headersMap) {
+
+        var headersList = [];
+
+        if (headersMap == null || headersMap.length == 0) {
+            return headersList;
+        }
+
+        for (var h in headersMap) {
+            headersList.push({
+                "key" : h,
+                "value" : headersMap[h]
+            });
+        }
+
+        return headersList;
     }
 
     function appendResponse(resp) {
@@ -276,6 +526,36 @@ app.controller('viewHttpRequestsController', function($scope, $location, $timeou
             }
         }
 
+    }
+
+    function validateAmendedResponseHeadersAreAllPopulated() {
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)
+                    || utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    function doAmendedResponseHeadersContainDuplicates() {
+
+        var keys = [];
+
+        for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
+
+            var key = $scope.selectedFeedData.amendedResponse.headers[h].key;
+
+            if (keys.indexOf(key) > -1) {
+                return true;
+            }
+
+            keys.push(key);
+        }
+
+        return false;
     }
 
 

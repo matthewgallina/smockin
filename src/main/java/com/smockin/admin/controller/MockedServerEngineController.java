@@ -1,5 +1,6 @@
 package com.smockin.admin.controller;
 
+import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -107,6 +108,41 @@ public class MockedServerEngineController {
         final ServerTypeEnum type = convertServerType(serverType);
 
         mockedServerEngineService.saveProxyForwardMappings(type, proxyForwardConfig, GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/live-logging-block/endpoint",
+            method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE,
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> addLiveLoggingPathToBlock(@PathVariable("serverType") final String serverType,
+                                                                     @RequestBody final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
+                                                                     @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws AuthException {
+
+        mockedServerEngineService.addLiveLoggingPathToBlock(
+                liveLoggingBlockingEndpoint,
+                GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/live-logging-block/endpoint",
+            method = RequestMethod.DELETE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> removeLiveLoggingPathToBlock(@PathVariable("serverType") final String serverType,
+                                                                        @RequestParam("method") final String method,
+                                                                        @RequestParam("path") final String path,
+                                                                        @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws AuthException {
+
+        mockedServerEngineService.removeLiveLoggingPathToBlock(
+                method,
+                path,
+                GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
