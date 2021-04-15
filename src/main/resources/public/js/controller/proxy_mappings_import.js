@@ -10,8 +10,8 @@ app.controller('proxyMappingsImportController', function($scope, $uibModalInstan
 
     //
     // Labels
-    $scope.importHeading = 'Proxy Mappings Import';
-    $scope.selectFileLabel = 'Select sMockin proxy mappings file...';
+    $scope.importHeading = 'Path to URL Mappings - Import Manager';
+    $scope.selectFileLabel = 'Select mappings file...';
     $scope.keepExistingLabel = "Keep Existing Mappings";
 
 

@@ -34,6 +34,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     $scope.proxyForwardUrlPlaceholderTxt = 'Enter a downstream url...' + $scope.proxyForwardPlaceholderTxt;;
     $scope.removeMappingRowButtonLabel = 'X';
     $scope.addMappingRowButtonLabel = 'New Row';
+    $scope.importLabel = 'Import';
+    $scope.exportLabel = 'Export';
 
 
     //
@@ -210,9 +212,23 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                     && response.uploadCompleted != null
                     && response.uploadCompleted) {
 
-                $uibModalInstance.close({
-                    "restartReq" : true
+                utils.checkRestServerStatus(function(running, port) {
+
+                    if (running != null && running) {
+
+                        $uibModalInstance.close({
+                            "restartReq" : true
+                        });
+
+                    } else {
+
+                        showAlert("Proxy Path to URL mappings updated", "success");
+                        loadProxyConfig();
+                    }
+
                 });
+
+
 
             }
 
@@ -227,7 +243,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
             return;
         }
 
-        utils.openWarningConfirmation("Are you sure you wish to export your proxy settings?", function (alertResponse) {
+        utils.openWarningConfirmation("Export all Path to URL mappings?", function (alertResponse) {
 
             if (alertResponse) {
 

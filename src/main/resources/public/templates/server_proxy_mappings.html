@@ -40,7 +40,7 @@
         <div class="form-group" ng-if="proxyMappingConfig.proxyMode">
 
 
-            <label for="pathUrlMappings" class="ng-binding default-label-color">{{ pathUrlMappingsLabel }} ( <a href ng-click="doImportProxyMappings()">Import</a><span ng-if="proxyMappingConfig.proxyForwardMappings.length > 0"> | <a href ng-click="doExportProxyMappings()">Export</a></span> )</label>
+            <label for="pathUrlMappings" class="ng-binding default-label-color">{{ pathUrlMappingsLabel }} ( <a href ng-click="doImportProxyMappings()">{{ importLabel }}</a><span ng-if="proxyMappingConfig.proxyForwardMappings.length > 0"> | <a href ng-click="doExportProxyMappings()">{{ exportLabel }}</a></span> )</label>
 
             <span class="pull-right">
                 <input id="useDefaultForwardingUrl"  ng-model="proxyMappingConfig.defaultProxyForwardRow" type="checkbox" ng-change="doToggleDefaultProxyForwardRow()" />
