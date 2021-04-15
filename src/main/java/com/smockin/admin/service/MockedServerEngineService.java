@@ -43,7 +43,7 @@ public interface MockedServerEngineService {
     Optional<String> exportProxyMappings(final String token)
             throws AuthException;
 
-    String importFile(final MultipartFile file, final boolean keepExisting, final String token)
+    String importProxyMappingsFile(final MultipartFile file, final boolean keepExisting, final String token)
             throws MockImportException, AuthException, ValidationException;
 
 }

@@ -200,8 +200,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     $scope.doImportProxyMappings = function() {
 
         var modalInstance = $uibModal.open({
-            templateUrl: 'proxy_mappings_import.html',
-            controller: 'proxyMappingsImportController',
+            templateUrl: 'server_proxy_mappings_import.html',
+            controller: 'serverProxyMappingsImportController',
             backdrop  : 'static',
             keyboard  : false
         });

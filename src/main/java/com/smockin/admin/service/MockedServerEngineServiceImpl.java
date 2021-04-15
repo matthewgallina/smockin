@@ -311,7 +311,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public String importFile(final MultipartFile file, final boolean keepExisting, final String token)
+    public String importProxyMappingsFile(final MultipartFile file, final boolean keepExisting, final String token)
             throws MockImportException, AuthException, ValidationException {
 
         smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));

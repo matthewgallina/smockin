@@ -139,7 +139,7 @@ public class MockedServerEngineController {
                                                                                     @RequestParam("file") final MultipartFile file)
             throws MockImportException, AuthException, ValidationException {
 
-            mockedServerEngineService.importFile(file, keepExisting, GeneralUtils.extractOAuthToken(bearerToken));
+            mockedServerEngineService.importProxyMappingsFile(file, keepExisting, GeneralUtils.extractOAuthToken(bearerToken));
 
             return ResponseEntity.noContent().build();
     }

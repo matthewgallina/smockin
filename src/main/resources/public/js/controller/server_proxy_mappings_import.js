@@ -1,5 +1,5 @@
 
-app.controller('proxyMappingsImportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient) {
+app.controller('serverProxyMappingsImportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient) {
 
 
     //
