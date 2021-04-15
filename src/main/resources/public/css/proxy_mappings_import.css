@@ -1,0 +1,27 @@
+
+.modal-header {
+    padding: 12px;
+    color: #fff;
+    border-radius: 4px;
+    background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
+}
+
+.proxy-mappings-import-endpoint-modal {
+    width: 30% !important;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.upload-button {
+    width: 100%;
+}
+
+.upload-select-file-button {
+    border: 1px solid #ccc;
+    display: inline-block;
+    padding: 6px 12px;
+    width: 100%;
+    cursor: pointer;
+}

@@ -183,7 +183,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                         return;
                     }
 
-                    handleExportDownload(data);
+                    utils.handleExportDownload(data, "smockin_export_" + $scope.mockSelection.length + "_mocks.zip", "application/zip");
                     $scope.mockSelection = [];
 
                 });
@@ -382,28 +382,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     //
     // Internal Functions
-    function handleExportDownload(exportData) {
-
-        var mockExportCount = $scope.mockSelection.length;
-        var iFrame = jQuery('#export-download-frame');
-        var iFrameDoc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
-
-        var a = iFrameDoc.createElement('a');
-        a.download = "smockin_export_" + mockExportCount + "_mocks.zip";
-        a.text = "";
-        a.href = "data:application/zip;base64," + exportData;
-
-        iFrame.contents().find("body").append(a);
-        iFrameDoc.close();
-
-        iFrame.contents().find("body").append(a);
-
-        var clickEvent = iFrameDoc.createEvent("MouseEvent");
-        clickEvent.initEvent("click", true, true);
-        a.dispatchEvent(clickEvent);
-
-    }
-
     function doToggleAccordion(isOpen) {
 
         for (var rs=0; rs < $scope.restServices.length; rs++) {

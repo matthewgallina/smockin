@@ -81,7 +81,6 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     @Override
     public String export(final List<String> selectedExports, final String token)
             throws MockExportException, RecordNotFoundException {
-        logger.debug("export called");
 
         final String exportContent = loadHTTPExportContent(selectedExports, token);
 

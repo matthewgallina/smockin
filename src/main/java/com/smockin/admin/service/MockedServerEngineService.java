@@ -2,6 +2,7 @@ package com.smockin.admin.service;
 
 import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
 import com.smockin.admin.exception.AuthException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -9,6 +10,9 @@ import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -35,5 +39,11 @@ public interface MockedServerEngineService {
     void removeLiveLoggingPathToBlock(final String method,
                                       final String path,
                                       final String token) throws AuthException;
+
+    Optional<String> exportProxyMappings(final String token)
+            throws AuthException;
+
+    String importFile(final MultipartFile file, final boolean keepExisting, final String token)
+            throws MockImportException, AuthException, ValidationException;
 
 }

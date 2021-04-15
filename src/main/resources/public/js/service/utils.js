@@ -70,6 +70,27 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
         return [ 'OK', beautifiedXmlText ];
     };
 
+    this.handleExportDownload = function(exportData, fileName, contentType) {
+
+        var iFrame = jQuery('#export-download-frame');
+        var iFrameDoc = iFrame[0].contentDocument || iFrame[0].contentWindow.document;
+
+        var a = iFrameDoc.createElement('a');
+        a.download = fileName;
+        a.text = "";
+        a.href = "data:" + contentType + ";base64," + exportData;
+
+        iFrame.contents().find("body").append(a);
+        iFrameDoc.close();
+
+        iFrame.contents().find("body").append(a);
+
+        var clickEvent = iFrameDoc.createEvent("MouseEvent");
+        clickEvent.initEvent("click", true, true);
+        a.dispatchEvent(clickEvent);
+
+    };
+
 
     //
     // Confirmation Modal
