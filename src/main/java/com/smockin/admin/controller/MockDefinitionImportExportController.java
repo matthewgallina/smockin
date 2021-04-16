@@ -56,6 +56,7 @@ public class MockDefinitionImportExportController {
                 + GeneralUtils.createFileNameUniqueTimeStamp()
                 + mockDefinitionImportExportService.exportZipFileNameExt;
 
+        // TODO do we need to set CONTENT_TYPE and CONTENT_DISPOSITION here, based on the handling of this in the front end...?
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "application/zip")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportFileName + "\"")

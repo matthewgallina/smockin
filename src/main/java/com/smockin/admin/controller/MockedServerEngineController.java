@@ -2,6 +2,7 @@ package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
 import com.smockin.admin.exception.AuthException;
+import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -17,6 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 /**
  * Created by mgallina.
@@ -110,6 +114,34 @@ public class MockedServerEngineController {
         mockedServerEngineService.saveProxyForwardMappings(type, proxyForwardConfig, GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/mockedserver/config/{serverType}/proxy/mappings/export", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    public @ResponseBody ResponseEntity<String> getServerConfigProxyMappingsExport(@PathVariable("serverType") final String serverType,
+                                                                                   @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws AuthException {
+
+        final Optional<String> exportOpt = mockedServerEngineService.exportProxyMappings(GeneralUtils.extractOAuthToken(bearerToken));
+
+        if (!exportOpt.isPresent()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok()
+                .body(exportOpt.get());
+
+    }
+
+    @RequestMapping(path="/mockedserver/config/{serverType}/proxy/mappings/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public @ResponseBody ResponseEntity<String> postServerConfigProxyMappingsImport(@PathVariable("serverType") final String serverType,
+                                                                                    @RequestHeader(value = GeneralUtils.KEEP_EXISTING_HEADER_NAME) final boolean keepExisting,
+                                                                                    @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                                                    @RequestParam("file") final MultipartFile file)
+            throws MockImportException, AuthException, ValidationException {
+
+            mockedServerEngineService.importProxyMappingsFile(file, keepExisting, GeneralUtils.extractOAuthToken(bearerToken));
+
+            return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(

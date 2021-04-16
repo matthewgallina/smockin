@@ -19,3 +19,7 @@ background-image: linear-gradient(to bottom,#4db34d 0,#367d36 100%) !important;
     border-radius: 4px;
     background-image: linear-gradient(to bottom,#d9534f 0,#c12e2a 100%) !important;
 }
+
+.confirmation-modal {
+    width: 30% !important;
+}

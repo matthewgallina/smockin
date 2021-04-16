@@ -19,8 +19,9 @@ app.controller('confirmationAlertController', function($scope, $location, $uibMo
         $scope.cancelButtonLabel = 'Close';
     }
 
+
     //
-    // Functions
+    // Scoped Functions
     $scope.doContinue = function() {
         $uibModalInstance.close();
     };
@@ -28,5 +29,22 @@ app.controller('confirmationAlertController', function($scope, $location, $uibMo
     $scope.doCancel = function() {
         $uibModalInstance.dismiss();
     };
+
+
+    //
+    // Internal Functions
+    function initPage() {
+
+        // Change width of second modal
+        jQuery(function() {
+            jQuery('.modal-dialog').first().addClass("confirmation-modal");
+        });
+
+    }
+
+
+    //
+    // Init Page
+    initPage();
 
 });

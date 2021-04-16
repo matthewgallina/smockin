@@ -1,0 +1,43 @@
+<link rel="stylesheet" href="../css/server_proxy_mappings_import.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ importHeading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
+
+    <form>
+
+        <br />
+
+        <label for="proxyMappingsUploadFile" class="upload-select-file-button btn btn-default">
+            <span ng-if="proxyMappingsUploadFile.data == null">{{ selectFileLabel }}</span>
+            <span ng-if="proxyMappingsUploadFile.data != null">{{ proxyMappingsUploadFile.data.name }}</span>
+        </label>
+        <input id="proxyMappingsUploadFile" type="file" form-file-model="proxyMappingsUploadFile.data" />
+
+        <br />
+        <br />
+
+        <button class="btn btn-success upload-button" type="button" ng-click="doUploadFile()" ng-disabled="disableForm">
+            <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ importButtonLabel }}
+        </button>
+
+        <br />
+        <br />
+
+        <div class="form-group">
+            <input id="keepExisting" type="checkbox" ng-model="keepExisting" />
+            <label for="keepExisting" class="ng-binding">{{ keepExistingLabel }}</label>
+        </div>
+
+    </form>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
+</div>

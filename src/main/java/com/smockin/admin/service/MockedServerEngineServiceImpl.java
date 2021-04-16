@@ -1,9 +1,8 @@
 package com.smockin.admin.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
-import com.smockin.admin.exception.AuthException;
-import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
@@ -19,13 +18,21 @@ import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -222,30 +229,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
 
-        if (proxyForwardConfigDTO.isProxyMode()) {
+        if (proxyForwardConfigDTO.isProxyMode()
+                && !proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()) {
 
             //
             // Validation
-            if (proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()) {
-                throw new ValidationException("No proxy mappings have been defined");
-            }
-
-            for (ProxyForwardMappingDTO dto : proxyForwardConfigDTO.getProxyForwardMappings()) {
-
-                if (StringUtils.isBlank(dto.getPath())) {
-                    throw new ValidationException("A 'Path' value is missing");
-                }
-
-                if (StringUtils.isBlank(dto.getProxyForwardUrl())) {
-                    throw new ValidationException("A 'Proxy Forward Url' value is missing");
-                }
-
-                if (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
-                        && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL)) {
-                    throw new ValidationException("The 'Proxy Forward Url' value '" + dto.getProxyForwardUrl() + "' is invalid");
-                }
-
-            }
+            validateProxyMappings(proxyForwardConfigDTO.getProxyForwardMappings());
 
         }
 
@@ -276,23 +265,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             proxyForwardMappingDAO.flush();
 
             // Save latest mappings
-            proxyForwardMappingDAO.saveAll(
-                proxyForwardConfigDTO.getProxyForwardMappings()
-                    .stream()
-                    .map(dto -> {
-
-                        final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
-                        proxyForwardMapping.setPath(
-                                (!StringUtils.startsWith(dto.getPath(), "/")
-                                    && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
-                                        + dto.getPath());
-                        proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
-                        proxyForwardMapping.setDisabled(dto.isDisabled());
-
-                        return proxyForwardMapping;
-
-                    }).collect(Collectors.toList())
-            );
+            saveProxyMappings(proxyForwardConfigDTO.getProxyForwardMappings());
 
         }
 
@@ -311,6 +284,106 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                                              final String token) throws AuthException {
 
         mockedRestServerEngine.removePathFromLiveBlocking(RestMethodEnum.findByName(method), path);
+    }
+
+    @Override
+    public Optional<String> exportProxyMappings(final String token)
+            throws AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        final List<ProxyForwardMappingDTO> dtos = proxyForwardMappingDAO.findAll()
+                .stream()
+                .map(m ->
+                        new ProxyForwardMappingDTO(m.getPath(), m.getProxyForwardUrl(), m.isDisabled()))
+                .collect(Collectors.toList());
+
+        if (dtos.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final String exportContent =
+            GeneralUtils.serialiseJson(dtos);
+
+        final byte[] exportBytes = exportContent.getBytes();
+
+        return Optional.of(Base64.getEncoder().encodeToString(exportBytes));
+    }
+
+    @Override
+    public String importProxyMappingsFile(final MultipartFile file, final boolean keepExisting, final String token)
+            throws MockImportException, AuthException, ValidationException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentUser(token));
+
+        try {
+
+            final ByteArrayInputStream stream = new ByteArrayInputStream(file.getBytes());
+            final String content = IOUtils.toString(stream, Charset.defaultCharset().displayName());
+            List<ProxyForwardMappingDTO> proxyForwardMappingDTOs = GeneralUtils.deserialiseJson(content, new TypeReference<List<ProxyForwardMappingDTO>>() {});
+
+            if (proxyForwardMappingDTOs == null) {
+                throw new ValidationException("Error reading import file: invalid json structure");
+            }
+
+            validateProxyMappings(proxyForwardMappingDTOs);
+
+            if (!keepExisting) {
+
+                // Delete all existing mappings
+                proxyForwardMappingDAO.deleteAll();
+                proxyForwardMappingDAO.flush();
+
+            } else {
+
+                final List<String> paths = proxyForwardMappingDAO.findAll()
+                        .stream()
+                        .map(p ->
+                                p.getPath().toLowerCase())
+                        .collect(Collectors.toList());
+
+                // Remove entries from import that duplicate existing mappings
+                proxyForwardMappingDTOs = proxyForwardMappingDTOs
+                        .stream()
+                        .filter(p ->
+                            !paths.contains(p.getPath().toLowerCase()))
+                        .collect(Collectors.toList());
+            }
+
+            // Save latest mappings
+            saveProxyMappings(proxyForwardMappingDTOs);
+
+        } catch (IOException ex) {
+            throw new MockExportException("Error importing proxy mappings file");
+        }
+
+        return null;
+    }
+
+    void saveProxyMappings(final List<ProxyForwardMappingDTO> proxyForwardMappings) {
+
+        if (proxyForwardMappings.isEmpty()) {
+            return;
+        }
+
+        proxyForwardMappingDAO.saveAll(
+            proxyForwardMappings
+            .stream()
+            .map(dto -> {
+
+                final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
+                proxyForwardMapping.setPath(
+                        (!StringUtils.startsWith(dto.getPath(), "/")
+                                && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
+                                + dto.getPath());
+                proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
+                proxyForwardMapping.setDisabled(dto.isDisabled());
+
+                return proxyForwardMapping;
+
+            }).collect(Collectors.toList())
+        );
+
     }
 
     void autoStartManager(final ServerTypeEnum serverType) throws MockServerException {
@@ -345,6 +418,28 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         }
         if (dto.getTimeOutMillis() == null) {
             throw new ValidationException("'timeOutMillis' config value is required");
+        }
+
+    }
+
+    void validateProxyMappings(final List<ProxyForwardMappingDTO> proxyForwardMappings)
+            throws ValidationException {
+
+        for (ProxyForwardMappingDTO dto : proxyForwardMappings) {
+
+            if (StringUtils.isBlank(dto.getPath())) {
+                throw new ValidationException("A 'Path' value is missing");
+            }
+
+            if (StringUtils.isBlank(dto.getProxyForwardUrl())) {
+                throw new ValidationException("A 'Proxy Forward Url' value is missing");
+            }
+
+            if (!dto.getProxyForwardUrl().startsWith(HttpClientService.HTTPS_PROTOCOL)
+                    && !dto.getProxyForwardUrl().startsWith(HttpClientService.HTTP_PROTOCOL)) {
+                throw new ValidationException("The 'Proxy Forward Url' value '" + dto.getProxyForwardUrl() + "' is invalid");
+            }
+
         }
 
     }

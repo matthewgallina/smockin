@@ -34,6 +34,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     $scope.proxyForwardUrlPlaceholderTxt = 'Enter a downstream url...' + $scope.proxyForwardPlaceholderTxt;;
     $scope.removeMappingRowButtonLabel = 'X';
     $scope.addMappingRowButtonLabel = 'New Row';
+    $scope.importLabel = 'Import';
+    $scope.exportLabel = 'Export';
 
 
     //
@@ -123,12 +125,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         }
 
         // Validation
-        if ($scope.proxyMappingConfig.proxyMode) {
-
-            if ($scope.proxyMappingConfig.proxyForwardMappings.length == 0) {
-                showAlert("Please define at least 1 'Path to URL Mapping'");
-                return;
-            }
+        if ($scope.proxyMappingConfig.proxyMode
+                && $scope.proxyMappingConfig.proxyForwardMappings.length > 0) {
 
             var duplicatePathCheckArray = [];
 
@@ -197,6 +195,76 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     $scope.doCancel = function() {
         $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.doImportProxyMappings = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'server_proxy_mappings_import.html',
+            controller: 'serverProxyMappingsImportController',
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+
+            if (response != null
+                    && response.uploadCompleted != null
+                    && response.uploadCompleted) {
+
+                utils.checkRestServerStatus(function(running, port) {
+
+                    if (running != null && running) {
+
+                        $uibModalInstance.close({
+                            "restartReq" : true
+                        });
+
+                    } else {
+
+                        showAlert("Proxy Path to URL mappings updated", "success");
+                        loadProxyConfig();
+                    }
+
+                });
+
+
+
+            }
+
+        }, function () {
+        });
+
+    };
+
+    $scope.doExportProxyMappings= function() {
+
+        if ($scope.proxyMappingConfig.proxyForwardMappings.length == 0) {
+            return;
+        }
+
+        utils.openWarningConfirmation("Export all Path to URL mappings?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doGet($http, '/mockedserver/config/' + ServerType + '/proxy/mappings/export', function(status, data) {
+
+                    if (status == 202) {
+                        showAlert("No proxy mappings were found to export");
+                        return;
+                    } else if (status != 200) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    utils.handleExportDownload(data, "smockin_proxy_mappings_export.json", "application/json");
+
+                });
+
+            }
+
+        });
+
     };
 
 

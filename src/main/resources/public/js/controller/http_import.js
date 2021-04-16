@@ -13,7 +13,7 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
 
     //
     // Labels
-    $scope.importHeading = 'HTTP Import Manager';
+    $scope.importHeading = 'HTTP Mocks - Import Manager';
     $scope.selectFileLabel = 'Select sMockin File...';
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
