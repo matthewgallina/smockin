@@ -322,6 +322,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             final String content = IOUtils.toString(stream, Charset.defaultCharset().displayName());
             List<ProxyForwardMappingDTO> proxyForwardMappingDTOs = GeneralUtils.deserialiseJson(content, new TypeReference<List<ProxyForwardMappingDTO>>() {});
 
+            if (proxyForwardMappingDTOs == null) {
+                throw new ValidationException("Error reading import file: invalid json structure");
+            }
+
             validateProxyMappings(proxyForwardMappingDTOs);
 
             if (!keepExisting) {
