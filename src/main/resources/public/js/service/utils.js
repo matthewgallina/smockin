@@ -1,5 +1,5 @@
 
-app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
+app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
     //
     // Validation

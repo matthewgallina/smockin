@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.LiveLoggingAction;
 import com.smockin.admin.dto.LiveLoggingBlockedResponseAmendmentDTO;
 import com.smockin.admin.dto.response.LiveLoggingDTO;
+import com.smockin.admin.enums.UserModeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.dto.LiveloggingUserOverrideResponse;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.utils.GeneralUtils;
@@ -16,6 +19,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +41,20 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     @Autowired
     private MockedRestServerEngine mockedRestServerEngine;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+
         liveSessionsRef.get().add(session);
     }
 
     @Override
     public void afterConnectionClosed(final WebSocketSession session,
                                       final CloseStatus status) throws Exception {
+
         super.afterConnectionClosed(session, status);
 
         logger.debug("Live logging WS connection closed");
@@ -93,13 +102,8 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         }
 
         sessions.stream()
-                .forEach(s -> {
-                    try {
-                        s.sendMessage(serialiseMessage(dto));
-                    } catch (IOException e) {
-                        logger.error("Error pushing message to connected web socket: " + s.getId(), e);
-                    }
-                });
+                .forEach(s ->
+                    handleBroadcast(dto, s));
 
     }
 
@@ -129,6 +133,37 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
     private TextMessage serialiseMessage(final LiveLoggingDTO dto) {
         return new TextMessage(GeneralUtils.serialiseJson(dto));
+    }
+
+    void handleBroadcast(final LiveLoggingDTO dto, final WebSocketSession session) {
+
+        try {
+
+            if (!UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
+                session.sendMessage(serialiseMessage(dto));
+                return;
+            }
+
+            final SmockinUserRoleEnum userRole = (SmockinUserRoleEnum)session.getAttributes().get(WS_CONNECTED_USER_ROLE);
+
+            if (SmockinUserRoleEnum.SYS_ADMIN.equals(userRole)) {
+                session.sendMessage(serialiseMessage(dto));
+                return;
+            }
+
+            final String inboundPath = dto.getPayload().getContent().getUrl();
+            final String userCtxPath = (SmockinUserRoleEnum.SYS_ADMIN.equals(userRole))
+                    ? ""
+                    : GeneralUtils.URL_PATH_SEPARATOR + session.getAttributes().get(WS_CONNECTED_USER_CTX_PATH);
+
+            if (StringUtils.startsWith(inboundPath, userCtxPath)) {
+                session.sendMessage(serialiseMessage(dto));
+            }
+
+        } catch (IOException e) {
+            logger.error("Error pushing message to connected web socket: " + session.getId(), e);
+        }
+
     }
 
 }

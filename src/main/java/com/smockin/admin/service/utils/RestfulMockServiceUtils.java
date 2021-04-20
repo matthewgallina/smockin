@@ -229,11 +229,11 @@ public class RestfulMockServiceUtils {
 
         switch (apiImportConfig.getKeepStrategy()) {
             case RENAME_EXISTING:
-                existingRestFulMock.setPath("/" + conflictCtxPath + existingRestFulMock.getPath());
+                existingRestFulMock.setPath(GeneralUtils.URL_PATH_SEPARATOR + conflictCtxPath + existingRestFulMock.getPath());
                 restfulMockDAO.save(existingRestFulMock);
                 break;
             case RENAME_NEW:
-                dto.setPath("/" + conflictCtxPath + dto.getPath());
+                dto.setPath(GeneralUtils.URL_PATH_SEPARATOR + conflictCtxPath + dto.getPath());
                 break;
         }
 
@@ -249,7 +249,7 @@ public class RestfulMockServiceUtils {
 
         if (varArgStart > -1) {
 
-            final int varArgEnd = StringUtils.indexOf(inboundPath, "/", varArgStart);
+            final int varArgEnd = StringUtils.indexOf(inboundPath, GeneralUtils.URL_PATH_SEPARATOR, varArgStart);
 
             final String varArg = (varArgEnd > -1)
                     ? StringUtils.substring(inboundPath, varArgStart, varArgEnd)

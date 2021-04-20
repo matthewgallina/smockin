@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
+app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars, auth) {
 
 
     //
@@ -320,7 +320,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
             try {
 
                 // Establish connection to WS endpoint
-                wsSocket = new WebSocket(LiveFeedUrl);
+                wsSocket = new WebSocket(LiveFeedUrl + "/" + auth.getToken());
 
                 applyWSListeners();
 

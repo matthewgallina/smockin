@@ -31,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 import spark.Response;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -398,7 +397,7 @@ public class MockedRestServerEngineUtils {
     public String buildUserPath(final RestfulMock mock) {
 
         if (!SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole())) {
-            return File.separator + mock.getCreatedBy().getCtxPath() + mock.getPath();
+            return GeneralUtils.URL_PATH_SEPARATOR + mock.getCreatedBy().getCtxPath() + mock.getPath();
         }
 
         return mock.getPath();

@@ -6,10 +6,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class LiveLoggingDTO<P> {
+public class LiveLoggingDTO {
 
     private LiveLoggingMessageTypeEnum type;
-    private P payload;
+    private LiveLoggingTrafficDTO payload;
 
 }
 

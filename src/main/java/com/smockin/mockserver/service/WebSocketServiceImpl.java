@@ -117,7 +117,8 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         }
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null,
+        // TODO Need to account for multi users
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, 101, null,
                 "Websocket established (clientId: " + assignedId + ")", false));
 
     }
@@ -199,7 +200,8 @@ public class WebSocketServiceImpl implements WebSocketService {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false));
+                    // TODO Need to account for multi users
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, "Websocket closed", false));
 
                     return;
                 }
@@ -250,7 +252,8 @@ public class WebSocketServiceImpl implements WebSocketService {
             .ifPresent(s -> {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false));
+                    // TODO Need to account for multi users
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }

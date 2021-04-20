@@ -49,6 +49,7 @@ public final class GeneralUtils {
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
     public static final String PATH_WILDCARD = "*";
+    public static final String URL_PATH_SEPARATOR = "/";
 
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
@@ -116,8 +117,8 @@ public final class GeneralUtils {
 
     public static Map<String, String> findAllPathVars(final String inboundPath, final String mockPath) {
 
-        final String[] inboundPathSegments = StringUtils.split(inboundPath, "/");
-        final String[] mockPathSegments = StringUtils.split(mockPath, "/");
+        final String[] inboundPathSegments = StringUtils.split(inboundPath, URL_PATH_SEPARATOR);
+        final String[] mockPathSegments = StringUtils.split(mockPath, URL_PATH_SEPARATOR);
 
         final Map<String, String> pathVars = new HashMap<>();
 
@@ -173,10 +174,8 @@ public final class GeneralUtils {
             return null;
         }
 
-        final String prefix = "/";
-
-        if (!path.startsWith(prefix)) {
-            return prefix + path;
+        if (!path.startsWith(URL_PATH_SEPARATOR)) {
+            return URL_PATH_SEPARATOR + path;
         }
 
         return path;

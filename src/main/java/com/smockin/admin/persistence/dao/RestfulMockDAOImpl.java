@@ -127,10 +127,10 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .orElse(null);
     }
 
-    private String buildMockMatchingPath(final RestfulMock m, final boolean matchOnUserCtxPath) {
-        return (matchOnUserCtxPath && !SmockinUserRoleEnum.SYS_ADMIN.equals(m.getCreatedBy().getRole()))
-                ? "/" + m.getCreatedBy().getCtxPath() + m.getPath()
-                : m.getPath();
+    private String buildMockMatchingPath(final RestfulMock mock, final boolean matchOnUserCtxPath) {
+        return (matchOnUserCtxPath && !SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole()))
+                ? GeneralUtils.URL_PATH_SEPARATOR + mock.getCreatedBy().getCtxPath() + mock.getPath()
+                : mock.getPath();
     }
 
 }

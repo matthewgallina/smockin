@@ -221,6 +221,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             liveLoggingHandler.broadcast(
                     LiveLoggingUtils.buildLiveLogOutboundDTO(
                         request.attribute(GeneralUtils.LOG_REQ_ID),
+                        request.pathInfo(),
                         response.raw().getStatus(),
                         respHeaders,
                         response.body(),
@@ -372,6 +373,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 liveLoggingHandler.broadcast(
                         LiveLoggingUtils.buildLiveLogInterceptedResponseDTO(
                                 request.attribute(GeneralUtils.LOG_REQ_ID),
+                                request.pathInfo(),
                                 response.raw().getStatus(),
                                 mockedRestServerEngineUtils.extractResponseHeadersAsMap(response),
                                 response.body(),

@@ -373,8 +373,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
                 final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
                 proxyForwardMapping.setPath(
-                        (!StringUtils.startsWith(dto.getPath(), "/")
-                                && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
+                        (!StringUtils.startsWith(dto.getPath(), GeneralUtils.URL_PATH_SEPARATOR)
+                                && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? GeneralUtils.URL_PATH_SEPARATOR : ""
                                 + dto.getPath());
                 proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
                 proxyForwardMapping.setDisabled(dto.isDisabled());
