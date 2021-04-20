@@ -18,9 +18,12 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.contentTypes = globalVars.ContentMimeTypes;
     $scope.SmockinTraceIdHeader = 'X-Smockin-Trace-ID';
     var ContentTypeHeader = 'Content-Type';
-    var LiveFeedUrl = "ws://"
-        + location.host
-        + "/liveLoggingFeed";
+    var wsProtocol = (utils.isSecureConnectionType())
+                         ? "wss://"
+                         : "ws://";
+    var LiveFeedUrl = wsProtocol
+                        + location.host
+                        + "/liveLoggingFeed";
 
 
     //
@@ -326,7 +329,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
             } catch (err) {
 
-                appendResponseMsg("Unable to establish connection to " + LiveFeedUrl);
+                showAlert("Unable to establish connection to " + LiveFeedUrl);
                 wsSocket = null;
 
                 return;

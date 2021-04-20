@@ -5,6 +5,9 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
     //
     // Constants / Vars
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    var wsProtocol = (utils.isSecureConnectionType())
+                         ? "wss://"
+                         : "ws://";
 
     //
     // Labels
@@ -103,7 +106,7 @@ app.controller('wsClientController', function($scope, $location, $http, $timeout
             try {
 
                 // Establish connection to WS endpoint
-                wsSocket = new WebSocket("ws://localhost:" + port + $scope.clientRequest.url);
+                wsSocket = new WebSocket(wsProtocol + "localhost:" + port + $scope.clientRequest.url);
 
                 applyWSListeners();
 
