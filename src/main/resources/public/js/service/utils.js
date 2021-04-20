@@ -222,6 +222,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http, auth) {
 
     };
 
+    this.isSecureConnectionType = function() {
+        return window.location.protocol.indexOf("https") > -1;
+    };
+
     this.showBlockingOverlay = function() {
         angular.element( document.getElementById("blocking-overlay") ).css('width', '100%');
     };
