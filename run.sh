@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="2.13.0"
+APP_VERSION="2.14.0"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
