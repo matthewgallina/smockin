@@ -30,7 +30,7 @@
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <ftpserver-core.version>1.1.1</ftpserver-core.version>
         <raml-parser.version>1.0.25</raml-parser.version>
-        <openapi-generator.version>4.2.2</openapi-generator.version>
+        <openapi-generator.version>5.1.0</openapi-generator.version>
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
         <spring-boot-maven-plugin.version>2.2.1.RELEASE</spring-boot-maven-plugin.version>
