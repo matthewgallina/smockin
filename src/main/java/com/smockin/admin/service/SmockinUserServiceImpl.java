@@ -9,6 +9,7 @@ import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.AppConfigDAO;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
@@ -43,6 +44,9 @@ public class SmockinUserServiceImpl implements SmockinUserService {
     @Autowired
     private AppConfigDAO appConfigDAO;
 
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
+
     @Value("${multi.user.mode:false}")
     private boolean multiUserMode;
 
@@ -70,10 +74,16 @@ public class SmockinUserServiceImpl implements SmockinUserService {
             throw new ValidationException("This role is not permitted");
         }
 
+        if (restfulMockDAO.doesMockPathStartWithSegment(dto.getUsername())) { // i.e user ctx path
+            throw new ValidationException("Cannot create account with chosen username as this conflicts with an existing mock");
+        }
+
         final String passwordEnc = validateAndEncryptPassword(dto.getPassword());
 
         return smockinUserDAO
-                .save(new SmockinUser(dto.getUsername(), passwordEnc, dto.getFullName(), dto.getUsername(), SmockinUserRoleEnum.REGULAR, RecordStatusEnum.ACTIVE, GeneralUtils.generateUUID(), GeneralUtils.generateUUID()))
+                .save(new SmockinUser(dto.getUsername(), passwordEnc, dto.getFullName(), dto.getUsername(),
+                                        SmockinUserRoleEnum.REGULAR, RecordStatusEnum.ACTIVE,
+                                        GeneralUtils.generateUUID(), GeneralUtils.generateUUID()))
                 .getExtId();
     }
 
@@ -89,6 +99,10 @@ public class SmockinUserServiceImpl implements SmockinUserService {
         if (!SmockinUserRoleEnum.SYS_ADMIN.equals(smockinUser.getRole())
                 && SmockinUserRoleEnum.SYS_ADMIN.equals(dto.getRole())) {
             throw new ValidationException("Updating to this role is not permitted");
+        }
+
+        if (restfulMockDAO.doesMockPathStartWithSegment(dto.getUsername())) { // i.e user ctx path
+            throw new ValidationException("Cannot create account with chosen username as this conflicts with an existing mock");
         }
 
         smockinUser.setFullName(dto.getFullName());

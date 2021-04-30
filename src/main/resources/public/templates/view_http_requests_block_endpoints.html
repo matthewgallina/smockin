@@ -36,7 +36,7 @@
                                 <input type="text" ng-model="e.path" class="form-control ng-isolate-scope ng-pristine ng-valid" uib-typeahead="p for p in paths | filter:$viewValue | limitTo:8" ng-disabled="e.id != null" />
                             </td>
                             <td>
-                                <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e.id)" ng-if="e.id != null">{{ removeEndpointRowButtonLabel }}</button>
+                                <button type="button" class="btn btn-danger" ng-click="doRemoveEndpointToBlock(e)" ng-if="e.id != null">{{ removeEndpointRowButtonLabel }}</button>
                                 <button type="button" class="btn btn-success" ng-click="doAddEndpointToBlock(e)" ng-if="e.id == null"> > </button>
                             </td>
                         </tr>

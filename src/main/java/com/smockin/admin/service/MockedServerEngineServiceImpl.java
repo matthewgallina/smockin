@@ -1,13 +1,14 @@
 package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ProxyForwardMapping;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
@@ -272,18 +273,35 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public void addLiveLoggingPathToBlock(final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
-                                          final String token) throws AuthException {
+    public void addLiveLoggingPathToBlock(final RestMethodEnum method,
+                                          final String path,
+                                          final String token) {
 
-        mockedRestServerEngine.addPathToLiveBlocking(liveLoggingBlockingEndpoint.getMethod(), liveLoggingBlockingEndpoint.getPath());
+        mockedRestServerEngine.addPathToLiveBlocking(method, amendMultiUserCtxPath(path, token));
     }
 
     @Override
-    public void removeLiveLoggingPathToBlock(final String method,
+    public void removeLiveLoggingPathToBlock(final RestMethodEnum method,
                                              final String path,
-                                             final String token) throws AuthException {
+                                             final String token) {
 
-        mockedRestServerEngine.removePathFromLiveBlocking(RestMethodEnum.findByName(method), path);
+        mockedRestServerEngine.removePathFromLiveBlocking(method, amendMultiUserCtxPath(path, token));
+    }
+
+    String amendMultiUserCtxPath(final String path, final String token) {
+
+        if (UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
+
+            final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
+            final String userCtxPath = GeneralUtils.URL_PATH_SEPARATOR + user.getCtxPath();
+
+            // Check if path already contains userCtxPath
+            return (StringUtils.startsWith(path, userCtxPath))
+                    ? path
+                    : userCtxPath + path;
+        }
+
+        return path;
     }
 
     @Override

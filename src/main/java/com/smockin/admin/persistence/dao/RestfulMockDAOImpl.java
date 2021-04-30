@@ -110,6 +110,19 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
     }
 
     @Override
+    public boolean doesMockPathStartWithSegment(final String pathSegment) {
+
+        final long result = entityManager.createQuery("SELECT COUNT(1) FROM RestfulMock rm "
+                + " WHERE rm.path = '/'||:pathSegment "
+                + " OR rm.path LIKE '/'||:pathSegment||'/%'",
+                    Long.class)
+                .setParameter("pathSegment", pathSegment)
+                .getSingleResult();
+
+        return (result >= 1);
+    }
+
+    @Override
     public void detach(final RestfulMock restfulMock) {
         entityManager.detach(restfulMock);
     }

@@ -45,7 +45,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(((TextWebSocketHandler)mockLogFeedHandler), URL)
+        registry.addHandler(((TextWebSocketHandler) mockLogFeedHandler), URL)
                 .addInterceptors(userInterceptor())
                 .setHandshakeHandler(handshakeHandler());
     }

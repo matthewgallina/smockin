@@ -104,12 +104,12 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
 
     };
 
-    $scope.doRemoveEndpointToBlock = function(id) {
+    $scope.doRemoveEndpointToBlock = function(endpoint) {
 
         $scope.closeAlert();
 
-        var method = 'GET';
-        var path = '/helloworld';
+        var method = endpoint.method;
+        var path = endpoint.path;
 
         var reqParams = '?method=' + method + '&path=' + path;
 

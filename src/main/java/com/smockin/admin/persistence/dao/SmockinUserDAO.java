@@ -19,4 +19,8 @@ public interface SmockinUserDAO extends JpaRepository<SmockinUser, Long> {
     List<SmockinUser> findAllByRole(final SmockinUserRoleEnum role);
     @Query("FROM SmockinUser su WHERE su.passwordResetToken = :passwordResetToken AND su.passwordResetTokenExpiry != NULL AND su.passwordResetTokenExpiry > CURRENT_DATE")
     SmockinUser findByValidPasswordResetToken(@Param("passwordResetToken") final String passwordResetToken);
+    boolean existsSmockinUserByUsername(final String username);
+    @Query("SELECT count(su) > 0 FROM SmockinUser su WHERE su.ctxPath = :ctxPath")
+    boolean doesUserExistWithCtxPath(final String ctxPath);
+
 }

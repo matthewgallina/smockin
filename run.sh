@@ -37,8 +37,10 @@ USE_INMEM_DB=false
 RESET_SYS_ADMIN=false
 MULTI_USER_MODE=false
 USE_CONSOLE=false
+ENABLE_REMOTE_DEBUG=false
 H2_CONSOLE_PORT=9099
 H2_OPTS=""
+REMOTE_DEBUG_ARGS=""
 
 
 if [ ! -d "${APP_DIR_PATH}" ]
@@ -87,13 +89,18 @@ if ([ ! -z "$1" ] && [ $1 = "-INMEM" ]) || ([ ! -z "$2" ] && [ $2 = "-INMEM" ]);
     JDBC_URL='jdbc:h2:mem:smockindev'
 fi
 
-if ([ ! -z "$1" ] && [ $1 = "-RESET_SYS_ADMIN" ]) || ([ ! -z "$2" ] && [ $2 = "-RESET_SYS_ADMIN" ]); then
+if ([ ! -z "$1" ] && [ $1 = "-RESET_SYS_ADMIN" ]) || ([ ! -z "$2" ] && [ $2 = "-RESET_SYS_ADMIN" ]) || ([ ! -z "$3" ] && [ $3 = "-RESET_SYS_ADMIN" ]); then
     RESET_SYS_ADMIN=true
 fi
 
-if ([ ! -z "$1" ] && [ $1 = "-CONSOLE" ]) || ([ ! -z "$2" ] && [ $2 = "-CONSOLE" ]); then
+if ([ ! -z "$1" ] && [ $1 = "-CONSOLE" ]) || ([ ! -z "$2" ] && [ $2 = "-CONSOLE" ]) || ([ ! -z "$3" ] && [ $3 = "-CONSOLE" ]); then
     USE_CONSOLE=true
 fi
+
+if ([ ! -z "$1" ] && [ $1 = "-DEBUG" ]) || ([ ! -z "$2" ] && [ $2 = "-DEBUG" ]) || ([ ! -z "$3" ] && [ $3 = "-DEBUG" ]); then
+    ENABLE_REMOTE_DEBUG=true
+fi
+
 
 echo "#####################################################################################"
 echo "# "
@@ -106,6 +113,10 @@ echo "#  "
 
 if ( $USE_CONSOLE ); then
     H2_OPTS="-web -webAllowOthers -webPort $H2_CONSOLE_PORT"
+fi
+
+if ( $ENABLE_REMOTE_DEBUG ); then
+    REMOTE_DEBUG_ARGS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8008"
 fi
 
 
@@ -190,10 +201,10 @@ fi
 
 
 if ( $USE_CONSOLE ); then
-  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG -Dlogging.level.com.smockin=DEBUG"
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG -Dlogging.level.com.smockin=DEBUG $REMOTE_DEBUG_ARGS"
 else
   echo "#  - Run 'shutdown.sh' when you wish to terminate this application."
-  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG" > /dev/null 2>&1 &
+  mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dspring.profiles.active=$APP_PROFILE -Dserver.port=$APP_PORT -Dmulti.user.mode=$MULTI_USER_MODE $VM_ARGS $RESET_SYS_ADMIN_ARG $REMOTE_DEBUG_ARGS" > /dev/null 2>&1 &
   echo "$!" > $SMOCKIN_PID_FILE
 fi
 

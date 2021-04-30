@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
@@ -40,9 +41,6 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
-    @Autowired
-    private SmockinUserService smockinUserService;
-
 
     @Override
     public RestfulMockResponseDTO loadEndpoint(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException {
@@ -56,10 +54,13 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     }
 
     @Override
-    public String createEndpoint(final RestfulMockDTO dto, final String token) throws RecordNotFoundException, ValidationException {
+    public String createEndpoint(final RestfulMockDTO dto,
+                                 final String token) throws RecordNotFoundException, ValidationException {
         logger.debug("createEndpoint called");
 
         restfulMockServiceUtils.amendPath(dto);
+
+        restfulMockServiceUtils.validateMockPathDoesNotStartWithUsername(dto.getPath());
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
 
@@ -81,6 +82,8 @@ public class RestfulMockServiceImpl implements RestfulMockService {
         logger.debug("updateEndpoint called");
 
         restfulMockServiceUtils.amendPath(dto);
+
+        restfulMockServiceUtils.validateMockPathDoesNotStartWithUsername(dto.getPath());
 
         final RestfulMock mock = loadRestMock(mockExtId);
 

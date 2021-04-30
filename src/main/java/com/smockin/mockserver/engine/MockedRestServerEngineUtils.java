@@ -2,8 +2,8 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
-import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
@@ -71,6 +71,9 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private HttpClientService httpClientService;
 
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
+
 
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
@@ -83,9 +86,9 @@ public class MockedRestServerEngineUtils {
         debugInboundRequest(request);
 
         return (proxyForwardConfig.isProxyMode()
-                && !proxyForwardConfig.getProxyForwardMappings().isEmpty()
-                && !isMultiUserMode)
+                && !proxyForwardConfig.getProxyForwardMappings().isEmpty())
             ? handleProxyInterceptorMode(proxyForwardConfig,
+                                         isMultiUserMode,
                                          request,
                                          response)
             : handleMockLookup(request, response, isMultiUserMode, false);
@@ -145,7 +148,27 @@ public class MockedRestServerEngineUtils {
 
     }
 
+    private String amendPathForMultiUser(final Request request, final boolean isMultiUserMode) {
+
+        String inboundPath = request.pathInfo();
+
+        if (isMultiUserMode) {
+
+            // As long as path is not null this will always return at least 1 element.
+            final String[] pathSegments = StringUtils.split(inboundPath, GeneralUtils.URL_PATH_SEPARATOR);
+
+            // Strip off User Path prefix for proxy mapping lookup
+            if (smockinUserDAO.doesUserExistWithCtxPath(pathSegments[0])) {
+                return StringUtils.remove(inboundPath, GeneralUtils.URL_PATH_SEPARATOR + pathSegments[0]);
+            }
+
+        }
+
+        return inboundPath;
+    }
+
     Optional<String> handleProxyInterceptorMode(final ProxyForwardConfigDTO proxyForwardConfig,
+                                                final boolean isMultiUserMode,
                                                 final Request request,
                                                 final Response response) {
 
@@ -153,17 +176,24 @@ public class MockedRestServerEngineUtils {
 
         try {
 
-            String proxyDownstreamURL = lookUpProxyMappingDownstreamUrl(request.pathInfo(), proxyForwardConfig.getProxyForwardMappings());
+            final String amendedInboundPath = amendPathForMultiUser(request, isMultiUserMode);
+
+            String proxyDownstreamURL = lookUpProxyMappingDownstreamUrl(amendedInboundPath, proxyForwardConfig.getProxyForwardMappings());
 
             if (proxyDownstreamURL == null) {
                 proxyDownstreamURL = lookUpDefaultProxyMappingDownstreamUrl(proxyForwardConfig.getProxyForwardMappings());
+            }
+
+            // No relevant proxy mappings were found for the inbound path, so skip this section and just look for a mock.
+            if (proxyDownstreamURL == null) {
+                return handleMockLookup(request, response, isMultiUserMode, false);
             }
 
             // ACTIVE Mode...
             if (ProxyModeTypeEnum.ACTIVE.equals(proxyForwardConfig.getProxyModeType())) {
 
                 // Look for mock...
-                final Optional<String> result = handleMockLookup(request, response, false, !proxyForwardConfig.isDoNotForwardWhen404Mock());
+                final Optional<String> result = handleMockLookup(request, response, isMultiUserMode, !proxyForwardConfig.isDoNotForwardWhen404Mock());
 
                 if (result.isPresent()) {
                     return result;
@@ -171,13 +201,13 @@ public class MockedRestServerEngineUtils {
 
                 // Make downstream client call of no mock was found
                 return handleClientDownstreamProxyCallResponse(
-                        executeClientDownstreamProxyCall(request, proxyDownstreamURL),
+                        executeClientDownstreamProxyCall(amendedInboundPath, request, proxyDownstreamURL),
                         response,
                         proxyDownstreamURL);
             }
 
             // Default to REACTIVE mode...
-            final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(request, proxyDownstreamURL);
+            final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(amendedInboundPath, request, proxyDownstreamURL);
 
             if (!httpClientResponse.isPresent()) {
                 return Optional.empty();
@@ -186,7 +216,7 @@ public class MockedRestServerEngineUtils {
             if (HttpStatus.NOT_FOUND.value() == httpClientResponse.get().getStatus()) {
 
                 // Look for mock substitute if downstream client returns a 404
-                return handleMockLookup(request, response, false, false);
+                return handleMockLookup(request, response, isMultiUserMode, false);
             }
 
             // Pass back downstream client response directly back to caller
@@ -198,17 +228,16 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    Optional<HttpClientResponseDTO> executeClientDownstreamProxyCall(final Request request,
-                                                                     final String proxyDownstreamURL) throws ValidationException {
+    Optional<HttpClientResponseDTO> executeClientDownstreamProxyCall(final String inboundPath,
+                                                                     final Request request,
+                                                                     final String proxyDownstreamURL) {
 
         if (proxyDownstreamURL == null) {
             return Optional.empty();
         }
 
-        final String path = request.pathInfo();
-
         if (logger.isDebugEnabled()) {
-            logger.debug("Initiating proxied call to downstream client for path: " + path);
+            logger.debug("Initiating proxied call to downstream client for path: " + inboundPath);
         }
 
         final HttpClientCallDTO httpClientCallDTO = new HttpClientCallDTO();
@@ -218,10 +247,10 @@ public class MockedRestServerEngineUtils {
                 : "";
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Forwarding call : " + proxyDownstreamURL + path + reqParams);
+            logger.debug("Forwarding call : " + proxyDownstreamURL + inboundPath + reqParams);
         }
 
-        httpClientCallDTO.setUrl(proxyDownstreamURL + path + reqParams);
+        httpClientCallDTO.setUrl(proxyDownstreamURL + inboundPath + reqParams);
         httpClientCallDTO.setMethod(RestMethodEnum.valueOf(request.requestMethod()));
         httpClientCallDTO.setBody(request.body());
 

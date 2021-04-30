@@ -18,6 +18,7 @@ public interface RestfulMockDAOCustom {
     RestfulMock findByPathAndMethodAndUser(final String path, final RestMethodEnum method, final SmockinUser user);
     RestfulMock findActiveByMethodAndPathPatternAndTypesForSingleUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes);
     RestfulMock findActiveByMethodAndPathPatternAndTypesForMultiUser(final RestMethodEnum method, final String path, final List<RestMockTypeEnum> mockTypes);
+    boolean doesMockPathStartWithSegment(final String pathSegment);
     void detach(final RestfulMock restfulMock);
 
 }

@@ -5,6 +5,7 @@ import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockedServerEngineService;
 import com.smockin.mockserver.dto.MockServerState;
@@ -155,7 +156,8 @@ public class MockedServerEngineController {
             throws AuthException {
 
         mockedServerEngineService.addLiveLoggingPathToBlock(
-                liveLoggingBlockingEndpoint,
+                liveLoggingBlockingEndpoint.getMethod(),
+                liveLoggingBlockingEndpoint.getPath(),
                 GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -172,7 +174,7 @@ public class MockedServerEngineController {
             throws AuthException {
 
         mockedServerEngineService.removeLiveLoggingPathToBlock(
-                method,
+                RestMethodEnum.findByName(method),
                 path,
                 GeneralUtils.extractOAuthToken(bearerToken));
 
