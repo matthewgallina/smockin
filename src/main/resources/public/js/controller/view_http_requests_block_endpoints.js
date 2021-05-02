@@ -120,7 +120,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
                  return;
             }
 
-            doRemoveNewEndpointRow(id);
+            doRemoveNewEndpointRow(endpoint.id);
         });
 
     };
