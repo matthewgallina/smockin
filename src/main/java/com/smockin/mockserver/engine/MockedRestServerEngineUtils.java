@@ -154,17 +154,28 @@ public class MockedRestServerEngineUtils {
 
         if (isMultiUserMode) {
 
-            // As long as path is not null this will always return at least 1 element.
-            final String[] pathSegments = StringUtils.split(inboundPath, GeneralUtils.URL_PATH_SEPARATOR);
+            final String userCtxPathSegment = extractMultiUserCtxPathSegment(inboundPath);
 
-            // Strip off User Path prefix for proxy mapping lookup
-            if (smockinUserDAO.doesUserExistWithCtxPath(pathSegments[0])) {
-                return StringUtils.remove(inboundPath, GeneralUtils.URL_PATH_SEPARATOR + pathSegments[0]);
+            if (isInboundPathMultiUserPath(userCtxPathSegment)) {
+                // Strip off User Path prefix for proxy mapping lookup
+                return StringUtils.remove(inboundPath, GeneralUtils.URL_PATH_SEPARATOR + userCtxPathSegment);
             }
 
         }
 
         return inboundPath;
+    }
+
+    public String extractMultiUserCtxPathSegment(final String inboundPath) {
+
+        // As long as path is not null this will always return at least 1 element.
+        return StringUtils.split(inboundPath, GeneralUtils.URL_PATH_SEPARATOR)[0];
+    }
+
+    // TODO remove this DB query and replace with a cached list of user CTX paths.
+    public boolean isInboundPathMultiUserPath(final String userCtxPathSegment) {
+
+        return smockinUserDAO.doesUserExistWithCtxPath(userCtxPathSegment);
     }
 
     Optional<String> handleProxyInterceptorMode(final ProxyForwardConfigDTO proxyForwardConfig,

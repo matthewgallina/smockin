@@ -35,11 +35,11 @@ public interface MockedServerEngineService {
 
     void addLiveLoggingPathToBlock(final RestMethodEnum method,
                                    final String path,
-                                   final String token) throws AuthException;
+                                   final String token) throws ValidationException;
 
     void removeLiveLoggingPathToBlock(final RestMethodEnum method,
                                       final String path,
-                                      final String token) throws AuthException;
+                                      final String token) throws ValidationException;
 
     Optional<String> exportProxyMappings(final String token)
             throws AuthException;

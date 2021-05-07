@@ -11,6 +11,7 @@ import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -323,7 +324,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                                                        final ProxyForwardConfigDTO proxyForwardConfig)
             throws InterruptedException {
 
-        if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode(), isMultiUserMode)) {
+        if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
 
             logger.debug("Endpoint match made. Blocking response...");
 
@@ -409,11 +410,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     boolean blockLoggingResponse(final Request request,
                           final Response response,
-                          final boolean isMultiUserMode,
                           final boolean proxyMode) {
 
         if (logger.isDebugEnabled()) {
             logger.debug("liveBlockEnabled: " + liveBlockingModeEnabled.get());
+            logger.debug("inbound method: " + request.requestMethod());
+            logger.debug("inbound path: " + request.pathInfo());
         }
 
         if (this.liveBlockingModeEnabled.get()) {
@@ -528,21 +530,33 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     }
 
     public void addPathToLiveBlocking(final RestMethodEnum method,
-                                      final String path) {
+                                      final String path,
+                                      final String ownerUserId) {
 
         if (logger.isDebugEnabled())
             logger.debug("Adding blocking rule for: " + method.name() + " " + path);
 
-        liveBlockPathsRef.get().add(new LiveBlockPath(method, path));
+        liveBlockPathsRef.get().add(new LiveBlockPath(method, path, ownerUserId));
     }
 
     public void removePathFromLiveBlocking(final RestMethodEnum method,
-                                           final String path) {
+                                           final String path,
+                                           final String ownerUserId) {
 
         if (logger.isDebugEnabled())
             logger.debug("Removing blocking rule for: " + method.name() + " " + path);
 
-        liveBlockPathsRef.get().remove(new LiveBlockPath(method, path));
+//        liveBlockPathsRef.get().remove(new LiveBlockPath(method, path, ownerUserId));
+
+        liveBlockPathsRef.compareAndSet(
+                liveBlockPathsRef.get(),
+                liveBlockPathsRef.get()
+                        .stream()
+                        .filter(p ->
+                                !(StringUtils.equalsIgnoreCase(p.getPath(), path)
+                                        && p.getMethod().equals(method))
+                                        && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                        .collect(Collectors.toList()));
     }
 
     public void clearAllPathsFromLiveBlocking() {
@@ -550,6 +564,20 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         logger.debug("clearing down all blocking rules...");
 
         liveBlockPathsRef.get().clear();
+    }
+
+    public void clearAllPathsFromLiveBlockingForUser(final String ownerUserId) {
+
+        if (logger.isDebugEnabled())
+            logger.debug("clearing down all blocking rules for user: " + ownerUserId);
+
+        liveBlockPathsRef.compareAndSet(
+                liveBlockPathsRef.get(),
+                liveBlockPathsRef.get()
+                        .stream()
+                        .filter(p ->
+                            !StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                        .collect(Collectors.toList()));
     }
 
 }

@@ -153,7 +153,7 @@ public class MockedServerEngineController {
     public @ResponseBody ResponseEntity<?> addLiveLoggingPathToBlock(@PathVariable("serverType") final String serverType,
                                                                      @RequestBody final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws AuthException {
+            throws AuthException, ValidationException {
 
         mockedServerEngineService.addLiveLoggingPathToBlock(
                 liveLoggingBlockingEndpoint.getMethod(),
@@ -171,7 +171,7 @@ public class MockedServerEngineController {
                                                                         @RequestParam("method") final String method,
                                                                         @RequestParam("path") final String path,
                                                                         @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws AuthException {
+            throws AuthException, ValidationException {
 
         mockedServerEngineService.removeLiveLoggingPathToBlock(
                 RestMethodEnum.findByName(method),

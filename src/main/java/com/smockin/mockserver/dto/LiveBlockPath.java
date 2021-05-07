@@ -12,5 +12,6 @@ public class LiveBlockPath {
 
     private RestMethodEnum method;
     private String path;
+    private String ownerUserId;
 
 }

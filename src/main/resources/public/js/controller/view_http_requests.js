@@ -320,10 +320,12 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                 return;
             }
 
+            var showForAllUsers = false;
+
             try {
 
                 // Establish connection to WS endpoint
-                wsSocket = new WebSocket(LiveFeedUrl + "/" + auth.getToken());
+                wsSocket = new WebSocket(LiveFeedUrl + "/" + showForAllUsers + "/" + auth.getToken());
 
                 applyWSListeners();
 

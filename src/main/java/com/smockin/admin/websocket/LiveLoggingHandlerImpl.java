@@ -5,10 +5,12 @@ import com.smockin.admin.dto.LiveLoggingAction;
 import com.smockin.admin.dto.LiveLoggingBlockedResponseAmendmentDTO;
 import com.smockin.admin.dto.response.LiveLoggingDTO;
 import com.smockin.admin.enums.UserModeEnum;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.dto.LiveloggingUserOverrideResponse;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,7 +44,13 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
     private MockedRestServerEngine mockedRestServerEngine;
 
     @Autowired
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
+
+    @Autowired
     private SmockinUserService smockinUserService;
+
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
 
 
     @Override
@@ -61,7 +69,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
         liveSessionsRef.get().remove(session);
 
-        stopLiveBlockingMode();
+        stopLiveBlockingMode(session, false);
 
     }
 
@@ -85,7 +93,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         if (StringUtils.equals(ENABLE_LIVE_LOG_BLOCKING, type)) {
             mockedRestServerEngine.updateLiveBlockingMode(true);
         } else if (StringUtils.equals(DISABLE_LIVE_LOG_BLOCKING, type)) {
-            stopLiveBlockingMode();
+            stopLiveBlockingMode(session, true);
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
             handleLiveLoggingAmendment(message);
         }
@@ -107,10 +115,21 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
     }
 
-    private void stopLiveBlockingMode() {
+    private void stopLiveBlockingMode(final WebSocketSession session, final boolean stillConnected) {
 
-        mockedRestServerEngine.clearAllPathsFromLiveBlocking();
-        mockedRestServerEngine.updateLiveBlockingMode(false);
+        if (!UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
+            mockedRestServerEngine.clearAllPathsFromLiveBlocking();
+            mockedRestServerEngine.updateLiveBlockingMode(false);
+            return;
+        }
+
+        mockedRestServerEngine.clearAllPathsFromLiveBlockingForUser((String)session.getAttributes().get(WS_CONNECTED_USER_ID));
+
+        if ((stillConnected && liveSessionsRef.get().size() == 1)
+                || (!stillConnected && liveSessionsRef.get().isEmpty())) {
+            mockedRestServerEngine.updateLiveBlockingMode(false);
+        }
+
     }
 
     private void handleLiveLoggingAmendment(final TextMessage message) {
@@ -139,22 +158,37 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
         try {
 
+            // Not in multi user mode, so just send to single user
             if (!UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
                 session.sendMessage(serialiseMessage(dto));
                 return;
             }
 
-            final SmockinUserRoleEnum userRole = (SmockinUserRoleEnum)session.getAttributes().get(WS_CONNECTED_USER_ROLE);
-
-            if (SmockinUserRoleEnum.SYS_ADMIN.equals(userRole)) {
-                session.sendMessage(serialiseMessage(dto));
-                return;
-            }
+            //
+            // Multi user mode logic...
+            final Boolean adminViewAll = (Boolean)session.getAttributes().get(WS_CONNECTED_USER_ADMIN_VIEW_ALL);
 
             final String inboundPath = dto.getPayload().getContent().getUrl();
-            final String userCtxPath = (SmockinUserRoleEnum.SYS_ADMIN.equals(userRole))
-                    ? ""
-                    : GeneralUtils.URL_PATH_SEPARATOR + session.getAttributes().get(WS_CONNECTED_USER_CTX_PATH);
+            final String userCtxPath = findUserCtxPath(session);
+
+            if (isSysAdmin(session)) {
+
+                if (adminViewAll) {
+                    session.sendMessage(serialiseMessage(dto));
+                    return;
+                }
+
+                final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(inboundPath);
+
+                // TODO
+                // This function will eventually move to using a cache, as at the moment we are making a DB call for EVERY SINGLE
+                // live logging broadcast where the admin user DOES NOT want to see calls from other users!
+                if (!mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment)) {
+                    session.sendMessage(serialiseMessage(dto));
+                }
+
+                return;
+            }
 
             if (StringUtils.startsWith(inboundPath, userCtxPath)) {
                 session.sendMessage(serialiseMessage(dto));
@@ -164,6 +198,18 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
             logger.error("Error pushing message to connected web socket: " + session.getId(), e);
         }
 
+    }
+
+    private boolean isSysAdmin(final WebSocketSession session) {
+
+        return SmockinUserRoleEnum.SYS_ADMIN.equals(session.getAttributes().get(WS_CONNECTED_USER_ROLE));
+    }
+
+    private String findUserCtxPath(final WebSocketSession session) {
+
+        return isSysAdmin(session)
+                ? ""
+                : GeneralUtils.URL_PATH_SEPARATOR + session.getAttributes().get(WS_CONNECTED_USER_CTX_PATH);
     }
 
 }
