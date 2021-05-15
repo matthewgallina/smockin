@@ -22,5 +22,6 @@ public interface SmockinUserDAO extends JpaRepository<SmockinUser, Long> {
     boolean existsSmockinUserByUsername(final String username);
     @Query("SELECT count(su) > 0 FROM SmockinUser su WHERE su.ctxPath = :ctxPath")
     boolean doesUserExistWithCtxPath(final String ctxPath);
-
+    @Query("SELECT su.ctxPath FROM SmockinUser su WHERE su.status = 'ACTIVE' AND su.role = 'REGULAR'")
+    List<String> loadAllUserCtxPaths();
 }

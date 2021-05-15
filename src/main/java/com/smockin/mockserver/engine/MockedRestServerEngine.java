@@ -84,8 +84,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
 
-    private List<LiveBlockPath> blockedRequests = new ArrayList<>();
-
 
     @Override
     public void start(final MockedServerConfigDTO config,
@@ -242,10 +240,19 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                                          final ProxyForwardConfigDTO proxyForwardConfig) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
-        Spark.head(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+        // HEAD
+        Spark.head(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
+            processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+
+            return "";
+
+//                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
+//                        .orElseGet(() -> handleNotFoundResponse(response))
+        });
+
+        // GET
         Spark.get(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             if (isWebSocketUpgradeRequest(request)) {
@@ -263,6 +270,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     : responseBody;
         });
 
+        // POST
         Spark.post(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
@@ -275,6 +283,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     : responseBody;
         });
 
+        // PUT
         Spark.put(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
@@ -287,6 +296,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     : responseBody;
         });
 
+        // DELETE
         Spark.delete(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
@@ -299,6 +309,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     : responseBody;
         });
 
+        // PATCH
         Spark.patch(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
@@ -353,14 +364,6 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
                     if (isMultiUserMode) {
 
-                        // TODO TEST THIS... Bob connects and sets intercept, someone calls Bob mock, bob disconnects and caller should no longer be blocked.
-                        // Release any blocked requests matching any of these user ctx paths...
-
-//                        final String pathCtxUser = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
-
-                        // TODO Not working for admin! for an admin 'pathCtxUser' would be 'v1'... I'm confused...! DEBUG this...
-
-
                         if (userCallsToRelease
                                 .stream()
                                 .anyMatch(p -> {
@@ -368,6 +371,12 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                                     if (p.getMethod().isPresent()) {
                                         return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
                                                 && StringUtils.equals(request.pathInfo(), p.getPathPattern());
+                                    }
+
+                                    if (GeneralUtils.URL_PATH_SEPARATOR.equals(p.getPathPattern())) {
+                                        // Nasty solution to a problem of how do we identify the call is to an admin's mock...
+                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
+                                        return !mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment);
                                     }
 
                                     return StringUtils.startsWith(request.pathInfo(), p.getPathPattern());
