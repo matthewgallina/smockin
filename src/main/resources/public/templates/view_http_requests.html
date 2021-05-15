@@ -264,7 +264,7 @@
                 <span ng-if="wsEstablished">
 
                     <input type="checkbox" ng-checked="responseInterceptorEnabled" ng-click="doToggleResponseInterceptor()" />
-                    Enable Response Interceptor
+                    {{ enableResponseInterceptorLabel }}
 
                     <a ng-click="doManageBlockedEndpoints()" ng-if="responseInterceptorEnabled" class="manage-blocked-endpoints"> ({{ manageLabel }}<span ng-if="( endpointsToBlock.length - 1 ) > 0"> ({{ ( endpointsToBlock.length - 1 ) }})</span>) </a>
                 </span>

@@ -1,6 +1,7 @@
 package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.SmockinUserService;
@@ -25,6 +26,8 @@ import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -77,8 +80,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     // TODO find a smarter way to do this (i.e BlockingQueue...)
     private final Object responseBlockingMonitor = new Object();
     private Map<String, Optional<LiveloggingUserOverrideResponse>> responseAmendments = new HashMap<>();
+    private List<BlockedPathToRelease> userCallsToRelease = new ArrayList<>();
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
+
+    private List<LiveBlockPath> blockedRequests = new ArrayList<>();
 
 
     @Override
@@ -345,6 +351,33 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         break;
                     }
 
+                    if (isMultiUserMode) {
+
+                        // TODO TEST THIS... Bob connects and sets intercept, someone calls Bob mock, bob disconnects and caller should no longer be blocked.
+                        // Release any blocked requests matching any of these user ctx paths...
+
+//                        final String pathCtxUser = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
+
+                        // TODO Not working for admin! for an admin 'pathCtxUser' would be 'v1'... I'm confused...! DEBUG this...
+
+
+                        if (userCallsToRelease
+                                .stream()
+                                .anyMatch(p -> {
+
+                                    if (p.getMethod().isPresent()) {
+                                        return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
+                                                && StringUtils.equals(request.pathInfo(), p.getPathPattern());
+                                    }
+
+                                    return StringUtils.startsWith(request.pathInfo(), p.getPathPattern());
+                                })
+                        ) {
+                            break;
+                        }
+
+                    }
+
                     if (!responseAmendments.containsKey(traceId)) {
                         // No amendment found so continue waiting...
                         continue;
@@ -523,20 +556,72 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             logger.debug("releasing all outstanding blocked requests...");
 
             synchronized (responseBlockingMonitor) {
-                responseBlockingMonitor.notifyAll(); // release up all blocked threads.
+                responseBlockingMonitor.notifyAll(); // wake up all waiting threads, so they can check if their is a response amendment.
             }
 
         }
+
     }
+
+    public void notifyBlockedLiveLoggingCalls(final Optional<RestMethodEnum> method, final String userCtxOrFullPath) {
+
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("releasing all outstanding blocked requests for user ctx path: " + method + userCtxOrFullPath);
+        }
+
+        final BlockedPathToRelease blockedPathToRelease = new BlockedPathToRelease(method, userCtxOrFullPath);
+
+        // Release any callers currently blocked on this endpoint.
+        synchronized (responseBlockingMonitor) {
+
+            if (logger.isDebugEnabled())
+                logger.debug("Adding: " + blockedPathToRelease + " to userCallsToRelease");
+
+            userCallsToRelease.add(blockedPathToRelease);
+
+            if (logger.isDebugEnabled())
+                logger.debug("userCallsToRelease size : " + userCallsToRelease.size());
+
+            responseBlockingMonitor.notifyAll(); // wake up all waiting threads, so they can check if their is a response amendment.
+
+        }
+
+        // Assume all blocked callers are released after 8 secs and remove entry...
+        Executors.newScheduledThreadPool(1)
+            .schedule(() -> {
+                synchronized (responseBlockingMonitor) {
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("Removing: " + blockedPathToRelease + " from userCallsToRelease");
+
+                    userCallsToRelease.remove(blockedPathToRelease);
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("userCallsToRelease size : " + userCallsToRelease.size());
+
+                }
+        }, 8000, TimeUnit.MILLISECONDS);
+
+    }
+
 
     public void addPathToLiveBlocking(final RestMethodEnum method,
                                       final String path,
-                                      final String ownerUserId) {
+                                      final String ownerUserId) throws ValidationException {
 
         if (logger.isDebugEnabled())
             logger.debug("Adding blocking rule for: " + method.name() + " " + path);
 
+        if (liveBlockPathsRef.get().contains(new LiveBlockPath(method, path, ownerUserId))) {
+            throw new ValidationException("This endpoint is already being blocked");
+        }
+
         liveBlockPathsRef.get().add(new LiveBlockPath(method, path, ownerUserId));
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
     }
 
     public void removePathFromLiveBlocking(final RestMethodEnum method,
@@ -554,9 +639,26 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         .stream()
                         .filter(p ->
                                 !(StringUtils.equalsIgnoreCase(p.getPath(), path)
-                                        && p.getMethod().equals(method))
-                                        && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                                    && p.getMethod().equals(method)
+                                    && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId)))
                         .collect(Collectors.toList()));
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
+    }
+
+    public long countLiveBlockingPathsForUser(final RestMethodEnum method,
+                                           final String path,
+                                           final String ownerUserId) {
+
+            return liveBlockPathsRef.get()
+                    .stream()
+                    .filter(p ->
+                            StringUtils.equalsIgnoreCase(p.getPath(), path)
+                                && p.getMethod().equals(method)
+                                && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                    .count();
     }
 
     public void clearAllPathsFromLiveBlocking() {
@@ -578,6 +680,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                         .filter(p ->
                             !StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
                         .collect(Collectors.toList()));
+
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
+        if (liveBlockPathsRef.get().isEmpty()) {
+            updateLiveBlockingMode(false);
+        }
+
     }
 
 }

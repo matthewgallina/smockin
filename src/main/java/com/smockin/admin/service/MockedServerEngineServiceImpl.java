@@ -292,7 +292,14 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                                              final String token) throws ValidationException {
 
         final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
-        mockedRestServerEngine.removePathFromLiveBlocking(method, amendMultiUserCtxPath(path, user), user.getExtId());
+        final String amendedPath = amendMultiUserCtxPath(path, user);
+
+        mockedRestServerEngine.removePathFromLiveBlocking(method, amendedPath, user.getExtId());
+
+        if (mockedRestServerEngine.countLiveBlockingPathsForUser(method, amendedPath, user.getExtId()) == 0) {
+            mockedRestServerEngine.notifyBlockedLiveLoggingCalls(Optional.of(method), amendedPath);
+        }
+
     }
 
     String amendMultiUserCtxPath(final String path, final SmockinUser user) throws ValidationException {

@@ -69,7 +69,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
         liveSessionsRef.get().remove(session);
 
-        stopLiveBlockingMode(session, false);
+        stopLiveBlockingMode(session);
 
     }
 
@@ -93,7 +93,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         if (StringUtils.equals(ENABLE_LIVE_LOG_BLOCKING, type)) {
             mockedRestServerEngine.updateLiveBlockingMode(true);
         } else if (StringUtils.equals(DISABLE_LIVE_LOG_BLOCKING, type)) {
-            stopLiveBlockingMode(session, true);
+            stopLiveBlockingMode(session);
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
             handleLiveLoggingAmendment(message);
         }
@@ -115,21 +115,18 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
     }
 
-    private void stopLiveBlockingMode(final WebSocketSession session, final boolean stillConnected) {
+    private void stopLiveBlockingMode(final WebSocketSession session) {
 
-        if (!UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
+        if (!UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())
+                || liveSessionsRef.get().isEmpty()) {
             mockedRestServerEngine.clearAllPathsFromLiveBlocking();
             mockedRestServerEngine.updateLiveBlockingMode(false);
             return;
         }
 
+        // Release blocked calls just for user
+        mockedRestServerEngine.notifyBlockedLiveLoggingCalls(Optional.empty(), GeneralUtils.URL_PATH_SEPARATOR + session.getAttributes().get(WS_CONNECTED_USER_CTX_PATH));
         mockedRestServerEngine.clearAllPathsFromLiveBlockingForUser((String)session.getAttributes().get(WS_CONNECTED_USER_ID));
-
-        if ((stillConnected && liveSessionsRef.get().size() == 1)
-                || (!stillConnected && liveSessionsRef.get().isEmpty())) {
-            mockedRestServerEngine.updateLiveBlockingMode(false);
-        }
-
     }
 
     private void handleLiveLoggingAmendment(final TextMessage message) {
@@ -178,12 +175,12 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
                     return;
                 }
 
-                final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(inboundPath);
+                final String userCtxSegmentFromInboundPath = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(inboundPath);
 
                 // TODO
                 // This function will eventually move to using a cache, as at the moment we are making a DB call for EVERY SINGLE
                 // live logging broadcast where the admin user DOES NOT want to see calls from other users!
-                if (!mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment)) {
+                if (!mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxSegmentFromInboundPath)) {
                     session.sendMessage(serialiseMessage(dto));
                 }
 

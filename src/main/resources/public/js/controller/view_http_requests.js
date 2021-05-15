@@ -50,6 +50,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.manageLabel = 'manage';
     $scope.blockedLabel = '(intercepted)';
     $scope.addHeaderLabel = '+ Add Header';
+    $scope.enableResponseInterceptorLabel = 'Enable Response Interceptor';
 
 
     //

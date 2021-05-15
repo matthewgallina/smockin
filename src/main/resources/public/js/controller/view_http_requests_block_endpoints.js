@@ -93,7 +93,10 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
 
         restClient.doPost($http, '/mockedserver/config/' + globalVars.RestfulServerType + '/live-logging-block/endpoint', req, function(status, data) {
 
-            if (status != 200) {
+            if (status == 400) {
+                 showAlert(data.message);
+                 return;
+            } else if (status != 200) {
                  showAlert(globalVars.GeneralErrorMessage);
                  return;
             }
