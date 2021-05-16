@@ -32,6 +32,8 @@
         <div class="activity-feed-details" style="height: {{ (height - 300) }}px;">
 
             <div class="row activity-feed-details-row" ng-show="activityFeed.length > 0" style="height: {{ (height - 315) }}px;">
+
+                <!-- Request / Response List Panel -->
                 <div class="col-sm-3">
 
                     <div style="height: {{ (height - 310) }}px; overflow-y: scroll;">
@@ -65,191 +67,207 @@
                     </div>
 
                 </div>
+
+                <!-- Request / Response Details Panel -->
                 <div class="col-sm-9">
 
                     <div style="height: {{ (height - 310) }}px; overflow-y: scroll;">
 
-                    <div class="panel panel-default activity-feed-details-panel">
-                        <div class="panel-body">
+                        <div class="panel panel-default activity-feed-details-panel">
+                            <div class="panel-body">
 
-                            <div ng-show="selectedFeedData != null">
+                                <div ng-show="selectedFeedData != null">
 
-                                <span class="activity-feed-details-header">
-                                    {{ selectedFeedData.request.method }}
-                                    <b class="activity-feed-details-header-url">
-                                        {{ selectedFeedData.request.url }}
-                                    </b>
-                                </span>
 
-                                <br />
-                                <br />
+                                    <!-- Endpoint Heading -->
+                                    <span class="activity-feed-details-header">
+                                        {{ selectedFeedData.request.method }}
+                                        <b class="activity-feed-details-header-url">
+                                            {{ selectedFeedData.request.url }}
+                                        </b>
+                                        <a ng-click="doQuickAddEndpointForInterception(selectedFeedData.request)"
+                                           ng-if="responseInterceptorEnabled && selectedFeedData.amendedResponse == null" class="endpoint-quick-intercept">({{ interceptEndpointLabel }})</a>
+                                    </span>
 
-                                <div class="activity-feed-details">
-                                    <div class="row display-flex">
+                                    <br />
+                                    <br />
 
-                                        <div class="col-sm-6">
+                                    <!-- SubHeading -->
+                                    <div class="activity-feed-details">
+                                        <div class="row display-flex">
 
-                                            <span>
-                                                <b class="activity-feed-details-subheader">{{ requestLabel }}</b> ({{ selectedFeedData.request.date | date: 'HH:mm:ss sss' : 'UTC' }} ms)
-                                            </span>
 
-                                            <br />
-                                            <br />
-
-                                            <div ng-if="selectedFeedData.request.requestParams != null" class="activity-feed-details-well-header">
-                                                <b>{{ requestLabel }} {{ parametersLabel }}</b>
-
-                                                <br />
-                                                <br />
-
-                                                <div class="well activity-feed-details-well">
-                                                    <div ng-repeat="(key, value) in selectedFeedData.request.requestParams">
-                                                        {{ key }} = {{ value }}
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-                                        <div class="col-sm-6">
-
-                                            <span ng-if="selectedFeedData.amendedResponse != null">
-                                                <b class="activity-feed-details-subheader">{{ responseLabel }} {{ blockedLabel }}</b>
-                                            </span>
-
-                                            <span ng-if="selectedFeedData.amendedResponse == null">
+                                            <!-- SubHeading Request -->
+                                            <div class="col-sm-6">
 
                                                 <span>
-                                                    <b class="activity-feed-details-subheader">{{ selectedFeedData.response.status }} {{ responseLabel }}</b>
-                                                    ({{ selectedFeedData.response.date | date: 'HH:mm:ss sss' : 'UTC' }} ms)
-                                                </span>
-
-                                                <span ng-if="selectedFeedData.proxied">
-                                                    <b>{{ proxiedResponseOriginPrefix }}:</b> {{ selectedFeedData.response.origin }}
+                                                    <b class="activity-feed-details-subheader">{{ requestLabel }}</b> ({{ selectedFeedData.request.date | date: 'HH:mm:ss sss' : 'UTC' }} ms)
                                                 </span>
 
                                                 <br />
                                                 <br />
 
-                                            </span>
+                                                <div ng-if="selectedFeedData.request.requestParams != null" class="activity-feed-details-well-header">
+                                                    <b>{{ requestLabel }} {{ parametersLabel }}</b>
 
-                                        </div>
+                                                    <br />
+                                                    <br />
 
+                                                    <div class="well activity-feed-details-well">
+                                                        <div ng-repeat="(key, value) in selectedFeedData.request.requestParams">
+                                                            {{ key }} = {{ value }}
+                                                        </div>
+                                                    </div>
 
-                                        <!-- Headers -->
-                                        <div class="col-sm-6">
+                                                </div>
 
-                                            <b class="activity-feed-details-well-header">{{ requestLabel }} {{ headersLabel }}</b>
-                                            <br />
-
-                                            <div class="well activity-feed-details-well">
-                                                <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.request.headers)">
-                                                    {{ h }}
-                                                    <br/>
-                                                </span>
                                             </div>
 
-                                        </div>
-                                        <div class="col-sm-6">
+                                            <!-- SubHeading Response -->
+                                            <div class="col-sm-6">
 
-                                            <span ng-if="selectedFeedData.amendedResponse != null">
+                                                <span ng-if="selectedFeedData.amendedResponse != null">
+                                                    <b class="activity-feed-details-subheader">{{ responseLabel }} {{ blockedLabel }}</b>
+                                                </span>
 
-                                                <b class="activity-feed-details-well-header"> {{ statusLabel }} </b>
-                                                <br />
-                                                <br />
-                                                <input id="httpStatusCode" type="text" ng-model="selectedFeedData.amendedResponse.status" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+                                                <span ng-if="selectedFeedData.amendedResponse == null">
 
-                                                <br />
+                                                    <span>
+                                                        <b class="activity-feed-details-subheader">{{ selectedFeedData.response.status }} {{ responseLabel }}</b>
+                                                        ({{ selectedFeedData.response.date | date: 'HH:mm:ss sss' : 'UTC' }} ms)
+                                                    </span>
 
-                                                <b class="activity-feed-details-well-header">{{ responseLabel }} {{ headersLabel }}</b>
-                                                <br />
-                                                <br />
+                                                    <span ng-if="selectedFeedData.proxied">
+                                                        <b>{{ proxiedResponseOriginPrefix }}:</b> {{ selectedFeedData.response.origin }}
+                                                    </span>
 
-                                                <div ng-repeat="arh in selectedFeedData.amendedResponse.headers">
-                                                    <div class="form-inline">
-                                                        <input type="text" ng-model="arh.key" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader" style="width: 40%;" />
-                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader && arh.key != 'Content-Type'" style="width: 50%;" />
-                                                        <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key == 'Content-Type'" style="width: 50%;" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
-                                                        <button class="btn btn-warning" ng-click="doAddRemoveResponseHeader(arh.key)" ng-if="arh.key != SmockinTraceIdHeader"> {{ removeResponseHeaderRowButtonLabel }} </button>
-                                                    </div>
-                                                </div>
+                                                    <br />
+                                                    <br />
 
-                                                <div class="add-amended-response-header-div">
-                                                    <a ng-click="doAddAmendedHeaderRow()" class="add-amended-response-header">{{ addHeaderLabel }}</a>
-                                                </div>
+                                                </span>
 
-                                            </span>
+                                            </div>
 
-                                            <span ng-if="selectedFeedData.amendedResponse == null">
 
-                                                <b class="activity-feed-details-well-header">{{ responseLabel }} {{ headersLabel }}</b>
+                                            <!-- Headers Request -->
+                                            <div class="col-sm-6">
 
-                                                <br />
+                                                <b class="activity-feed-details-well-header">{{ requestLabel }} {{ headersLabel }}</b>
                                                 <br />
 
                                                 <div class="well activity-feed-details-well">
-                                                    <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.response.headers)">
+                                                    <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.request.headers)">
                                                         {{ h }}
                                                         <br/>
                                                     </span>
                                                 </div>
 
-                                            </span>
+                                            </div>
 
-                                        </div>
+                                            <!-- Headers Response -->
+                                            <div class="col-sm-6">
+
+                                                <span ng-if="selectedFeedData.amendedResponse != null">
+
+                                                    <b class="activity-feed-details-well-header"> {{ statusLabel }} </b>
+                                                    <br />
+                                                    <br />
+                                                    <input id="httpStatusCode" type="text" ng-model="selectedFeedData.amendedResponse.status" class="form-control ng-isolate-scope ng-pristine ng-valid" />
+
+                                                    <br />
+
+                                                    <b class="activity-feed-details-well-header">{{ responseLabel }} {{ headersLabel }}</b>
+                                                    <br />
+                                                    <br />
+
+                                                    <div ng-repeat="arh in selectedFeedData.amendedResponse.headers">
+                                                        <div class="form-inline">
+                                                            <input type="text" ng-model="arh.key" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader" style="width: 40%;" />
+                                                            <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key != SmockinTraceIdHeader && arh.key != 'Content-Type'" style="width: 50%;" />
+                                                            <input type="text" ng-model="arh.value" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-if="arh.key == 'Content-Type'" style="width: 50%;" uib-typeahead="ct for ct in contentTypes | filter:$viewValue | limitTo:8" />
+                                                            <button class="btn btn-warning" ng-click="doAddRemoveResponseHeader(arh.key)" ng-if="arh.key != SmockinTraceIdHeader"> {{ removeResponseHeaderRowButtonLabel }} </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="add-amended-response-header-div">
+                                                        <a ng-click="doAddAmendedHeaderRow()" class="add-amended-response-header">{{ addHeaderLabel }}</a>
+                                                    </div>
+
+                                                </span>
+
+                                                <span ng-if="selectedFeedData.amendedResponse == null">
+
+                                                    <b class="activity-feed-details-well-header">{{ responseLabel }} {{ headersLabel }}</b>
+
+                                                    <br />
+                                                    <br />
+
+                                                    <div class="well activity-feed-details-well">
+                                                        <span ng-repeat="h in doConvertHttpHeaders(selectedFeedData.response.headers)">
+                                                            {{ h }}
+                                                            <br/>
+                                                        </span>
+                                                    </div>
+
+                                                </span>
+
+                                            </div>
 
 
-                                        <!-- Body -->
-                                        <div class="col-sm-6">
+                                            <!-- Body Request -->
+                                            <div class="col-sm-6">
 
-                                            <br />
-                                            <b class="activity-feed-details-well-header">{{ requestLabel }} {{ bodyLabel }}</b>
-                                            <br />
+                                                <br />
+                                                <b class="activity-feed-details-well-header">{{ requestLabel }} {{ bodyLabel }}</b>
+                                                <br />
 
-                                            <div class="well activity-feed-details-well">
-                                                {{ selectedFeedData.request.body }}
+                                                <div class="well activity-feed-details-well">
+                                                    {{ selectedFeedData.request.body }}
+                                                </div>
+
+                                            </div>
+
+                                            <!-- Body Response -->
+                                            <div class="col-sm-6">
+
+                                                <br />
+                                                <b class="activity-feed-details-well-header">{{ responseLabel }} {{ bodyLabel }}</b>
+                                                <br />
+
+                                                <span ng-if="selectedFeedData.amendedResponse != null">
+
+                                                    <a href ng-click="doFormatJson()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == JsonContentType">{{ formatJsonLabel }}</a>
+                                                    <a href ng-click="doFormatXml()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == XmlContentType">{{ formatXmlLabel }}</a>
+                                                    <textarea class="form-control ng-isolate-scope ng-pristine ng-valid" style="height: 230px;" ng-model="selectedFeedData.amendedResponse.body"></textarea>
+
+                                                    <br />
+
+                                                    <button id="release-blocked-response-button" type="button" class="btn btn-success" ng-click="doReleaseBlockedLog()"> {{ releaseInterceptedResponseButton }} </button>
+
+                                                </span>
+
+                                                <span ng-if="selectedFeedData.amendedResponse == null">
+
+                                                    <div class="well activity-feed-details-well">
+                                                        {{ selectedFeedData.response.body }}
+                                                    </div>
+
+                                                </span>
+
                                             </div>
 
                                         </div>
-                                        <div class="col-sm-6">
-
-                                            <br />
-                                            <b class="activity-feed-details-well-header">{{ responseLabel }} {{ bodyLabel }}</b>
-                                            <br />
-
-                                            <span ng-if="selectedFeedData.amendedResponse != null">
-
-                                                <a href ng-click="doFormatJson()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == JsonContentType">{{ formatJsonLabel }}</a>
-                                                <a href ng-click="doFormatXml()" class="pull-right" ng-if="extractContentTypeHeaderValue(selectedFeedData.amendedResponse.headers) == XmlContentType">{{ formatXmlLabel }}</a>
-                                                <textarea class="form-control ng-isolate-scope ng-pristine ng-valid" style="height: 230px;" ng-model="selectedFeedData.amendedResponse.body"></textarea>
-
-                                                <br />
-
-                                                <button id="release-blocked-response-button" type="button" class="btn btn-success" ng-click="doReleaseBlockedLog()"> {{ releaseInterceptedResponseButton }} </button>
-
-                                            </span>
-
-                                            <span ng-if="selectedFeedData.amendedResponse == null">
-
-                                                <div class="well activity-feed-details-well">
-                                                    {{ selectedFeedData.response.body }}
-                                                </div>
-
-                                            </span>
-
-                                        </div>
-
                                     </div>
-                                </div>
 
-                                <div ng-show="selectedFeedData == null" class="nothing-selected">
-                                    <b>{{ noFeedRecordSelected }}</b>
+                                    <div ng-show="selectedFeedData == null" class="nothing-selected">
+                                        <b>{{ noFeedRecordSelected }}</b>
+                                    </div>
+
                                 </div>
 
                             </div>
-                        </div>
 
-                    </div>
+                        </div>
 
                     </div>
 

@@ -51,6 +51,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.blockedLabel = '(intercepted)';
     $scope.addHeaderLabel = '+ Add Header';
     $scope.enableResponseInterceptorLabel = 'Enable Response Interceptor';
+    $scope.interceptEndpointLabel = 'intercept';
 
 
     //
@@ -140,6 +141,34 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         $uibModalInstance.close();
     };
 
+    $scope.doQuickAddEndpointForInterception = function(request) {
+
+        $scope.closeAlert();
+
+        var method = endpoint.method;
+        var path = endpoint.path;
+
+        var req = {
+            'method' : request.method,
+            'path' : request.url
+        };
+
+        restClient.doPost($http, '/mockedserver/config/' + globalVars.RestfulServerType + '/live-logging-block/endpoint', req, function(status, data) {
+
+            if (status == 400) {
+                 showAlert(data.message);
+                 return;
+            } else if (status != 200) {
+                 showAlert(globalVars.GeneralErrorMessage);
+                 return;
+            }
+
+//            endpoint.id = utils.generateUUID();
+//            doAddNewEndpointRow();
+        });
+
+    };
+
     $scope.doToggleResponseInterceptor = function() {
 
         $scope.responseInterceptorEnabled = !$scope.responseInterceptorEnabled;
@@ -154,6 +183,10 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
             };
 
             wsSocket.send(JSON.stringify(payload));
+        }
+
+        if (!$scope.responseInterceptorEnabled) {
+            $scope.endpointsToBlock = [];
         }
 
     };
@@ -510,6 +543,8 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                 if ($scope.activityFeed[i].proxied) {
                     applyProxiedResponseOrigin($scope.activityFeed[i].response);
                 }
+
+                $scope.activityFeed[i].amendedResponse = null;
 
                 $scope.$digest();
                 break;
