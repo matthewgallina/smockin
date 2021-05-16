@@ -172,9 +172,8 @@ public class MockedRestServerEngineUtils {
         return StringUtils.split(inboundPath, GeneralUtils.URL_PATH_SEPARATOR)[0];
     }
 
-    // TODO remove this DB query and replace with a cached list of user CTX paths.
     public boolean isInboundPathMultiUserPath(final String userCtxPathSegment) {
-
+        // TODO remove this DB query and replace with a cached list of user CTX paths.
         return smockinUserDAO.doesUserExistWithCtxPath(userCtxPathSegment);
     }
 

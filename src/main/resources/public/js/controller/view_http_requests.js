@@ -153,18 +153,35 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         restClient.doPost($http, '/mockedserver/config/' + globalVars.RestfulServerType + '/live-logging-block/endpoint', req, function(status, data) {
 
             if (status == 400) {
+
                  showAlert(data.message);
                  return;
             } else if (status != 200) {
+
                  showAlert(globalVars.GeneralErrorMessage);
                  return;
             }
 
-            $scope.endpointsToBlock.push({
-                "id" : utils.generateUUID(),
-                "method" : req.method,
-                "path" : req.path
-            });
+            var placeHolderRecord = ($scope.endpointsToBlock.length > 0)
+                                        ? $scope.endpointsToBlock[$scope.endpointsToBlock.length - 1]
+                                        : null;
+
+            if (placeHolderRecord != null
+                    && placeHolderRecord.id == null) {
+
+                placeHolderRecord.id = utils.generateUUID();
+                placeHolderRecord.method = req.method;
+                placeHolderRecord.path = req.path;
+
+            } else {
+
+                $scope.endpointsToBlock.push({
+                    "id" : utils.generateUUID(),
+                    "method" : req.method,
+                    "path" : req.path
+                });
+
+            }
 
             doAddNewEndpointInterceptRow();
 

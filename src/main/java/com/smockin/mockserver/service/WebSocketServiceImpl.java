@@ -50,10 +50,10 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Autowired
     private LiveLoggingHandler liveLoggingHandler;
-    
+
     @Autowired
     private RuleEngine ruleEngine;
-    
+
 
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
@@ -209,30 +209,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         });
 
     }
-
-    /*
-    public void broadcast(final WebSocketDTO dto) throws MockServerException {
-        logger.debug("broadcast called");
-
-        dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
-
-        final Set<SessionIdWrapper> sessions = sessionMap.get(dto.getPath());
-
-        if (sessions == null) {
-            return;
-        }
-
-        // Push to specific client session for the given handshake id
-        sessions.forEach(s -> {
-            try {
-                s.getSession().getRemote().sendString(dto.getBody());
-                liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
-            } catch (IOException e) {
-                throw new MockServerException(e);
-            }
-        });
-    }
-    */
 
     public void sendMessage(final String id, final WebSocketDTO dto) throws MockServerException {
         logger.debug("sendMessage called");

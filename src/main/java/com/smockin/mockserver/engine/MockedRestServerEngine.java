@@ -369,12 +369,15 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                                 .anyMatch(p -> {
 
                                     if (p.getMethod().isPresent()) {
+
                                         return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
                                                 && StringUtils.equals(request.pathInfo(), p.getPathPattern());
                                     }
 
+                                    // Is Admin
                                     if (GeneralUtils.URL_PATH_SEPARATOR.equals(p.getPathPattern())) {
                                         // Nasty solution to a problem of how do we identify the call is to an admin's mock...
+                                        // TODO This will improve when we update isInboundPathMultiUserPath to use a cache instead.
                                         final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
                                         return !mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment);
                                     }
@@ -402,27 +405,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     // Could be no amendment is provided (in which case this request will default to the original response)
                     if (responseAmendmentOpt.isPresent()) {
 
-                        final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
+                        final String body = amendResponse(responseAmendmentOpt, response);
 
-                        if (!responseAmendment.getResponseHeaders().isEmpty()) {
-
-                            final HttpServletResponse httpServletResponse = response.raw();
-
-                            responseAmendment.getResponseHeaders()
-                                    .entrySet()
-                                    .forEach(h -> {
-                                        if (httpServletResponse.containsHeader(h.getKey())) {
-                                            httpServletResponse.setHeader(h.getKey(), h.getValue());
-                                        } else {
-                                            httpServletResponse.addHeader(h.getKey(), h.getValue());
-                                        }
-                                    });
-                        }
-
-                        response.status(responseAmendment.getStatus());
-                        response.body(responseAmendment.getBody());
-
-                        return Optional.of(responseAmendment.getBody());
+                        return Optional.of(body);
                     }
 
                     break;
@@ -432,6 +417,44 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         }
 
         return Optional.empty();
+    }
+
+    private String amendResponse(final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt,
+                               final Response response) {
+
+        final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
+
+        if (!responseAmendment.getResponseHeaders().isEmpty()) {
+
+            final HttpServletResponse httpServletResponse = response.raw();
+
+            responseAmendment
+                .getResponseHeaders()
+                .entrySet()
+                .forEach(h -> {
+                    if (httpServletResponse.containsHeader(h.getKey())) {
+                        httpServletResponse.setHeader(h.getKey(), h.getValue());
+                    } else {
+                        httpServletResponse.addHeader(h.getKey(), h.getValue());
+                    }
+                });
+
+            // Clear all other headers, which may have been removed or renamed
+            httpServletResponse
+                .getHeaderNames()
+                .stream()
+                .forEach(h -> {
+                    if (!responseAmendment.getResponseHeaders().containsKey(h)) {
+                        httpServletResponse.setHeader(h, null);
+                    }
+                });
+
+        }
+
+        response.status(responseAmendment.getStatus());
+        response.body(responseAmendment.getBody());
+
+        return responseAmendment.getBody();
     }
 
     private String handleNotFoundResponse(final Response response) {

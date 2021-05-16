@@ -86,7 +86,7 @@
                                             {{ selectedFeedData.request.url }}
                                         </b>
                                         <a ng-click="doQuickAddEndpointForInterception(selectedFeedData.request)"
-                                           ng-if="responseInterceptorEnabled && selectedFeedData.amendedResponse == null && !isListedForIntercept(selectedFeedData.request)"
+                                           ng-if="responseInterceptorEnabled && selectedFeedData != null && selectedFeedData.amendedResponse == null && !isListedForIntercept(selectedFeedData.request)"
                                            class="endpoint-quick-intercept">({{ interceptEndpointLabel }})</a>
                                     </span>
 

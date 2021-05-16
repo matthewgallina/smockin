@@ -95,7 +95,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         } else if (StringUtils.equals(DISABLE_LIVE_LOG_BLOCKING, type)) {
             stopLiveBlockingMode(session);
         } else if (StringUtils.equals(LIVE_LOGGING_AMENDMENT, type)) {
-            handleLiveLoggingAmendment(message);
+            handleLiveLoggingResponseAmendment(message);
         }
 
     }
@@ -129,7 +129,7 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         mockedRestServerEngine.clearAllPathsFromLiveBlockingForUser((String)session.getAttributes().get(WS_CONNECTED_USER_ID));
     }
 
-    private void handleLiveLoggingAmendment(final TextMessage message) {
+    private void handleLiveLoggingResponseAmendment(final TextMessage message) {
 
         final LiveLoggingAction liveLoggingAction
                 = GeneralUtils.deserialiseJson(message.getPayload(),
