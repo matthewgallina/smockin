@@ -51,7 +51,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.blockedLabel = '(intercepted)';
     $scope.addHeaderLabel = '+ Add Header';
     $scope.enableResponseInterceptorLabel = 'Enable Response Interceptor';
-    $scope.interceptEndpointLabel = 'intercept';
+    $scope.interceptEndpointLabel = '+ intercept';
 
 
     //
@@ -145,9 +145,6 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
         $scope.closeAlert();
 
-        var method = endpoint.method;
-        var path = endpoint.path;
-
         var req = {
             'method' : request.method,
             'path' : request.url
@@ -163,10 +160,28 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                  return;
             }
 
-//            endpoint.id = utils.generateUUID();
-//            doAddNewEndpointRow();
+            $scope.endpointsToBlock.push({
+                "id" : utils.generateUUID(),
+                "method" : req.method,
+                "path" : req.path
+            });
+
+            doAddNewEndpointInterceptRow();
+
         });
 
+    };
+
+    $scope.isListedForIntercept = function (request) {
+
+        for (var e=0; e < $scope.endpointsToBlock.length; e++) {
+            if ($scope.endpointsToBlock[e].method == request.method
+                    && $scope.endpointsToBlock[e].path == request.url) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     $scope.doToggleResponseInterceptor = function() {
@@ -597,6 +612,15 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         }
 
         return false;
+    }
+
+    function doAddNewEndpointInterceptRow() {
+
+        $scope.endpointsToBlock.push({
+            "id" : null,
+            "method" : null,
+            "path" : null
+        });
     }
 
 
