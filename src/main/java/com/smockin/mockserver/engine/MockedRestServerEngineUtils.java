@@ -102,9 +102,15 @@ public class MockedRestServerEngineUtils {
 
         try {
 
+            RestMethodEnum method = RestMethodEnum.findByName(request.requestMethod());
+
+            if (RestMethodEnum.HEAD.equals(method)) {
+                method = RestMethodEnum.GET;
+            }
+
             final RestfulMock mock = (isMultiUserMode)
                     ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
-                    RestMethodEnum.findByName(request.requestMethod()),
+                    method,
                     request.pathInfo(),
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,
@@ -113,7 +119,7 @@ public class MockedRestServerEngineUtils {
                             RestMockTypeEnum.STATEFUL,
                             RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
-                    RestMethodEnum.findByName(request.requestMethod()),
+                    method,
                     request.pathInfo(),
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,

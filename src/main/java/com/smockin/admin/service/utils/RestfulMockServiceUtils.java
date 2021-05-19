@@ -338,7 +338,7 @@ public class RestfulMockServiceUtils {
                     || RestMethodEnum.PATCH.equals(method)
                     || RestMethodEnum.DELETE.equals(method)) {
                 dto.setPath(varPath);
-            } else {
+            } else if (!RestMethodEnum.HEAD.equals(method)) {
                 dto.setPath(originalPath);
             }
 

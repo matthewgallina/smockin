@@ -6,6 +6,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.httpMethods = globalVars.httpMethods;
     $scope.httpMethods = globalVars.httpMethods;
+    $scope.httpMethods.push('HEAD');
 
 
     //
