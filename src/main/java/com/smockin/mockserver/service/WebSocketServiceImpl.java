@@ -8,14 +8,12 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.utils.LiveLoggingUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +46,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
-    @Autowired
-    private LiveLoggingHandler liveLoggingHandler;
+//    @Autowired
+//    private LiveLoggingHandler liveLoggingHandler;
 
     @Autowired
     private RuleEngine ruleEngine;
@@ -118,8 +116,8 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         // TODO Need to account for multi users
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, 101, null,
-                "Websocket established (clientId: " + assignedId + ")", false));
+//        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, 101, null,
+//                "Websocket established (clientId: " + assignedId + ")", false));
 
     }
     
@@ -201,7 +199,7 @@ public class WebSocketServiceImpl implements WebSocketService {
                     sessionSet.remove(s);
 
                     // TODO Need to account for multi users
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, "Websocket closed", false));
+//                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, "Websocket closed", false));
 
                     return;
                 }
@@ -229,7 +227,7 @@ public class WebSocketServiceImpl implements WebSocketService {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
                     // TODO Need to account for multi users
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
+//                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }

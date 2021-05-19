@@ -314,7 +314,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             // Prevent non admin users from entering another user's mock path.
             final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(path);
 
-            if (mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment)) {
+            if (!StringUtils.equalsIgnoreCase(user.getCtxPath(), userCtxPathSegment)
+                    && mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment)) {
                 throw new ValidationException("You cannot block another user's mock");
             }
 
