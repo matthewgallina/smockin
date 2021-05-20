@@ -6,6 +6,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.httpMethods = globalVars.httpMethods;
     $scope.httpMethods = globalVars.httpMethods;
+    $scope.httpMethods.push('HEAD');
 
 
     //
@@ -93,7 +94,10 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
 
         restClient.doPost($http, '/mockedserver/config/' + globalVars.RestfulServerType + '/live-logging-block/endpoint', req, function(status, data) {
 
-            if (status != 200) {
+            if (status == 400) {
+                 showAlert(data.message);
+                 return;
+            } else if (status != 200) {
                  showAlert(globalVars.GeneralErrorMessage);
                  return;
             }
@@ -104,12 +108,12 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
 
     };
 
-    $scope.doRemoveEndpointToBlock = function(id) {
+    $scope.doRemoveEndpointToBlock = function(endpoint) {
 
         $scope.closeAlert();
 
-        var method = 'GET';
-        var path = '/helloworld';
+        var method = endpoint.method;
+        var path = endpoint.path;
 
         var reqParams = '?method=' + method + '&path=' + path;
 
@@ -120,7 +124,7 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
                  return;
             }
 
-            doRemoveNewEndpointRow(id);
+            doRemoveNewEndpointRow(endpoint.id);
         });
 
     };

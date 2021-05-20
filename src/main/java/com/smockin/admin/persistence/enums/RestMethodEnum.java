@@ -10,7 +10,8 @@ public enum RestMethodEnum {
     POST,
     PUT,
     DELETE,
-    PATCH;
+    PATCH,
+    HEAD;
 
     public static RestMethodEnum findByName(final String name) {
         return Stream.of(RestMethodEnum.values())

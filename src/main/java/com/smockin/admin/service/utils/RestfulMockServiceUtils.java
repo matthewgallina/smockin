@@ -2,12 +2,15 @@ package com.smockin.admin.service.utils;
 
 import com.smockin.admin.dto.*;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.ProjectService;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.service.MockOrderingCounterService;
 import com.smockin.utils.GeneralUtils;
@@ -39,6 +42,12 @@ public class RestfulMockServiceUtils {
 
     @Autowired
     private MockOrderingCounterService mockOrderingCounterService;
+
+    @Autowired
+    private SmockinUserService smockinUserService;
+
+    @Autowired
+    private SmockinUserDAO smockinUserDAO;
 
 
     @Transactional
@@ -229,11 +238,11 @@ public class RestfulMockServiceUtils {
 
         switch (apiImportConfig.getKeepStrategy()) {
             case RENAME_EXISTING:
-                existingRestFulMock.setPath("/" + conflictCtxPath + existingRestFulMock.getPath());
+                existingRestFulMock.setPath(GeneralUtils.URL_PATH_SEPARATOR + conflictCtxPath + existingRestFulMock.getPath());
                 restfulMockDAO.save(existingRestFulMock);
                 break;
             case RENAME_NEW:
-                dto.setPath("/" + conflictCtxPath + dto.getPath());
+                dto.setPath(GeneralUtils.URL_PATH_SEPARATOR + conflictCtxPath + dto.getPath());
                 break;
         }
 
@@ -249,7 +258,7 @@ public class RestfulMockServiceUtils {
 
         if (varArgStart > -1) {
 
-            final int varArgEnd = StringUtils.indexOf(inboundPath, "/", varArgStart);
+            final int varArgEnd = StringUtils.indexOf(inboundPath, GeneralUtils.URL_PATH_SEPARATOR, varArgStart);
 
             final String varArg = (varArgEnd > -1)
                     ? StringUtils.substring(inboundPath, varArgStart, varArgEnd)
@@ -329,7 +338,7 @@ public class RestfulMockServiceUtils {
                     || RestMethodEnum.PATCH.equals(method)
                     || RestMethodEnum.DELETE.equals(method)) {
                 dto.setPath(varPath);
-            } else {
+            } else if (!RestMethodEnum.HEAD.equals(method)) {
                 dto.setPath(originalPath);
             }
 
@@ -466,6 +475,22 @@ public class RestfulMockServiceUtils {
         }
 
         return initialBody;
+    }
+
+    @Transactional
+    public void validateMockPathDoesNotStartWithUsername(final String path) throws ValidationException {
+
+        if (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode())) {
+            return;
+        }
+
+        // As long as path is not null this will always return at least 1 element.
+        final String[] pathSegments = StringUtils.split(path, GeneralUtils.URL_PATH_SEPARATOR);
+
+        if (smockinUserDAO.existsSmockinUserByUsername(pathSegments[0])) {
+            throw new ValidationException("A mock cannot begin with an existing user's username");
+        }
+
     }
 
 }

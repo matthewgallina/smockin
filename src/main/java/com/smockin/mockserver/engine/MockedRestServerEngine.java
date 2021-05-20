@@ -1,6 +1,7 @@
 package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.SmockinUserService;
@@ -11,6 +12,7 @@ import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.ws.SparkWebSocketEchoService;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ import spark.Spark;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -76,6 +80,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     // TODO find a smarter way to do this (i.e BlockingQueue...)
     private final Object responseBlockingMonitor = new Object();
     private Map<String, Optional<LiveloggingUserOverrideResponse>> responseAmendments = new HashMap<>();
+    private List<BlockedPathToRelease> userCallsToRelease = new ArrayList<>();
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
 
@@ -184,6 +189,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Live logging filter
         Spark.before((request, response) -> {
 
+            if (request.raw().getHeader(webSocketService.WS_SEC_WEBSOCKET_KEY) != null) {
+                return;
+            }
+
             final String traceId = GeneralUtils.generateUUID();
 
             request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
@@ -210,7 +219,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.afterAfter((request, response) -> {
 
-            if (serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
+            if (request.raw().getHeader(webSocketService.WS_SEC_WEBSOCKET_KEY) != null
+                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
                 return;
             }
 
@@ -221,6 +231,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             liveLoggingHandler.broadcast(
                     LiveLoggingUtils.buildLiveLogOutboundDTO(
                         request.attribute(GeneralUtils.LOG_REQ_ID),
+                        request.pathInfo(),
                         response.raw().getStatus(),
                         respHeaders,
                         response.body(),
@@ -234,10 +245,19 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                                          final ProxyForwardConfigDTO proxyForwardConfig) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
-        Spark.head(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+        // HEAD
+        Spark.head(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
+            processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+
+            return "";
+
+//                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
+//                        .orElseGet(() -> handleNotFoundResponse(response))
+        });
+
+        // GET
         Spark.get(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
             if (isWebSocketUpgradeRequest(request)) {
@@ -245,94 +265,201 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            String responseBody = mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                    .orElseGet(() ->
-                            handleNotFoundResponse(response));
+            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
 
-            if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
+            final Optional<String> amendmentOpt =
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
 
-                logger.debug("Endpoint match made. Blocking response...");
+            return (amendmentOpt.isPresent())
+                    ? amendmentOpt.get()
+                    : responseBody;
+        });
 
-                synchronized (responseBlockingMonitor) {
+        // POST
+        Spark.post(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-                    while (true) {
+            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
 
-                        // Wait for response amendment for this request (by traceId)
-                        responseBlockingMonitor.wait();
+            final Optional<String> amendmentOpt =
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
 
-                        final String traceId = request.attribute(GeneralUtils.LOG_REQ_ID);
+            return (amendmentOpt.isPresent())
+                    ? amendmentOpt.get()
+                    : responseBody;
+        });
 
-                        // Release request if liveBlocking is disabled at any stage
-                        if (!liveBlockingModeEnabled.get()) {
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("Releasing blocked request with traceId: " + traceId + " as blocking mode has been disabled");
-                            }
+        // PUT
+        Spark.put(GeneralUtils.PATH_WILDCARD, (request, response) -> {
+
+            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+
+            final Optional<String> amendmentOpt =
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+
+            return (amendmentOpt.isPresent())
+                    ? amendmentOpt.get()
+                    : responseBody;
+        });
+
+        // DELETE
+        Spark.delete(GeneralUtils.PATH_WILDCARD, (request, response) -> {
+
+            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+
+            final Optional<String> amendmentOpt =
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+
+            return (amendmentOpt.isPresent())
+                    ? amendmentOpt.get()
+                    : responseBody;
+        });
+
+        // PATCH
+        Spark.patch(GeneralUtils.PATH_WILDCARD, (request, response) -> {
+
+            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+
+            final Optional<String> amendmentOpt =
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+
+            return (amendmentOpt.isPresent())
+                    ? amendmentOpt.get()
+                    : responseBody;
+        });
+
+    }
+
+    String processResponse(final Request request,
+                   final Response response,
+                   final boolean isMultiUserMode,
+                   final MockedServerConfigDTO serverConfig,
+                   final ProxyForwardConfigDTO proxyForwardConfig) {
+
+        return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
+                .orElseGet(() ->
+                        handleNotFoundResponse(response));
+    }
+
+    Optional<String> checkForAndHandleBlockSwapAndMock(final Request request,
+                                                       final Response response,
+                                                       final boolean isMultiUserMode,
+                                                       final ProxyForwardConfigDTO proxyForwardConfig)
+            throws InterruptedException {
+
+        if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
+
+            logger.debug("Endpoint match made. Blocking response...");
+
+            synchronized (responseBlockingMonitor) {
+
+                while (true) {
+
+                    // Wait for response amendment for this request (by traceId)
+                    responseBlockingMonitor.wait();
+
+                    final String traceId = request.attribute(GeneralUtils.LOG_REQ_ID);
+
+                    // Release request if liveBlocking is disabled at any stage
+                    if (!liveBlockingModeEnabled.get()) {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Releasing blocked request with traceId: " + traceId + " as blocking mode has been disabled");
+                        }
+                        break;
+                    }
+
+                    if (isMultiUserMode) {
+
+                        if (userCallsToRelease
+                                .stream()
+                                .anyMatch(p -> {
+
+                                    if (p.getMethod().isPresent()) {
+
+                                        return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
+                                                && StringUtils.equals(request.pathInfo(), p.getPathPattern());
+                                    }
+
+                                    // Is Admin
+                                    if (GeneralUtils.URL_PATH_SEPARATOR.equals(p.getPathPattern())) {
+                                        // Nasty solution to a problem of how do we identify the call is to an admin's mock...
+                                        // TODO This will improve when we update isInboundPathMultiUserPath to use a cache instead.
+                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
+                                        return !mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment);
+                                    }
+
+                                    return StringUtils.startsWith(request.pathInfo(), p.getPathPattern());
+                                })
+                        ) {
                             break;
                         }
 
-                        if (!responseAmendments.containsKey(traceId)) {
-                            // No amendment found so continue waiting...
-                            continue;
-                        }
-
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Releasing blocked request with traceId: " + traceId + " as response provided");
-                        }
-
-                        final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt
-                                = responseAmendments.get(traceId);
-
-                        // Could be no amendment is provided (in which case this request will default to the original response)
-                        if (responseAmendmentOpt.isPresent()) {
-
-                            final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
-
-                            if (!responseAmendment.getResponseHeaders().isEmpty()) {
-
-                                final HttpServletResponse httpServletResponse = response.raw();
-
-                                responseAmendment.getResponseHeaders()
-                                    .entrySet()
-                                    .forEach(h -> {
-                                        if (httpServletResponse.containsHeader(h.getKey())) {
-                                            httpServletResponse.setHeader(h.getKey(), h.getValue());
-                                        } else {
-                                            httpServletResponse.addHeader(h.getKey(), h.getValue());
-                                        }
-                                    });
-                            }
-
-                            response.status(responseAmendment.getStatus());
-                            response.body(responseAmendment.getBody());
-
-                            responseBody = responseAmendment.getBody();
-                        }
-
-                        break;
                     }
-                }
 
+                    if (!responseAmendments.containsKey(traceId)) {
+                        // No amendment found so continue waiting...
+                        continue;
+                    }
+
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Releasing blocked request with traceId: " + traceId + " as response provided");
+                    }
+
+                    final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt
+                            = responseAmendments.get(traceId);
+
+                    // Could be no amendment is provided (in which case this request will default to the original response)
+                    if (responseAmendmentOpt.isPresent()) {
+
+                        final String body = amendResponse(responseAmendmentOpt, response);
+
+                        return Optional.of(body);
+                    }
+
+                    break;
+                }
             }
 
-            return responseBody;
-        });
+        }
 
-        Spark.post(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+        return Optional.empty();
+    }
 
-        Spark.put(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+    private String amendResponse(final Optional<LiveloggingUserOverrideResponse> responseAmendmentOpt,
+                               final Response response) {
 
-        Spark.delete(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+        final LiveloggingUserOverrideResponse responseAmendment = responseAmendmentOpt.get();
 
-        Spark.patch(GeneralUtils.PATH_WILDCARD, (request, response) ->
-                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-                        .orElseGet(() -> handleNotFoundResponse(response)));
+        if (!responseAmendment.getResponseHeaders().isEmpty()) {
 
+            final HttpServletResponse httpServletResponse = response.raw();
+
+            responseAmendment
+                .getResponseHeaders()
+                .entrySet()
+                .forEach(h -> {
+                    if (httpServletResponse.containsHeader(h.getKey())) {
+                        httpServletResponse.setHeader(h.getKey(), h.getValue());
+                    } else {
+                        httpServletResponse.addHeader(h.getKey(), h.getValue());
+                    }
+                });
+
+            // Clear all other headers, which may have been removed or renamed
+            httpServletResponse
+                .getHeaderNames()
+                .stream()
+                .forEach(h -> {
+                    if (!responseAmendment.getResponseHeaders().containsKey(h)) {
+                        httpServletResponse.setHeader(h, null);
+                    }
+                });
+
+        }
+
+        response.status(responseAmendment.getStatus());
+        response.body(responseAmendment.getBody());
+
+        return responseAmendment.getBody();
     }
 
     private String handleNotFoundResponse(final Response response) {
@@ -357,6 +484,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         if (logger.isDebugEnabled()) {
             logger.debug("liveBlockEnabled: " + liveBlockingModeEnabled.get());
+            logger.debug("inbound method: " + request.requestMethod());
+            logger.debug("inbound path: " + request.pathInfo());
         }
 
         if (this.liveBlockingModeEnabled.get()) {
@@ -372,6 +501,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 liveLoggingHandler.broadcast(
                         LiveLoggingUtils.buildLiveLogInterceptedResponseDTO(
                                 request.attribute(GeneralUtils.LOG_REQ_ID),
+                                request.pathInfo(),
                                 response.raw().getStatus(),
                                 mockedRestServerEngineUtils.extractResponseHeadersAsMap(response),
                                 response.body(),
@@ -463,28 +593,109 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             logger.debug("releasing all outstanding blocked requests...");
 
             synchronized (responseBlockingMonitor) {
-                responseBlockingMonitor.notifyAll(); // release up all blocked threads.
+                responseBlockingMonitor.notifyAll(); // wake up all waiting threads, so they can check if their is a response amendment.
             }
 
         }
+
     }
 
+    public void notifyBlockedLiveLoggingCalls(final Optional<RestMethodEnum> method, final String userCtxOrFullPath) {
+
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("releasing all outstanding blocked requests for user ctx path: " + method + userCtxOrFullPath);
+        }
+
+        final BlockedPathToRelease blockedPathToRelease = new BlockedPathToRelease(method, userCtxOrFullPath);
+
+        // Release any callers currently blocked on this endpoint.
+        synchronized (responseBlockingMonitor) {
+
+            if (logger.isDebugEnabled())
+                logger.debug("Adding: " + blockedPathToRelease + " to userCallsToRelease");
+
+            userCallsToRelease.add(blockedPathToRelease);
+
+            if (logger.isDebugEnabled())
+                logger.debug("userCallsToRelease size : " + userCallsToRelease.size());
+
+            responseBlockingMonitor.notifyAll(); // wake up all waiting threads, so they can check if their is a response amendment.
+
+        }
+
+        // Assume all blocked callers are released after 8 secs and remove entry...
+        Executors.newScheduledThreadPool(1)
+            .schedule(() -> {
+                synchronized (responseBlockingMonitor) {
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("Removing: " + blockedPathToRelease + " from userCallsToRelease");
+
+                    userCallsToRelease.remove(blockedPathToRelease);
+
+                    if (logger.isDebugEnabled())
+                        logger.debug("userCallsToRelease size : " + userCallsToRelease.size());
+
+                }
+        }, 8000, TimeUnit.MILLISECONDS);
+
+    }
+
+
     public void addPathToLiveBlocking(final RestMethodEnum method,
-                                      final String path) {
+                                      final String path,
+                                      final String ownerUserId) throws ValidationException {
 
         if (logger.isDebugEnabled())
             logger.debug("Adding blocking rule for: " + method.name() + " " + path);
 
-        liveBlockPathsRef.get().add(new LiveBlockPath(method, path));
+        if (liveBlockPathsRef.get().contains(new LiveBlockPath(method, path, ownerUserId))) {
+            throw new ValidationException("This endpoint is already being blocked");
+        }
+
+        liveBlockPathsRef.get().add(new LiveBlockPath(method, path, ownerUserId));
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
     }
 
     public void removePathFromLiveBlocking(final RestMethodEnum method,
-                                           final String path) {
+                                           final String path,
+                                           final String ownerUserId) {
 
         if (logger.isDebugEnabled())
             logger.debug("Removing blocking rule for: " + method.name() + " " + path);
 
-        liveBlockPathsRef.get().remove(new LiveBlockPath(method, path));
+//        liveBlockPathsRef.get().remove(new LiveBlockPath(method, path, ownerUserId));
+
+        liveBlockPathsRef.compareAndSet(
+                liveBlockPathsRef.get(),
+                liveBlockPathsRef.get()
+                        .stream()
+                        .filter(p ->
+                                !(StringUtils.equalsIgnoreCase(p.getPath(), path)
+                                    && p.getMethod().equals(method)
+                                    && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId)))
+                        .collect(Collectors.toList()));
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
+    }
+
+    public long countLiveBlockingPathsForUser(final RestMethodEnum method,
+                                           final String path,
+                                           final String ownerUserId) {
+
+            return liveBlockPathsRef.get()
+                    .stream()
+                    .filter(p ->
+                            StringUtils.equalsIgnoreCase(p.getPath(), path)
+                                && p.getMethod().equals(method)
+                                && StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                    .count();
     }
 
     public void clearAllPathsFromLiveBlocking() {
@@ -492,6 +703,29 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         logger.debug("clearing down all blocking rules...");
 
         liveBlockPathsRef.get().clear();
+    }
+
+    public void clearAllPathsFromLiveBlockingForUser(final String ownerUserId) {
+
+        if (logger.isDebugEnabled())
+            logger.debug("clearing down all blocking rules for user: " + ownerUserId);
+
+        liveBlockPathsRef.compareAndSet(
+                liveBlockPathsRef.get(),
+                liveBlockPathsRef.get()
+                        .stream()
+                        .filter(p ->
+                            !StringUtils.equalsIgnoreCase(p.getOwnerUserId(), ownerUserId))
+                        .collect(Collectors.toList()));
+
+
+        if (logger.isDebugEnabled())
+            logger.debug("blocking rule size: " + liveBlockPathsRef.get().size());
+
+        if (liveBlockPathsRef.get().isEmpty()) {
+            updateLiveBlockingMode(false);
+        }
+
     }
 
 }

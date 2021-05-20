@@ -14,6 +14,7 @@ import java.util.List;
 public interface WebSocketService {
 
     int MAX_IDLE_TIMEOUT_MILLIS = 3600000; // 1 hour max
+    String WS_SEC_WEBSOCKET_KEY = "Sec-WebSocket-Key";
 
     void registerSession(final Session session, final boolean isMultiUserMode);
     void removeSession(final Session session);

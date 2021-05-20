@@ -8,14 +8,12 @@ import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
-import com.smockin.utils.LiveLoggingUtils;
 import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +46,12 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
 
-    @Autowired
-    private LiveLoggingHandler liveLoggingHandler;
-    
+//    @Autowired
+//    private LiveLoggingHandler liveLoggingHandler;
+
     @Autowired
     private RuleEngine ruleEngine;
-    
+
 
     // TODO Should add TTL and scheduled sweeper to stop the sessionMap from building up.
     // A map of web socket client sessions per simulated web socket path
@@ -117,8 +115,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         }
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, 101, null,
-                "Websocket established (clientId: " + assignedId + ")", false));
+        // TODO Need to account for multi users
+//        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, 101, null,
+//                "Websocket established (clientId: " + assignedId + ")", false));
 
     }
     
@@ -199,7 +198,8 @@ public class WebSocketServiceImpl implements WebSocketService {
                 if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
                     sessionSet.remove(s);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, "Websocket closed", false));
+                    // TODO Need to account for multi users
+//                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, "Websocket closed", false));
 
                     return;
                 }
@@ -207,30 +207,6 @@ public class WebSocketServiceImpl implements WebSocketService {
         });
 
     }
-
-    /*
-    public void broadcast(final WebSocketDTO dto) throws MockServerException {
-        logger.debug("broadcast called");
-
-        dto.setBody(GeneralUtils.removeAllLineBreaks(dto.getBody()));
-
-        final Set<SessionIdWrapper> sessions = sessionMap.get(dto.getPath());
-
-        if (sessions == null) {
-            return;
-        }
-
-        // Push to specific client session for the given handshake id
-        sessions.forEach(s -> {
-            try {
-                s.getSession().getRemote().sendString(dto.getBody());
-                liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false, false));
-            } catch (IOException e) {
-                throw new MockServerException(e);
-            }
-        });
-    }
-    */
 
     public void sendMessage(final String id, final WebSocketDTO dto) throws MockServerException {
         logger.debug("sendMessage called");
@@ -250,7 +226,8 @@ public class WebSocketServiceImpl implements WebSocketService {
             .ifPresent(s -> {
                 try {
                     s.getSession().getRemote().sendString(dto.getBody());
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null, null, dto.getBody(), false));
+                    // TODO Need to account for multi users
+//                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
                 } catch (IOException e) {
                     throw new MockServerException(e);
                 }

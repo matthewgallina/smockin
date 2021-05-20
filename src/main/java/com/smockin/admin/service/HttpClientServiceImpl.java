@@ -4,7 +4,6 @@ import com.smockin.admin.dto.HttpClientCallDTO;
 import com.smockin.admin.dto.response.HttpClientResponseDTO;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.mockserver.dto.MockServerState;
-import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.HttpClientUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -72,8 +71,8 @@ public class HttpClientServiceImpl implements HttpClientService {
                     throw new ValidationException("Invalid / Unsupported method: " + dto.getMethod());
             }
 
-        } catch (IOException | MockServerException ex) {
-            logger.error("Error performing external call ", ex);
+        } catch (Exception ex) {
+            logger.debug("Error performing external call ", ex);
             return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 
@@ -112,8 +111,8 @@ public class HttpClientServiceImpl implements HttpClientService {
                     throw new ValidationException("Invalid / Unsupported method: " + dto.getMethod());
             }
 
-        } catch (IOException | MockServerException ex) {
-            logger.error("Error performing external call ", ex);
+        } catch (Exception ex) {
+            logger.debug("Error performing call to mock", ex);
             return new HttpClientResponseDTO(HttpStatus.NOT_FOUND.value());
         }
 

@@ -186,6 +186,42 @@ public class RestfulMockDAOTest {
 
     }
 
+    @Test
+    public void doesMockPathStartWithSegment_exactMatch_Test() {
+
+        // Setup
+        final RestfulMock bobMock = SmockinTestUtils.buildRestfulMock("/bob", RestMockTypeEnum.SEQ, 15, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        restfulMockDAO.saveAndFlush(bobMock);
+
+        // Test
+        Assert.assertTrue(restfulMockDAO.doesMockPathStartWithSegment("bob"));
+
+    }
+
+    @Test
+    public void doesMockPathStartWithSegment_prefixMatch_Test() {
+
+        // Setup
+        final RestfulMock bobMock = SmockinTestUtils.buildRestfulMock("/bob/house", RestMockTypeEnum.SEQ, 15, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        restfulMockDAO.saveAndFlush(bobMock);
+
+        // Test
+        Assert.assertTrue(restfulMockDAO.doesMockPathStartWithSegment("bob"));
+
+    }
+
+    @Test
+    public void doesMockPathStartWithSegment_NoMatch_Test() {
+
+        // Setup
+        final RestfulMock bobMock = SmockinTestUtils.buildRestfulMock("/bob/house", RestMockTypeEnum.SEQ, 15, RestMethodEnum.GET, RecordStatusEnum.ACTIVE, user);
+        restfulMockDAO.saveAndFlush(bobMock);
+
+        // Test
+        Assert.assertFalse(restfulMockDAO.doesMockPathStartWithSegment("mike"));
+
+    }
+
     private SmockinUser buildPathDuplicatesUser(final String username, final SmockinUserRoleEnum role) {
 
         SmockinUser user = SmockinTestUtils.buildSmockinUser();

@@ -4,14 +4,17 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.Optional;
 
 @Data
 @AllArgsConstructor
 @EqualsAndHashCode
-public class LiveBlockPath {
+@ToString
+public class BlockedPathToRelease {
 
-    private RestMethodEnum method;
-    private String path;
-    private String ownerUserId;
+    private Optional<RestMethodEnum> method;
+    private String pathPattern;
 
 }

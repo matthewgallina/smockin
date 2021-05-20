@@ -1,21 +1,24 @@
 package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
+import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.ProxyForwardMappingDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
 import com.smockin.admin.persistence.entity.ProxyForwardMapping;
 import com.smockin.admin.persistence.entity.ServerConfig;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
+import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
+import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
@@ -46,6 +49,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private MockedRestServerEngine mockedRestServerEngine;
+
+    @Autowired
+    private MockedRestServerEngineUtils mockedRestServerEngineUtils;
 
     @Autowired
     private RestfulMockDAO restfulMockDefinitionDAO;
@@ -272,18 +278,56 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     }
 
     @Override
-    public void addLiveLoggingPathToBlock(final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
-                                          final String token) throws AuthException {
+    public void addLiveLoggingPathToBlock(final RestMethodEnum method,
+                                          final String path,
+                                          final String token) throws ValidationException {
 
-        mockedRestServerEngine.addPathToLiveBlocking(liveLoggingBlockingEndpoint.getMethod(), liveLoggingBlockingEndpoint.getPath());
+        final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
+        mockedRestServerEngine.addPathToLiveBlocking(method, amendMultiUserCtxPath(path, user), user.getExtId());
     }
 
     @Override
-    public void removeLiveLoggingPathToBlock(final String method,
+    public void removeLiveLoggingPathToBlock(final RestMethodEnum method,
                                              final String path,
-                                             final String token) throws AuthException {
+                                             final String token) throws ValidationException {
 
-        mockedRestServerEngine.removePathFromLiveBlocking(RestMethodEnum.findByName(method), path);
+        final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
+        final String amendedPath = amendMultiUserCtxPath(path, user);
+
+        mockedRestServerEngine.removePathFromLiveBlocking(method, amendedPath, user.getExtId());
+
+        if (mockedRestServerEngine.countLiveBlockingPathsForUser(method, amendedPath, user.getExtId()) == 0) {
+            mockedRestServerEngine.notifyBlockedLiveLoggingCalls(Optional.of(method), amendedPath);
+        }
+
+    }
+
+    String amendMultiUserCtxPath(final String path, final SmockinUser user) throws ValidationException {
+
+        if (UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode())) {
+
+            if (SmockinUserRoleEnum.SYS_ADMIN.equals(user.getRole())) {
+                // Can enter and block any path they wish
+                return path;
+            }
+
+            // Prevent non admin users from entering another user's mock path.
+            final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(path);
+
+            if (!StringUtils.equalsIgnoreCase(user.getCtxPath(), userCtxPathSegment)
+                    && mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment)) {
+                throw new ValidationException("You cannot block another user's mock");
+            }
+
+            final String userCtxPath = GeneralUtils.URL_PATH_SEPARATOR + user.getCtxPath();
+
+            // Check if path already contains userCtxPath
+            return (StringUtils.startsWith(path, userCtxPath))
+                    ? path
+                    : userCtxPath + path;
+        }
+
+        return path;
     }
 
     @Override
@@ -373,8 +417,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
                 final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
                 proxyForwardMapping.setPath(
-                        (!StringUtils.startsWith(dto.getPath(), "/")
-                                && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? "/" : ""
+                        (!StringUtils.startsWith(dto.getPath(), GeneralUtils.URL_PATH_SEPARATOR)
+                                && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? GeneralUtils.URL_PATH_SEPARATOR : ""
                                 + dto.getPath());
                 proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
                 proxyForwardMapping.setDisabled(dto.isDisabled());

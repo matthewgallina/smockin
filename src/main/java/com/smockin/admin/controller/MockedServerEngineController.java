@@ -5,6 +5,7 @@ import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockedServerEngineService;
 import com.smockin.mockserver.dto.MockServerState;
@@ -152,10 +153,11 @@ public class MockedServerEngineController {
     public @ResponseBody ResponseEntity<?> addLiveLoggingPathToBlock(@PathVariable("serverType") final String serverType,
                                                                      @RequestBody final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws AuthException {
+            throws AuthException, ValidationException {
 
         mockedServerEngineService.addLiveLoggingPathToBlock(
-                liveLoggingBlockingEndpoint,
+                liveLoggingBlockingEndpoint.getMethod(),
+                liveLoggingBlockingEndpoint.getPath(),
                 GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -169,10 +171,10 @@ public class MockedServerEngineController {
                                                                         @RequestParam("method") final String method,
                                                                         @RequestParam("path") final String path,
                                                                         @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws AuthException {
+            throws AuthException, ValidationException {
 
         mockedServerEngineService.removeLiveLoggingPathToBlock(
-                method,
+                RestMethodEnum.findByName(method),
                 path,
                 GeneralUtils.extractOAuthToken(bearerToken));
 

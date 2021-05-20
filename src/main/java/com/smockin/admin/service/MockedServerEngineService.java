@@ -1,10 +1,10 @@
 package com.smockin.admin.service;
 
-import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
@@ -33,12 +33,13 @@ public interface MockedServerEngineService {
                                   final ProxyForwardConfigDTO proxyForwardConfigDTO,
                                   final String token) throws AuthException, ValidationException, RecordNotFoundException;
 
-    void addLiveLoggingPathToBlock(final LiveLoggingBlockingEndpointDTO liveLoggingBlockingEndpoint,
-                                   final String token) throws AuthException;
+    void addLiveLoggingPathToBlock(final RestMethodEnum method,
+                                   final String path,
+                                   final String token) throws ValidationException;
 
-    void removeLiveLoggingPathToBlock(final String method,
+    void removeLiveLoggingPathToBlock(final RestMethodEnum method,
                                       final String path,
-                                      final String token) throws AuthException;
+                                      final String token) throws ValidationException;
 
     Optional<String> exportProxyMappings(final String token)
             throws AuthException;

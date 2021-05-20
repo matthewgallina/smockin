@@ -1,5 +1,5 @@
 
-app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars) {
+app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $uibModal, $uibModalInstance, utils, restClient, globalVars, auth) {
 
 
     //
@@ -50,6 +50,8 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.manageLabel = 'manage';
     $scope.blockedLabel = '(intercepted)';
     $scope.addHeaderLabel = '+ Add Header';
+    $scope.enableResponseInterceptorLabel = 'Enable Response Interceptor';
+    $scope.interceptEndpointLabel = '+ intercept';
 
 
     //
@@ -139,6 +141,66 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         $uibModalInstance.close();
     };
 
+    $scope.doQuickAddEndpointForInterception = function(request) {
+
+        $scope.closeAlert();
+
+        var req = {
+            'method' : request.method,
+            'path' : request.url
+        };
+
+        restClient.doPost($http, '/mockedserver/config/' + globalVars.RestfulServerType + '/live-logging-block/endpoint', req, function(status, data) {
+
+            if (status == 400) {
+
+                 showAlert(data.message);
+                 return;
+            } else if (status != 200) {
+
+                 showAlert(globalVars.GeneralErrorMessage);
+                 return;
+            }
+
+            var placeHolderRecord = ($scope.endpointsToBlock.length > 0)
+                                        ? $scope.endpointsToBlock[$scope.endpointsToBlock.length - 1]
+                                        : null;
+
+            if (placeHolderRecord != null
+                    && placeHolderRecord.id == null) {
+
+                placeHolderRecord.id = utils.generateUUID();
+                placeHolderRecord.method = req.method;
+                placeHolderRecord.path = req.path;
+
+            } else {
+
+                $scope.endpointsToBlock.push({
+                    "id" : utils.generateUUID(),
+                    "method" : req.method,
+                    "path" : req.path
+                });
+
+            }
+
+            doAddNewEndpointInterceptRow();
+
+        });
+
+    };
+
+    $scope.isListedForIntercept = function (request) {
+
+        for (var e=0; e < $scope.endpointsToBlock.length; e++) {
+            if ($scope.endpointsToBlock[e].method == request.method
+                    && $scope.endpointsToBlock[e].path == request.url) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
     $scope.doToggleResponseInterceptor = function() {
 
         $scope.responseInterceptorEnabled = !$scope.responseInterceptorEnabled;
@@ -153,6 +215,10 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
             };
 
             wsSocket.send(JSON.stringify(payload));
+        }
+
+        if (!$scope.responseInterceptorEnabled) {
+            $scope.endpointsToBlock = [];
         }
 
     };
@@ -320,10 +386,12 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                 return;
             }
 
+            var showForAllUsers = false;
+
             try {
 
                 // Establish connection to WS endpoint
-                wsSocket = new WebSocket(LiveFeedUrl);
+                wsSocket = new WebSocket(LiveFeedUrl + "/" + showForAllUsers + "/" + auth.getToken());
 
                 applyWSListeners();
 
@@ -508,6 +576,8 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                     applyProxiedResponseOrigin($scope.activityFeed[i].response);
                 }
 
+                $scope.activityFeed[i].amendedResponse = null;
+
                 $scope.$digest();
                 break;
             }
@@ -559,6 +629,15 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         }
 
         return false;
+    }
+
+    function doAddNewEndpointInterceptRow() {
+
+        $scope.endpointsToBlock.push({
+            "id" : null,
+            "method" : null,
+            "path" : null
+        });
     }
 
 

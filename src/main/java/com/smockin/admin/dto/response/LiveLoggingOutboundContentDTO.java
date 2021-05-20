@@ -6,8 +6,8 @@ public class LiveLoggingOutboundContentDTO extends LiveLoggingContentDTO {
 
     private final Integer status;
 
-    public LiveLoggingOutboundContentDTO(final Map<String, String> headers, final String body, final Integer status) {
-        super(headers, body);
+    public LiveLoggingOutboundContentDTO(final String url, final Map<String, String> headers, final String body, final Integer status) {
+        super(url, headers, body);
         this.status = status;
     }
 

@@ -355,7 +355,7 @@ public class StatefulServiceImpl implements StatefulService {
                     String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'op' is not a valid value"));
         }
 
-        if (!prefixedPath.startsWith("/")) {
+        if (!prefixedPath.startsWith(GeneralUtils.URL_PATH_SEPARATOR)) {
             return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                     String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "path should begin with '/' (e.g '/age'"));
         }
@@ -485,7 +485,7 @@ public class StatefulServiceImpl implements StatefulService {
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' is required"));
                     }
 
-                    if (!prefixedFrom.startsWith("/")) {
+                    if (!prefixedFrom.startsWith(GeneralUtils.URL_PATH_SEPARATOR)) {
                         return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' should begin with '/' (e.g '/age'"));
                     }
@@ -523,7 +523,7 @@ public class StatefulServiceImpl implements StatefulService {
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' is required"));
                     }
 
-                    if (!prefixedFrom.startsWith("/")) {
+                    if (!prefixedFrom.startsWith(GeneralUtils.URL_PATH_SEPARATOR)) {
                         return new StatefulResponse(HttpStatus.SC_BAD_REQUEST,
                                 String.format(StatefulValidationException.INVALID_PATCH_INSTRUCTION, "'from' should begin with '/' (e.g '/age'"));
                     }
@@ -933,9 +933,9 @@ public class StatefulServiceImpl implements StatefulService {
 
     private void patchAddOperation(final String path, final Map<String, Object> matchedMap, final Object value, final boolean canOverwriteExisting) {
 
-        if (path.contains("/")) {
+        if (path.contains(GeneralUtils.URL_PATH_SEPARATOR)) {
 
-            final String[] paths = path.split("/");
+            final String[] paths = path.split(GeneralUtils.URL_PATH_SEPARATOR);
 
             Object obj = matchedMap;
 
@@ -1034,9 +1034,9 @@ public class StatefulServiceImpl implements StatefulService {
 
     private void patchRemoveOperation(final String path, final Map<String, Object> matchedMap) {
 
-        if (path.contains("/")) {
+        if (path.contains(GeneralUtils.URL_PATH_SEPARATOR)) {
 
-            final String[] paths = path.split("/");
+            final String[] paths = path.split(GeneralUtils.URL_PATH_SEPARATOR);
 
             Object obj = matchedMap;
 
@@ -1108,9 +1108,9 @@ public class StatefulServiceImpl implements StatefulService {
 
     private void patchCopyOperation(final String from, final Map<String, Object> matchedMap, final String path) {
 
-        if (from.contains("/")) {
+        if (from.contains(GeneralUtils.URL_PATH_SEPARATOR)) {
 
-            final String[] fromPaths = from.split("/");
+            final String[] fromPaths = from.split(GeneralUtils.URL_PATH_SEPARATOR);
 
             Object obj = matchedMap;
 
@@ -1187,9 +1187,9 @@ public class StatefulServiceImpl implements StatefulService {
 
     private void patchMoveOperation(final String from, final Map<String, Object> matchedMap, final String path) {
 
-        if (from.contains("/")) {
+        if (from.contains(GeneralUtils.URL_PATH_SEPARATOR)) {
 
-            final String[] fromPaths = from.split("/");
+            final String[] fromPaths = from.split(GeneralUtils.URL_PATH_SEPARATOR);
 
             Object obj = matchedMap;
 
@@ -1269,9 +1269,9 @@ public class StatefulServiceImpl implements StatefulService {
 
     private void addReplaceOperation(final String path, final Map<String, Object> matchedMap, final Object value) {
 
-        if (path.contains("/")) {
+        if (path.contains(GeneralUtils.URL_PATH_SEPARATOR)) {
 
-            final String[] paths = path.split("/");
+            final String[] paths = path.split(GeneralUtils.URL_PATH_SEPARATOR);
 
             Object obj = matchedMap;
 

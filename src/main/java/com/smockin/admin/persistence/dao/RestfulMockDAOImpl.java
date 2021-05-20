@@ -110,6 +110,19 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
     }
 
     @Override
+    public boolean doesMockPathStartWithSegment(final String pathSegment) {
+
+        final long result = entityManager.createQuery("SELECT COUNT(1) FROM RestfulMock rm "
+                + " WHERE rm.path = '/'||:pathSegment "
+                + " OR rm.path LIKE '/'||:pathSegment||'/%'",
+                    Long.class)
+                .setParameter("pathSegment", pathSegment)
+                .getSingleResult();
+
+        return (result >= 1);
+    }
+
+    @Override
     public void detach(final RestfulMock restfulMock) {
         entityManager.detach(restfulMock);
     }
@@ -127,10 +140,10 @@ public class RestfulMockDAOImpl implements RestfulMockDAOCustom {
                 .orElse(null);
     }
 
-    private String buildMockMatchingPath(final RestfulMock m, final boolean matchOnUserCtxPath) {
-        return (matchOnUserCtxPath && !SmockinUserRoleEnum.SYS_ADMIN.equals(m.getCreatedBy().getRole()))
-                ? "/" + m.getCreatedBy().getCtxPath() + m.getPath()
-                : m.getPath();
+    private String buildMockMatchingPath(final RestfulMock mock, final boolean matchOnUserCtxPath) {
+        return (matchOnUserCtxPath && !SmockinUserRoleEnum.SYS_ADMIN.equals(mock.getCreatedBy().getRole()))
+                ? GeneralUtils.URL_PATH_SEPARATOR + mock.getCreatedBy().getCtxPath() + mock.getPath()
+                : mock.getPath();
     }
 
 }

@@ -64,11 +64,12 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
         applyHeaders(response);
 
         // Register client and build messages collection
-        clients.computeIfAbsent(clientId, k -> new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
+        clients.computeIfAbsent(clientId, k ->
+                new ClientSseData(path, Thread.currentThread(), GeneralUtils.getCurrentDate()));
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, response.status(), null, "SSE established (clientId: " + clientId + ")", false));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, path, response.status(), null, "SSE established (clientId: " + clientId + ")", false));
 
-        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, response);
+        initHeartBeat(clientId, heartBeatMillis, proxyPushIdOnConnect, traceId, path, response);
     }
 
     @Override
@@ -144,7 +145,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
 
     }
 
-    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final String traceId, final Response response) throws IOException {
+    void initHeartBeat(final String clientId, final long heartBeatMillis, final boolean proxyPushIdOnConnect, final String traceId, final String path, final Response response) throws IOException {
         logger.debug("initHeartBeat called");
 
         // Get raw response Start stream
@@ -169,7 +170,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                         writer.write(body + messageSuffix);
                         messagesIterator.remove();
 
-                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, body, false));
+                        liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, path, 200, null, body, false));
                     }
 
                 } else {
@@ -186,7 +187,7 @@ public class ServerSideEventServiceImpl implements ServerSideEventService {
                     writer.close();
                     clients.remove(clientId);
 
-                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, null, null, "SSE client connection closed", false));
+                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(traceId, path,200, null, "SSE client connection closed", false));
 
                     break;
                 }

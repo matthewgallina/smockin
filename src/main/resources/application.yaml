@@ -15,7 +15,7 @@ datasource:
 
 smockin:
   ftp.root.dir: "${user.home}/.smockin/ftp/"
-  auth.exclusions: '{"*.html":["GET"],"*.js":["GET"],"*.css":["GET"],"*.woff2":["GET"],"*.png":["GET"],"*.gif":["GET"],"/auth":["POST"],"/user/mode":["GET"],"/mockedserver/rest/status":["GET"],"/mockedserver/jms/status":["GET"],"/mockedserver/ftp/status":["GET"],"/password/reset/token/*":["GET","POST"]}'
+  auth.exclusions: '{"*.html":["GET"],"*.js":["GET"],"*.css":["GET"],"*.woff2":["GET"],"*.png":["GET"],"*.gif":["GET"],"*.ico":["GET"],"/auth":["POST"],"/user/mode":["GET"],"/mockedserver/rest/status":["GET"],"/mockedserver/jms/status":["GET"],"/mockedserver/ftp/status":["GET"],"/password/reset/token/*":["GET","POST"]}'
 
 ---
 # NOTE
