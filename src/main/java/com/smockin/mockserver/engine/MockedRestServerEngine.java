@@ -189,6 +189,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // Live logging filter
         Spark.before((request, response) -> {
 
+            if (request.raw().getHeader(webSocketService.WS_SEC_WEBSOCKET_KEY) != null) {
+                return;
+            }
+
             final String traceId = GeneralUtils.generateUUID();
 
             request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
@@ -215,7 +219,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         Spark.afterAfter((request, response) -> {
 
-            if (serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
+            if (request.raw().getHeader(webSocketService.WS_SEC_WEBSOCKET_KEY) != null
+                    || serverSideEventService.SSE_EVENT_STREAM_HEADER.equals(response.raw().getHeader(HttpHeaders.CONTENT_TYPE))) {
                 return;
             }
 
