@@ -17,8 +17,13 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
+
+import javax.script.Bindings;
+import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +42,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     @Autowired
     private UserKeyValueDataService userKeyValueDataService;
 
+    private final String extensionsDir = "js-extensions/";
 
     public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
         logger.debug("executeUserResponse called");
@@ -285,8 +291,47 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     }
 
     private ScriptEngine buildEngine() {
-        return new NashornScriptEngineFactory()
-                .getScriptEngine(engineSecurityArgs);
+
+        final ScriptEngine engine = new NashornScriptEngineFactory()
+                .getScriptEngine(
+                        engineSecurityArgs,
+                        null,
+                            (s) -> false);
+
+        loadEngineExtensions(engine);
+        applyEngineBindings(engine);
+
+        return engine;
+    }
+
+    private void loadEngineExtensions(final ScriptEngine engine) {
+
+        try {
+
+            engine.eval(new FileReader(getExtensionsFilePath("from-xml.min.js"))); // XML support
+
+        } catch (ScriptException | FileNotFoundException e) {
+            logger.error("Error loading JS extensions", e);
+        }
+    }
+
+    private String getExtensionsFilePath(final String extensionsFileName) {
+
+        return getClass()
+                .getClassLoader()
+                .getResource(extensionsDir + extensionsFileName)
+                .getFile();
+    }
+
+    // A few security restrictions...
+    private void applyEngineBindings(final ScriptEngine engine) {
+
+        final Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+        bindings.remove("exit");
+        bindings.remove("java");
+        bindings.remove("javax");
+        bindings.remove("sun");
+
     }
 
     private String removeLineBreaks(final String input) {
