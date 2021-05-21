@@ -323,6 +323,39 @@ public class JavaScriptResponseHandlerTest {
     }
 
     @Test
+    public void executeJS_runJavaSecurityAttempt3_Exit_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+        expect.expectMessage(Matchers.is("ReferenceError: \"exit\" is not defined in <eval> at line number 1"));
+
+        javaScriptResponseHandler.executeJS("exit(1);");
+    }
+
+    @Test
+    public void executeJS_runJavaSecurityAttempt4_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+
+        javaScriptResponseHandler.executeJS("java.lang.System.setProperty(\"a\", \"b\");");
+    }
+
+    @Test
+    public void executeJS_runJavaSecurityAttempt5_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+
+        javaScriptResponseHandler.executeJS("new java.lang.ProcessBuilder().command(\"java.lang.System.nanoTime();\")");
+    }
+
+    @Test
+    public void executeJS_runJavaSecurityAttempt6_Test() throws ScriptException {
+
+        expect.expect(ScriptException.class);
+
+        javaScriptResponseHandler.executeJS("java.io.File.createTempFile(\"hack\", \".sh\")");
+    }
+
+    @Test
     public void populateKVPs_noKvpsPresent_Test() throws ScriptException {
 
         // Setup

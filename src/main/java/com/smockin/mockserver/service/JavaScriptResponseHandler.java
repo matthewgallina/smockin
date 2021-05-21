@@ -7,7 +7,9 @@ import spark.Request;
 public interface JavaScriptResponseHandler {
 
     String[] engineSecurityArgs = {
-            "--no-java"
+            "-strict",
+            "--no-java",
+            "--no-syntax-extensions"
     };
 
     String defaultRequestObject =

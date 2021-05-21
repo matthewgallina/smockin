@@ -29,7 +29,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.XmlContentType = globalVars.XmlContentType;
 
     var jsEditor = null;
-    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.path;\n  // request.pathVars.name;\n  // request.body;\n  // var jsonObj = JSON.parse(request.body);\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n  // request.parameters.lastName;\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  // Reading in Key/Value data...\n  // lookUpKvp('name');\n  // lookUpKvp(request.parameters.lastname);\n\n  return response;\n}";
+    var DefaultCustomJsSyntax = "function handleResponse(request, response) {\n\n  // Reading the Request...\n  // request.path;\n  // request.pathVars.name;\n  // request.body;\n  // var jsonObj = JSON.parse(request.body);\n  // request.headers['X-Inbound-Header'];\n  // request.parameters['first-name'];\n  // request.parameters.lastName;\n\n  // Parsing XML... (e.g. <xml foo=\"FOO\"><bar><baz>BAZ</baz></bar></xml>)\n  // var data = fromXML(request.body);\n  // var bazValue = data.xml.bar.baz; // returns \"BAZ\"\n  // var fooValue = data.xml[\"@foo\"]; // returns \"FOO\"\n\n  // Setting the Response...\n  // response.contentType = 'application/json';\n  // response.status = 200;\n  // response.body = '{ \"msg\" : \"hello world...\" }';\n  // response.headers['X-Outbound-Header'] = 'foobar';\n\n  // Reading in Key/Value data...\n  // lookUpKvp('name');\n  // lookUpKvp(request.parameters.lastname);\n\n  return response;\n}";
+
 
 
     //
