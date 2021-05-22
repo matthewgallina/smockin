@@ -2,10 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by mgallina.
@@ -24,5 +21,9 @@ public class ProxyForwardMapping extends Identifier {
     @ColumnDefault("false")
     @Column(name = "IS_DISABLED", nullable = false)
     private boolean disabled;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="CREATED_BY")
+    private SmockinUser createdBy;
 
 }

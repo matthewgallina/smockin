@@ -1,6 +1,8 @@
 package com.smockin.admin.persistence.entity;
 
 import com.smockin.utils.GeneralUtils;
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -8,6 +10,7 @@ import java.util.Date;
  * Created by mgallina.
  */
 @MappedSuperclass
+@Data
 public abstract class Identifier {
 
     @Id
@@ -26,33 +29,6 @@ public abstract class Identifier {
     @Column(name = "LAST_UPDATED", nullable = true)
     private Date lastUpdated;
 
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getExtId() {
-        return extId;
-    }
-    public void setExtId(String extId) {
-        this.extId = extId;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public Date getLastUpdated() {
-        return lastUpdated;
-    }
-    public void setLastUpdated(Date lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
 
     @PrePersist
     public void onCreate() {

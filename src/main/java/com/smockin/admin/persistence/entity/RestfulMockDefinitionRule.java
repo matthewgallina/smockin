@@ -1,7 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
-import org.apache.commons.lang3.CharEncoding;
-import org.apache.commons.lang3.StringUtils;
+import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -15,6 +14,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name = "REST_MOCK_RULE")
+@Data
 public class RestfulMockDefinitionRule extends Identifier {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,69 +60,6 @@ public class RestfulMockDefinitionRule extends Identifier {
         this.responseBody = responseBody;
         this.sleepInMillis = sleepInMillis;
         this.suspend = suspend;
-    }
-
-    public RestfulMock getRestfulMock() {
-        return restfulMock;
-    }
-    public void setRestfulMock(RestfulMock restfulMock) {
-        this.restfulMock = restfulMock;
-    }
-
-    public int getOrderNo() {
-        return orderNo;
-    }
-    public void setOrderNo(int orderNo) {
-        this.orderNo = orderNo;
-    }
-
-    public int getHttpStatusCode() {
-        return httpStatusCode;
-    }
-    public void setHttpStatusCode(int httpStatusCode) {
-        this.httpStatusCode = httpStatusCode;
-    }
-
-    public String getResponseContentType() {
-        return responseContentType;
-    }
-    public void setResponseContentType(String responseContentType) {
-        this.responseContentType = responseContentType;
-    }
-
-    public String getResponseBody() {
-        return responseBody;
-    }
-    public void setResponseBody(String responseBody) {
-        this.responseBody = responseBody;
-    }
-
-    public long getSleepInMillis() {
-        return sleepInMillis;
-    }
-    public void setSleepInMillis(long sleepInMillis) {
-        this.sleepInMillis = sleepInMillis;
-    }
-
-    public boolean isSuspend() {
-        return suspend;
-    }
-    public void setSuspend(boolean suspend) {
-        this.suspend = suspend;
-    }
-
-    public List<RestfulMockDefinitionRuleGroup> getConditionGroups() {
-        return conditionGroups;
-    }
-    public void setConditionGroups(List<RestfulMockDefinitionRuleGroup> conditionGroups) {
-        this.conditionGroups = conditionGroups;
-    }
-
-    public Map<String, String> getResponseHeaders() {
-        return responseHeaders;
-    }
-    public void setResponseHeaders(Map<String, String> responseHeaders) {
-        this.responseHeaders = responseHeaders;
     }
 
 }

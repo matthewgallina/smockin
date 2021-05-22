@@ -1,5 +1,6 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 import javax.persistence.*;
 import java.util.HashMap;
@@ -10,6 +11,7 @@ import java.util.Map;
  */
 @Entity
 @Table(name = "REST_MOCK_DEF")
+@Data
 public class RestfulMockDefinitionOrder extends Identifier {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,76 +62,6 @@ public class RestfulMockDefinitionOrder extends Identifier {
         this.suspend = suspend;
         this.frequencyCount = frequencyCount;
         this.frequencyPercentage = frequencyPercentage;
-    }
-
-    public RestfulMock getRestfulMock() {
-        return restfulMock;
-    }
-    public void setRestfulMock(RestfulMock RestfulMock) {
-        this.restfulMock = restfulMock;
-    }
-
-    public int getHttpStatusCode() {
-        return httpStatusCode;
-    }
-    public void setHttpStatusCode(int httpStatusCode) {
-        this.httpStatusCode = httpStatusCode;
-    }
-
-    public String getResponseContentType() {
-        return responseContentType;
-    }
-    public void setResponseContentType(String responseContentType) {
-        this.responseContentType = responseContentType;
-    }
-
-    public String getResponseBody() {
-        return responseBody;
-    }
-    public void setResponseBody(String responseBody) {
-        this.responseBody = responseBody;
-    }
-
-    public long getSleepInMillis() {
-        return sleepInMillis;
-    }
-    public void setSleepInMillis(long sleepInMillis) {
-        this.sleepInMillis = sleepInMillis;
-    }
-
-    public boolean isSuspend() {
-        return suspend;
-    }
-    public void setSuspend(boolean suspend) {
-        this.suspend = suspend;
-    }
-
-    public int getFrequencyCount() {
-        return frequencyCount;
-    }
-    public void setFrequencyCount(int frequencyCount) {
-        this.frequencyCount = frequencyCount;
-    }
-
-    public int getFrequencyPercentage() {
-        return frequencyPercentage;
-    }
-    public void setFrequencyPercentage(int frequencyPercentage) {
-        this.frequencyPercentage = frequencyPercentage;
-    }
-
-    public int getOrderNo() {
-        return orderNo;
-    }
-    public void setOrderNo(int orderNo) {
-        this.orderNo = orderNo;
-    }
-
-    public Map<String, String> getResponseHeaders() {
-        return responseHeaders;
-    }
-    public void setResponseHeaders(Map<String, String> responseHeaders) {
-        this.responseHeaders = responseHeaders;
     }
 
 }

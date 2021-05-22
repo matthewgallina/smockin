@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.entity;
 import com.smockin.admin.persistence.enums.RuleComparatorEnum;
 import com.smockin.admin.persistence.enums.RuleDataTypeEnum;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
+import lombok.Data;
 
 import javax.persistence.*;
 
@@ -11,6 +12,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "REST_MOCK_RULE_GRP_COND")
+@Data
 public class RestfulMockDefinitionRuleGroupCondition extends Identifier {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,55 +51,6 @@ public class RestfulMockDefinitionRuleGroupCondition extends Identifier {
         this.comparator = comparator;
         this.matchValue = matchValue;
         this.ruleMatchingType = ruleMatchingType;
-        this.caseSensitive = caseSensitive;
-    }
-
-    public RestfulMockDefinitionRuleGroup getGroup() {
-        return group;
-    }
-    public void setGroup(RestfulMockDefinitionRuleGroup group) {
-        this.group = group;
-    }
-
-    public String getField() {
-        return field;
-    }
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public RuleDataTypeEnum getDataType() {
-        return dataType;
-    }
-    public void setDataType(RuleDataTypeEnum dataType) {
-        this.dataType = dataType;
-    }
-
-    public RuleComparatorEnum getComparator() {
-        return comparator;
-    }
-    public void setComparator(RuleComparatorEnum comparator) {
-        this.comparator = comparator;
-    }
-
-    public String getMatchValue() {
-        return matchValue;
-    }
-    public void setMatchValue(String matchValue) {
-        this.matchValue = matchValue;
-    }
-
-    public RuleMatchingTypeEnum getRuleMatchingType() {
-        return ruleMatchingType;
-    }
-    public void setRuleMatchingType(RuleMatchingTypeEnum ruleMatchingType) {
-        this.ruleMatchingType = ruleMatchingType;
-    }
-
-    public Boolean isCaseSensitive() {
-        return caseSensitive;
-    }
-    public void setCaseSensitive(Boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
     }
 

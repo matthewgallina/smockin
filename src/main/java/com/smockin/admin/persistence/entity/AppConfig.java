@@ -1,6 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
 import com.smockin.utils.GeneralUtils;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "APP_CONFIG")
+@Data
 public class AppConfig {
 
     @Id
@@ -32,7 +34,6 @@ public class AppConfig {
     @Column(name = "LAST_VERSION_UPDATE", nullable = true)
     private Date lastVersionUpdate;
 
-
     public AppConfig() {
     }
 
@@ -40,41 +41,6 @@ public class AppConfig {
         this.appInstallVersion = appInstallVersion;
     }
 
-
-    public long getId() {
-        return id;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public Date getDatabaseInstallDate() {
-        return databaseInstallDate;
-    }
-    public void setDatabaseInstallDate(Date databaseInstallDate) {
-        this.databaseInstallDate = databaseInstallDate;
-    }
-
-    public String getAppInstallVersion() {
-        return appInstallVersion;
-    }
-    public void setAppInstallVersion(String appInstallVersion) {
-        this.appInstallVersion = appInstallVersion;
-    }
-
-    public String getAppCurrentVersion() {
-        return appCurrentVersion;
-    }
-    public void setAppCurrentVersion(String appCurrentVersion) {
-        this.appCurrentVersion = appCurrentVersion;
-    }
-
-    public Date getLastVersionUpdate() {
-        return lastVersionUpdate;
-    }
-    public void setLastVersionUpdate(Date lastVersionUpdate) {
-        this.lastVersionUpdate = lastVersionUpdate;
-    }
 
     @PrePersist
     public void onCreate() {

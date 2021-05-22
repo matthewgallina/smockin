@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.Data;
+
 import javax.persistence.*;
 
 /**
@@ -7,6 +9,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "REST_MOCK_JS_HANDLER")
+@Data
 public class RestfulMockJavaScriptHandler extends Identifier {
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -15,19 +18,5 @@ public class RestfulMockJavaScriptHandler extends Identifier {
 
     @Column(name = "SYNTAX", length = Integer.MAX_VALUE)
     private String syntax;
-
-    public RestfulMock getRestfulMock() {
-        return restfulMock;
-    }
-    public void setRestfulMock(RestfulMock restfulMock) {
-        this.restfulMock = restfulMock;
-    }
-
-    public String getSyntax() {
-        return syntax;
-    }
-    public void setSyntax(String syntax) {
-        this.syntax = syntax;
-    }
 
 }

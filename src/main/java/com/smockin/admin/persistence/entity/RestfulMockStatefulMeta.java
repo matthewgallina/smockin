@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.Data;
+
 import javax.persistence.*;
 
 
@@ -8,6 +10,7 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "REST_MOCK_STATEFUL_META")
+@Data
 public class RestfulMockStatefulMeta extends Identifier {
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -22,33 +25,5 @@ public class RestfulMockStatefulMeta extends Identifier {
 
     @Column(name = "ID_FIELD_LOCATION", length = 200)
     private String idFieldLocation;
-
-    public RestfulMock getRestfulMock() {
-        return restfulMock;
-    }
-    public void setRestfulMock(RestfulMock restfulMock) {
-        this.restfulMock = restfulMock;
-    }
-
-    public String getInitialResponseBody() {
-        return initialResponseBody;
-    }
-    public void setInitialResponseBody(String initialResponseBody) {
-        this.initialResponseBody = initialResponseBody;
-    }
-
-    public String getIdFieldName() {
-        return idFieldName;
-    }
-    public void setIdFieldName(String idFieldName) {
-        this.idFieldName = idFieldName;
-    }
-
-    public String getIdFieldLocation() {
-        return idFieldLocation;
-    }
-    public void setIdFieldLocation(String idFieldLocation) {
-        this.idFieldLocation = idFieldLocation;
-    }
 
 }

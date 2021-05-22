@@ -36,6 +36,9 @@ public final class RuleEngineUtils {
             return null;
         }
 
+        // e.g.
+        // person.name
+        // person.pets[2].type
         if (StringUtils.indexOf(fieldName, ".") > -1) {
 
             final String[] fields = StringUtils.split(fieldName,".");

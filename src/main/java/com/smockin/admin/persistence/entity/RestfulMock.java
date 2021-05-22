@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.entity;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.List;
 @Table(name = "REST_MOCK", uniqueConstraints={
     @UniqueConstraint(columnNames = {"PATH", "HTTP_METHOD", "CREATED_BY"})
 })
+@Data
 public class RestfulMock extends Identifier {
 
     @Column(name = "PATH", nullable = false, length = 1000)
@@ -120,162 +122,6 @@ public class RestfulMock extends Identifier {
         this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
         this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
         this.project = project;
-    }
-
-    public String getPath() {
-        return path;
-    }
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public RestMethodEnum getMethod() {
-        return method;
-    }
-    public void setMethod(RestMethodEnum method) {
-        this.method = method;
-    }
-
-    public RecordStatusEnum getStatus() {
-        return status;
-    }
-    public void setStatus(RecordStatusEnum status) {
-        this.status = status;
-    }
-
-    public RestMockTypeEnum getMockType() {
-        return mockType;
-    }
-    public void setMockType(RestMockTypeEnum mockType) {
-        this.mockType = mockType;
-    }
-
-    public long getProxyTimeOutInMillis() {
-        return proxyTimeOutInMillis;
-    }
-    public void setProxyTimeOutInMillis(long proxyTimeOutInMillis) {
-        this.proxyTimeOutInMillis = proxyTimeOutInMillis;
-    }
-
-    public long getWebSocketTimeoutInMillis() {
-        return webSocketTimeoutInMillis;
-    }
-    public void setWebSocketTimeoutInMillis(long webSocketTimeoutInMillis) {
-        this.webSocketTimeoutInMillis = webSocketTimeoutInMillis;
-    }
-
-    public long getSseHeartBeatInMillis() {
-        return sseHeartBeatInMillis;
-    }
-    public void setSseHeartBeatInMillis(long sseHeartBeatInMillis) {
-        this.sseHeartBeatInMillis = sseHeartBeatInMillis;
-    }
-
-    public boolean isProxyPushIdOnConnect() {
-        return proxyPushIdOnConnect;
-    }
-    public void setProxyPushIdOnConnect(boolean proxyPushIdOnConnect) {
-        this.proxyPushIdOnConnect = proxyPushIdOnConnect;
-    }
-
-    public int getInitializationOrder() {
-        return initializationOrder;
-    }
-    public void setInitializationOrder(int initializationOrder) {
-        this.initializationOrder = initializationOrder;
-    }
-
-    public boolean isRandomiseDefinitions() {
-        return randomiseDefinitions;
-    }
-    public void setRandomiseDefinitions(boolean randomiseDefinitions) {
-        this.randomiseDefinitions = randomiseDefinitions;
-    }
-
-    public boolean isRandomiseLatency() {
-        return randomiseLatency;
-    }
-    public void setRandomiseLatency(boolean randomiseLatency) {
-        this.randomiseLatency = randomiseLatency;
-    }
-
-    public long getRandomiseLatencyRangeMinMillis() {
-        return randomiseLatencyRangeMinMillis;
-    }
-    public void setRandomiseLatencyRangeMinMillis(long randomiseLatencyRangeMinMillis) {
-        this.randomiseLatencyRangeMinMillis = randomiseLatencyRangeMinMillis;
-    }
-
-    public long getRandomiseLatencyRangeMaxMillis() {
-        return randomiseLatencyRangeMaxMillis;
-    }
-    public void setRandomiseLatencyRangeMaxMillis(long randomiseLatencyRangeMaxMillis) {
-        this.randomiseLatencyRangeMaxMillis = randomiseLatencyRangeMaxMillis;
-    }
-
-    public List<RestfulMockDefinitionRule> getRules() {
-        return rules;
-    }
-    public void setRules(List<RestfulMockDefinitionRule> rules) {
-        this.rules = rules;
-    }
-
-    public List<RestfulMockDefinitionOrder> getDefinitions() {
-        return definitions;
-    }
-    public void setDefinitions(List<RestfulMockDefinitionOrder> definitions) {
-        this.definitions = definitions;
-    }
-
-    public RestfulMockJavaScriptHandler getJavaScriptHandler() {
-        return javaScriptHandler;
-    }
-    public void setJavaScriptHandler(RestfulMockJavaScriptHandler javaScriptHandler) {
-        this.javaScriptHandler = javaScriptHandler;
-    }
-
-    public RestfulProject getProject() {
-        return project;
-    }
-    public void setProject(RestfulProject project) {
-        this.project = project;
-    }
-
-    @Deprecated
-    public boolean isProxyForwardWhenNoRuleMatch() {
-        return proxyForwardWhenNoRuleMatch;
-    }
-    @Deprecated
-    public void setProxyForwardWhenNoRuleMatch(boolean proxyForwardWhenNoRuleMatch) {
-        this.proxyForwardWhenNoRuleMatch = proxyForwardWhenNoRuleMatch;
-    }
-
-    public SmockinUser getCreatedBy() {
-        return createdBy;
-    }
-    public void setCreatedBy(SmockinUser createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public RestfulMock getStatefulParent() {
-        return statefulParent;
-    }
-    public void setStatefulParent(RestfulMock statefulParent) {
-        this.statefulParent = statefulParent;
-    }
-
-    public List<RestfulMock> getStatefulChildren() {
-        return statefulChildren;
-    }
-    public void setStatefulChildren(List<RestfulMock> statefulChildren) {
-        this.statefulChildren = statefulChildren;
-    }
-
-    public RestfulMockStatefulMeta getRestfulMockStatefulMeta() {
-        return restfulMockStatefulMeta;
-    }
-    public void setRestfulMockStatefulMeta(RestfulMockStatefulMeta restfulMockStatefulMeta) {
-        this.restfulMockStatefulMeta = restfulMockStatefulMeta;
     }
 
 }
