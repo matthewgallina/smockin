@@ -24,7 +24,7 @@
 
 sMockin is an API mocking tool used to dynamically simulate HTTP endpoints.
 
-Featuring a rich UI and an inbuilt HTTP mock server, mocking your existing or new API model can be done quickly and without any coding or scripting.
+Featuring a rich UI and HTTP mock server, replicating existing or creating new APIs can be done quickly both with JavaScript or without code.
 
 Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA / IoT / microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
 
