@@ -36,6 +36,8 @@ sMockin runs as a small web app which can be either installed locally onto a per
 
 ![client call](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/client-call.png)
 
+![ui-client-call](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/ui-client-call.png)
+
 <br/>
 
 ### KEY FEATURES
