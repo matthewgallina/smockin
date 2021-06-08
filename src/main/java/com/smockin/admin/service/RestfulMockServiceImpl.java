@@ -62,7 +62,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
 
         restfulMockServiceUtils.validateMockPathDoesNotStartWithUsername(dto.getPath());
 
-        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         RestfulMock mainMock = restfulMockServiceUtils.buildRestfulMock(dto, smockinUser);
 
@@ -131,7 +131,7 @@ public class RestfulMockServiceImpl implements RestfulMockService {
     public List<RestfulMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
         logger.debug("loadAll called");
 
-        return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentUser(token).getId()));
+        return restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.findAllByUser(userTokenServiceUtils.loadCurrentActiveUser(token).getId()));
     }
 
     RestfulMock loadRestMock(final String mockExtId) throws RecordNotFoundException {

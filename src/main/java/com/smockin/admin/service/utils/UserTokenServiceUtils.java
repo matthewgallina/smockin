@@ -19,7 +19,7 @@ public class UserTokenServiceUtils {
     @Autowired
     private SmockinUserService smockinUserService;
 
-    public SmockinUser loadCurrentUser(final String token) throws RecordNotFoundException {
+    public SmockinUser loadCurrentActiveUser(final String token) throws RecordNotFoundException {
 
         if (UserModeEnum.INACTIVE.equals(smockinUserService.getUserMode())) {
             return smockinUserService.loadDefaultUser()
@@ -31,7 +31,7 @@ public class UserTokenServiceUtils {
 
     public void validateRecordOwner(final SmockinUser recordOwner, final String token) throws RecordNotFoundException, ValidationException {
 
-        final SmockinUser currentUser = loadCurrentUser(token);
+        final SmockinUser currentUser = loadCurrentActiveUser(token);
 
         if (recordOwner.getId() != currentUser.getId()) {
             throw new ValidationException("Insufficient record access");

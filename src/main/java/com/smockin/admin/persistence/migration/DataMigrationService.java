@@ -54,11 +54,15 @@ public class DataMigrationService {
     @Autowired
     private MigrationPatch_2100 migrationPatch_2100;
 
+    @Autowired
+    private MigrationPatch_2160 migrationPatch_2160;
+
 
     private final Set<MigrationPatch> patches = new HashSet<>();
 
     @Transactional
-    public void applyVersionChanges(final String currentVersion, final String latestVersion) throws MigrationException {
+    public void applyVersionChanges(final String currentVersion,
+                                    final String latestVersion) throws MigrationException {
 
         if (currentVersion == null) {
             // new app, no need to migrate
@@ -102,6 +106,7 @@ public class DataMigrationService {
         patches.add(migrationPatch_210);
         patches.add(migrationPatch_290);
         patches.add(migrationPatch_2100);
+        patches.add(migrationPatch_2160);
 
     }
 

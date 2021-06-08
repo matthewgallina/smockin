@@ -108,7 +108,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
                     return false;
                 }
 
-                final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentUser(token);
+                final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
                 final boolean showAllUserCalls = BooleanUtils.toBoolean(showAll);
 

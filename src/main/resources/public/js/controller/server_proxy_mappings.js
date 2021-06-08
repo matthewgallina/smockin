@@ -167,20 +167,16 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         }
 
         var req = {
-            "proxyMode" : $scope.proxyMappingConfig.proxyMode,
             "proxyModeType" : $scope.proxyMappingConfig.proxyModeType,
             "doNotForwardWhen404Mock" : $scope.proxyMappingConfig.doNotForwardWhen404Mock,
             "proxyForwardMappings" : $scope.proxyMappingConfig.proxyForwardMappings
         }
 
         // Send update
-        restClient.doPut($http, '/mockedserver/config/' + ServerType + '/proxy', req, function(status, data) {
+        restClient.doPost($http, '/mockedserver/config/' + ServerType + '/user/proxy', req, function(status, data) {
 
-            if (status == 204) {
-                $uibModalInstance.close({
-                    "restartReq" : true
-                });
-
+            if (status == 200) {
+                $uibModalInstance.close();
                 return;
             }
 
@@ -272,7 +268,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     // Internal Functions
     function loadProxyConfig() {
 
-        restClient.doGet($http, '/mockedserver/config/' + ServerType + '/proxy', function(status, data) {
+        restClient.doGet($http, '/mockedserver/config/' + ServerType + '/user/proxy', function(status, data) {
 
             // Always expect server config to be present.
             if (status == 200) {

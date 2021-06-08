@@ -12,6 +12,10 @@ import javax.persistence.*;
 @Data
 public class ProxyForwardMapping extends Identifier {
 
+    @ManyToOne
+    @JoinColumn(name = "PROXY_FORWARD_USER_CONFIG_ID", nullable = false)
+    private ProxyForwardUserConfig proxyForwardUserConfig;
+
     @Column(name = "PATH", length = 1000, nullable = false, unique = true)
     private String path;
 
@@ -21,9 +25,5 @@ public class ProxyForwardMapping extends Identifier {
     @ColumnDefault("false")
     @Column(name = "IS_DISABLED", nullable = false)
     private boolean disabled;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="CREATED_BY")
-    private SmockinUser createdBy;
 
 }

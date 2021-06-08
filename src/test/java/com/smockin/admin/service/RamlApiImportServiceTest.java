@@ -63,7 +63,7 @@ public class RamlApiImportServiceTest {
 
         Mockito.when(restfulMockService.createEndpoint(Mockito.any(RestfulMockDTO.class), Mockito.anyString())).thenReturn("1");
 
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(user);
+        Mockito.when(userTokenServiceUtils.loadCurrentActiveUser(Mockito.anyString())).thenReturn(user);
         Mockito.when(user.getSessionToken()).thenReturn(GeneralUtils.generateUUID());
 
         Mockito.doNothing().when(restfulMockServiceUtils)

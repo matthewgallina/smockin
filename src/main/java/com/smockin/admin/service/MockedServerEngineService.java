@@ -9,6 +9,7 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigResponseDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,10 +29,10 @@ public interface MockedServerEngineService {
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;
     void handleServerAutoStart();
 
-    ProxyForwardConfigDTO loadProxyForwardConfig(final ServerTypeEnum type);
-    void saveProxyForwardMappings(final ServerTypeEnum serverType,
-                                  final ProxyForwardConfigDTO proxyForwardConfigDTO,
-                                  final String token) throws AuthException, ValidationException, RecordNotFoundException;
+//    ProxyForwardConfigDTO loadProxyForwardConfig(final ServerTypeEnum type);
+//    void saveProxyForwardMappings(final ServerTypeEnum serverType,
+//                                  final ProxyForwardConfigDTO proxyForwardConfigDTO,
+//                                  final String token) throws AuthException, ValidationException, RecordNotFoundException;
 
     void addLiveLoggingPathToBlock(final RestMethodEnum method,
                                    final String path,
@@ -41,10 +42,15 @@ public interface MockedServerEngineService {
                                       final String path,
                                       final String token) throws ValidationException;
 
-    Optional<String> exportProxyMappings(final String token)
-            throws AuthException;
+    Optional<String> exportProxyMappings(final String token);
 
     String importProxyMappingsFile(final MultipartFile file, final boolean keepExisting, final String token)
-            throws MockImportException, AuthException, ValidationException;
+            throws MockImportException, ValidationException;
+
+    void updateProxyMode(final boolean enableProxyMode, final String token) throws AuthException;
+
+    ProxyForwardConfigResponseDTO loadProxyForwardMappingsForUser(final String token);
+    void saveProxyForwardMappingsForUser(final ProxyForwardConfigDTO proxyForwardConfigDTO,
+                                          final String token) throws AuthException, ValidationException, RecordNotFoundException;
 
 }

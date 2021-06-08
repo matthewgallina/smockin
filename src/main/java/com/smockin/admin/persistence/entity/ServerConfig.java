@@ -1,6 +1,5 @@
 package com.smockin.admin.persistence.entity;
 
-import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
@@ -39,14 +38,6 @@ public class ServerConfig extends Identifier {
     @ColumnDefault("false")
     @Column(name = "PROXY_MODE", nullable = false)
     private boolean proxyMode;
-
-    @Column(name = "PROXY_MODE_TYPE", length = 8)
-    @Enumerated(EnumType.STRING)
-    private ProxyModeTypeEnum proxyModeType;
-
-    @ColumnDefault("false")
-    @Column(name = "NO_FORWARD_WHEN_404_MOCK", nullable = false)
-    private boolean doNotForwardWhen404Mock;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> nativeProperties = new HashMap<>();
