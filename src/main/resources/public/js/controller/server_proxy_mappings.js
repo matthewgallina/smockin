@@ -10,7 +10,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     $scope.RestfulServerType = globalVars.RestfulServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
-    $scope.isLoggedIn = auth.isLoggedIn();
+    var isLoggedIn = auth.isLoggedIn();
     $scope.ActiveStatus = 'ACTIVE';
     $scope.ReactiveStatus = 'REACTIVE';
 
@@ -20,7 +20,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"HTTP":ServerType;
     $scope.proxyMappingsHeading = ServerTypeLabel + ' Proxy Settings';
 
-    $scope.proxyModeLabel = 'Enable Proxy Mode';
+    $scope.proxyModeLabel = 'Enable Proxy Mode' + ((isLoggedIn) ? ' (global setting, applies to all users)' : '');
     $scope.proxyModeActiveTypeLabel = 'Look for matching MOCK first, if nothing found, then forward request DOWNSTREAM';
     $scope.proxyModeReactiveTypeLabel = 'Forward request DOWNSTREAM first, if nothing found, then look for a matching MOCK';
     $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
@@ -69,6 +69,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     //
     // Data Objects
+    var currentProxyMode = false;
+
     $scope.proxyMappingConfig = {
         "proxyMode" : null,
         "proxyModeType" : null,
@@ -119,10 +121,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     };
 
     $scope.doSaveProxyMappings = function() {
-
-        if ($scope.readOnly) {
-            return;
-        }
 
         // Validation
         if ($scope.proxyMappingConfig.proxyMode
@@ -176,7 +174,16 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         restClient.doPost($http, '/mockedserver/config/' + ServerType + '/user/proxy', req, function(status, data) {
 
             if (status == 200) {
+
+                // Update the proxy mode if this has been changed and the user is an admin.
+                if (!$scope.readOnly
+                        && currentProxyMode != $scope.proxyMappingConfig.proxyMode) {
+                    doToggleProxyMode($scope.proxyMappingConfig.proxyMode);
+                    return;
+                }
+
                 $uibModalInstance.close();
+
                 return;
             }
 
@@ -184,6 +191,21 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         });
 
     };
+
+    function doToggleProxyMode(enableProxyMode) {
+
+        // Send update
+        restClient.doPost($http, '/mockedserver/config/' + ServerType + '/proxy/mode?enableProxyMode=' + enableProxyMode, {}, function(status, data) {
+
+            if (status == 202) {
+                $uibModalInstance.close();
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    }
 
     $scope.isBlank = function(input) {
         return utils.isBlank(input);
@@ -212,9 +234,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
                     if (running != null && running) {
 
-                        $uibModalInstance.close({
-                            "restartReq" : true
-                        });
+                        $uibModalInstance.close();
 
                     } else {
 
@@ -272,6 +292,8 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
             // Always expect server config to be present.
             if (status == 200) {
+
+                currentProxyMode = data.proxyMode;
 
                 $scope.proxyMappingConfig = {
                     "proxyMode" : data.proxyMode,

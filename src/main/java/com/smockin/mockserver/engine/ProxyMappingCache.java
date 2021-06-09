@@ -16,6 +16,7 @@ public class ProxyMappingCache {
 
     public void init(final List<ProxyForwardConfigCacheDTO> allProxyForwardConfig) {
 
+        // (clear all previous cached mappings during server start up)
         proxyForwardConfigRef.set(
 
             allProxyForwardConfig

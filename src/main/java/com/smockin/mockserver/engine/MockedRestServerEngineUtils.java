@@ -12,7 +12,6 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.HttpClientService;
-import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardConfigCacheDTO;
 import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.exception.InboundParamMatchException;
@@ -81,13 +80,13 @@ public class MockedRestServerEngineUtils {
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode,
-                                               final MockedServerConfigDTO serverConfig) {
+                                               final boolean isProxyMode) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        return (serverConfig.isProxyMode())
+        return (isProxyMode)
             ? handleProxyInterceptorMode(isMultiUserMode,
                                          request,
                                          response)
@@ -283,11 +282,7 @@ public class MockedRestServerEngineUtils {
                 .stream()
                 .collect(Collectors.toMap(k -> k, v -> request.headers(v))));
 
-        // Sanitize host header
-        String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
-        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
-        host = StringUtils.removeAll(host, "/");
-        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
+        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, sanitizeHost(proxyDownstreamURL));
 
         try {
             return Optional.of(httpClientService.handleExternalCall(httpClientCallDTO));
@@ -296,6 +291,15 @@ public class MockedRestServerEngineUtils {
             return Optional.empty();
         }
 
+    }
+
+    String sanitizeHost(final String proxyDownstreamURL) {
+
+        String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
+        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
+        host = StringUtils.removeAll(host, GeneralUtils.URL_PATH_SEPARATOR);
+
+        return host;
     }
 
     Optional<String> handleClientDownstreamProxyCallResponse(final Optional<HttpClientResponseDTO> httpClientResponseOpt,

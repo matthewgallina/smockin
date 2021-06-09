@@ -10,12 +10,14 @@
     <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{alert.msg}}</div>
 
     <div class="form-group">
-        <input id="proxyMode"  ng-model="proxyMappingConfig.proxyMode" type="checkbox" />
-        <label for="proxyMode" class="ng-binding">{{ proxyModeLabel }}</label>
 
-        <br />
+        <input id="proxyMode"  ng-model="proxyMappingConfig.proxyMode" type="checkbox" ng-if="!readOnly" />
+        <label for="proxyMode" class="ng-binding" ng-if="!readOnly">{{ proxyModeLabel }}</label>
 
-        <div id="proxy-mode-type" class="btn-group" ng-if="proxyMappingConfig.proxyMode" uib-dropdown>
+        <br ng-if="!readOnly" />
+        <br ng-if="!readOnly" />
+
+        <div id="proxy-mode-type" class="btn-group" uib-dropdown>
             <button id="proxy-mode-type-button" type="button" class="btn btn-default dropdown-toggle" uib-dropdown-toggle>
                 <span ng-if="proxyMappingConfig.proxyModeType == ActiveStatus">{{ proxyModeActiveTypeLabel }}</span>
                 <span ng-if="proxyMappingConfig.proxyModeType == ReactiveStatus">{{ proxyModeReactiveTypeLabel }}</span>
@@ -32,13 +34,12 @@
         <br />
         <br />
 
-        <div class="form-group" ng-if="proxyMappingConfig.proxyMode && proxyMappingConfig.proxyModeType == ActiveStatus">
+        <div class="form-group" ng-if="proxyMappingConfig.proxyModeType == ActiveStatus">
             <input id="doNotForwardWhen404Mock"  ng-model="proxyMappingConfig.doNotForwardWhen404Mock" type="checkbox" />
             <label for="doNotForwardWhen404Mock" class="ng-binding">{{ activeProxy404MockDoNotForwardLabel }}</label>
         </div>
 
-        <div class="form-group" ng-if="proxyMappingConfig.proxyMode">
-
+        <div class="form-group">
 
             <label for="pathUrlMappings" class="ng-binding default-label-color">{{ pathUrlMappingsLabel }} ( <a href ng-click="doImportProxyMappings()">{{ importLabel }}</a><span ng-if="proxyMappingConfig.proxyForwardMappings.length > 0"> | <a href ng-click="doExportProxyMappings()">{{ exportLabel }}</a></span> )</label>
 

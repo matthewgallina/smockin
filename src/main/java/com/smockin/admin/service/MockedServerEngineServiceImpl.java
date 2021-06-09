@@ -10,6 +10,7 @@ import com.smockin.admin.persistence.entity.ProxyForwardMapping;
 import com.smockin.admin.persistence.entity.ProxyForwardUserConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -63,9 +65,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private UserTokenServiceUtils userTokenServiceUtils;
-
-//    @Autowired
-//    private ProxyForwardMappingDAO proxyForwardMappingDAO;
 
     @Autowired
     private ProxyForwardUserConfigDAO proxyForwardUserConfigDAO;
@@ -197,94 +196,19 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Override
     public void handleServerAutoStart() {
 
-        serverConfigDAO.findAll().stream().forEach(sc -> {
-            if (sc.isAutoStart()) {
-                try {
-                    autoStartManager(sc.getServerType());
-                } catch (MockServerException ex) {
-                    logger.error("Error auto starting server type : " + sc.getServerType(), ex);
-                }
-            }
-        });
+        serverConfigDAO.findAll()
+                .stream()
+                .forEach(sc -> {
+                    if (sc.isAutoStart()) {
+                        try {
+                            autoStartManager(sc.getServerType());
+                        } catch (MockServerException ex) {
+                            logger.error("Error auto starting server type : " + sc.getServerType(), ex);
+                        }
+                    }
+                });
 
     }
-
-    /*
-    @Override
-    public ProxyForwardConfigDTO loadProxyForwardConfig(final ServerTypeEnum type) {
-
-        final ServerConfig serverConfig = serverConfigDAO.findByServerType(type);
-
-        if (serverConfig == null) {
-            throw new RecordNotFoundException();
-        }
-
-        final ProxyForwardConfigDTO dto = new ProxyForwardConfigDTO();
-
-        dto.setProxyModeType(serverConfig.getProxyModeType());
-        dto.setDoNotForwardWhen404Mock(serverConfig.isDoNotForwardWhen404Mock());
-
-        dto.setProxyForwardMappings(proxyForwardMappingDAO.findAll()
-            .stream()
-            .map(m -> new ProxyForwardMappingDTO(m.getPath(), m.getProxyForwardUrl(), m.isDisabled()))
-            .collect(Collectors.toList()));
-
-        return dto;
-    }
-
-
-    @Override
-    public void saveProxyForwardMappings(
-            final ServerTypeEnum serverType,
-            final ProxyForwardConfigDTO proxyForwardConfigDTO,
-            final String token)
-                throws AuthException, ValidationException, RecordNotFoundException {
-
-        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
-
-        if (proxyForwardConfigDTO.isProxyMode()
-                && !proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()) {
-
-            //
-            // Validation
-            validateProxyMappings(proxyForwardConfigDTO.getProxyForwardMappings());
-
-        }
-
-        //
-        // Save proxy related server config
-        final ServerConfig serverConfig = serverConfigDAO.findByServerType(serverType);
-
-        if (serverConfig == null) {
-            throw new RecordNotFoundException();
-        }
-
-        serverConfig.setProxyMode(proxyForwardConfigDTO.isProxyMode());
-
-        // Only update if proxy mode is enabled so as to preserve previous values
-        if (proxyForwardConfigDTO.isProxyMode()) {
-            serverConfig.setProxyModeType(proxyForwardConfigDTO.getProxyModeType());
-            serverConfig.setDoNotForwardWhen404Mock(proxyForwardConfigDTO.isDoNotForwardWhen404Mock());
-        }
-
-        serverConfigDAO.save(serverConfig);
-
-
-        // Only update if proxy mode is enabled so as to preserve previous values
-        if (proxyForwardConfigDTO.isProxyMode()) {
-
-            // Delete all existing mappings
-            proxyForwardMappingDAO.deleteAll();
-            proxyForwardMappingDAO.flush();
-
-            // Save latest mappings
-            saveProxyMappings(proxyForwardConfigDTO.getProxyForwardMappings());
-
-        }
-
-    }
-*/
-
 
     boolean isProxyModeEnabled() {
 
@@ -300,6 +224,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Override
     public void updateProxyMode(final boolean enableProxyMode, final String token) throws AuthException {
 
+        // only admin is allowed to enable / disable this.
         smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
 
         final ServerConfig serverConfig = serverConfigDAO.findByServerType(ServerTypeEnum.RESTFUL);
@@ -312,32 +237,38 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         serverConfigDAO.save(serverConfig);
 
+        // Update mock server
+        mockedRestServerEngine.updateProxyMode(enableProxyMode);
+
     }
 
     List<ProxyForwardConfigCacheDTO> loadAllUserProxyForwardMappings() {
 
         return proxyForwardUserConfigDAO.findAll().stream()
-                .map(pm -> {
+                .map(pm ->
+                        toProxyForwardConfigCacheDTO(pm)
+                ).collect(Collectors.toList());
+    }
 
-                    final ProxyForwardConfigCacheDTO dto = new ProxyForwardConfigCacheDTO(
-                            pm.getCreatedBy().getExtId(),
-                            pm.getCreatedBy().getCtxPath());
+    ProxyForwardConfigCacheDTO toProxyForwardConfigCacheDTO(final ProxyForwardUserConfig pm) {
 
-                    dto.setProxyModeType(pm.getProxyModeType());
-                    dto.setDoNotForwardWhen404Mock(pm.isDoNotForwardWhen404Mock());
-                    dto.setProxyForwardMappings(
-                            pm.getProxyForwardMappings()
-                                    .stream()
-                                    .map(m ->
-                                            new ProxyForwardMappingDTO(
-                                                    m.getPath(),
-                                                    m.getProxyForwardUrl(),
-                                                    m.isDisabled()))
-                                    .collect(Collectors.toList()));
+        final ProxyForwardConfigCacheDTO dto = new ProxyForwardConfigCacheDTO(
+                pm.getCreatedBy().getExtId(),
+                pm.getCreatedBy().getCtxPath());
 
-                    return dto;
+        dto.setProxyModeType(pm.getProxyModeType());
+        dto.setDoNotForwardWhen404Mock(pm.isDoNotForwardWhen404Mock());
+        dto.setProxyForwardMappings(
+                pm.getProxyForwardMappings()
+                        .stream()
+                        .map(m ->
+                                new ProxyForwardMappingDTO(
+                                        m.getPath(),
+                                        m.getProxyForwardUrl(),
+                                        m.isDisabled()))
+                        .collect(Collectors.toList()));
 
-                }).collect(Collectors.toList());
+        return dto;
     }
 
     @Override
@@ -345,8 +276,17 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
-        final ProxyForwardUserConfig proxyForwardUserConfig
+        ProxyForwardUserConfig proxyForwardUserConfig
                 = proxyForwardUserConfigDAO.findByUser(smockinUser.getId());
+
+        // Create new record for user if this does not exist
+        if (proxyForwardUserConfig == null) {
+            proxyForwardUserConfig = buildNewProxyForwardUserConfig(smockinUser);
+            proxyForwardUserConfig.setProxyModeType(ProxyModeTypeEnum.ACTIVE);
+            proxyForwardUserConfig.setDoNotForwardWhen404Mock(false);
+
+            saveUserProxyMappings(proxyForwardUserConfig, Arrays.asList());
+        }
 
         return new ProxyForwardConfigResponseDTO(
                 isProxyModeEnabled(),
@@ -368,16 +308,6 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             final String token)
             throws ValidationException, RecordNotFoundException {
 
-        final ServerConfig serverConfig = serverConfigDAO.findByServerType(ServerTypeEnum.RESTFUL);
-
-        if (serverConfig == null) {
-            throw new RecordNotFoundException();
-        }
-
-        if (!serverConfig.isProxyMode()) {
-            throw new ValidationException("Proxy mode is not currently enabled. Please enable this or contact an Admin");
-        }
-
         if (!proxyForwardConfigDTO.getProxyForwardMappings().isEmpty()) {
 
             //
@@ -396,9 +326,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 = proxyForwardUserConfigDAO.findByUser(smockinUser.getId());
 
         if (proxyForwardUserConfig == null) {
-            proxyForwardUserConfig = new ProxyForwardUserConfig();
-            proxyForwardUserConfig.setCreatedBy(smockinUser);
-            proxyForwardUserConfig.setServerConfig(serverConfig);
+            proxyForwardUserConfig = buildNewProxyForwardUserConfig(smockinUser);
         }
 
         proxyForwardUserConfig.setProxyModeType(proxyForwardConfigDTO.getProxyModeType());
@@ -415,6 +343,21 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         proxyMappingCache.update(cacheDTO);
 
+    }
+
+    ProxyForwardUserConfig buildNewProxyForwardUserConfig(final SmockinUser smockinUser) {
+
+        final ServerConfig serverConfig = serverConfigDAO.findByServerType(ServerTypeEnum.RESTFUL);
+
+        if (serverConfig == null) {
+            throw new RecordNotFoundException();
+        }
+
+        final ProxyForwardUserConfig proxyForwardUserConfig = new ProxyForwardUserConfig();
+        proxyForwardUserConfig.setCreatedBy(smockinUser);
+        proxyForwardUserConfig.setServerConfig(serverConfig);
+
+        return proxyForwardUserConfig;
     }
 
     @Override
@@ -548,31 +491,37 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     void saveUserProxyMappings(final ProxyForwardUserConfig proxyForwardUserConfig,
                                final List<ProxyForwardMappingDTO> proxyForwardMappings) {
 
-        if (proxyForwardMappings.isEmpty()) {
-            return;
-        }
-
         proxyForwardUserConfig.getProxyForwardMappings().clear();
 
-        proxyForwardUserConfig.getProxyForwardMappings().addAll(
-                proxyForwardMappings
-                    .stream()
-                    .map(dto -> {
+        if (!proxyForwardMappings.isEmpty()) {
 
-                        final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
-                        proxyForwardMapping.setProxyForwardUserConfig(proxyForwardUserConfig);
-                        proxyForwardMapping.setPath(
-                                (!StringUtils.startsWith(dto.getPath(), GeneralUtils.URL_PATH_SEPARATOR)
-                                        && !StringUtils.equals(dto.getPath(), GeneralUtils.PATH_WILDCARD)) ? GeneralUtils.URL_PATH_SEPARATOR : ""
-                                        + dto.getPath());
-                        proxyForwardMapping.setProxyForwardUrl(dto.getProxyForwardUrl());
-                        proxyForwardMapping.setDisabled(dto.isDisabled());
+            proxyForwardUserConfig.getProxyForwardMappings().addAll(
+                    proxyForwardMappings
+                            .stream()
+                            .map(dto ->
+                                toProxyForwardMapping(dto, proxyForwardUserConfig)
+                            ).collect(Collectors.toList()));
 
-                        return proxyForwardMapping;
-
-                    }).collect(Collectors.toList()));
+        }
 
         proxyForwardUserConfigDAO.save(proxyForwardUserConfig);
+    }
+
+    ProxyForwardMapping toProxyForwardMapping(final ProxyForwardMappingDTO proxyForwardMappingDTO,
+                                              final ProxyForwardUserConfig proxyForwardUserConfig) {
+
+        final ProxyForwardMapping proxyForwardMapping = new ProxyForwardMapping();
+
+        proxyForwardMapping.setProxyForwardUserConfig(proxyForwardUserConfig);
+        proxyForwardMapping.setPath(
+                (!StringUtils.startsWith(proxyForwardMappingDTO.getPath(), GeneralUtils.URL_PATH_SEPARATOR)
+                        && !StringUtils.equals(proxyForwardMappingDTO.getPath(), GeneralUtils.PATH_WILDCARD)) ? GeneralUtils.URL_PATH_SEPARATOR : ""
+                        + proxyForwardMappingDTO.getPath());
+        proxyForwardMapping.setProxyForwardUrl(proxyForwardMappingDTO.getProxyForwardUrl());
+        proxyForwardMapping.setDisabled(proxyForwardMappingDTO.isDisabled());
+
+        return proxyForwardMapping;
+
     }
 
     void autoStartManager(final ServerTypeEnum serverType) throws MockServerException {
