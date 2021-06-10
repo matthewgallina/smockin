@@ -24,7 +24,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     $scope.proxyModeActiveTypeLabel = 'Look for matching MOCK first, if nothing found, then forward request DOWNSTREAM';
     $scope.proxyModeReactiveTypeLabel = 'Forward request DOWNSTREAM first, if nothing found, then look for a matching MOCK';
     $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
-    $scope.useDefaultForwardingUrlLabel = 'Include default (fallback) downstream URL';
     $scope.pathUrlMappingsLabel = 'Path to URL Mappings';
     $scope.pathLabel = 'Path';
     $scope.proxyForwardUrlLabel = 'Downstream URL';
@@ -75,7 +74,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         "proxyMode" : null,
         "proxyModeType" : null,
         "doNotForwardWhen404Mock" : null,
-        "defaultProxyForwardRow" : false,
         "proxyForwardMappings" : []
     };
 
@@ -100,24 +98,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                 $scope.proxyMappingConfig.proxyForwardMappings[p].disabled = !$scope.proxyMappingConfig.proxyForwardMappings[p].disabled;
             }
         }
-    };
-
-    $scope.doToggleDefaultProxyForwardRow = function() {
-
-        if ($scope.proxyMappingConfig.defaultProxyForwardRow
-                && ($scope.proxyMappingConfig.proxyForwardMappings.length == 0
-                        || ($scope.proxyMappingConfig.proxyForwardMappings[0] != null && $scope.proxyMappingConfig.proxyForwardMappings[0].path != PathWildcard))) {
-            $scope.proxyMappingConfig.proxyForwardMappings.unshift({ "path" : PathWildcard, "proxyForwardUrl" : null, "disabled" : false });
-            return;
-        }
-
-        for (var i=0; i < $scope.proxyMappingConfig.proxyForwardMappings.length; i++) {
-            if ($scope.proxyMappingConfig.proxyForwardMappings[i].path == PathWildcard) {
-                $scope.proxyMappingConfig.proxyForwardMappings.splice(i, 1);
-                break;
-            }
-        }
-
     };
 
     $scope.doSaveProxyMappings = function() {
@@ -301,13 +281,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                     "doNotForwardWhen404Mock" : data.doNotForwardWhen404Mock,
                     "proxyForwardMappings" : data.proxyForwardMappings
                 };
-
-                for (var i=0; i < data.proxyForwardMappings.length; i++) {
-                    if (data.proxyForwardMappings[i].path == PathWildcard) {
-                        $scope.proxyMappingConfig.defaultProxyForwardRow = true;
-                        break;
-                    }
-                }
 
                 return;
             }
