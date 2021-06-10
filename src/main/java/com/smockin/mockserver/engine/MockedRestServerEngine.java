@@ -439,7 +439,7 @@ public class MockedRestServerEngine {
                     if (httpServletResponse.containsHeader(h.getKey())) {
                         httpServletResponse.setHeader(h.getKey(), h.getValue());
                     } else {
-                        httpServletResponse.addHeader(h.getKey(), h.getValue());
+                        httpServletResponse.addHeader(h.getKey(), (h.getValue() != null) ? h.getValue() : ""); // Allow for blank header values
                     }
                 });
 
