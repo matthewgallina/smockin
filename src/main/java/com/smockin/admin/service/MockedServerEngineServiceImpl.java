@@ -233,12 +233,22 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             throw new RecordNotFoundException();
         }
 
+        if (serverConfig.isProxyMode() == enableProxyMode) {
+            // no change
+            return;
+        }
+
         serverConfig.setProxyMode(enableProxyMode);
 
         serverConfigDAO.save(serverConfig);
 
         // Update mock server
         mockedRestServerEngine.updateProxyMode(enableProxyMode);
+
+        if (enableProxyMode) {
+            // Update cache with all proxy mappings
+            proxyMappingCache.init(loadAllUserProxyForwardMappings());
+        }
 
     }
 
@@ -341,7 +351,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         cacheDTO.setDoNotForwardWhen404Mock(proxyForwardConfigDTO.isDoNotForwardWhen404Mock());
         cacheDTO.setProxyForwardMappings(proxyForwardConfigDTO.getProxyForwardMappings());
 
-        proxyMappingCache.update(cacheDTO);
+        if (isProxyModeEnabled()) {
+            proxyMappingCache.update(cacheDTO);
+        }
 
     }
 

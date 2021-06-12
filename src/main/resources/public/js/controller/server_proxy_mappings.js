@@ -175,9 +175,9 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     function doToggleProxyMode(enableProxyMode) {
 
         // Send update
-        restClient.doPost($http, '/mockedserver/config/' + ServerType + '/proxy/mode?enableProxyMode=' + enableProxyMode, {}, function(status, data) {
+        restClient.doPut($http, '/mockedserver/config/' + ServerType + '/proxy/mode?enableProxyMode=' + enableProxyMode, {}, function(status, data) {
 
-            if (status == 202) {
+            if (status == 204) {
                 $uibModalInstance.close();
                 return;
             }
