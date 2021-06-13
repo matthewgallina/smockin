@@ -15,9 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 public class ProxyForwardConfigDTO {
 
-    private boolean proxyMode;
     private ProxyModeTypeEnum proxyModeType;
     private boolean doNotForwardWhen404Mock;
     private List<ProxyForwardMappingDTO> proxyForwardMappings;
+
 
 }

@@ -2,6 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "SMKN_USER")
+@Data
 public class SmockinUser extends Identifier {
 
     @Column(name = "USER_NAME", nullable = false, length = 35, unique = true)
@@ -62,76 +64,6 @@ public class SmockinUser extends Identifier {
         this.status = status;
         this.sessionToken = sessionToken;
         this.passwordResetToken = passwordResetToken;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
-
-    public String getCtxPath() {
-        return ctxPath;
-    }
-    public void setCtxPath(String ctxPath) {
-        this.ctxPath = ctxPath;
-    }
-
-    public SmockinUserRoleEnum getRole() {
-        return role;
-    }
-    public void setRole(SmockinUserRoleEnum role) {
-        this.role = role;
-    }
-
-    public RecordStatusEnum getStatus() {
-        return status;
-    }
-    public void setStatus(RecordStatusEnum status) {
-        this.status = status;
-    }
-
-    public String getSessionToken() {
-        return sessionToken;
-    }
-    public void setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-    }
-
-    public String getPasswordResetToken() {
-        return passwordResetToken;
-    }
-    public void setPasswordResetToken(String passwordResetToken) {
-        this.passwordResetToken = passwordResetToken;
-    }
-
-    public Date getPasswordResetTokenExpiry() {
-        return passwordResetTokenExpiry;
-    }
-    public void setPasswordResetTokenExpiry(Date passwordResetTokenExpiry) {
-        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
-    }
-
-    public List<RestfulMock> getRestfulMocks() {
-        return restfulMocks;
-    }
-    public void setRestfulMocks(List<RestfulMock> restfulMocks) {
-        this.restfulMocks = restfulMocks;
     }
 
 }

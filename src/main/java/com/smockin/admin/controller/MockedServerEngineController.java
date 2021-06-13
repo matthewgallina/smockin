@@ -11,6 +11,7 @@ import com.smockin.admin.service.MockedServerEngineService;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigResponseDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,36 +88,25 @@ public class MockedServerEngineController {
 
 
     //
-    // Proxy Forward Mappings
+    // Toggle Proxy Forward
     @RequestMapping(
-            path="/mockedserver/config/{serverType}/proxy",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<ProxyForwardConfigDTO> getServerConfigProxyConfig(@PathVariable("serverType") final String serverType)
-            throws ValidationException, RecordNotFoundException {
-
-        final ServerTypeEnum type = convertServerType(serverType);
-
-        return new ResponseEntity<>(mockedServerEngineService.loadProxyForwardConfig(type), HttpStatus.OK);
-    }
-
-    @RequestMapping(
-            path="/mockedserver/config/{serverType}/proxy",
+            path="/mockedserver/config/{serverType}/proxy/mode",
             method = RequestMethod.PUT,
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> putServerConfigProxyConfig(@PathVariable("serverType") final String serverType,
-                                                                      @RequestBody final ProxyForwardConfigDTO proxyForwardConfig,
-                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws RecordNotFoundException, AuthException, ValidationException {
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> putServerProxyMode(
+                                                @PathVariable("serverType") final String serverType,
+                                                @RequestParam("enableProxyMode") final boolean enableProxyMode,
+                                                @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+                                                    throws AuthException {
 
-        final ServerTypeEnum type = convertServerType(serverType);
-
-        mockedServerEngineService.saveProxyForwardMappings(type, proxyForwardConfig, GeneralUtils.extractOAuthToken(bearerToken));
+        mockedServerEngineService.updateProxyMode(enableProxyMode, GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+
+    //
+    // Proxy Forward Export / Import
     @RequestMapping(path="/mockedserver/config/{serverType}/proxy/mappings/export", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
     public @ResponseBody ResponseEntity<String> getServerConfigProxyMappingsExport(@PathVariable("serverType") final String serverType,
                                                                                    @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
@@ -138,13 +128,48 @@ public class MockedServerEngineController {
                                                                                     @RequestHeader(value = GeneralUtils.KEEP_EXISTING_HEADER_NAME) final boolean keepExisting,
                                                                                     @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
                                                                                     @RequestParam("file") final MultipartFile file)
-            throws MockImportException, AuthException, ValidationException {
+            throws MockImportException, ValidationException {
 
             mockedServerEngineService.importProxyMappingsFile(file, keepExisting, GeneralUtils.extractOAuthToken(bearerToken));
 
             return ResponseEntity.noContent().build();
     }
 
+
+    //
+    // Proxy Forward User Mappings
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/user/proxy",
+            method = RequestMethod.GET,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<ProxyForwardConfigResponseDTO> getServerConfigUserProxyMappings(
+                                                                    @PathVariable("serverType") final String serverType,
+                                                                    @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws RecordNotFoundException {
+
+        return new ResponseEntity<>(mockedServerEngineService.loadProxyForwardMappingsForUser(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            path="/mockedserver/config/{serverType}/user/proxy",
+            method = RequestMethod.POST,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> postServerConfigUserProxyMappings(
+                                                @PathVariable("serverType") final String serverType,
+                                                @RequestBody final ProxyForwardConfigDTO proxyForwardConfigDTO,
+                                                @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws AuthException, RecordNotFoundException, ValidationException {
+
+        mockedServerEngineService.saveProxyForwardMappingsForUser(
+                proxyForwardConfigDTO,
+                GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+    //
+    // Live Logging
     @RequestMapping(
             path="/mockedserver/config/{serverType}/live-logging-block/endpoint",
             method = RequestMethod.POST,

@@ -45,7 +45,7 @@ public class RuleResolverImpl implements RuleResolver {
 
         if (RuleDataTypeEnum.TEXT.equals(ruleMatchDataType)) {
 
-            if (condition.isCaseSensitive() != null && condition.isCaseSensitive()) {
+            if (condition.getCaseSensitive() != null && condition.getCaseSensitive()) {
                 return ruleMatchValue.equals(inboundValue);
             }
 
@@ -64,14 +64,14 @@ public class RuleResolverImpl implements RuleResolver {
 
         if (StringUtils.isNotBlank(inboundValue)) {
 
-            if (condition.isCaseSensitive() != null
-                    && condition.isCaseSensitive()
+            if (condition.getCaseSensitive() != null
+                    && condition.getCaseSensitive()
                     && StringUtils.isNotBlank(condition.getMatchValue())
                     && !condition.getMatchValue().equals(inboundValue)) {
                 return true;
             }
 
-            if ( ( condition.isCaseSensitive() == null || !condition.isCaseSensitive() )
+            if ( ( condition.getCaseSensitive() == null || !condition.getCaseSensitive() )
                     && ( StringUtils.isNotBlank(condition.getMatchValue()) && !condition.getMatchValue().equalsIgnoreCase(inboundValue) ) ) {
                 return true;
             }
@@ -89,7 +89,7 @@ public class RuleResolverImpl implements RuleResolver {
             return false;
         }
 
-        if (condition.isCaseSensitive() != null && condition.isCaseSensitive()) {
+        if (condition.getCaseSensitive() != null && condition.getCaseSensitive()) {
             return (inboundValue.indexOf(condition.getMatchValue()) > -1);
         }
 

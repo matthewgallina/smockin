@@ -10,7 +10,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     $scope.RestfulServerType = globalVars.RestfulServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
-    $scope.isLoggedIn = auth.isLoggedIn();
+    var isLoggedIn = auth.isLoggedIn();
     $scope.ActiveStatus = 'ACTIVE';
     $scope.ReactiveStatus = 'REACTIVE';
 
@@ -20,11 +20,10 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     var ServerTypeLabel = (ServerType == globalVars.RestfulServerType)?"HTTP":ServerType;
     $scope.proxyMappingsHeading = ServerTypeLabel + ' Proxy Settings';
 
-    $scope.proxyModeLabel = 'Enable Proxy Mode';
+    $scope.proxyModeLabel = 'Enable Proxy Mode' + ((isLoggedIn) ? ' (global setting, applies to all users)' : '');
     $scope.proxyModeActiveTypeLabel = 'Look for matching MOCK first, if nothing found, then forward request DOWNSTREAM';
     $scope.proxyModeReactiveTypeLabel = 'Forward request DOWNSTREAM first, if nothing found, then look for a matching MOCK';
     $scope.activeProxy404MockDoNotForwardLabel = 'Do not forward to downstream when 404 is a deliberate mock response';
-    $scope.useDefaultForwardingUrlLabel = 'Include default (fallback) downstream URL';
     $scope.pathUrlMappingsLabel = 'Path to URL Mappings';
     $scope.pathLabel = 'Path';
     $scope.proxyForwardUrlLabel = 'Downstream URL';
@@ -69,11 +68,12 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
     //
     // Data Objects
+    var currentProxyMode = false;
+
     $scope.proxyMappingConfig = {
         "proxyMode" : null,
         "proxyModeType" : null,
         "doNotForwardWhen404Mock" : null,
-        "defaultProxyForwardRow" : false,
         "proxyForwardMappings" : []
     };
 
@@ -100,29 +100,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         }
     };
 
-    $scope.doToggleDefaultProxyForwardRow = function() {
-
-        if ($scope.proxyMappingConfig.defaultProxyForwardRow
-                && ($scope.proxyMappingConfig.proxyForwardMappings.length == 0
-                        || ($scope.proxyMappingConfig.proxyForwardMappings[0] != null && $scope.proxyMappingConfig.proxyForwardMappings[0].path != PathWildcard))) {
-            $scope.proxyMappingConfig.proxyForwardMappings.unshift({ "path" : PathWildcard, "proxyForwardUrl" : null, "disabled" : false });
-            return;
-        }
-
-        for (var i=0; i < $scope.proxyMappingConfig.proxyForwardMappings.length; i++) {
-            if ($scope.proxyMappingConfig.proxyForwardMappings[i].path == PathWildcard) {
-                $scope.proxyMappingConfig.proxyForwardMappings.splice(i, 1);
-                break;
-            }
-        }
-
-    };
-
     $scope.doSaveProxyMappings = function() {
-
-        if ($scope.readOnly) {
-            return;
-        }
 
         // Validation
         if ($scope.proxyMappingConfig.proxyMode
@@ -167,19 +145,24 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         }
 
         var req = {
-            "proxyMode" : $scope.proxyMappingConfig.proxyMode,
             "proxyModeType" : $scope.proxyMappingConfig.proxyModeType,
             "doNotForwardWhen404Mock" : $scope.proxyMappingConfig.doNotForwardWhen404Mock,
             "proxyForwardMappings" : $scope.proxyMappingConfig.proxyForwardMappings
         }
 
         // Send update
-        restClient.doPut($http, '/mockedserver/config/' + ServerType + '/proxy', req, function(status, data) {
+        restClient.doPost($http, '/mockedserver/config/' + ServerType + '/user/proxy', req, function(status, data) {
 
-            if (status == 204) {
-                $uibModalInstance.close({
-                    "restartReq" : true
-                });
+            if (status == 200) {
+
+                // Update the proxy mode if this has been changed and the user is an admin.
+                if (!$scope.readOnly
+                        && currentProxyMode != $scope.proxyMappingConfig.proxyMode) {
+                    doToggleProxyMode($scope.proxyMappingConfig.proxyMode);
+                    return;
+                }
+
+                $uibModalInstance.close();
 
                 return;
             }
@@ -188,6 +171,21 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
         });
 
     };
+
+    function doToggleProxyMode(enableProxyMode) {
+
+        // Send update
+        restClient.doPut($http, '/mockedserver/config/' + ServerType + '/proxy/mode?enableProxyMode=' + enableProxyMode, {}, function(status, data) {
+
+            if (status == 204) {
+                $uibModalInstance.close();
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    }
 
     $scope.isBlank = function(input) {
         return utils.isBlank(input);
@@ -216,9 +214,7 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
 
                     if (running != null && running) {
 
-                        $uibModalInstance.close({
-                            "restartReq" : true
-                        });
+                        $uibModalInstance.close();
 
                     } else {
 
@@ -272,10 +268,12 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
     // Internal Functions
     function loadProxyConfig() {
 
-        restClient.doGet($http, '/mockedserver/config/' + ServerType + '/proxy', function(status, data) {
+        restClient.doGet($http, '/mockedserver/config/' + ServerType + '/user/proxy', function(status, data) {
 
             // Always expect server config to be present.
             if (status == 200) {
+
+                currentProxyMode = data.proxyMode;
 
                 $scope.proxyMappingConfig = {
                     "proxyMode" : data.proxyMode,
@@ -283,13 +281,6 @@ app.controller('serverProxyMappingsController', function($scope, $location, $uib
                     "doNotForwardWhen404Mock" : data.doNotForwardWhen404Mock,
                     "proxyForwardMappings" : data.proxyForwardMappings
                 };
-
-                for (var i=0; i < data.proxyForwardMappings.length; i++) {
-                    if (data.proxyForwardMappings[i].path == PathWildcard) {
-                        $scope.proxyMappingConfig.defaultProxyForwardRow = true;
-                        break;
-                    }
-                }
 
                 return;
             }

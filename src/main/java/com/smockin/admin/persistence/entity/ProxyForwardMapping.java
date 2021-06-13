@@ -2,10 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by mgallina.
@@ -14,6 +11,10 @@ import javax.persistence.Table;
 @Table(name = "PROXY_FORWARD_MAPPING")
 @Data
 public class ProxyForwardMapping extends Identifier {
+
+    @ManyToOne
+    @JoinColumn(name = "PROXY_FORWARD_USER_CONFIG_ID", nullable = false)
+    private ProxyForwardUserConfig proxyForwardUserConfig;
 
     @Column(name = "PATH", length = 1000, nullable = false, unique = true)
     private String path;

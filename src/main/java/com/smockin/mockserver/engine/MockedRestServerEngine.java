@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(readOnly = true)
-public class MockedRestServerEngine implements MockServerEngine<MockedServerConfigDTO, ProxyForwardConfigDTO> {
+public class MockedRestServerEngine {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);
 
@@ -71,6 +71,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     @Autowired
     private SmockinUserService smockinUserService;
 
+    @Autowired
+    private ProxyMappingCache proxyMappingCache;
+
+
+    private static final String SPARK_WILDCARD_PATH = "/*";
 
     // Server state
     private final Object serverStateMonitor = new Object();
@@ -83,11 +88,11 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     private List<BlockedPathToRelease> userCallsToRelease = new ArrayList<>();
     private AtomicBoolean liveBlockingModeEnabled = new AtomicBoolean();
     private AtomicReference<List<LiveBlockPath>> liveBlockPathsRef = new AtomicReference<>(new ArrayList<>());
+    private AtomicBoolean proxyModeEnabled = new AtomicBoolean();
 
 
-    @Override
     public void start(final MockedServerConfigDTO config,
-                      final ProxyForwardConfigDTO proxyForwardConfigDTO) throws MockServerException {
+                      final List<ProxyForwardConfigCacheDTO> allProxyForwardConfig) throws MockServerException {
 
         logger.debug("start called");
 
@@ -95,30 +100,30 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
         final boolean isMultiUserMode = UserModeEnum.ACTIVE.equals(smockinUserService.getUserMode());
 
+        updateProxyMode(config.isProxyMode());
+
         // Define all web socket routes first as the Spark framework requires this
         buildWebSocketEndpoints(isMultiUserMode);
 
         // Handle Cross-Origin Resource Sharing (CORS) support
         handleCORS(config);
 
-        filterProxyConfigMappings(proxyForwardConfigDTO);
+        proxyMappingCache.init(allProxyForwardConfig);
 
         // Next handle all HTTP RESTFul web service routes
-        buildGlobalHttpEndpointsHandler(isMultiUserMode, config, proxyForwardConfigDTO);
+        buildGlobalHttpEndpointsHandler(isMultiUserMode);
 
-        applyTrafficLogging(proxyForwardConfigDTO.isProxyMode());
+        applyTrafficLogging(config.isProxyMode());
 
         initServer(config.getPort());
     }
 
-    @Override
     public MockServerState getCurrentState() throws MockServerException {
         synchronized (serverStateMonitor) {
             return serverState;
         }
     }
 
-    @Override
     public void shutdown() throws MockServerException {
 
         try {
@@ -181,7 +186,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     void buildWebSocketEndpoints(final boolean isMultiUserMode) {
 
-        Spark.webSocket("/*", new SparkWebSocketEchoService(webSocketService, isMultiUserMode));
+        Spark.webSocket(SPARK_WILDCARD_PATH, new SparkWebSocketEchoService(webSocketService, isMultiUserMode));
     }
 
     private void applyTrafficLogging(final boolean isUsingProxyMode) {
@@ -240,21 +245,16 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode,
-                                         final MockedServerConfigDTO serverConfig,
-                                         final ProxyForwardConfigDTO proxyForwardConfig) {
+    void buildGlobalHttpEndpointsHandler(final boolean isMultiUserMode) {
         logger.debug("buildGlobalHttpEndpointsHandler called");
 
         // HEAD
         Spark.head(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-            processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
-            checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+            processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
+            checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return "";
-
-//                mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
-//                        .orElseGet(() -> handleNotFoundResponse(response))
         });
 
         // GET
@@ -265,10 +265,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                 return null;
             }
 
-            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            final String responseBody = processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             final Optional<String> amendmentOpt =
-                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return (amendmentOpt.isPresent())
                     ? amendmentOpt.get()
@@ -278,10 +278,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // POST
         Spark.post(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            final String responseBody = processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             final Optional<String> amendmentOpt =
-                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return (amendmentOpt.isPresent())
                     ? amendmentOpt.get()
@@ -291,10 +291,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // PUT
         Spark.put(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            final String responseBody = processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             final Optional<String> amendmentOpt =
-                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return (amendmentOpt.isPresent())
                     ? amendmentOpt.get()
@@ -304,10 +304,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // DELETE
         Spark.delete(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            final String responseBody = processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             final Optional<String> amendmentOpt =
-                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return (amendmentOpt.isPresent())
                     ? amendmentOpt.get()
@@ -317,10 +317,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
         // PATCH
         Spark.patch(GeneralUtils.PATH_WILDCARD, (request, response) -> {
 
-            final String responseBody = processResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig);
+            final String responseBody = processResponse(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             final Optional<String> amendmentOpt =
-                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyForwardConfig);
+                    checkForAndHandleBlockSwapAndMock(request, response, isMultiUserMode, proxyModeEnabled.get());
 
             return (amendmentOpt.isPresent())
                     ? amendmentOpt.get()
@@ -332,10 +332,9 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     String processResponse(final Request request,
                    final Response response,
                    final boolean isMultiUserMode,
-                   final MockedServerConfigDTO serverConfig,
-                   final ProxyForwardConfigDTO proxyForwardConfig) {
+                   final boolean isProxyMode) {
 
-        return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, serverConfig, proxyForwardConfig)
+        return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, isProxyMode)
                 .orElseGet(() ->
                         handleNotFoundResponse(response));
     }
@@ -343,10 +342,10 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
     Optional<String> checkForAndHandleBlockSwapAndMock(final Request request,
                                                        final Response response,
                                                        final boolean isMultiUserMode,
-                                                       final ProxyForwardConfigDTO proxyForwardConfig)
+                                                       final boolean isProxyMode)
             throws InterruptedException {
 
-        if (blockLoggingResponse(request, response, proxyForwardConfig.isProxyMode())) {
+        if (blockLoggingResponse(request, response, isProxyMode)) {
 
             logger.debug("Endpoint match made. Blocking response...");
 
@@ -440,7 +439,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
                     if (httpServletResponse.containsHeader(h.getKey())) {
                         httpServletResponse.setHeader(h.getKey(), h.getValue());
                     } else {
-                        httpServletResponse.addHeader(h.getKey(), h.getValue());
+                        httpServletResponse.addHeader(h.getKey(), (h.getValue() != null) ? h.getValue() : ""); // Allow for blank header values
                     }
                 });
 
@@ -533,7 +532,7 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
             return;
         }
 
-        Spark.options("/*", (request, response) -> {
+        Spark.options(SPARK_WILDCARD_PATH, (request, response) -> {
 
             final String accessControlRequestHeaders = request.headers(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
 
@@ -556,15 +555,8 @@ public class MockedRestServerEngine implements MockServerEngine<MockedServerConf
 
     }
 
-    void filterProxyConfigMappings(final ProxyForwardConfigDTO proxyForwardConfig) {
-
-        proxyForwardConfig.setProxyForwardMappings(
-            proxyForwardConfig.getProxyForwardMappings()
-            .stream()
-            .filter(p ->
-                    !p.isDisabled())
-            .collect(Collectors.toList()));
-
+    public void updateProxyMode(final boolean enable) {
+        proxyModeEnabled.set(enable);
     }
 
     public void releaseBlockedLiveLoggingResponse(final String traceId,

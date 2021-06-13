@@ -28,6 +28,14 @@ public class ExceptionHandlerController {
     // NOTE Removed the use of the @ResponseStatus annotation and explicitly returning a ResponseEntity, as a workaround
     // to a problem with the the Jetty container, which seems to automatically wrap exceptions where no response is present.
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        logger.error("Error", e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<String> handleDataIntegrityViolationException() {
         return ResponseEntity.status(HttpStatus.CONFLICT)

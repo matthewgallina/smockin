@@ -197,7 +197,7 @@ public class MockDefinitionImportExportServiceTest {
         // Setup
         final SmockinUser smockinUser = new SmockinUser();
         smockinUser.setSessionToken(GeneralUtils.generateUUID());
-        Mockito.when(userTokenServiceUtils.loadCurrentUser(Mockito.anyString())).thenReturn(smockinUser);
+        Mockito.when(userTokenServiceUtils.loadCurrentActiveUser(Mockito.anyString())).thenReturn(smockinUser);
 
         // Test
         final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");

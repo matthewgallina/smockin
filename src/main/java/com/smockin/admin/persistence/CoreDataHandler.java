@@ -6,7 +6,6 @@ import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.entity.AppConfig;
 import com.smockin.admin.persistence.entity.ServerConfig;
 import com.smockin.admin.persistence.entity.SmockinUser;
-import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
@@ -29,6 +28,7 @@ import java.util.Optional;
 public class CoreDataHandler {
 
     private final Logger logger = LoggerFactory.getLogger(CoreDataHandler.class);
+
 
     @Autowired
     private ServerConfigDAO serverConfigDAO;
@@ -74,8 +74,6 @@ public class CoreDataHandler {
             restServerConfig.setTimeOutMillis(30000);
             restServerConfig.setAutoStart(false);
             restServerConfig.setProxyMode(false);
-            restServerConfig.setProxyModeType(ProxyModeTypeEnum.ACTIVE);
-            restServerConfig.setDoNotForwardWhen404Mock(false);
             restServerConfig.getNativeProperties().put(GeneralUtils.ENABLE_CORS_PARAM, "false");
 
             serverConfigDAO.save(restServerConfig);

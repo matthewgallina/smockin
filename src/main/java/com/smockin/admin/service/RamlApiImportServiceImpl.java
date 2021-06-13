@@ -76,7 +76,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             final String defaultMimeType = api.mediaType().stream().findFirst().orElse(() -> "text/plain").value();
 
-            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentUser(token), conflictCtxPath, defaultMimeType);
+            loadInResources(api.resources(), apiImportConfig, userTokenServiceUtils.loadCurrentActiveUser(token), conflictCtxPath, defaultMimeType);
         } catch (RecordNotFoundException ex) {
             throw new MockImportException("Unauthorized user access");
         } catch (MockImportException ex) {

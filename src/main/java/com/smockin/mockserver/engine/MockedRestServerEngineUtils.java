@@ -12,8 +12,7 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.HttpClientService;
-import com.smockin.mockserver.dto.MockedServerConfigDTO;
-import com.smockin.mockserver.dto.ProxyForwardConfigDTO;
+import com.smockin.mockserver.dto.ProxyForwardConfigCacheDTO;
 import com.smockin.mockserver.dto.ProxyForwardMappingDTO;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
@@ -74,21 +73,21 @@ public class MockedRestServerEngineUtils {
     @Autowired
     private SmockinUserDAO smockinUserDAO;
 
+    @Autowired
+    private ProxyMappingCache proxyMappingCache;
+
 
     public Optional<String> loadMockedResponse(final Request request,
                                                final Response response,
                                                final boolean isMultiUserMode,
-                                               final MockedServerConfigDTO serverConfig,
-                                               final ProxyForwardConfigDTO proxyForwardConfig) {
+                                               final boolean isProxyMode) {
 
         logger.debug("loadMockedResponse called");
 
         debugInboundRequest(request);
 
-        return (proxyForwardConfig.isProxyMode()
-                && !proxyForwardConfig.getProxyForwardMappings().isEmpty())
-            ? handleProxyInterceptorMode(proxyForwardConfig,
-                                         isMultiUserMode,
+        return (isProxyMode)
+            ? handleProxyInterceptorMode(isMultiUserMode,
                                          request,
                                          response)
             : handleMockLookup(request, response, isMultiUserMode, false);
@@ -183,8 +182,7 @@ public class MockedRestServerEngineUtils {
         return smockinUserDAO.doesUserExistWithCtxPath(userCtxPathSegment);
     }
 
-    Optional<String> handleProxyInterceptorMode(final ProxyForwardConfigDTO proxyForwardConfig,
-                                                final boolean isMultiUserMode,
+    Optional<String> handleProxyInterceptorMode(final boolean isMultiUserMode,
                                                 final Request request,
                                                 final Response response) {
 
@@ -193,11 +191,20 @@ public class MockedRestServerEngineUtils {
         try {
 
             final String amendedInboundPath = amendPathForMultiUser(request, isMultiUserMode);
+            final String inboundPath = request.pathInfo();
 
-            String proxyDownstreamURL = lookUpProxyMappingDownstreamUrl(amendedInboundPath, proxyForwardConfig.getProxyForwardMappings());
+            final String userCtxPath = (!StringUtils.equals(inboundPath, amendedInboundPath))
+                ? extractMultiUserCtxPathSegment(inboundPath)
+                : "";
 
-            if (proxyDownstreamURL == null) {
-                proxyDownstreamURL = lookUpDefaultProxyMappingDownstreamUrl(proxyForwardConfig.getProxyForwardMappings());
+            final Optional<ProxyForwardConfigCacheDTO> configOpt = proxyMappingCache.find(userCtxPath);
+
+            String proxyDownstreamURL = (configOpt.isPresent())
+                                            ? lookUpProxyMappingDownstreamUrl(amendedInboundPath, configOpt.get().getProxyForwardMappings())
+                                            : null;
+
+            if (proxyDownstreamURL == null && configOpt.isPresent()) {
+                proxyDownstreamURL = lookUpDefaultProxyMappingDownstreamUrl(configOpt.get().getProxyForwardMappings());
             }
 
             // No relevant proxy mappings were found for the inbound path, so skip this section and just look for a mock.
@@ -206,10 +213,10 @@ public class MockedRestServerEngineUtils {
             }
 
             // ACTIVE Mode...
-            if (ProxyModeTypeEnum.ACTIVE.equals(proxyForwardConfig.getProxyModeType())) {
+            if (configOpt.isPresent() && ProxyModeTypeEnum.ACTIVE.equals(configOpt.get().getProxyModeType())) {
 
                 // Look for mock...
-                final Optional<String> result = handleMockLookup(request, response, isMultiUserMode, !proxyForwardConfig.isDoNotForwardWhen404Mock());
+                final Optional<String> result = handleMockLookup(request, response, isMultiUserMode, !configOpt.get().isDoNotForwardWhen404Mock());
 
                 if (result.isPresent()) {
                     return result;
@@ -275,9 +282,7 @@ public class MockedRestServerEngineUtils {
                 .stream()
                 .collect(Collectors.toMap(k -> k, v -> request.headers(v))));
 
-        String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
-        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
-        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, host);
+        httpClientCallDTO.getHeaders().put(HttpHeaders.HOST, sanitizeHost(proxyDownstreamURL));
 
         try {
             return Optional.of(httpClientService.handleExternalCall(httpClientCallDTO));
@@ -286,6 +291,15 @@ public class MockedRestServerEngineUtils {
             return Optional.empty();
         }
 
+    }
+
+    String sanitizeHost(final String proxyDownstreamURL) {
+
+        String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
+        host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
+        host = StringUtils.removeAll(host, GeneralUtils.URL_PATH_SEPARATOR);
+
+        return host;
     }
 
     Optional<String> handleClientDownstreamProxyCallResponse(final Optional<HttpClientResponseDTO> httpClientResponseOpt,
@@ -468,8 +482,16 @@ public class MockedRestServerEngineUtils {
 
         return proxyForwardMappings
                 .stream()
-                .filter(p ->
-                        StringUtils.equals(inboundPath, p.getPath()))
+                .filter(p -> {
+
+                    if (StringUtils.endsWith(p.getPath(), GeneralUtils.PATH_WILDCARD)
+                            && StringUtils.startsWith(inboundPath, StringUtils.removeEnd(p.getPath(), GeneralUtils.PATH_WILDCARD))) {
+                        return true;
+                    }
+
+                    return StringUtils.equals(inboundPath, p.getPath());
+
+                })
                 .map(p ->
                         p.getProxyForwardUrl())
                 .findFirst()

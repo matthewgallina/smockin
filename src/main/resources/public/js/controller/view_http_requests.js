@@ -604,8 +604,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     function validateAmendedResponseHeadersAreAllPopulated() {
 
         for (var h=0; h < $scope.selectedFeedData.amendedResponse.headers.length; h++) {
-            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)
-                    || utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].value)) {
+            if (utils.isBlank($scope.selectedFeedData.amendedResponse.headers[h].key)) {
                 return false;
             }
         }

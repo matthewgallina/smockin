@@ -1,5 +1,7 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "REST_MOCK_RULE_GRP")
+@Data
 public class RestfulMockDefinitionRuleGroup extends Identifier {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,27 +34,6 @@ public class RestfulMockDefinitionRuleGroup extends Identifier {
     public RestfulMockDefinitionRuleGroup(final RestfulMockDefinitionRule rule, final int orderNo) {
         this.rule = rule;
         this.orderNo = orderNo;
-    }
-
-    public RestfulMockDefinitionRule getRule() {
-        return rule;
-    }
-    public void setRule(RestfulMockDefinitionRule rule) {
-        this.rule = rule;
-    }
-
-    public int getOrderNo() {
-        return orderNo;
-    }
-    public void setOrderNo(int orderNo) {
-        this.orderNo = orderNo;
-    }
-
-    public List<RestfulMockDefinitionRuleGroupCondition> getConditions() {
-        return conditions;
-    }
-    public void setConditions(List<RestfulMockDefinitionRuleGroupCondition> conditions) {
-        this.conditions = conditions;
     }
 
 }

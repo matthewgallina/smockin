@@ -47,7 +47,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             throws MockImportException, ValidationException, RecordNotFoundException {
         logger.debug("importFile called");
 
-        final SmockinUser currentUser = userTokenServiceUtils.loadCurrentUser(token);
+        final SmockinUser currentUser = userTokenServiceUtils.loadCurrentActiveUser(token);
         File tempDir = null;
 
         try {
@@ -161,7 +161,8 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
     }
 
-    private String handleMockImport(final String content, final MockImportConfigDTO config, final SmockinUser currentUser, final String conflictCtxPath) {
+    private String handleMockImport(final String content, final MockImportConfigDTO config,
+                                    final SmockinUser currentUser, final String conflictCtxPath) {
 
         final StringBuilder outcome = new StringBuilder();
 

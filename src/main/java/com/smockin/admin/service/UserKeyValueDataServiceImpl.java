@@ -28,7 +28,7 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
     @Override
     public List<UserKeyValueDataDTO> loadAll(final String token) throws RecordNotFoundException {
 
-        final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
+        final SmockinUser user = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         return userKeyValueDataDAO
                 .findAllByUser(user.getId())
@@ -71,7 +71,7 @@ public class UserKeyValueDataServiceImpl implements UserKeyValueDataService {
     @Override
     public void save(final List<UserKeyValueDataDTO> dtos, final String token) throws RecordNotFoundException, ValidationException {
 
-        final SmockinUser user = userTokenServiceUtils.loadCurrentUser(token);
+        final SmockinUser user = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         dtos.stream().forEach(dto -> {
 

@@ -99,7 +99,7 @@ public class RestfulMockServiceUtils {
                 final RuleGroupDTO groupDto = new RuleGroupDTO(group.getExtId(), group.getOrderNo());
 
                 for (RestfulMockDefinitionRuleGroupCondition condition : group.getConditions()) {
-                    groupDto.getConditions().add(new RuleConditionDTO(condition.getExtId(), condition.getField(), condition.getDataType(), condition.getComparator(), condition.getMatchValue(), condition.getRuleMatchingType(), condition.isCaseSensitive()));
+                    groupDto.getConditions().add(new RuleConditionDTO(condition.getExtId(), condition.getField(), condition.getDataType(), condition.getComparator(), condition.getMatchValue(), condition.getRuleMatchingType(), condition.getCaseSensitive()));
                 }
 
                 ruleDto.getGroups().add(groupDto);
