@@ -29,11 +29,6 @@ public interface MockedServerEngineService {
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;
     void handleServerAutoStart();
 
-//    ProxyForwardConfigDTO loadProxyForwardConfig(final ServerTypeEnum type);
-//    void saveProxyForwardMappings(final ServerTypeEnum serverType,
-//                                  final ProxyForwardConfigDTO proxyForwardConfigDTO,
-//                                  final String token) throws AuthException, ValidationException, RecordNotFoundException;
-
     void addLiveLoggingPathToBlock(final RestMethodEnum method,
                                    final String path,
                                    final String token) throws ValidationException;
