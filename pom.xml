@@ -6,13 +6,13 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>2.16.0</version>
+    <version>2.17.0</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.1.RELEASE</version>
+        <version>2.5.5</version>
     </parent>
 
     <properties>
@@ -35,6 +35,8 @@
         <spring-boot-maven-plugin.version>2.2.1.RELEASE</spring-boot-maven-plugin.version>
         <owasp.plugin.version>5.3.0</owasp.plugin.version>
         <lombok.version>1.18.12</lombok.version>
+        <s3mock.version>2.2.2</s3mock.version>
+        <aws-java-sdk-s3.version>1.12.85</aws-java-sdk-s3.version>
     </properties>
 
     <dependencies>
@@ -137,6 +139,18 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java-jwt.version}</version>
+        </dependency>
+
+        <!-- S3 Mock -->
+        <dependency>
+            <groupId>com.adobe.testing</groupId>
+            <artifactId>s3mock</artifactId>
+            <version>${s3mock.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${aws-java-sdk-s3.version}</version>
         </dependency>
 
         <!-- Testing Related -->

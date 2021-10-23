@@ -1,5 +1,13 @@
 
-app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, restClient) {
+app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
+
+    var dashboardView = $location.search()["dv"];
+
+    //
+    // Constants
+    $scope.httpServerMode = globalVars.HttpServerMode;
+    $scope.s3ServerMode = globalVars.S3ServerMode;
+
 
     //
     // Labels
@@ -21,6 +29,9 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     //
     // Data Objects
+    $scope.selectedServerMode = (dashboardView != null)
+        ? dashboardView
+        : $scope.httpServerMode;
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.isAdmin = auth.isAdmin();
     var httpClientState = null;
@@ -114,6 +125,17 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.doOpenKvpUserData = function() {
 
         $location.path("/manage_user_kvp_data");
+    };
+
+    $scope.doChangeServerMode = function(mode) {
+
+        $scope.selectedServerMode = mode;
+        $location.path("/dashboard").search({ "dv" : mode });
+    };
+
+    $scope.displayServerDropDown = function() {
+
+        return $location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard";
     };
 
     $scope.doLogout = function() {

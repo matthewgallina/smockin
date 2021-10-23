@@ -222,6 +222,10 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
     };
 
+    this.checkS3ServerStatus = function (callback) {
+        // TODO
+    };
+
     this.isSecureConnectionType = function() {
         return window.location.protocol.indexOf("https") > -1;
     };

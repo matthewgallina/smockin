@@ -483,4 +483,14 @@ public final class GeneralUtils {
         return matcher.match(mockPath, inboundPath);
     }
 
+    public static void closeSilently(final InputStream fis) {
+        if (fis != null) {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                logger.error("Error closing inputstream", ex);
+            }
+        }
+    }
+
 }

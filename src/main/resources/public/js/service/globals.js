@@ -11,6 +11,9 @@ app.service('globalVars', function() {
     this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
     this.PasswordResetUrl = "/reset_password.html?rt=";
 
+    this.HttpServerMode = "HTTP";
+    this.S3ServerMode = "S3";
+
     this.SysAdminRole = "SYS_ADMIN";
     this.AdminRole = "ADMIN";
     this.RegularRole = "REGULAR";

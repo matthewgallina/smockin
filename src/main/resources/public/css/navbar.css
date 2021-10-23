@@ -24,3 +24,12 @@
 #smockin-logo {
     max-height: 25px;
 }
+
+.server-mode-dropdown {
+    margin-right: 20px;
+}
+
+.server-mode-dropdown-icon {
+    font-size: 18px;
+    top: 4px;
+}

@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="../css/s3_endpoint_file_uploader.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ heading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{ alert.msg }}</div>
+
+        <label for="s3UploadFile" class="upload-select-file-button btn btn-default">
+            <span ng-if="s3UploadFile.data == null">{{ selectFileLabel }}</span>
+            <span ng-if="s3UploadFile.data != null">{{ s3UploadFile.data.name }}</span>
+        </label>
+        <input id="s3UploadFile" type="file" form-file-model="s3UploadFile.data" />
+
+        <br />
+        <br />
+
+        {{ uploadDescription }} <b>{{ uploadDestination }}</b>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-success upload-button" type="button" ng-click="doUploadFile()" ng-disabled="disableForm">
+        <span class="glyphicon glyphicon-cloud-upload" aria-hidden="true"></span> {{ uploadButtonLabel }}
+    </button>
+</div>

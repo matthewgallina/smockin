@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.16.0
+  version 2.17.0
 </p>
 
 <br />

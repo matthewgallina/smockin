@@ -48,7 +48,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     // Table Labels
     $scope.pathTableLabel = 'Path';
     $scope.dateCreatedTableLabel = 'Date Created';
-    $scope.createdByTableLabel = 'Created By';
     $scope.statusTableLabel = 'Deployment Status';
     $scope.mockTypeTableLabel = 'HTTP Mock Type';
     $scope.actionTableLabel = 'Action';
