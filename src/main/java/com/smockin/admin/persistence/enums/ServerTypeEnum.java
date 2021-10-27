@@ -5,6 +5,7 @@ package com.smockin.admin.persistence.enums;
  */
 public enum ServerTypeEnum {
     RESTFUL,
+    S3,
     JMS,
     FTP
 }

@@ -7,6 +7,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     var extId = $location.search()["eid"];
     var isNew = (extId == null);
     var s3PathPlaceHolderTxt = 'e.g. (my_cool_bucket)';
+    var NodeTypeDir = 'DIR';
+    var NodeTypeFile = 'FILE';
 
 
     //
@@ -18,17 +20,17 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
-    $scope.addNodeButtonLabel = 'Add Directory';
-    $scope.renameNodeButtonLabel = 'Rename';
+    $scope.addNodeButtonLabel = 'Add Dir';
+    $scope.renameNodeButtonLabel = 'Rename Dir';
     $scope.removeNodeButtonLabel = 'Remove';
     $scope.uploadFileButtonLabel = 'Upload File';
 
 
     //
     // Buttons
-    $scope.saveButtonLabel = 'Save';
-    $scope.deleteButtonLabel = 'Delete';
-    $scope.cancelButtonLabel = 'Cancel';
+    $scope.saveButtonLabel = 'Create';
+    $scope.deleteButtonLabel = 'Delete Bucket';
+    $scope.cancelButtonLabel = 'Close';
 
 
     //
@@ -88,7 +90,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                 "dateCreated" : endpoint.dateCreated,
                 "userCtxPath" : endpoint.userCtxPath,
 //                "parentExtId" : endpoint.parentExtId,
-                "children" : endpoint.children
+                "children" : endpoint.children,
+                "files" : endpoint.files
             };
 
 //            $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
@@ -110,25 +113,6 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         $scope.endpoint.status = s;
     };
 
-    $scope.doDelete = function() {
-
-        if (isNew) {
-            return;
-        }
-
-        utils.openDeleteConfirmation("Are you sure you wish to delete this bucket and all of it's content?", function (alertResponse) {
-
-            if (alertResponse) {
-
-                utils.showBlockingOverlay();
-                restClient.doDelete($http, '/s3mock/' + extId, serverCallbackFuncFollowingAddOrDelete);
-
-            }
-
-       });
-
-    };
-
     $scope.doSaveEndpoint = function() {
 
         // Validation
@@ -138,32 +122,21 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         }
 
         // Send to Server
-        createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, serverCallbackFuncFollowingAddOrDelete);
-
-/*
-        utils.showBlockingOverlay();
-
-        var reqData = {
-            "bucket" : $scope.endpoint.bucket,
-            "status" : $scope.endpoint.status
-        };
-
-
-        if (!isNew) {
-            restClient.doPut($http, '/s3mock/' + extId, reqData, serverCallbackFuncFollowingAddOrDelete);
-        } else {
-            restClient.doPost($http, '/s3mock', reqData, serverCallbackFuncFollowingAddOrDelete);
-        }
-*/
+        createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, null, serverCallbackFuncFollowingNewBucket);
     };
 
     $scope.doAddNode = function() {
 
+        if (isNew) {
+            return;
+        }
+
         var nodeId;
         var selectedNode = $('#tree').treeview('getSelected', nodeId);
 
-        // TODO prevent file selection
-        if (selectedNode[0] == null || selectedNode[0].extId == null) {
+        if (selectedNode[0] == null
+                || selectedNode[0].extId == null
+                || selectedNode[0].nodeType == NodeTypeFile) {
             showAlert("Please select a directory");
             return;
         }
@@ -174,7 +147,12 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
             templateUrl: 's3_endpoint_node.html',
             controller: 's3EndpointNodeController',
             backdrop  : 'static',
-            keyboard  : false
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return {};
+                }
+            }
         });
 
         modalInstance.result.then(function (data) {
@@ -185,22 +163,14 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
                 utils.hideBlockingOverlay();
 
-                if (status == 201 || status == 204) {
+                if (status == 201) {
                     var newNodeExtId = data.message;
                     appendNodeChild(parentExtId, $scope.endpoint, nodeName, newNodeExtId);
                     updateTree($scope.endpoint);
                     return;
                 }
 
-                if (status == 400) {
-                    showAlert(data.message);
-                    return;
-                } else if (status == 409) {
-                    showAlert("'" + $scope.endpoint.bucket + "' is already defined");
-                    return;
-                }
-
-                showAlert(globalVars.GeneralErrorMessage);
+                handleErrorResponse(status, data);
             };
 
             createNewBucket(data.name, globalVars.ActiveStatus, parentExtId, serverCallbackFuncFollowingNewDir);
@@ -210,6 +180,10 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     };
 
     $scope.doRemoveNode = function() {
+
+        if (isNew) {
+            return;
+        }
 
         var nodeId;
         var selectedNode = $('#tree').treeview('getSelected', nodeId);
@@ -224,19 +198,26 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
             return;
         }
 
-        removeNodeChild(selectedNode[0].extId, $scope.endpoint);
-
-        updateTree($scope.endpoint);
+        utils.openDeleteConfirmation("Are you sure you wish to delete this directory and all of it's content?", function (alertResponse) {
+            if (alertResponse) {
+                deleteNode(selectedNode[0].extId, selectedNode[0].nodeType, false);
+            }
+       });
 
     };
 
     $scope.doUploadFile = function() {
 
+        if (isNew) {
+            return;
+        }
+
         var nodeId;
         var selectedNode = $('#tree').treeview('getSelected', nodeId);
 
-        // TODO prevent file selection
-        if (selectedNode[0] == null || selectedNode[0].extId == null) {
+        if (selectedNode[0] == null
+                || selectedNode[0].extId == null
+                || selectedNode[0].nodeType == NodeTypeFile) {
             showAlert("Please select a directory in the tree");
             return;
         }
@@ -257,28 +238,84 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         });
 
         modalInstance.result.then(function (data) {
-//            appendNodeChild(selectedNode[0].extId, $scope.endpoint, data.name);
-//            updateTree($scope.endpoint);
+            appendNodeChild(selectedNode[0].extId, $scope.endpoint, data.name, data.extId);
+            updateTree($scope.endpoint);
         }, function () {});
 
     };
 
     $scope.doRenameNode = function() {
 
-        var nodeId;
-        var selectedNode = $('#tree').treeview('getSelected', nodeId);
-
-        if (selectedNode[0] == null || selectedNode[0].extId == null) {
-            showAlert("Please select a directory or file to rename");
+        if (isNew) {
             return;
         }
 
+        var nodeId;
+        var selectedNode = $('#tree').treeview('getSelected', nodeId);
+
+        if (selectedNode[0] == null
+                || selectedNode[0].extId == null
+                || selectedNode[0].nodeType == NodeTypeFile) {
+            showAlert("Please select a directory to rename");
+            return;
+        }
+
+        var extId = selectedNode[0].extId;
+        var nodeName = selectedNode[0].text;
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 's3_endpoint_node.html',
+            controller: 's3EndpointNodeController',
+            backdrop  : 'static',
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return {
+                        "extId" : extId,
+                        "nodeName" : nodeName
+                    };
+                }
+            }
+        });
+
+        modalInstance.result.then(function (data) {
+
+            var nodeName = data.name;
+
+            var serverCallbackFuncFollowingUpdate = function (status, data) {
+
+                utils.hideBlockingOverlay();
+
+                if (status == 204) {
+                    amendNodeChildDir(extId, nodeName, $scope.endpoint);
+                    updateTree($scope.endpoint);
+                    return;
+                }
+
+                handleErrorResponse(status, data);
+            };
+
+            updateBucket(extId, nodeName, globalVars.ActiveStatus, serverCallbackFuncFollowingUpdate);
+
+        }, function () {});
+
     };
 
-    $scope.doCancel = function() {
+    $scope.doDeleteBucket = function () {
 
-        $location.path("/dashboard").search({ "dv" : globalVars.S3ServerMode });
+        utils.openDeleteConfirmation("Are you sure you wish to delete this S3 bucket and all of it's content?", function (alertResponse) {
+            if (alertResponse) {
+                deleteNode($scope.endpoint.extId, NodeTypeDir, true);
+            }
+       });
 
+    };
+
+    $scope.doClose = function() {
+
+        $location.path("/dashboard").search({
+            "dv" : globalVars.S3ServerMode
+        });
     };
 
 
@@ -306,6 +343,63 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         restClient.doPost($http, '/s3mock', reqData, callbackFunc);
     }
 
+    function updateBucket(extId, bucket, status, callbackFunc) {
+
+        // Send to Server
+        utils.showBlockingOverlay();
+
+        var reqData = {
+            "bucket" : bucket,
+            "status" : status
+        };
+
+        restClient.doPut($http, '/s3mock/' + extId, reqData, callbackFunc);
+    }
+
+    function deleteNode(extId, nodeType, isRoot) {
+
+        utils.showBlockingOverlay();
+
+        var serverCallbackFuncFollowingDelete = function (status, data) {
+
+            utils.hideBlockingOverlay();
+
+            if (status == 204) {
+
+                if (isRoot) {
+                    $scope.doClose();
+                    return;
+                }
+
+                removeNodeChild(extId, $scope.endpoint, nodeType);
+                updateTree($scope.endpoint);
+
+                return;
+            }
+
+            handleErrorResponse(status, data);
+        };
+
+        restClient.doDelete($http, '/s3mock/' + extId + '?type=' + nodeType, serverCallbackFuncFollowingDelete);
+
+    }
+
+    function amendNodeChildDir(extIdToMatch, newNodeName, endpoint) {
+
+        if (extIdToMatch == endpoint.extId) {
+
+            endpoint.bucket = newNodeName;
+
+        } else {
+
+            for (var c=0; c < endpoint.children.length; c++) {
+                amendNodeChildDir(extIdToMatch, newNodeName, endpoint.children[c]);
+            }
+
+        }
+
+    }
+
     function appendNodeChild(extIdToMatch, endpoint, newNodeName, newNodeExtId) {
 
         if (extIdToMatch == endpoint.extId) {
@@ -331,20 +425,34 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     }
 
-    function removeNodeChild(extIdToMatch, endpoint) {
+    function removeNodeChild(extIdToMatch, endpoint, nodeType) {
 
-// console.log("extIdToMatch " + extIdToMatch);
+        if (nodeType == NodeTypeDir) {
 
-        for (var c=0; c < endpoint.children.length; c++) {
-// console.log("endpoint.children[c].extId :" + endpoint.children[c].bucket + " " + endpoint.children[c].extId);
-            if (extIdToMatch == endpoint.children[c].extId) {
-                endpoint.children.splice(c, 1);
-                return;
+            for (var c=0; c < endpoint.children.length; c++) {
+                if (extIdToMatch == endpoint.children[c].extId) {
+                    endpoint.children.splice(c, 1);
+                    return;
+                }
             }
-        }
 
-        for (var c=0; c < endpoint.children.length; c++) {
-            removeNodeChild(extIdToMatch, endpoint.children[c], endpoint);
+            for (var c=0; c < endpoint.children.length; c++) {
+                removeNodeChild(extIdToMatch, endpoint.children[c], nodeType);
+            }
+
+        } else if (nodeType == NodeTypeFile) {
+
+            for (var c=0; c < endpoint.files.length; c++) {
+                if (extIdToMatch == endpoint.files[c].extId) {
+                    endpoint.files.splice(c, 1);
+                    return;
+                }
+            }
+
+            for (var c=0; c < endpoint.files.length; c++) {
+                removeNodeChild(extIdToMatch, endpoint.files[c], nodeType);
+            }
+
         }
 
     }
@@ -363,14 +471,19 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     }
 
-    var serverCallbackFuncFollowingAddOrDelete = function (status, data) {
+    var serverCallbackFuncFollowingNewBucket = function (status, data) {
 
         utils.hideBlockingOverlay();
 
-        if (status == 201 || status == 204) {
-            $location.path("/dashboard").search(locParams);
+        if (status == 201) {
+            $location.path("/dashboard").search({ "dv" : globalVars.S3ServerMode });
             return;
         }
+
+        handleErrorResponse(status, data);
+    };
+
+    function handleErrorResponse(status, data) {
 
         if (status == 400) {
             showAlert(data.message);
@@ -381,7 +494,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         }
 
         showAlert(globalVars.GeneralErrorMessage);
-    };
+    }
 
 
     //
@@ -389,7 +502,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     function buildTree(endpoint) {
 
         // Current node
-        var treeNode = buildTreeNode(endpoint.bucket, endpoint.extId, endpoint.expanded);
+        var treeNode = buildTreeNode(endpoint.bucket, endpoint.extId, endpoint.expanded, endpoint.files);
 
         // Children
         for (var c=0; c < endpoint.children.length; c++) {
@@ -399,18 +512,31 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         return treeNode;
     }
 
-    function buildTreeNode(bucket, extId, expanded) {
+    function buildTreeNode(bucket, extId, expanded, nodeFiles) {
 
-        return {
+        var node = {
             extId: extId,
             text: bucket,
+            nodeType: NodeTypeDir,
             nodes: [],
-//            parentExtId: parentExtId,
+            //            parentExtId: parentExtId,
             state: {
                 expanded: (expanded != null && expanded)
             }
-       };
+        };
 
+        if (nodeFiles != null) {
+            for (var n=0; n < nodeFiles.length; n++) {
+                node.nodes.push({
+                    extId: nodeFiles[n].extId,
+                    nodeType: NodeTypeFile,
+                    text: nodeFiles[n].name,
+                    icon: 'glyphicon glyphicon-file'
+                });
+            }
+        }
+
+        return node;
     }
 
     function updateTreeView(extId, endpoint, open) {
@@ -432,6 +558,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
             data: [
                 buildTree(endpoint)
             ],
+            expandIcon: 'glyphicon glyphicon-folder-close',
+            collapseIcon : 'glyphicon glyphicon-folder-open',
             onNodeExpanded: function(event, data) {
                 updateTreeView(data.extId, $scope.endpoint, true);
             },

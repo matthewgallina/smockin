@@ -20,11 +20,19 @@ import java.util.Optional;
  */
 public interface MockedServerEngineService {
 
+    // Rest
     MockedServerConfigDTO startRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockServerState getRestServerState() throws MockServerException;
     void shutdownRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockedServerConfigDTO restartRest(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
+    // S3
+    MockedServerConfigDTO startS3(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockServerState getS3ServerState() throws MockServerException;
+    void shutdownS3(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartS3(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+
+    // Config
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;
     void handleServerAutoStart();

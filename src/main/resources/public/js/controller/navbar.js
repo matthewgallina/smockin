@@ -40,6 +40,22 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     //
     // Scoped Functions
+    $scope.doOpenDashboard = function() {
+
+        var currentDashboardView = $location.search()["dv"];
+
+        $scope.selectedServerMode = (currentDashboardView != null)
+            ? currentDashboardView
+            : $scope.httpServerMode;
+
+        $location.path("/dashboard").search({
+            "dv" : (currentDashboardView != null)
+                ? currentDashboardView
+                : $scope.httpServerMode
+            });
+
+    };
+
     $scope.doOpenHttpClient = function() {
 
         var modalInstance = $uibModal.open({

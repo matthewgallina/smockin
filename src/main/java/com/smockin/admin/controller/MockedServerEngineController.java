@@ -58,6 +58,30 @@ public class MockedServerEngineController {
 
 
     //
+    // S3 Server
+    @RequestMapping(path="/mockedserver/s3/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        return new ResponseEntity<>(mockedServerEngineService.startS3(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/s3/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> stopS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        mockedServerEngineService.shutdownS3(GeneralUtils.extractOAuthToken(bearerToken));
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/mockedserver/s3/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        return new ResponseEntity<>(mockedServerEngineService.restartS3(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/s3/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockServerState> s3Status() throws MockServerException {
+        return new ResponseEntity<>(mockedServerEngineService.getS3ServerState(), HttpStatus.OK);
+    }
+
+
+    //
     // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<MockedServerConfigDTO> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {

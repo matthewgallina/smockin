@@ -83,7 +83,9 @@ app.controller('s3EndpointFileUploaderController', function($scope, $uibModalIns
         var fd = new FormData();
         fd.append('file', $scope.s3UploadFile.data);
 
-       uploadClient.doPostWithHeaders($http, '/s3mock/' + currentNodeExtId + '/upload', fd, { }, function(status, data) {
+        var fileName = $scope.s3UploadFile.data.name;
+
+        uploadClient.doPostWithHeaders($http, '/s3mock/' + currentNodeExtId + '/upload', fd, { }, function(status, data) {
 
             $scope.s3UploadFile = {
                 data : null
@@ -103,7 +105,8 @@ app.controller('s3EndpointFileUploaderController', function($scope, $uibModalIns
             }
 
             $uibModalInstance.close({
-                "name" : $scope.node.name
+                "name" : fileName,
+                "extId" : data.message
             });
 
             $scope.disableForm = false;

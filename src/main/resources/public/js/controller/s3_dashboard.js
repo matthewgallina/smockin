@@ -21,6 +21,7 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.deselectAllEndpointsHeading = 'clear selection';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
+    $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
 
 
     //
@@ -62,7 +63,10 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     //
     // Scoped Functions
     $scope.doOpenS3EndpointInfo = function(endpointDataExtId) {
-        $location.path("/s3_endpoint").search({"eid" : endpointDataExtId});
+        $location.path("/s3_endpoint").search({
+            "dv" : globalVars.S3ServerMode,
+            "eid" : endpointDataExtId
+        });
     };
 
     $scope.doExpandAllEndpoints = function() {
@@ -102,6 +106,26 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
         $scope.mockSelection.push(mock);
     };
 
+    $scope.filterS3Mocks = function() {
+
+        $scope.s3Services = [];
+        $scope.doClearAllEndpoints();
+
+        if ($scope.searchFilter == null
+                || $scope.searchFilter.trim() == 0) {
+
+            $scope.s3Services = allS3Services;
+            return;
+        }
+
+        for (var rs=0; rs < allS3Services.length; rs++) {
+            if (allS3Services[rs].bucket.indexOf($scope.searchFilter) > -1) {
+                $scope.s3Services.push(allS3Services[rs]);
+            }
+        }
+
+    };
+
 
     //
     // Internal Functions
@@ -129,60 +153,10 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
                 return;
             }
 
-            allS3Services = batchByBasePath(data);
-            $scope.s3Services = batchByBasePath(data);
+            allS3Services = data;
+            $scope.s3Services = data;
         });
 
-    }
-
-    function batchByBasePath(allData) {
-
-        var batched = [];
-
-        for (var d=0; d < allData.length; d++) {
-
-            var rec = allData[d];
-            var bucket = rec.bucket;
-
-            var basePathIndex1 = bucket.indexOf("/", 1);
-
-            var basePath;
-
-            if (basePathIndex1 > -1 && (basePathIndex1 + 1) < bucket.length) {
-                basePath = bucket.substring(0, basePathIndex1);
-            } else {
-                basePath = bucket;
-            }
-
-            batchData(batched, rec, basePath);
-        }
-
-        return batched;
-    }
-
-    function batchData(batched, rec, basePath) {
-
-        var currentBatch = null;
-
-        for (var b=0; b < batched.length; b++) {
-            if (batched[b].basePath == basePath) {
-                currentBatch = batched[b];
-                break;
-            }
-        }
-
-        if (currentBatch == null) {
-
-            currentBatch = {
-                "basePath" : basePath,
-                "isOpen" : false,
-                "data" : []
-            };
-
-            batched.push(currentBatch);
-        }
-
-        currentBatch.data.push(rec);
     }
 
     function loadS3ServerStatus() {

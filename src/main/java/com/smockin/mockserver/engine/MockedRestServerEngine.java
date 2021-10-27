@@ -2,7 +2,6 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.ValidationException;
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
@@ -40,9 +39,6 @@ import java.util.stream.Collectors;
 public class MockedRestServerEngine {
 
     private final Logger logger = LoggerFactory.getLogger(MockedRestServerEngine.class);
-
-    @Autowired
-    private RestfulMockDAO restfulMockDAO;
 
     @Autowired
     private RuleEngine ruleEngine;

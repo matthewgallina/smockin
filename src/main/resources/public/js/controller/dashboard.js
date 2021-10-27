@@ -36,7 +36,7 @@ app.controller('dashboardController', function($scope, $location, $routeParams, 
 
 
     //
-    // Events
+    // Check dashboard view
     var dashboardView = $location.search()["dv"];
 
     if (dashboardView != null) {

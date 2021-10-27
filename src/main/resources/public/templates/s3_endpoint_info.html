@@ -35,7 +35,7 @@
 
         <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
 
-        <div class="row">
+        <div class="row s3-mock-panel">
             <div class="col-sm-6">
 
                 <div class="form-group" >
@@ -50,10 +50,24 @@
                     <label for="tree" class="ng-binding">{{ bucketStructureLabel }}</label>
                     <div id="tree"></div>
 
-                    <button class="btn btn-info" type="button" ng-click="doAddNode()">{{ addNodeButtonLabel }}</button>
-                    <button class="btn btn-info" type="button" ng-click="doUploadFile()">{{ uploadFileButtonLabel }}</button>
-                    <button class="btn btn-info" type="button" ng-click="doRenameNode()">{{ renameNodeButtonLabel }}</button>
-                    <button class="btn btn-warning pull-right" type="button" ng-click="doRemoveNode()">{{ removeNodeButtonLabel }}</button>
+                    <button class="btn btn-success" type="button" ng-click="doAddNode()">
+                        <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                        &nbsp;
+                        {{ addNodeButtonLabel }}
+                    </button>
+                    <button class="btn btn-success" type="button" ng-click="doUploadFile()">
+                        <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+                        {{ uploadFileButtonLabel }}
+                    </button>
+
+                    <div class="pull-right">
+                        <button class="btn btn-warning" type="button" ng-click="doRenameNode()">
+                            <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
+                            &nbsp;
+                            {{ renameNodeButtonLabel }}
+                        </button>
+                        <button class="btn btn-danger" type="button" ng-click="doRemoveNode()">{{ removeNodeButtonLabel }}</button>
+                    </div>
                 </div>
 
             </div>
@@ -63,8 +77,8 @@
         <hr />
 
         <div class="action-buttons">
-            <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
-            <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+            <button class="btn btn-default" type="button" ng-click="doClose()">{{ cancelButtonLabel }}</button>
+            <button class="btn btn-danger" type="button" ng-click="doDeleteBucket()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
             <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="isNew && !readOnly">{{ saveButtonLabel }}</button>
         </div>
 

@@ -13,7 +13,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "S3_MOCK", uniqueConstraints={
-    @UniqueConstraint(columnNames = {"BUCKET", "CREATED_BY"})
+    @UniqueConstraint(columnNames = {"S3_MOCK_PARENT", "BUCKET", "CREATED_BY"})
 })
 @Data
 @NoArgsConstructor
@@ -32,14 +32,14 @@ public class S3Mock extends Identifier {
     private SmockinUser createdBy;
 
     @ManyToOne
-    @JoinColumn(name="S3_PARENT")
+    @JoinColumn(name="S3_MOCK_PARENT")
     private S3Mock parent;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "parent", orphanRemoval = true)
     private List<S3Mock> children = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "s3Mock", orphanRemoval = true)
-    private List<S3MockFile> fileMocks = new ArrayList<>();
+    private List<S3MockFile> files = new ArrayList<>();
 
     public S3Mock(final String bucket, final RecordStatusEnum status, final SmockinUser createdBy, final S3Mock parent) {
         this.bucket = bucket;

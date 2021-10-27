@@ -1,22 +1,28 @@
 
-app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $timeout, globalVars, utils) {
+app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $timeout, globalVars, utils, data) {
 
 
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    var extId = data.extId;
+    var nodeName = data.nodeName;
 
 
     //
     // Labels
-    $scope.heading = 'Add Directory';
+    $scope.heading = (extId != null)
+        ? 'Rename Directory'
+        : 'Add Directory';
     $scope.namePlaceholderTxt = 'Enter a name for this directory...';
 
 
     //
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
-    $scope.addButtonLabel = 'Add';
+    $scope.addButtonLabel = (extId != null)
+        ? 'Update'
+        : 'Add';
 
 
     //
@@ -45,7 +51,7 @@ app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $
     //
     // Data Objects
     $scope.node = {
-        "name" : null,
+        "name" : nodeName
     };
 
 

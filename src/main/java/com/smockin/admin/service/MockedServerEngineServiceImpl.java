@@ -5,11 +5,9 @@ import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.ProxyForwardUserConfigDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.S3MockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
-import com.smockin.admin.persistence.entity.ProxyForwardMapping;
-import com.smockin.admin.persistence.entity.ProxyForwardUserConfig;
-import com.smockin.admin.persistence.entity.ServerConfig;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -18,6 +16,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
+import com.smockin.mockserver.engine.MockedS3ServerEngine;
 import com.smockin.mockserver.engine.ProxyMappingCache;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
@@ -58,6 +57,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private RestfulMockDAO restfulMockDefinitionDAO;
 
     @Autowired
+    private MockedS3ServerEngine mockedS3ServerEngine;
+
+    @Autowired
     private ServerConfigDAO serverConfigDAO;
 
     @Autowired
@@ -71,6 +73,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private ProxyMappingCache proxyMappingCache;
+
+    @Autowired
+    private S3MockDAO s3MockDAO;
 
 
     //
@@ -137,6 +142,79 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             mockedRestServerEngine.shutdown();
         } catch (MockServerException ex) {
             logger.error("Stopping REST Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+
+    //
+    // S3
+    @Override
+    public MockedServerConfigDTO startS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
+        smockinUserService.assertCurrentUserIsAdmin(smockinUser);
+
+        return startS3(smockinUser);
+    }
+
+    private MockedServerConfigDTO startS3(final SmockinUser smockinUser) throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.S3);
+
+            final List<S3Mock> mocks = s3MockDAO.findAllParentsByUser(smockinUser.getId());
+
+            mockedS3ServerEngine.start(configDTO, mocks);
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            mockedS3ServerEngine.shutdown();
+            throw ex;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting S3 Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock S3 server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting S3 Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public MockedServerConfigDTO restartS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
+        smockinUserService.assertCurrentUserIsAdmin(smockinUser);
+
+        if (getS3ServerState().isRunning()) {
+            shutdownS3();
+        }
+
+        return startS3(smockinUser);
+    }
+
+    @Override
+    public MockServerState getS3ServerState() throws MockServerException {
+        return mockedS3ServerEngine.getCurrentState();
+    }
+
+    @Override
+    public void shutdownS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        shutdownS3();
+    }
+
+    private void shutdownS3() throws MockServerException {
+
+        try {
+            mockedS3ServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping S£ Mocking Engine", ex);
             throw ex;
         }
 

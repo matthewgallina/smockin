@@ -20,3 +20,7 @@
 #endpoint-status-button {
     width: 100px;
 }
+
+.s3-mock-panel {
+    min-height: 300px;
+}
