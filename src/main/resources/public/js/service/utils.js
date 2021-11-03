@@ -223,7 +223,17 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
     };
 
     this.checkS3ServerStatus = function (callback) {
-        // TODO
+
+        restClient.doGet($http, '/mockedserver/s3/status', function(status, data) {
+
+            if (status == 200) {
+                callback(data.running, data.port);
+                return;
+            }
+
+            callback();
+        });
+
     };
 
     this.isSecureConnectionType = function() {

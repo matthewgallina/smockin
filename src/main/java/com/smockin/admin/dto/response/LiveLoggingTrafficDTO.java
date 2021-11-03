@@ -5,7 +5,7 @@ import com.smockin.utils.GeneralUtils;
 
 import java.util.Date;
 
-public class LiveLoggingTrafficDTO {
+public class LiveLoggingTrafficDTO implements LiveLoggingPayloadDTO {
 
     private final String id;
     private final LiveLoggingDirectionEnum direction;

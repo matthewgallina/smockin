@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.LiveLoggingAction;
 import com.smockin.admin.dto.LiveLoggingBlockedResponseAmendmentDTO;
 import com.smockin.admin.dto.response.LiveLoggingDTO;
+import com.smockin.admin.dto.response.LiveLoggingS3DTO;
+import com.smockin.admin.dto.response.LiveLoggingTrafficDTO;
+import com.smockin.admin.enums.LiveLoggingMessageTypeEnum;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.persistence.dao.SmockinUserDAO;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
@@ -151,7 +154,8 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
         return new TextMessage(GeneralUtils.serialiseJson(dto));
     }
 
-    void handleBroadcast(final LiveLoggingDTO dto, final WebSocketSession session) {
+    void handleBroadcast(final LiveLoggingDTO dto,
+                         final WebSocketSession session) {
 
         try {
 
@@ -161,34 +165,56 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
                 return;
             }
 
-            //
-            // Multi user mode logic...
-            final Boolean adminViewAll = (Boolean)session.getAttributes().get(WS_CONNECTED_USER_ADMIN_VIEW_ALL);
+            final Boolean adminViewAll = (Boolean) session.getAttributes().get(WS_CONNECTED_USER_ADMIN_VIEW_ALL);
 
-            final String inboundPath = dto.getPayload().getContent().getUrl();
-            final String userCtxPath = findUserCtxPath(session);
+            if (LiveLoggingMessageTypeEnum.TRAFFIC.equals(dto.getType())
+                    || LiveLoggingMessageTypeEnum.BLOCKED_RESPONSE.equals(dto.getType())) {
 
-            if (isSysAdmin(session)) {
+                //
+                // Multi user mode logic...
+                final String inboundPath = ((LiveLoggingTrafficDTO)dto.getPayload()).getContent().getUrl();
+                final String userCtxPath = findUserCtxPath(session);
 
-                if (adminViewAll) {
-                    session.sendMessage(serialiseMessage(dto));
+                if (isSysAdmin(session)) {
+
+                    if (adminViewAll) {
+                        session.sendMessage(serialiseMessage(dto));
+                        return;
+                    }
+
+                    final String userCtxSegmentFromInboundPath = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(inboundPath);
+
+                    // TODO
+                    // This function will eventually move to using a cache, as at the moment we are making a DB call for EVERY SINGLE
+                    // live logging broadcast where the admin user DOES NOT want to see calls from other users!
+                    if (!mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxSegmentFromInboundPath)) {
+                        session.sendMessage(serialiseMessage(dto));
+                    }
+
                     return;
                 }
 
-                final String userCtxSegmentFromInboundPath = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(inboundPath);
-
-                // TODO
-                // This function will eventually move to using a cache, as at the moment we are making a DB call for EVERY SINGLE
-                // live logging broadcast where the admin user DOES NOT want to see calls from other users!
-                if (!mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxSegmentFromInboundPath)) {
+                if (StringUtils.startsWith(inboundPath, userCtxPath)) {
                     session.sendMessage(serialiseMessage(dto));
                 }
 
                 return;
             }
 
-            if (StringUtils.startsWith(inboundPath, userCtxPath)) {
+            if (LiveLoggingMessageTypeEnum.S3.equals(dto.getType())) {
+
+                final LiveLoggingS3DTO liveLoggingS3DTO = (LiveLoggingS3DTO)dto.getPayload();
+
+                if (isSysAdmin(session) && adminViewAll) {
+
+                    session.sendMessage(serialiseMessage(dto));
+                    return;
+                }
+
+                // TODO as things stand this will go to everyone... perhaps we can filter this by bucket?
                 session.sendMessage(serialiseMessage(dto));
+
+                return;
             }
 
         } catch (IOException e) {

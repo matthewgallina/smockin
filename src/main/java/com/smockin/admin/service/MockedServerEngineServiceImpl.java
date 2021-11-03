@@ -171,6 +171,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
+            logger.error("Starting S3 Mocking Engine", ex);
             mockedS3ServerEngine.shutdown();
             throw ex;
         } catch (RecordNotFoundException ex) {

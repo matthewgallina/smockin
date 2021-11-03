@@ -1,9 +1,6 @@
 package com.smockin.utils;
 
-import com.smockin.admin.dto.response.LiveLoggingDTO;
-import com.smockin.admin.dto.response.LiveLoggingInboundContentDTO;
-import com.smockin.admin.dto.response.LiveLoggingOutboundContentDTO;
-import com.smockin.admin.dto.response.LiveLoggingTrafficDTO;
+import com.smockin.admin.dto.response.*;
 import com.smockin.admin.enums.LiveLoggingDirectionEnum;
 import com.smockin.admin.enums.LiveLoggingMessageTypeEnum;
 import org.apache.commons.lang3.StringUtils;
@@ -72,6 +69,13 @@ public final class LiveLoggingUtils {
                                 headers,
                                 StringUtils.defaultIfBlank(responseBody, NOT_AVAILABLE),
                                 status)));
+    }
+
+    public static LiveLoggingDTO buildS3LiveLogging(final String message) {
+
+        final LiveLoggingS3DTO liveLoggingS3DTO = new LiveLoggingS3DTO(null, message);
+
+        return new LiveLoggingDTO(LiveLoggingMessageTypeEnum.S3, liveLoggingS3DTO);
     }
 
 }

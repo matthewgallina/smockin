@@ -58,6 +58,9 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.mockSelection = [];
     $scope.searchFilter = null;
     $scope.activeStatus = globalVars.ActiveStatus;
+    $scope.mockServerRunning = MockServerRunningStatus;
+    $scope.mockServerStopped = MockServerStoppedStatus;
+    $scope.mockServerRestarting = MockServerRestartStatus;
 
 
     //
@@ -126,6 +129,57 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
 
     };
 
+    $scope.startS3MockServer = function() {
+
+        if ($scope.readOnly) {
+            return;
+        }
+
+        utils.showLoadingOverlay('Starting S3 Server');
+
+        restClient.doPost($http, '/mockedserver/s3/start', {}, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status == 200) {
+                $scope.mockServerStatus = MockServerRunningStatus;
+
+                var alertMsg = "S3 Server Started (on port " + String(data.port) + ")";
+
+                showAlert(alertMsg, "success");
+                loadTableData();
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    };
+
+    $scope.stopS3MockServer = function () {
+
+        if ($scope.readOnly) {
+            return;
+        }
+
+        utils.showLoadingOverlay('Stopping S3 Server');
+
+        restClient.doPost($http, '/mockedserver/s3/stop', {}, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status == 204) {
+                $scope.mockServerStatus = MockServerStoppedStatus;
+                showAlert("S3 Server Stopped", "success");
+                loadTableData();
+                return;
+            }
+
+            showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    };
+
 
     //
     // Internal Functions
@@ -143,7 +197,7 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
         allS3Services = [];
         $scope.s3Services = [];
 
-        restClient.doGet($http, '/s3mock', function(status, data) {
+        restClient.doGet($http, '/s3mock/bucket', function(status, data) {
 
             if (status == 401) {
                 showAlert(globalVars.AuthRequiredMessage);

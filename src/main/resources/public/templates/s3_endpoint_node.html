@@ -10,8 +10,12 @@
     <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{ alert.msg }}</div>
 
     <div class="form-group">
-        <input id="name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="node.name" placeholder="{{ namePlaceholderTxt }}" type="text" focus="true" />
+        <input id="name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="node.name" placeholder="{{ namePlaceholderText }}" type="text" focus="true" />
     </div>
+
+    <span ng-if="dirParentName != null">
+        {{ dirDestinationText }} <b>{{ dirParentName }}</b>
+    </span>
 
 </div>
 

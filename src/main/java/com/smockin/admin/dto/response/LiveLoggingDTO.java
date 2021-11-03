@@ -9,7 +9,7 @@ import lombok.Data;
 public class LiveLoggingDTO {
 
     private LiveLoggingMessageTypeEnum type;
-    private LiveLoggingTrafficDTO payload;
+    private LiveLoggingPayloadDTO payload;
 
 }
 

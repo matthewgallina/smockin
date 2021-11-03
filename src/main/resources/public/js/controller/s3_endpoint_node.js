@@ -5,16 +5,24 @@ app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $
     //
     // Constants
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
+    var NodeTypeBucket = globalVars.NodeTypeBucket;
     var extId = data.extId;
     var nodeName = data.nodeName;
+    var nodeType = data.nodeType;
+    var parentName = data.parentName;
 
 
     //
     // Labels
+    var nodeTypeLabel = (nodeType == NodeTypeBucket)
+        ? "Bucket"
+        : "Directory";
     $scope.heading = (extId != null)
-        ? 'Rename Directory'
-        : 'Add Directory';
-    $scope.namePlaceholderTxt = 'Enter a name for this directory...';
+        ? 'Rename ' + nodeTypeLabel
+        : 'Add ' + nodeTypeLabel;
+    $scope.namePlaceholderText = 'Enter a Name...';
+    $scope.dirDestinationText = 'This directory will be added to ';
+    $scope.dirParentName = parentName;
 
 
     //
@@ -60,7 +68,12 @@ app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $
     $scope.doAddNode = function() {
 
         if (utils.isBlank($scope.node.name)) {
-            showAlert("Directory name required");
+            showAlert("A name required");
+            return;
+        }
+        if (nodeType == NodeTypeBucket
+                && globalVars.S3BucketNameRegex.exec($scope.node.name) == null) {
+            showAlert("Invalid S3 'Bucket' name (lowercase letters, numbers & hyphens only)");
             return;
         }
 

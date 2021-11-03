@@ -62,8 +62,6 @@
 
                     <div class="pull-right">
                         <button class="btn btn-warning" type="button" ng-click="doRenameNode()">
-                            <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
-                            &nbsp;
                             {{ renameNodeButtonLabel }}
                         </button>
                         <button class="btn btn-danger" type="button" ng-click="doRemoveNode()">{{ removeNodeButtonLabel }}</button>
@@ -78,7 +76,6 @@
 
         <div class="action-buttons">
             <button class="btn btn-default" type="button" ng-click="doClose()">{{ cancelButtonLabel }}</button>
-            <button class="btn btn-danger" type="button" ng-click="doDeleteBucket()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
             <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="isNew && !readOnly">{{ saveButtonLabel }}</button>
         </div>
 

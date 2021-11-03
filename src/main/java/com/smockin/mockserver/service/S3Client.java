@@ -1,8 +1,5 @@
 package com.smockin.mockserver.service;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -11,41 +8,29 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509ExtendedTrustManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Socket;
 import java.nio.charset.Charset;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 
 public class S3Client {
 
     private final Logger logger = LoggerFactory.getLogger(S3Client.class);
 
-    private final String username;
-    private final String password;
-    final String DEFAULT_HTTPS_PORT = "9191";
+    static final String REGION = "us-east-1";
+    public static final String SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX = "s3mockin-upc-";
+
     private final String host;
     private final int port;
 
-    public S3Client(final String username, final String password, final String host, final int port) {
-        this.username = username;
-        this.password = password;
+    public S3Client(final String host,
+                    final int port) {
         this.host = host;
         this.port = port;
     }
-
 
     public File downloadObject(final String bucketName, final String filePath) throws IOException {
         logger.debug(String.format("Attempting to download file '%s' from bucket '%s'", filePath, bucketName));
@@ -53,8 +38,8 @@ public class S3Client {
         S3Object s3Object = null;
 
         try {
-            final AmazonS3 s3Client = createS3Client();
-            s3Object = s3Client.getObject(bucketName, filePath);
+
+            s3Object = createS3Client().getObject(bucketName, filePath);
 
             final String content = IOUtils.toString(s3Object.getObjectContent(), Charset.defaultCharset());
 
@@ -72,66 +57,65 @@ public class S3Client {
     public void createBucket(final String bucketName) {
         logger.debug(String.format("creating bucket '%s'", bucketName));
 
-        final AmazonS3 s3Client = createS3Client();
-        s3Client.createBucket(bucketName);
+        createS3Client().createBucket(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName);
+    }
 
+    public void deleteBucket(final String bucketName) {
+        logger.debug(String.format("creating bucket '%s'", bucketName));
+
+        createS3Client().deleteBucket(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName);
     }
 
     public void uploadObject(final String bucketName, final String filePath, final InputStream is, final String mimeType) {
         logger.debug(String.format("uploading file '%s' to bucket '%s'", filePath, bucketName));
 
         try {
-            final AmazonS3 s3Client = createS3Client();
             final ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentType(mimeType);
-            s3Client.putObject(bucketName, filePath, is, objectMetadata);
+            createS3Client().putObject(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName, filePath, is, objectMetadata);
         } finally {
             GeneralUtils.closeSilently(is);
         }
     }
 
+    public void deleteObject(final String bucketName, final String filePath) {
+        logger.debug(String.format("deleting file '%s' from bucket '%s'", filePath, bucketName));
+
+        createS3Client().deleteObject(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName, filePath);
+
+    }
+
     public void listsObjects(final String bucketName) {
 
-        final AmazonS3 s3Client = createS3Client();
-
-        final ObjectListing s3Objects = s3Client.listObjects(bucketName);
+        final ObjectListing s3Objects = createS3Client().listObjects(bucketName);
 
         s3Objects.getObjectSummaries()
                 .stream()
                 .forEach(o -> {
 
-            System.out.println("bucket name: " + o.getBucketName());
-            System.out.println("key: " + o.getKey());
+                    System.out.println("bucket name: " + o.getBucketName());
+                    System.out.println("key: " + o.getKey());
 
-        });
-
-    }
-
-    public void deleteObject(final String bucketName, final String filePath) {
-        logger.debug(String.format("deleting file '%s' from bucket '%s'", filePath, bucketName));
-
-        final AmazonS3 s3Client = createS3Client();
-
-        s3Client.deleteObject(bucketName, filePath);
+                });
 
     }
-
 
     AmazonS3 createS3Client() {
-        return createS3Client("us-east-1");
+        return createS3Client(REGION);
     }
 
     AmazonS3 createS3Client(final String region) {
 
         return AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(username, password)))
-                .withClientConfiguration(
-                        configureClientToIgnoreInvalidSslCertificates(new ClientConfiguration()))
+//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(username, password)))
+//                .withClientConfiguration(
+//                        configureClientToIgnoreInvalidSslCertificates(new ClientConfiguration()))
                 .withEndpointConfiguration(getEndpointConfiguration(region))
                 .enablePathStyleAccess()
                 .build();
     }
 
+    /*
     ClientConfiguration configureClientToIgnoreInvalidSslCertificates(
             final ClientConfiguration clientConfiguration) {
 
@@ -142,6 +126,7 @@ public class S3Client {
 
         return clientConfiguration;
     }
+*/
 
     AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(final String region) {
         return new AwsClientBuilder.EndpointConfiguration(getServiceEndpoint(), region);
@@ -154,13 +139,15 @@ public class S3Client {
 //        properties.put(String.valueOf(port), "0");
 //        final boolean isSecureConnection = (boolean) properties.getOrDefault(S3MockApplication.PROP_SECURE_CONNECTION, true);
 
-        final boolean isSecureConnection = false;
+//        final boolean isSecureConnection = false;
 
-        return isSecureConnection ? "https://" + host + ":" + DEFAULT_HTTPS_PORT
-                : "http://" + host + ":" + port;
+//        return isSecureConnection ? "https://" + host + ":" + DEFAULT_HTTPS_PORT
+//               : "http://" + host + ":" + port;
+
+        return "http://" + host + ":" + port;
     }
 
-
+/*
     private SSLContext createBlindlyTrustingSslContext() {
         try {
             final SSLContext sc = SSLContext.getInstance("TLS");
@@ -212,5 +199,5 @@ public class S3Client {
             throw new RuntimeException("Unexpected exception", e);
         }
     }
-
+*/
 }

@@ -32,6 +32,11 @@ app.service('globalVars', function() {
     this.ContainsText = 'CONTAINS';
     this.IsMissingText = 'IS_MISSING';
 
+    this.NodeTypeBucket = 'BUCKET';
+    this.NodeTypeDir = 'DIR';
+    this.NodeTypeFile = 'FILE';
+    this.S3BucketNameRegex = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/gm;
+
     this.ActiveStatus = "ACTIVE";
     this.InActiveStatus = "INACTIVE";
 

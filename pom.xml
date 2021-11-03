@@ -152,6 +152,12 @@
             <groupId>org.gaul</groupId>
             <artifactId>s3proxy</artifactId>
             <version>${s3proxy.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
@@ -197,11 +203,11 @@
                     </execution>
                 </executions>
                 <!-- For hot loading during development  -->
-
+                <!--
                 <configuration>
                     <addResources>true</addResources>
                 </configuration>
-
+                -->
             </plugin>
 
             <plugin>

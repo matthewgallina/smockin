@@ -1,6 +1,7 @@
 package com.smockin.mockserver.engine;
 
 import com.smockin.admin.persistence.entity.S3Mock;
+import com.smockin.admin.persistence.entity.S3MockDir;
 import com.smockin.admin.persistence.entity.S3MockFile;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
@@ -21,15 +22,17 @@ public class MockedS3ServerEngineTest {
     public void extractBucketAndFilePathTest() {
 
         // Setup
-        final S3Mock s3MockParent = new S3Mock("A", null, null, null);
-        final S3Mock s3Mocklevel1 = new S3Mock("B", null, null, s3MockParent);
-        final S3Mock s3Mocklevel2 = new S3Mock("C", null, null, s3Mocklevel1);
-        final S3Mock s3Mocklevel3 = new S3Mock("D", null, null, s3Mocklevel2);
-        final S3MockFile s3MockFile = new S3MockFile("foo.bar", null, "HelloWorld", s3Mocklevel3);
-        s3Mocklevel3.getFiles().add(s3MockFile);
+        final S3Mock s3MockParent = new S3Mock("A", null, null);
+
+        final S3MockDir s3MockDirLevel1 = new S3MockDir("B", s3MockParent);
+        final S3MockDir s3MockDirLevel2 = new S3MockDir("C", s3MockDirLevel1);
+        final S3MockDir s3MockDirLevel3 = new S3MockDir("D",  s3MockDirLevel2);
+
+        final S3MockFile s3MockFile = new S3MockFile("foo.bar", null, "HelloWorld", s3MockDirLevel3);
+        s3MockDirLevel3.getFiles().add(s3MockFile);
 
         // Test
-        final Pair<String, String> fileInfo = mockedS3ServerEngine.extractBucketAndFilePath(s3MockFile.getName(), s3MockFile.getS3Mock());
+        final Pair<String, String> fileInfo = mockedS3ServerEngine.extractBucketAndFilePath(s3MockFile.getName(), s3MockFile.getS3MockDir());
 
         // Assertions
         Assert.assertNotNull(fileInfo);

@@ -46,6 +46,8 @@ public final class GeneralUtils {
 
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
 
+    public static final String S3_HOST = "localhost";
+
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
     public static final String PATH_WILDCARD = "*";

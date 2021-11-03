@@ -24,14 +24,25 @@ public class S3MockFile extends Identifier {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="S3_MOCK_ID", nullable = false)
+    @JoinColumn(name="S3_MOCK_ID")
     private S3Mock s3Mock;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="S3_MOCK_DIR_ID")
+    private S3MockDir s3MockDir;
 
     public S3MockFile(String name, String mimeType, String content, S3Mock s3Mock) {
         this.name = name;
         this.mimeType = mimeType;
         this.content = content;
         this.s3Mock = s3Mock;
+    }
+
+    public S3MockFile(String name, String mimeType, String content, S3MockDir s3MockDir) {
+        this.name = name;
+        this.mimeType = mimeType;
+        this.content = content;
+        this.s3MockDir = s3MockDir;
     }
 
 }

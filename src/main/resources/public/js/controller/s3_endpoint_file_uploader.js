@@ -7,13 +7,14 @@ app.controller('s3EndpointFileUploaderController', function($scope, $uibModalIns
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     var currentNodeExtId = data.extId;
     var currentNodeName = data.nodeName;
+    var nodeType = data.nodeType.toLowerCase();
 
 
     //
     // Labels
     $scope.heading = 'Upload File';
     $scope.selectFileLabel = 'Select File...';
-    $scope.uploadDescription = 'This file will be uploaded to the directory ';
+    $scope.uploadDescription = 'This file will be uploaded to the ' + nodeType;
     $scope.uploadDestination = currentNodeName;
 
 
@@ -85,7 +86,7 @@ app.controller('s3EndpointFileUploaderController', function($scope, $uibModalIns
 
         var fileName = $scope.s3UploadFile.data.name;
 
-        uploadClient.doPostWithHeaders($http, '/s3mock/' + currentNodeExtId + '/upload', fd, { }, function(status, data) {
+        uploadClient.doPostWithHeaders($http, '/s3mock/' + nodeType + '/' + currentNodeExtId + '/upload', fd, { }, function(status, data) {
 
             $scope.s3UploadFile = {
                 data : null
