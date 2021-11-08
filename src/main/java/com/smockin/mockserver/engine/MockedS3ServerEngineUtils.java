@@ -74,17 +74,6 @@ public class MockedS3ServerEngineUtils {
             return;
         }
 
-/*
-if (args != null) {
-    for (Object arg : args) {
-        System.out.println(arg);
-        if (arg != null) {
-            System.out.println(arg.getClass().getName());
-        }
-    }
-}
-*/
-
         if (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName)) {
 
             final String containerName = (String)args[1];
