@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class S3MockFile extends Identifier {
 
-    @Column(name = "NAME", nullable = false, length = 500)
+    @Column(name = "NAME", nullable = false, length = 200)
     private String name;
 
     @Column(name = "MIME_TYPE", nullable = false, length = 50)

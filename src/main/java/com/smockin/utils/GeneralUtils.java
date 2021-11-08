@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smockin.admin.enums.UserModeEnum;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -483,6 +484,19 @@ public final class GeneralUtils {
         final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
 
         return matcher.match(mockPath, inboundPath);
+    }
+
+    public static Optional<String> convertInputStreamToString(final InputStream inputStream) {
+
+        try {
+            return Optional.of(IOUtils.toString(inputStream, Charset.defaultCharset()));
+        } catch (IOException ex) {
+            logger.error("Error reading input stream to string", ex);
+            return Optional.empty();
+        } finally {
+            GeneralUtils.closeSilently(inputStream);
+        }
+
     }
 
     public static void closeSilently(final InputStream fis) {

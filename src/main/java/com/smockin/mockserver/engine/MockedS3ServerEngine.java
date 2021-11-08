@@ -227,22 +227,11 @@ public class MockedS3ServerEngine {
 
         final InvocationHandler handler = (proxy, method, args) -> {
 
-logger.debug("1 method.getName(): " + method.getName());
-
             final Optional<Boolean> isInternalCall = mockedS3ServerEngineUtils.isCallInternal(args, method.getName());
-
-logger.debug("2 isInternalCall: " + isInternalCall);
 
             args = (isInternalCall.isPresent() && isInternalCall.get())
                     ? mockedS3ServerEngineUtils.sanitiseContainerNameInArgs(args, method.getName())
                     : args;
-
-logger.debug("3 invoking original method " + method.getName() + " with args:");
-if (args != null) {
-    for (Object arg : args) {
-        logger.debug("an arg: " + arg);
-    }
-}
 
             final Object result = method.invoke(originalBlobStore, args);
 

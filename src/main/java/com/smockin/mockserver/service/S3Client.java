@@ -5,16 +5,11 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.S3Object;
 import com.smockin.utils.GeneralUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 public class S3Client {
 
@@ -30,28 +25,6 @@ public class S3Client {
                     final int port) {
         this.host = host;
         this.port = port;
-    }
-
-    public File downloadObject(final String bucketName, final String filePath) throws IOException {
-        logger.debug(String.format("Attempting to download file '%s' from bucket '%s'", filePath, bucketName));
-
-        S3Object s3Object = null;
-
-        try {
-
-            s3Object = createS3Client().getObject(bucketName, filePath);
-
-            final String content = IOUtils.toString(s3Object.getObjectContent(), Charset.defaultCharset());
-
-            // TODO
-
-            return null;
-        } finally {
-            if (s3Object != null) {
-                s3Object.close();
-            }
-        }
-
     }
 
     public void createBucket(final String bucketName) {
