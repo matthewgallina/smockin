@@ -1,8 +1,9 @@
 package com.smockin.admin.persistence.entity;
 
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -13,7 +14,8 @@ import java.util.List;
  */
 @Entity
 @Table(name = "S3_MOCK")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class S3Mock extends Identifier {
 

@@ -486,7 +486,8 @@ public final class GeneralUtils {
         return matcher.match(mockPath, inboundPath);
     }
 
-    public static Optional<String> convertInputStreamToString(final InputStream inputStream) {
+    public static Optional<String> convertInputStreamToString(final InputStream inputStream,
+                                                              final boolean closeStream) {
 
         try {
             return Optional.of(IOUtils.toString(inputStream, Charset.defaultCharset()));
@@ -494,7 +495,9 @@ public final class GeneralUtils {
             logger.error("Error reading input stream to string", ex);
             return Optional.empty();
         } finally {
-            GeneralUtils.closeSilently(inputStream);
+            if (closeStream) {
+                GeneralUtils.closeSilently(inputStream);
+            }
         }
 
     }

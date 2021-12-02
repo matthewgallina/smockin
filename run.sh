@@ -99,6 +99,7 @@ fi
 
 if ([ ! -z "$1" ] && [ $1 = "-DEBUG" ]) || ([ ! -z "$2" ] && [ $2 = "-DEBUG" ]) || ([ ! -z "$3" ] && [ $3 = "-DEBUG" ]); then
     ENABLE_REMOTE_DEBUG=true
+    USE_CONSOLE=true
 fi
 
 

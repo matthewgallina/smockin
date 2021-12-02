@@ -4,15 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Module;
 import com.smockin.admin.persistence.entity.S3Mock;
-import com.smockin.admin.persistence.entity.S3MockDir;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.S3Client;
-import com.smockin.utils.GeneralUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.gaul.s3proxy.S3Proxy;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
@@ -25,11 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +41,7 @@ public class MockedS3ServerEngine {
     private final Object serverStateMonitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
     private S3Proxy s3Proxy;
-    private Optional<S3Client> s3Client; // A shared client instance for the duration of the S3 mock server
+    private S3Client s3Client; // A shared client instance for the duration of the S3 mock server
 
     public void start(final MockedServerConfigDTO configDTO,
                       final List<S3Mock> mockBuckets) throws MockServerException {
@@ -69,9 +62,8 @@ public class MockedS3ServerEngine {
                 throw new MockServerException("Error starting S3 mock engine", e);
             }
 
-            s3Client = Optional.of(buildS3Client(configDTO));
-            initBucketContent(mockBuckets);
-
+            s3Client = mockedS3ServerEngineUtils.buildS3Client(configDTO.getPort());
+            mockedS3ServerEngineUtils.initBucketContent(s3Client, mockBuckets);
         }
 
     }
@@ -90,110 +82,11 @@ public class MockedS3ServerEngine {
             synchronized (serverStateMonitor) {
                 s3Proxy.stop();
                 serverState.setRunning(false);
-                s3Client = Optional.empty();
+                s3Client = null;
             }
 
         } catch (Exception e) {
             throw new MockServerException("Error shutting down S3 mock engine", e);
-        }
-
-    }
-
-    void initBucketContent(final List<S3Mock> buckets) {
-        logger.debug("initBucketContent called");
-
-        // Create all buckets
-        buckets.forEach(m ->
-            s3Client.ifPresent(c ->
-                c.createBucket(m.getBucketName())));
-
-        // Create bucket files
-        buckets.forEach(m ->
-            addBucketFiles(s3Client, m));
-
-        // Start adding bucket dir files
-        buckets.forEach(m ->
-            commenceAddingBucketDirs(s3Client, m));
-
-    }
-
-    void addBucketFiles(final Optional<S3Client> s3Client,
-                        final S3Mock bucket) {
-
-        bucket
-            .getFiles()
-            .forEach(f ->
-                s3Client.ifPresent(c ->
-                    c.uploadObject(
-                        bucket.getBucketName(),
-                        f.getName(),
-                        IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
-                        f.getMimeType())));
-
-    }
-
-    void commenceAddingBucketDirs(final Optional<S3Client> s3Client,
-                       final S3Mock bucket) {
-
-        bucket.getChildrenDirs()
-                .forEach(d ->
-                    addDirFiles(s3Client, d));
-
-    }
-
-    void addDirFiles(final Optional<S3Client> s3Client,
-                     final S3MockDir s3MockDir) {
-
-        // Create files in this dir
-        s3MockDir
-            .getFiles()
-            .forEach(f -> {
-
-                final Pair<String, String> bucketAndFilePath = extractBucketAndFilePath(f.getName(), s3MockDir);
-
-                s3Client.ifPresent(c ->
-                        c.uploadObject(
-                            bucketAndFilePath.getLeft(),
-                            bucketAndFilePath.getRight(),
-                            IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
-                            f.getMimeType()));
-
-            });
-
-        // Traverse child dirs
-        s3MockDir.getChildren()
-                .forEach(d ->
-                        addDirFiles(s3Client, d));
-
-    }
-
-    Pair<String, String> extractBucketAndFilePath(final String fileName, final S3MockDir s3MockDir) {
-
-        final MutablePair<String, StringBuilder> collectedData
-                = new MutablePair<>(null, new StringBuilder(fileName));
-
-        buildFilePathSegment(s3MockDir, collectedData);
-
-        return new MutablePair<>(collectedData.getLeft(),
-                                 collectedData.getRight().toString());
-    }
-
-    void buildFilePathSegment(final S3MockDir s3MockDir,
-                              final MutablePair<String, StringBuilder> fileInfo) {
-
-        // Add dir segment
-        fileInfo.getRight().insert(0, File.separatorChar);
-        fileInfo.getRight().insert(0, s3MockDir.getName());
-
-        // Got a bucket so have reached the top of dir tree
-        if (s3MockDir.getS3Mock() != null) {
-            fileInfo.setLeft(s3MockDir.getS3Mock().getBucketName());
-            return;
-        }
-
-        // keep working back up tree towards bucket
-        if (s3MockDir.getParent() != null) {
-            buildFilePathSegment(s3MockDir.getParent(), fileInfo);
         }
 
     }
@@ -227,11 +120,22 @@ public class MockedS3ServerEngine {
 
         final InvocationHandler handler = (proxy, method, args) -> {
 
+System.out.println(" ");
+System.out.println("PROXY METHOD: " + method.getName());
+
             final Optional<Boolean> isInternalCall = mockedS3ServerEngineUtils.isCallInternal(args, method.getName());
+
+System.out.println("PROXY > isInternalCall: " + isInternalCall);
 
             args = (isInternalCall.isPresent() && isInternalCall.get())
                     ? mockedS3ServerEngineUtils.sanitiseContainerNameInArgs(args, method.getName())
                     : args;
+
+if (args != null) {
+    for (Object arg : args) {
+        System.out.println("PROXY ARG: " + arg);
+    }
+}
 
             final Object result = method.invoke(originalBlobStore, args);
 
@@ -254,13 +158,6 @@ public class MockedS3ServerEngine {
                 new Class[] { BlobStore.class },
                 handler);
 
-    }
-
-    S3Client buildS3Client(final MockedServerConfigDTO configDTO) {
-
-        return new S3Client(
-                GeneralUtils.S3_HOST,
-                configDTO.getPort());
     }
 
 }

@@ -14,7 +14,10 @@ import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.service.S3Client;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jclouds.blobstore.domain.Blob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -31,11 +35,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Service
+@Transactional
 public class MockedS3ServerEngineUtils {
 
     private final Logger logger = LoggerFactory.getLogger(MockedS3ServerEngineUtils.class);
 
     private List<String> supportedInternalS3ClientUpdateMethods; // i.e BlobStore update based methods based on the functions present in S3Client
+
+    public static final String SEPARATOR_CHAR = "/"; // TODO Using hardcoded forward slash rather then File.separatorChar as not sure how this will behave on Windows
 
     private static final String CREATE_CONTAINER_IN_LOCATION_METHOD = "createContainerInLocation";
     private static final String DELETE_CONTAINER_METHOD = "deleteContainer";
@@ -43,6 +50,7 @@ public class MockedS3ServerEngineUtils {
     private static final String PUT_BLOB_METHOD = "putBlob";
     private static final String REMOVE_BLOB_METHOD = "removeBlob";
     private static final String COPY_BLOB_METHOD = "copyBlob";
+    private static final String CONTAINER_EXISTS_METHOD = "containerExists";
 
 
     @Autowired
@@ -61,14 +69,13 @@ public class MockedS3ServerEngineUtils {
     private LiveLoggingHandler liveLoggingHandler;
 
 
-    @Transactional
     public void persistS3RemoteCall(final String methodName,
                                  final Object[] args) {
 
         logger.debug("persistS3RemoteCall called");
 
         if (logger.isDebugEnabled())
-            logger.debug("method name: " + methodName);
+            logger.debug("Remote S3 Client > Method name: " + methodName);
 
         if (!supportedInternalS3ClientUpdateMethods.contains(methodName)) {
             return;
@@ -124,11 +131,23 @@ public class MockedS3ServerEngineUtils {
             final String fileName = blob.getMetadata().getName();
             final String mimeType = blob.getPayload().getContentMetadata().getContentType();
 
+System.out.println(containerName);
+System.out.println(blob);
+System.out.println(fileName);
+System.out.println(mimeType);
+
+            final S3Mock s3Mock = findS3MockByBucketName(containerName);
+
+            if ("application/x-directory".equals(mimeType)) {
+                createS3Dir(fileName, s3Mock);
+                return;
+            }
+
             Optional<String> content;
 
             try {
 
-                content = GeneralUtils.convertInputStreamToString(blob.getPayload().openStream());
+                content = GeneralUtils.convertInputStreamToString(blob.getPayload().openStream(), true);
 
                 if (!content.isPresent()) {
                     logger.error("Error reading client's uploaded file");
@@ -140,36 +159,75 @@ public class MockedS3ServerEngineUtils {
                 return;
             }
 
-            final S3Mock s3Mock = findS3MockByBucketName(containerName);
-
             createS3DirsAndFile(fileName, mimeType, content.get(), s3Mock);
 
             handleS3Logging("Added file " + fileName + " to bucket '" + containerName + "'");
 
         } else if (REMOVE_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
-            // todo test this!
+            // TODO need to differentiate between a dir and file.
 
             final String containerName = (String)args[0];
-            final String fileName = (String) args[1];
+            final String fullFilePathOrDir = (String)args[1];
+
+            //
+            // Remove Directory
+            if (StringUtils.endsWith(fullFilePathOrDir, SEPARATOR_CHAR)) { // This a dir
+
+// TODO you need to get the last dir in fullFilePathOrDir!
+System.out.println("fullFilePathOrDir: " + fullFilePathOrDir);
+
+                final String[] dirsSplitByPath = StringUtils.split(fullFilePathOrDir, SEPARATOR_CHAR);
+                final String singleDirectory = (dirsSplitByPath.length > 1)
+                        ? dirsSplitByPath[dirsSplitByPath.length - 1]
+                        : fullFilePathOrDir;
+
+System.out.println("singleDirectory: " + singleDirectory);
+
+                final List<S3MockDir> dirs = s3MockDirDAO.findAllByName(StringUtils.removeEnd(singleDirectory, SEPARATOR_CHAR));
+
+                if (dirs.isEmpty()) {
+                    logger.error(String.format("Error unable to locate the dir %s in container %s to delete from DB. (No dirs found)", fullFilePathOrDir, containerName));
+                    return;
+                }
+
+                final S3MockDir s3MockDir = findS3MockDir(fullFilePathOrDir, dirs, containerName);
+
+                if (s3MockDir == null) {
+                    logger.error(String.format("Error unable to locate the dir %s in container %s to delete from DB. (dir match not made)", fullFilePathOrDir, containerName));
+                    return;
+                }
+
+                s3MockDirDAO.delete(s3MockDir);
+
+                handleS3Logging(String.format("Removed dir %s from bucket '%s'", fullFilePathOrDir, containerName));
+
+                return;
+            }
+
+            //
+            // Remove File
+            final String[] paths = StringUtils.split(fullFilePathOrDir, SEPARATOR_CHAR);
+            final String fileName = paths[ paths.length -1 ];
 
             final List<S3MockFile> files = s3MockFileDAO.findAllByName(fileName);
 
             if (files.isEmpty()) {
-                logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB", fileName, containerName));
+                logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB. (No files found)", fullFilePathOrDir, containerName));
                 return;
             }
 
-            final S3MockFile fromS3MockFile = findS3MockFile(files, containerName);
+            // TODO include 'fullFilePath' in this search...  MG check this done...
+            final S3MockFile fromS3MockFile = findS3MockFile(fullFilePathOrDir, files, containerName);
 
             if (fromS3MockFile == null) {
-                logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB", fileName, containerName));
+                logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB. (file match not made)", fullFilePathOrDir, containerName));
                 return;
             }
 
             s3MockFileDAO.delete(fromS3MockFile);
 
-            handleS3Logging("Removed file " + fileName + " from bucket '" + containerName + "'");
+            handleS3Logging(String.format("Removed file %s from bucket '%s'", fullFilePathOrDir, containerName));
 
         } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -181,14 +239,17 @@ public class MockedS3ServerEngineUtils {
             final String toName = (String) args[3];
 //            final CopyOptions options = (CopyOptions) args[4];
 
-            final List<S3MockFile> fromFiles = s3MockFileDAO.findAllByName(fromName);
+            final String[] fromPaths = StringUtils.split(fromName, "/"); // TODO Using hardcoded forward slash, as not sure how this will behave on windows
+            final String fromFileName = fromPaths[ fromPaths.length -1 ];
+
+            final List<S3MockFile> fromFiles = s3MockFileDAO.findAllByName(fromFileName);
 
             if (fromFiles.isEmpty()) {
                 logger.error("Error unable to locate (from DB) file to copy:" + fromName);
                 return;
             }
 
-            final S3MockFile fromS3MockFile = findS3MockFile(fromFiles, fromContainer);
+            final S3MockFile fromS3MockFile = findS3MockFile(fromName, fromFiles, fromContainer);
 
             if (fromS3MockFile == null) {
                 logger.error(String.format("Error unable to locate source file %s from container %s to copy", fromName, fromContainer));
@@ -205,18 +266,19 @@ public class MockedS3ServerEngineUtils {
 
     }
 
-    private S3MockFile findS3MockFile(final List<S3MockFile> fromFiles,
+    S3MockFile findS3MockFile(final String expectedPath,
+                                      final List<S3MockFile> fromFiles,
                                       final String fromContainer) {
 
         if (fromFiles.size() == 1) {
 
-            return locateFileForBucket(fromFiles.get(0), fromContainer);
+            return locateFileForBucket(expectedPath, fromFiles.get(0), fromContainer);
 
         } else {
 
             for (final S3MockFile s3MockFile : fromFiles) {
 
-                final S3MockFile fromS3MockFile = locateFileForBucket(s3MockFile, fromContainer);
+                final S3MockFile fromS3MockFile = locateFileForBucket(expectedPath, s3MockFile, fromContainer);
 
                 if (fromS3MockFile != null) {
                     return fromS3MockFile;
@@ -227,8 +289,9 @@ public class MockedS3ServerEngineUtils {
         return null;
     }
 
-    private S3MockFile locateFileForBucket(final S3MockFile s3MockFile,
-                                           final String container) {
+    S3MockFile locateFileForBucket(final String expectedPath,
+                                   final S3MockFile s3MockFile,
+                                   final String container) {
 
         final S3Mock bucket = s3MockFile.getS3Mock();
 
@@ -244,12 +307,42 @@ public class MockedS3ServerEngineUtils {
 
             if (dir != null) {
 
-                final S3Mock fromBucket2 = locateParentBucket(dir);
+                final StringBuilder filePathTracer = new StringBuilder();
+                final S3Mock fromBucket = locateParentBucket(filePathTracer, dir);
 
-                if (fromBucket2 != null
-                        && StringUtils.equals(container, fromBucket2.getBucketName())) {
+System.out.println(filePathTracer.toString() + s3MockFile.getName());
+System.out.println(expectedPath);
+
+                if (fromBucket != null
+                        && StringUtils.equals(container, fromBucket.getBucketName())
+                        && StringUtils.equals(filePathTracer.toString() + s3MockFile.getName(), expectedPath)) {
 
                     return s3MockFile;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
+
+    S3MockDir findS3MockDir(final String expectedPath,
+                            final List<S3MockDir> dirs,
+                            final String fromContainer) {
+
+        if (dirs.size() == 1) {
+
+            return locateDirForBucket(expectedPath, dirs.get(0), fromContainer);
+
+        } else {
+
+            for (final S3MockDir s3MockDir : dirs) {
+
+                final S3MockDir fromS3MockDir = locateDirForBucket(expectedPath, s3MockDir, fromContainer);
+
+                if (fromS3MockDir != null) {
+                    return fromS3MockDir;
                 }
             }
         }
@@ -257,12 +350,71 @@ public class MockedS3ServerEngineUtils {
         return null;
     }
 
+    S3MockDir locateDirForBucket(final String expectedPath,
+                                 final S3MockDir s3MockDir,
+                                 final String container) {
+
+        final S3Mock bucket = s3MockDir.getS3Mock();
+
+        if (bucket != null
+                && StringUtils.equals(container, bucket.getBucketName())) {
+
+            return s3MockDir;
+        }
+
+        if (bucket == null) {
+
+            final S3MockDir dir = s3MockDir.getParent();
+
+            if (dir != null) {
+
+                final StringBuilder filePathTracer = new StringBuilder();
+
+                final S3Mock fromBucket = locateParentBucket(filePathTracer, dir);
+
+System.out.println(filePathTracer.toString() + s3MockDir.getName());
+System.out.println("expectedPath: " + expectedPath);
+
+                if (fromBucket != null
+                        && StringUtils.equals(container, fromBucket.getBucketName())
+                        && StringUtils.equals(filePathTracer.toString() + s3MockDir.getName(), expectedPath)) {
+
+                    return s3MockDir;
+                }
+
+            }
+
+        }
+
+        return null;
+    }
+
+    void createS3Dir(final String fullDirPath,
+                     final S3Mock s3Mock) {
+
+        final String[] paths = StringUtils.split(fullDirPath, SEPARATOR_CHAR);
+
+        // Just the dir to save in the root of the bucket
+        if (paths.length == 1) {
+
+            final S3MockDir s3MockDir = new S3MockDir();
+            s3MockDir.setName(paths[0]);
+            s3MockDir.setS3Mock(s3Mock);
+            s3MockDirDAO.save(s3MockDir);
+            return;
+        }
+
+        // Save dir tree and dir
+//        final String[] dirPaths = Arrays.copyOf(paths, paths.length - 1);
+        handleSubDirsCreation(paths, s3Mock);
+    }
+
     void createS3DirsAndFile(final String fullFilePath,
                         final String mimeType,
                         final String content,
                         final S3Mock s3Mock) {
 
-        final String[] paths = StringUtils.split(fullFilePath, "/");
+        final String[] paths = StringUtils.split(fullFilePath, SEPARATOR_CHAR);
 
         // Just the file to save in the root of the bucket
         if (paths.length == 1) {
@@ -271,15 +423,59 @@ public class MockedS3ServerEngineUtils {
         }
 
         // Save dir tree
+        final String[] dirPaths = Arrays.copyOf(paths, paths.length - 1);
+        S3MockDir parentS3MockDir = handleSubDirsCreation(dirPaths, s3Mock);
+
+        // Save file
+        final String fileName = paths[paths.length - 1];
+        saveS3MockFile(fileName, mimeType, content, null, parentS3MockDir);
+
+    }
+
+    S3MockDir handleSubDirsCreation(final String[] paths,
+                                    final S3Mock s3Mock) {
+
         int index = 0;
         S3MockDir parentS3MockDir = null;
 
         for (String p : paths) {
 
-            if (index == (paths.length - 1)) {
-                break;
+            // Check if directory already exists so as to not duplicate it
+            if (index == 0) {
+
+                // check sub dirs in bucket root
+                final Optional<S3MockDir> dirOpt = s3Mock
+                        .getChildrenDirs()
+                        .stream()
+                        .filter(d ->
+                                d.getName().equals(p))
+                        .findFirst();
+
+                if (dirOpt.isPresent()) {
+                    parentS3MockDir = dirOpt.get();
+                    index++;
+                    continue;
+                }
+
+            } else if (parentS3MockDir != null) {
+
+                // check sub dirs in current directory
+                final Optional<S3MockDir> dirOpt = parentS3MockDir
+                        .getChildren()
+                        .stream()
+                        .filter(d ->
+                                d.getName().equals(p))
+                        .findFirst();
+
+                if (dirOpt.isPresent()) {
+                    parentS3MockDir = dirOpt.get();
+                    index++;
+                    continue;
+                }
+
             }
 
+            // Create directory
             final S3MockDir s3MockDir = new S3MockDir();
             s3MockDir.setName(p);
 
@@ -293,10 +489,7 @@ public class MockedS3ServerEngineUtils {
             index++;
         }
 
-        // Save file
-        final String fileName = paths[paths.length - 1];
-        saveS3MockFile(fileName, mimeType, content, null, parentS3MockDir);
-
+        return parentS3MockDir;
     }
 
     void saveS3MockFile(final String fileName,
@@ -334,19 +527,46 @@ public class MockedS3ServerEngineUtils {
 
     public Object[] sanitiseContainerNameInArgs(final Object[] originalArgs,
                                                 final String methodName) {
+
         logger.debug("sanitiseContainerNameInArgs called");
 
         if (!supportedInternalS3ClientUpdateMethods.contains(methodName)) {
             return originalArgs;
         }
 
+
+        if (originalArgs == null || originalArgs.length == 0) {
+            return originalArgs;
+        }
+
+        return IntStream
+                    .range(0, originalArgs.length)
+                    .mapToObj(index -> {
+
+                        final Object arg = originalArgs[index];
+
+                        if (arg instanceof String
+                                && StringUtils.startsWith((String)arg, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX)) {
+
+                            return StringUtils.removeStart((String)arg, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX);
+                        }
+
+                        return arg;
+                    })
+                    .collect(Collectors.toList())
+                    .toArray();
+
+
+        /*
         final String containerName = (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName))
                 ? (String) originalArgs[1]
                 : (String) originalArgs[0];
 
+
         if (StringUtils.startsWith(containerName, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX)) {
 
-            return IntStream.range(0, originalArgs.length)
+            return IntStream
+                    .range(0, originalArgs.length)
                     .mapToObj(index -> {
 
                         if (index == 0
@@ -367,30 +587,168 @@ public class MockedS3ServerEngineUtils {
         }
 
         return originalArgs;
+        */
     }
 
     public Optional<Boolean> isCallInternal(final Object[] originalArgs,
-                                  final String methodName) {
+                                            final String methodName) {
         logger.debug("isCallInternal called");
 
         if (!supportedInternalS3ClientUpdateMethods.contains(methodName)) {
             return Optional.empty();
         }
 
-        final String containerName = (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName))
-                ? (String) originalArgs[1]
-                : (String) originalArgs[0];
+        if (originalArgs == null || originalArgs.length == 0) {
+            return Optional.empty();
+        }
 
-        return Optional.of(StringUtils.startsWith(containerName, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX));
+        final boolean matchMade = IntStream
+            .range(0, originalArgs.length)
+            .anyMatch(i -> {
+                final Object arg = originalArgs[i];
+                return (arg instanceof String)
+                            && StringUtils.startsWith((String)arg, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX);
+            });
+
+        return Optional.of(matchMade);
     }
 
     public S3Mock locateParentBucket(final S3MockDir s3MockDir) {
+
+        return locateParentBucket(null, s3MockDir);
+    }
+
+    public S3Mock locateParentBucket(final StringBuilder filePathTracer,
+                                     final S3MockDir s3MockDir) {
+
+        if (filePathTracer != null) {
+            filePathTracer.insert(0, SEPARATOR_CHAR);
+            filePathTracer.insert(0, s3MockDir.getName());
+        }
 
         if (s3MockDir.getS3Mock() != null) {
             return s3MockDir.getS3Mock();
         }
 
-        return locateParentBucket(s3MockDir.getParent());
+        return locateParentBucket(filePathTracer, s3MockDir.getParent());
+    }
+
+    public void initBucketContent(final S3Client s3Client,
+                                  final S3Mock bucket) {
+        logger.debug("initBucketContent called");
+
+        initBucketContent(s3Client, Arrays.asList(bucket));
+    }
+
+    public void initBucketContent(final S3Client s3Client,
+                                  final List<S3Mock> buckets) {
+        logger.debug("initBucketContent called");
+
+        // Create all buckets
+        buckets.forEach(m ->
+                s3Client.createBucket(m.getBucketName()));
+
+        // Create bucket files
+        buckets.forEach(m ->
+                addBucketFiles(s3Client, m));
+
+        // Start adding bucket dir files
+        buckets.forEach(m ->
+                commenceAddingBucketDirs(s3Client, m));
+
+    }
+
+    public void addBucketFiles(final S3Client s3Client,
+                               final S3Mock bucket) {
+
+        bucket
+                .getFiles()
+                .forEach(f ->
+                        s3Client.uploadObject(
+                                        bucket.getBucketName(),
+                                        f.getName(),
+                                        IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
+                                        f.getMimeType()));
+
+    }
+
+    public void commenceAddingBucketDirs(final S3Client s3Client,
+                                         final S3Mock bucket) {
+
+        bucket.getChildrenDirs()
+                .forEach(d ->
+                        addDirFiles(bucket, s3Client, d));
+
+    }
+
+    void addDirFiles(final S3Mock bucket,
+                     final S3Client s3Client,
+                     final S3MockDir s3MockDir) {
+
+        // Create dir
+        final StringBuilder filePathTracer = new StringBuilder();
+        locateParentBucket(filePathTracer, s3MockDir);
+System.out.println("filePathTracer: " + filePathTracer.toString());
+        s3Client.createSubDirectory(bucket.getBucketName(), filePathTracer.toString());
+
+        // Create files in this dir
+        s3MockDir
+                .getFiles()
+                .forEach(f -> {
+
+                    final Pair<String, String> bucketAndFilePath = extractBucketAndFilePath(f);
+
+                    s3Client.uploadObject(
+                                    bucket.getBucketName(),
+                                    bucketAndFilePath.getRight(),
+                                    IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
+                                    f.getMimeType());
+
+                });
+
+        // Traverse child dirs
+        s3MockDir.getChildren()
+                .forEach(d ->
+                        addDirFiles(bucket, s3Client, d));
+
+    }
+
+    public Pair<String, String> extractBucketAndFilePath(final S3MockFile s3MockFile) {
+
+        final MutablePair<String, StringBuilder> collectedData
+                = new MutablePair<>(null, new StringBuilder(s3MockFile.getName()));
+
+        buildFilePathSegment(s3MockFile.getS3MockDir(), collectedData);
+
+        return new MutablePair<>(collectedData.getLeft(),
+                collectedData.getRight().toString());
+    }
+
+    void buildFilePathSegment(final S3MockDir s3MockDir,
+                              final MutablePair<String, StringBuilder> fileInfo) {
+
+        // Add dir segment
+        fileInfo.getRight().insert(0, SEPARATOR_CHAR);
+        fileInfo.getRight().insert(0, s3MockDir.getName());
+
+        // Got a bucket so have reached the top of dir tree
+        if (s3MockDir.getS3Mock() != null) {
+            fileInfo.setLeft(s3MockDir.getS3Mock().getBucketName());
+            return;
+        }
+
+        // keep working back up tree towards bucket
+        if (s3MockDir.getParent() != null) {
+            buildFilePathSegment(s3MockDir.getParent(), fileInfo);
+        }
+
+    }
+
+    public S3Client buildS3Client(final int port) {
+
+        return new S3Client(
+                GeneralUtils.S3_HOST,
+                port);
     }
 
     @PostConstruct
@@ -403,6 +761,11 @@ public class MockedS3ServerEngineUtils {
             , PUT_BLOB_METHOD
             , REMOVE_BLOB_METHOD
             , COPY_BLOB_METHOD
+            , CONTAINER_EXISTS_METHOD
+            , "deleteContainerIfEmpty"
+            , "removeBlobs"
+            , "list"
+            , "blobBuilder"
         );
 
     }

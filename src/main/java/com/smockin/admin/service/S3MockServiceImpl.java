@@ -23,6 +23,7 @@ import com.smockin.mockserver.engine.MockedS3ServerEngineUtils;
 import com.smockin.mockserver.service.S3Client;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -94,18 +96,33 @@ public class S3MockServiceImpl implements S3MockService {
 
             final S3Mock parentBucket = findS3Mock(dto.getBucketExtId().get(), token);
 
-            return s3MockDirDAO
+            final String extId = s3MockDirDAO
                     .save(new S3MockDir(dto.getName(), parentBucket))
                     .getExtId();
+
+            applyUpdateToRunningServer(cli ->
+                    cli.createSubDirectory(parentBucket.getBucketName(), dto.getName()));
+
+            return extId;
         }
 
         if (dto.getParentDirExtId().isPresent() && dto.getParentDirExtId().get() != null) {
 
             final S3MockDir parentDir = findS3MockDir(dto.getParentDirExtId().get(), token);
 
-            return s3MockDirDAO
-                    .save(new S3MockDir(dto.getName(), parentDir))
-                    .getExtId();
+            final S3MockDir newDir = s3MockDirDAO
+                    .save(new S3MockDir(dto.getName(), parentDir));
+
+            final StringBuilder filePathTracer = new StringBuilder();
+            mockedS3ServerEngineUtils.locateParentBucket(filePathTracer, newDir);
+System.out.println("filePathTracer: " + filePathTracer.toString());
+
+            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
+
+            applyUpdateToRunningServer(cli ->
+                    cli.createSubDirectory(bucket.getBucketName(), filePathTracer.toString()));
+
+            return newDir.getExtId();
         }
 
         throw new ValidationException("A parent bucket or parent directory is required");
@@ -116,44 +133,45 @@ public class S3MockServiceImpl implements S3MockService {
             throws RecordNotFoundException, ValidationException {
 
 
-        S3Mock mock = null;
+        S3Mock bucket = null;
         S3MockDir mockDir = null;
 
         if (S3MockTypeEnum.BUCKET.equals(type)) {
-            mock = findS3Mock(extId, token);
+            bucket = findS3Mock(extId, token);
         } else if (S3MockTypeEnum.DIR.equals(type)) {
             mockDir = findS3MockDir(extId, token);
         }
 
         try {
 
-            final Optional<String> fileContent = GeneralUtils.convertInputStreamToString(file.getInputStream());
+            final InputStream is = file.getInputStream();
+            final Optional<String> fileContent = GeneralUtils.convertInputStreamToString(is, false);
 
             if (!fileContent.isPresent()) {
                 throw new FileUploadException("Error reading input stream for S3 file upload.");
             }
 
-            if (mock != null) {
+            if (bucket != null) {
 
-                final String bucketName = mock.getBucketName();
-                final String newFileExtId = s3MockFileDAO.save(new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), mock)).getExtId();
+                final String bucketName = bucket.getBucketName();
+                final String newFileExtId = s3MockFileDAO.save(new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), bucket)).getExtId();
 
-                // TODO apply to S3 Mock server if running
-
-//                applyUpdateToRunningServer(cli ->
-//                        cli.uploadObject(bucketName, null, null, file.getContentType()));
+                applyUpdateToRunningServer(cli ->
+                        cli.uploadObject(bucketName, file.getOriginalFilename(), is, file.getContentType()));
 
                 return newFileExtId;
             }
 
             if (mockDir != null) {
 
-                final String newFileExtId = s3MockFileDAO.save(new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), mockDir)).getExtId();
+                final S3MockFile s3MockFile = new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), mockDir);
+                final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
-                // TODO apply to S3 Mock server if running
+                final S3Mock parentBucket = mockedS3ServerEngineUtils.locateParentBucket(mockDir);
+                final Pair<String, String> filePath = mockedS3ServerEngineUtils.extractBucketAndFilePath(s3MockFile);
 
-//                applyUpdateToRunningServer(cli ->
-//                        cli.uploadObject(null, null, null, file.getContentType()));
+                applyUpdateToRunningServer(cli ->
+                        cli.uploadObject(parentBucket.getBucketName(), filePath.getRight(), is, file.getContentType()));
 
                 return newFileExtId;
             }
@@ -173,12 +191,19 @@ public class S3MockServiceImpl implements S3MockService {
 
         final S3Mock s3Mock = findS3Mock(extId, token);
 
+        final String originalBucket = s3Mock.getBucketName();
+
         s3Mock.setBucketName(dto.getBucket());
         s3Mock.setStatus(dto.getStatus());
 
         s3MockDAO.save(s3Mock);
 
-        // TODO apply to S3 Mock server if running
+        // Remove current bucket and re-create with latest content...
+        applyUpdateToRunningServer(
+            cli -> cli.deleteBucket(originalBucket, true),
+            cli -> mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock)
+        );
+
     }
 
     @Override
@@ -191,33 +216,80 @@ public class S3MockServiceImpl implements S3MockService {
 
         s3MockDirDAO.save(s3MockDir);
 
-        // TODO apply to S3 Mock server if running
+        final S3Mock s3Mock = mockedS3ServerEngineUtils.locateParentBucket(s3MockDir);
+
+        // Remove current bucket and re-create with latest content...
+        applyUpdateToRunningServer(
+                cli -> cli.deleteBucket(s3Mock.getBucketName(), true),
+                cli -> mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock)
+        );
+
     }
 
     @Override
     public void deleteS3BucketOrFile(final String extId, final S3MockTypeEnum type, final String token) throws RecordNotFoundException, ValidationException {
 
+        if (logger.isDebugEnabled())
+            logger.debug(String.format("deleteS3BucketOrFile called (type: %s)", type));
+
         if (S3MockTypeEnum.BUCKET.equals(type)) {
+
             final S3Mock s3Mock = findS3Mock(extId, token);
             final String bucketName = s3Mock.getBucketName();
             s3MockDAO.delete(s3Mock);
 
             applyUpdateToRunningServer(cli ->
-                cli.deleteBucket(bucketName));
+                cli.deleteBucket(bucketName, true));
 
             return;
         }
+
         if (S3MockTypeEnum.DIR.equals(type)) {
-            s3MockDirDAO.delete(findS3MockDir(extId, token));
 
-            // TODO apply to S3 Mock server if running
+            final S3MockDir dir = findS3MockDir(extId, token);
+            final long bucketId = mockedS3ServerEngineUtils.locateParentBucket(dir).getId();
+
+            s3MockDirDAO.delete(dir);
+            s3MockDirDAO.flush();
+
+            final S3Mock bucket = s3MockDAO.getById(bucketId);
+
+            // Remove current bucket and re-create with latest content...
+            applyUpdateToRunningServer(
+                    cli -> cli.deleteBucket(bucket.getBucketName(), true),
+                    cli -> mockedS3ServerEngineUtils.initBucketContent(cli, bucket)
+            );
 
             return;
         }
-        if (S3MockTypeEnum.FILE.equals(type)) {
-            s3MockFileDAO.delete(findS3MockFile(extId, token));
 
-            // TODO apply to S3 Mock server if running
+        if (S3MockTypeEnum.FILE.equals(type)) {
+
+            final S3MockFile s3MockFile = findS3MockFile(extId, token);
+
+            final String filePath;
+            final S3Mock bucket;
+
+            if (s3MockFile.getS3Mock() != null) {
+
+                filePath = s3MockFile.getName();
+                bucket = s3MockFile.getS3Mock();
+
+            } else {
+
+                filePath = mockedS3ServerEngineUtils.extractBucketAndFilePath(s3MockFile).getRight();
+                bucket = (s3MockFile.getS3Mock() != null)
+                        ? s3MockFile.getS3Mock()
+                        : mockedS3ServerEngineUtils.locateParentBucket(s3MockFile.getS3MockDir());
+
+            }
+
+            s3MockFileDAO.delete(s3MockFile);
+
+            if (bucket != null) {
+                applyUpdateToRunningServer(cli ->
+                        cli.deleteObject(bucket.getBucketName(), filePath));
+            }
 
             return;
         }
@@ -256,6 +328,17 @@ public class S3MockServiceImpl implements S3MockService {
         userTokenServiceUtils.validateRecordOwner(s3Mock.getCreatedBy(), token);
 
         return buildBucketDtoTree(s3Mock, Optional.empty());
+    }
+
+    @Override
+    public void syncS3Bucket(final String extId, final String token) throws RecordNotFoundException, ValidationException {
+
+        final S3Mock s3Mock = findS3Mock(extId, token);
+
+        applyUpdateToRunningServer(
+                cli -> cli.deleteBucket(s3Mock.getBucketName(), true),
+                cli -> mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock)
+        );
     }
 
     S3Mock findS3Mock(final String extId, final String token) throws RecordNotFoundException, ValidationException {
@@ -363,7 +446,12 @@ public class S3MockServiceImpl implements S3MockService {
         return dto;
     }
 
-    void applyUpdateToRunningServer(final ApplyToServerAction action) {
+    // TODO should we make this async...?
+    void applyUpdateToRunningServer(final ApplyToMockServerAction ... actions) {
+
+        if (actions == null || actions.length == 0) {
+            return;
+        }
 
         final MockServerState s3MockServerState = mockedServerEngineService.getS3ServerState();
 
@@ -371,11 +459,16 @@ public class S3MockServiceImpl implements S3MockService {
             return;
         }
 
-        action.execute(new S3Client(GeneralUtils.S3_HOST, s3MockServerState.getPort()));
+        final S3Client s3Client = mockedS3ServerEngineUtils.buildS3Client(s3MockServerState.getPort());
+
+        for (ApplyToMockServerAction action : actions) {
+            action.execute(s3Client);
+        }
+
     }
 
     @FunctionalInterface
-    interface ApplyToServerAction {
+    interface ApplyToMockServerAction {
         void execute(final S3Client S3Client);
     }
 

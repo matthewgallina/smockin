@@ -52,12 +52,15 @@
 
                     <button class="btn btn-success" type="button" ng-click="doAddNode()">
                         <span class="glyphicon glyphicon-folder-open" aria-hidden="true"></span>
-                        &nbsp;
                         {{ addNodeButtonLabel }}
                     </button>
                     <button class="btn btn-success" type="button" ng-click="doUploadFile()">
                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                         {{ uploadFileButtonLabel }}
+                    </button>
+                    <button class="btn btn-warning" type="button" ng-click="doSyncBucket()" ng-disabled="mockServerStatus == mockServerStoppedStatus">
+                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                        {{ syncBucketButtonLabel }}
                     </button>
 
                     <div class="pull-right">

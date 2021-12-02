@@ -10,6 +10,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     var NodeTypeBucket = globalVars.NodeTypeBucket;
     var NodeTypeDir = globalVars.NodeTypeDir;
     var NodeTypeFile = globalVars.NodeTypeFile;
+    var MockServerRunningStatus = globalVars.MockServerRunningStatus;
+    var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
 
 
     //
@@ -21,14 +23,16 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
-    $scope.addNodeButtonLabel = 'Add Dir';
-    $scope.renameNodeButtonLabel = 'Rename';
-    $scope.removeNodeButtonLabel = 'Delete';
-    $scope.uploadFileButtonLabel = 'Upload';
+
 
 
     //
     // Buttons
+    $scope.addNodeButtonLabel = 'Add Dir';
+    $scope.renameNodeButtonLabel = 'Rename';
+    $scope.removeNodeButtonLabel = 'Delete';
+    $scope.uploadFileButtonLabel = 'Upload';
+    $scope.syncBucketButtonLabel = 'Re-Sync';
     $scope.saveButtonLabel = 'Create';
     $scope.cancelButtonLabel = 'Close';
 
@@ -68,6 +72,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.activeStatus = globalVars.ActiveStatus;
     $scope.inActiveStatus = globalVars.InActiveStatus;
     $scope.isNew = isNew;
+    $scope.mockServerStatus = MockServerStoppedStatus;
+    $scope.mockServerStoppedStatus = MockServerStoppedStatus;
 
     $scope.endpoint = {
         "bucket" : null,
@@ -220,6 +226,20 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     };
 
+    $scope.doSyncBucket = function() {
+
+        if ($scope.mockServerStatus != MockServerRunningStatus) {
+            return;
+        }
+
+        utils.openWarningConfirmation("Are you sure you wish to re-synchronize the mock bucket contents?", function (alertResponse) {
+            if (alertResponse) {
+                reSyncBucketContent();
+            }
+       });
+
+    };
+
     $scope.doUploadFile = function() {
 
         if (isNew) {
@@ -348,6 +368,31 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     }
 */
 
+    function reSyncBucketContent() {
+
+        // Send to Server
+        utils.showBlockingOverlay();
+
+        var serverCallbackFuncFollowingResync = function (status, data) {
+
+            utils.hideBlockingOverlay();
+
+            if (status == 204) {
+                showAlert("Bucket Synchronization Complete", "success");
+                return;
+            }
+
+            handleErrorResponse(status, data);
+        };
+
+        var reqData = {
+            "bucketExtId" : $scope.endpoint.extId
+        };
+
+        restClient.doPost($http, '/s3mock/bucket/' + $scope.endpoint.extId + '/sync', reqData, serverCallbackFuncFollowingResync);
+
+    }
+
     function createNewBucket(bucket, status, parentId, callbackFunc) {
 
         // Send to Server
@@ -406,7 +451,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
         utils.openDeleteConfirmation("Are you sure you wish to delete this S3 bucket and all of it's content?", function (alertResponse) {
             if (alertResponse) {
-                deleteNode($scope.endpoint.extId, NodeTypeDir, true);
+                deleteNode($scope.endpoint.extId, NodeTypeBucket, true);
             }
        });
 
@@ -653,5 +698,26 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         });
 
     }
+
+    function loadS3ServerStatus() {
+
+        utils.checkS3ServerStatus(function(running, port) {
+
+            if (running == null) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            $scope.mockServerStatus = (running)
+                ? MockServerRunningStatus
+                : MockServerStoppedStatus;
+        });
+
+    }
+
+
+    //
+    // init page
+    loadS3ServerStatus();
 
 });

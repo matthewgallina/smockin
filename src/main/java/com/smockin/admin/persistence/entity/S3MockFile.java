@@ -1,7 +1,8 @@
 package com.smockin.admin.persistence.entity;
 
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 
@@ -10,7 +11,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "S3_MOCK_FILE")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class S3MockFile extends Identifier {
 

@@ -6,6 +6,7 @@ import com.smockin.admin.dto.response.S3MockBucketResponseDTO;
 import com.smockin.admin.dto.response.S3MockBucketResponseLiteDTO;
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.enums.S3MockTypeEnum;
+import com.smockin.admin.exception.FileUploadException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.S3MockService;
@@ -35,7 +36,9 @@ public class S3MockController {
                                                                                        @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(s3MockService.createS3Bucket(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(
+                s3MockService.createS3Bucket(dto,
+                        GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
     @RequestMapping(path="/s3mock/dir", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,25 +46,41 @@ public class S3MockController {
                                                                                     @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(s3MockService.createS3BucketDir(dto, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(
+                s3MockService.createS3BucketDir(dto,
+                    GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
     @RequestMapping(path="/s3mock/bucket/{extId}/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public @ResponseBody ResponseEntity<SimpleMessageResponseDTO> uploadFileToDir(@PathVariable("extId") final String extId,
                                                                                   @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
                                                                                   @RequestParam("file") final MultipartFile file)
-                                                                                    throws ValidationException {
+                                                                                    throws RecordNotFoundException, ValidationException, FileUploadException {
 
-        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(s3MockService.uploadS3BucketFile(extId, S3MockTypeEnum.BUCKET, file, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(
+                s3MockService.uploadS3BucketFile(extId, S3MockTypeEnum.BUCKET, file,
+                    GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(path="/s3mock/bucket/{extId}/sync", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<Void> synchronizeS3Bucket(@PathVariable("extId") final String extId,
+                                                                  @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws RecordNotFoundException, ValidationException {
+
+        s3MockService.syncS3Bucket(extId, GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(path="/s3mock/dir/{extId}/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public @ResponseBody ResponseEntity<SimpleMessageResponseDTO> uploadFiletoDir(@PathVariable("extId") final String extId,
                                                                                   @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
                                                                                   @RequestParam("file") final MultipartFile file)
-            throws ValidationException {
+            throws RecordNotFoundException, ValidationException {
 
-        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(s3MockService.uploadS3BucketFile(extId, S3MockTypeEnum.DIR, file, GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
+        return new ResponseEntity<>(new SimpleMessageResponseDTO<>(
+                s3MockService.uploadS3BucketFile(extId, S3MockTypeEnum.DIR, file,
+                        GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
     @RequestMapping(path = "/s3mock/bucket/{extId}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -81,7 +100,8 @@ public class S3MockController {
                                                           @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        s3MockService.updateS3Dir(extId, dto, GeneralUtils.extractOAuthToken(bearerToken));
+        s3MockService.updateS3Dir(extId, dto,
+                GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -91,7 +111,8 @@ public class S3MockController {
                                                              @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                             throws RecordNotFoundException, ValidationException {
 
-        s3MockService.deleteS3BucketOrFile(extId, S3MockTypeEnum.BUCKET, GeneralUtils.extractOAuthToken(bearerToken));
+        s3MockService.deleteS3BucketOrFile(extId, S3MockTypeEnum.BUCKET,
+                GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -101,7 +122,8 @@ public class S3MockController {
                                                           @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        s3MockService.deleteS3BucketOrFile(extId, S3MockTypeEnum.DIR, GeneralUtils.extractOAuthToken(bearerToken));
+        s3MockService.deleteS3BucketOrFile(extId, S3MockTypeEnum.DIR,
+                GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -120,7 +142,8 @@ public class S3MockController {
     public @ResponseBody ResponseEntity<List<S3MockBucketResponseLiteDTO>> getAllBuckets(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                                                                                 throws RecordNotFoundException {
 
-        return new ResponseEntity<>(s3MockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+        return new ResponseEntity<>(
+                s3MockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
     @RequestMapping(path="/s3mock/bucket/{extId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -128,7 +151,9 @@ public class S3MockController {
                                                                            @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws ValidationException, RecordNotFoundException {
 
-        return new ResponseEntity<>(s3MockService.loadById(extId, GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+        return new ResponseEntity<>(
+                s3MockService.loadById(extId,
+                        GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
 }
