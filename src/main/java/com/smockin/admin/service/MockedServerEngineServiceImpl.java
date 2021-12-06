@@ -165,7 +165,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.S3);
 
-            final List<S3Mock> mocks = s3MockDAO.findAllParentsByUser(smockinUser.getId());
+            final List<S3Mock> mocks = s3MockDAO.findAllActiveParentsByUser(smockinUser.getId());
 
             mockedS3ServerEngine.start(configDTO, mocks);
 

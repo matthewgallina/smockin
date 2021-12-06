@@ -165,7 +165,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                     return {
                         "extId" : null,
                         "nodeName" : null,
-                        "nodeType" : nodeType,
+                        "nodeType" : NodeTypeDir,
                         "parentName" : parentName
                     };
                 }

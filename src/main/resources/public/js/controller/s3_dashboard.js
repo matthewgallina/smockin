@@ -15,8 +15,6 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.mockServerStatusLabel = 'S3 Mock Server Status:';
     $scope.serverConfigLabel = 'server config';
     $scope.noDataFoundMsg = 'No Data Found';
-    $scope.expandAllEndpointsHeading = 'expand all';
-    $scope.collapseAllEndpointsHeading = 'collapse all';
     $scope.selectAllEndpointsHeading = 'select all';
     $scope.deselectAllEndpointsHeading = 'clear selection';
     $scope.enabledLabel = "Enabled";
@@ -72,22 +70,12 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
         });
     };
 
-    $scope.doExpandAllEndpoints = function() {
-        doToggleAccordion(true);
-    };
-
-    $scope.doCollapseAllEndpoints = function() {
-        doToggleAccordion(false);
-    };
-
     $scope.doSelectAllEndpoints = function() {
 
        $scope.mockSelection = [];
 
         for (var rs=0; rs < $scope.s3Services.length; rs++) {
-            for (var rsd=0; rsd < $scope.s3Services[rs].data.length; rsd++) {
-                $scope.mockSelection.push($scope.s3Services[rs].data[rsd]);
-            }
+            $scope.mockSelection.push($scope.s3Services[rs]);
         }
 
     }
@@ -95,6 +83,17 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.doClearAllEndpoints = function() {
 
         $scope.mockSelection = [];
+    };
+
+    $scope.doesSelectionContain = function(extId) {
+
+        for (var m=0; m < $scope.mockSelection.length; m++) {
+            if ($scope.mockSelection[m].extId == extId) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     $scope.toggleSelection = function (mock) {
@@ -183,15 +182,6 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
 
     //
     // Internal Functions
-    function doToggleAccordion(isOpen) {
-
-        for (var rs=0; rs < $scope.s3Services.length; rs++) {
-            $scope.s3Services[rs].isOpen = isOpen;
-        }
-
-    }
-
-
     function loadTableData() {
 
         allS3Services = [];

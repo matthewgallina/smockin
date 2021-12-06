@@ -35,6 +35,8 @@ public class MockedS3ServerEngine {
 
     private final Logger logger = LoggerFactory.getLogger(MockedS3ServerEngine.class);
 
+    private String host = "http://127.0.0.1";
+
     @Autowired
     private MockedS3ServerEngineUtils mockedS3ServerEngineUtils;
 
@@ -49,7 +51,7 @@ public class MockedS3ServerEngine {
 
         s3Proxy = S3Proxy.builder()
                 .blobStore(buildInMemoryBlobStore())
-                .endpoint(URI.create("http://127.0.0.1:" + configDTO.getPort()))
+                .endpoint(URI.create(host + ":" + configDTO.getPort()))
                 .build();
 
         synchronized (serverStateMonitor) {
@@ -120,22 +122,25 @@ public class MockedS3ServerEngine {
 
         final InvocationHandler handler = (proxy, method, args) -> {
 
-System.out.println(" ");
-System.out.println("PROXY METHOD: " + method.getName());
+            if (logger.isDebugEnabled())
+                logger.debug("PROXY METHOD: " + method.getName());
 
             final Optional<Boolean> isInternalCall = mockedS3ServerEngineUtils.isCallInternal(args, method.getName());
 
-System.out.println("PROXY > isInternalCall: " + isInternalCall);
+            if (logger.isDebugEnabled())
+                logger.debug("PROXY > isInternalCall: " + isInternalCall);
 
             args = (isInternalCall.isPresent() && isInternalCall.get())
                     ? mockedS3ServerEngineUtils.sanitiseContainerNameInArgs(args, method.getName())
                     : args;
 
-if (args != null) {
-    for (Object arg : args) {
-        System.out.println("PROXY ARG: " + arg);
-    }
-}
+            if (logger.isDebugEnabled()) {
+                if (args != null) {
+                    for (Object arg : args) {
+                        logger.debug("PROXY ARG: " + arg);
+                    }
+                }
+            }
 
             final Object result = method.invoke(originalBlobStore, args);
 

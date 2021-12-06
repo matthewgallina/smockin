@@ -115,7 +115,6 @@ public class S3MockServiceImpl implements S3MockService {
 
             final StringBuilder filePathTracer = new StringBuilder();
             mockedS3ServerEngineUtils.locateParentBucket(filePathTracer, newDir);
-System.out.println("filePathTracer: " + filePathTracer.toString());
 
             final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
 

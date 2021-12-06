@@ -42,7 +42,7 @@ public class MockedS3ServerEngineUtils {
 
     private List<String> supportedInternalS3ClientUpdateMethods; // i.e BlobStore update based methods based on the functions present in S3Client
 
-    public static final String SEPARATOR_CHAR = "/"; // TODO Using hardcoded forward slash rather then File.separatorChar as not sure how this will behave on Windows
+    public static final String SEPARATOR_CHAR = "/"; // Using hardcoded forward slash rather then File.separatorChar as not sure how this will behave on Windows machines
 
     private static final String CREATE_CONTAINER_IN_LOCATION_METHOD = "createContainerInLocation";
     private static final String DELETE_CONTAINER_METHOD = "deleteContainer";
@@ -51,6 +51,10 @@ public class MockedS3ServerEngineUtils {
     private static final String REMOVE_BLOB_METHOD = "removeBlob";
     private static final String COPY_BLOB_METHOD = "copyBlob";
     private static final String CONTAINER_EXISTS_METHOD = "containerExists";
+    private static final String DELETE_CONTAINER_IF_EMPTY_METHOD = "deleteContainerIfEmpty";
+    private static final String REMOVE_BLOBS_METHOD = "removeBlobs";
+    private static final String LIST_METHOD = "list";
+    private static final String BLOB_BUILDER_METHOD = "blobBuilder";
 
 
     @Autowired
@@ -131,11 +135,6 @@ public class MockedS3ServerEngineUtils {
             final String fileName = blob.getMetadata().getName();
             final String mimeType = blob.getPayload().getContentMetadata().getContentType();
 
-System.out.println(containerName);
-System.out.println(blob);
-System.out.println(fileName);
-System.out.println(mimeType);
-
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
 
             if ("application/x-directory".equals(mimeType)) {
@@ -174,15 +173,10 @@ System.out.println(mimeType);
             // Remove Directory
             if (StringUtils.endsWith(fullFilePathOrDir, SEPARATOR_CHAR)) { // This a dir
 
-// TODO you need to get the last dir in fullFilePathOrDir!
-System.out.println("fullFilePathOrDir: " + fullFilePathOrDir);
-
                 final String[] dirsSplitByPath = StringUtils.split(fullFilePathOrDir, SEPARATOR_CHAR);
                 final String singleDirectory = (dirsSplitByPath.length > 1)
                         ? dirsSplitByPath[dirsSplitByPath.length - 1]
                         : fullFilePathOrDir;
-
-System.out.println("singleDirectory: " + singleDirectory);
 
                 final List<S3MockDir> dirs = s3MockDirDAO.findAllByName(StringUtils.removeEnd(singleDirectory, SEPARATOR_CHAR));
 
@@ -231,6 +225,7 @@ System.out.println("singleDirectory: " + singleDirectory);
 
         } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
+            // NOTEm, copyBlob seems to just handle the file during a dir rename.
             // todo test this!
 
             final String fromContainer = (String)args[0];
@@ -239,7 +234,7 @@ System.out.println("singleDirectory: " + singleDirectory);
             final String toName = (String) args[3];
 //            final CopyOptions options = (CopyOptions) args[4];
 
-            final String[] fromPaths = StringUtils.split(fromName, "/"); // TODO Using hardcoded forward slash, as not sure how this will behave on windows
+            final String[] fromPaths = StringUtils.split(fromName, SEPARATOR_CHAR); // TODO Using hardcoded forward slash, as not sure how this will behave on windows
             final String fromFileName = fromPaths[ fromPaths.length -1 ];
 
             final List<S3MockFile> fromFiles = s3MockFileDAO.findAllByName(fromFileName);
@@ -259,6 +254,8 @@ System.out.println("singleDirectory: " + singleDirectory);
             final S3Mock destinationBucket = findS3MockByBucketName(toContainer);
 
             createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getContent(), destinationBucket);
+
+            // todo remove existing dir?
 
             handleS3Logging("Copied file " + fromName + " from bucket '" + fromContainer + "' into bucket '" + toContainer + "'");
 
@@ -309,9 +306,6 @@ System.out.println("singleDirectory: " + singleDirectory);
 
                 final StringBuilder filePathTracer = new StringBuilder();
                 final S3Mock fromBucket = locateParentBucket(filePathTracer, dir);
-
-System.out.println(filePathTracer.toString() + s3MockFile.getName());
-System.out.println(expectedPath);
 
                 if (fromBucket != null
                         && StringUtils.equals(container, fromBucket.getBucketName())
@@ -372,12 +366,9 @@ System.out.println(expectedPath);
 
                 final S3Mock fromBucket = locateParentBucket(filePathTracer, dir);
 
-System.out.println(filePathTracer.toString() + s3MockDir.getName());
-System.out.println("expectedPath: " + expectedPath);
-
                 if (fromBucket != null
                         && StringUtils.equals(container, fromBucket.getBucketName())
-                        && StringUtils.equals(filePathTracer.toString() + s3MockDir.getName(), expectedPath)) {
+                        && StringUtils.equals(filePathTracer.toString() + s3MockDir.getName(), sanitiseSeparatorSuffix(expectedPath))) {
 
                     return s3MockDir;
                 }
@@ -387,6 +378,13 @@ System.out.println("expectedPath: " + expectedPath);
         }
 
         return null;
+    }
+
+    String sanitiseSeparatorSuffix(final String value) {
+
+        return ((StringUtils.endsWith(value, SEPARATOR_CHAR))
+                ? StringUtils.removeEnd(value, SEPARATOR_CHAR)
+                : value);
     }
 
     void createS3Dir(final String fullDirPath,
@@ -688,7 +686,6 @@ System.out.println("expectedPath: " + expectedPath);
         // Create dir
         final StringBuilder filePathTracer = new StringBuilder();
         locateParentBucket(filePathTracer, s3MockDir);
-System.out.println("filePathTracer: " + filePathTracer.toString());
         s3Client.createSubDirectory(bucket.getBucketName(), filePathTracer.toString());
 
         // Create files in this dir
@@ -762,10 +759,10 @@ System.out.println("filePathTracer: " + filePathTracer.toString());
             , REMOVE_BLOB_METHOD
             , COPY_BLOB_METHOD
             , CONTAINER_EXISTS_METHOD
-            , "deleteContainerIfEmpty"
-            , "removeBlobs"
-            , "list"
-            , "blobBuilder"
+            , DELETE_CONTAINER_IF_EMPTY_METHOD
+            , REMOVE_BLOBS_METHOD
+            , LIST_METHOD
+            , BLOB_BUILDER_METHOD
         );
 
     }

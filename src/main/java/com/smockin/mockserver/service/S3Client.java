@@ -48,13 +48,18 @@ public class S3Client {
 
         final PutObjectRequest putObjectRequest = new PutObjectRequest(
                 SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName,
-                folderPath + ((StringUtils.endsWith(folderPath, MockedS3ServerEngineUtils.SEPARATOR_CHAR))
-                                        ? ""
-                                        : MockedS3ServerEngineUtils.SEPARATOR_CHAR),
+                folderPath + handleSeparatorSuffix(folderPath),
                     new ByteArrayInputStream(new byte[0]),
                     metadata);
 
         createS3Client().putObject(putObjectRequest);
+    }
+
+    String handleSeparatorSuffix(final String folderPath) {
+
+        return ((StringUtils.endsWith(folderPath, MockedS3ServerEngineUtils.SEPARATOR_CHAR))
+                ? ""
+                : MockedS3ServerEngineUtils.SEPARATOR_CHAR);
     }
 
     public void deleteBucket(final String bucketName,
