@@ -16,9 +16,12 @@ public interface S3MockDAO extends JpaRepository<S3Mock, Long> {
     S3Mock findByBucketName(@Param("bucketName") final String bucketName);
 
     @Query("FROM S3Mock m WHERE m.createdBy.id = :userId")
-    List<S3Mock> findAllParentsByUser(@Param("userId") final long userId);
+    List<S3Mock> findAllBucketsByUser(@Param("userId") final long userId);
+
+    @Query("FROM S3Mock m WHERE m.status = 'ACTIVE'")
+    List<S3Mock> findAllActiveBuckets();
 
     @Query("FROM S3Mock m WHERE m.createdBy.id = :userId AND m.status = 'ACTIVE'")
-    List<S3Mock> findAllActiveParentsByUser(@Param("userId") final long userId);
+    List<S3Mock> findAllActiveBucketsByUser(@Param("userId") final long userId);
 
 }

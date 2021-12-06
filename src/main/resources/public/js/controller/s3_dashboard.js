@@ -8,6 +8,7 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
     var MockServerRestartStatus = globalVars.MockServerRestartStatus;
     var RestartServerRequired = $routeParams.restart;
+    var S3ServerType = globalVars.S3ServerType;
 
 
     //
@@ -63,6 +64,33 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
 
     //
     // Scoped Functions
+    $scope.doOpenServerConfig = function() {
+
+     var modalInstance = $uibModal.open({
+          templateUrl: 'server_config.html',
+          controller: 'serverConfigController',
+          backdrop  : 'static',
+          keyboard  : false,
+          resolve: {
+            data: function () {
+              return { "serverType" : S3ServerType };
+            }
+          }
+        });
+
+        modalInstance.result.then(function (response) {
+            if (response != null
+                    && response.restartReq
+                    && !$scope.readOnly) {
+                RestartServerRequired = true;
+                loadS3ServerStatus();
+            }
+        }, function () {
+
+        });
+
+    };
+
     $scope.doOpenS3EndpointInfo = function(endpointDataExtId) {
         $location.path("/s3_endpoint").search({
             "dv" : globalVars.S3ServerMode,
@@ -221,7 +249,8 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
                 restartS3MockServer(function(port) {
 
                     if (port != null) {
-                        $window.location.href = '/templates/main.html';
+                        utils.hideLoadingOverlay();
+                        $scope.mockServerStatus = MockServerRunningStatus;
                         return;
                     }
 
@@ -232,7 +261,10 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
             }
 
             RestartServerRequired = false;
-            $scope.mockServerStatus = (running) ? MockServerRunningStatus : MockServerStoppedStatus;
+
+            $scope.mockServerStatus = (running)
+                ? MockServerRunningStatus
+                : MockServerStoppedStatus;
         });
 
     }

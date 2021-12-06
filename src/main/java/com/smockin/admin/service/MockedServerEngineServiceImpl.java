@@ -153,21 +153,20 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Override
     public MockedServerConfigDTO startS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
 
-        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-        smockinUserService.assertCurrentUserIsAdmin(smockinUser);
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
 
-        return startS3(smockinUser);
+        return startS3();
     }
 
-    private MockedServerConfigDTO startS3(final SmockinUser smockinUser) throws MockServerException {
+    private MockedServerConfigDTO startS3() throws MockServerException {
 
         try {
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.S3);
 
-            final List<S3Mock> mocks = s3MockDAO.findAllActiveParentsByUser(smockinUser.getId());
+            final List<S3Mock> activeMocks = s3MockDAO.findAllActiveBuckets();
 
-            mockedS3ServerEngine.start(configDTO, mocks);
+            mockedS3ServerEngine.start(configDTO, activeMocks);
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
@@ -187,14 +186,13 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     @Override
     public MockedServerConfigDTO restartS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
 
-        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-        smockinUserService.assertCurrentUserIsAdmin(smockinUser);
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
 
         if (getS3ServerState().isRunning()) {
             shutdownS3();
         }
 
-        return startS3(smockinUser);
+        return startS3();
     }
 
     @Override
@@ -625,6 +623,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             case RESTFUL:
                 startRest();
                 break;
+            case S3:
+                startS3();
             default:
                 logger.warn("Found auto start instruction for discontinued server type: " + serverType);
         }

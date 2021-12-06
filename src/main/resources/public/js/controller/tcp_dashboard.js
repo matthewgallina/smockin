@@ -524,7 +524,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 restartTcpMockServer(function(port) {
 
                     if (port != null) {
-                        $window.location.href = '/templates/main.html';
+                        utils.hideLoadingOverlay();
+                        $scope.mockServerStatus = MockServerRunningStatus;
                         return;
                     }
 
@@ -535,7 +536,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             }
 
             RestartServerRequired = false;
-            $scope.mockServerStatus = (running)?MockServerRunningStatus:MockServerStoppedStatus;
+
+            $scope.mockServerStatus = (running)
+                ? MockServerRunningStatus
+                : MockServerStoppedStatus;
         });
 
     }

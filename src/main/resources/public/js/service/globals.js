@@ -19,6 +19,7 @@ app.service('globalVars', function() {
     this.RegularRole = "REGULAR";
 
     this.RestfulServerType = "RESTFUL";
+    this.S3ServerType = "S3";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';

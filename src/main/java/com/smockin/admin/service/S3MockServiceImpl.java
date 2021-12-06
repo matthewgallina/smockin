@@ -302,7 +302,7 @@ public class S3MockServiceImpl implements S3MockService {
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         return s3MockDAO
-                .findAllParentsByUser(smockinUser.getId())
+                .findAllBucketsByUser(smockinUser.getId())
                 .stream()
                 .map(m ->
                         new S3MockBucketResponseLiteDTO(m.getExtId(),
