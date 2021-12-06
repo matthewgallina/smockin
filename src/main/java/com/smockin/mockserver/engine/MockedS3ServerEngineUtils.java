@@ -42,7 +42,10 @@ public class MockedS3ServerEngineUtils {
 
     private List<String> supportedInternalS3ClientUpdateMethods; // i.e BlobStore update based methods based on the functions present in S3Client
 
-    public static final String SEPARATOR_CHAR = "/"; // Using hardcoded forward slash rather then File.separatorChar as not sure how this will behave on Windows machines
+    // Using hardcoded forward slash rather then File.separatorChar as not sure how this will behave on Windows machines
+    public static final String SEPARATOR_CHAR = GeneralUtils.URL_PATH_SEPARATOR;
+
+    private static final String APPLICATION_XDIRECTORY = "application/x-directory";
 
     private static final String CREATE_CONTAINER_IN_LOCATION_METHOD = "createContainerInLocation";
     private static final String DELETE_CONTAINER_METHOD = "deleteContainer";
@@ -128,7 +131,7 @@ public class MockedS3ServerEngineUtils {
 
         } else if (PUT_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
-            // todo test this!
+            // TODO test this!
 
             final String containerName = (String)args[0];
             final Blob blob = (Blob) args[1];
@@ -137,7 +140,7 @@ public class MockedS3ServerEngineUtils {
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
 
-            if ("application/x-directory".equals(mimeType)) {
+            if (APPLICATION_XDIRECTORY.equals(mimeType)) {
                 createS3Dir(fileName, s3Mock);
                 return;
             }
@@ -225,8 +228,8 @@ public class MockedS3ServerEngineUtils {
 
         } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
-            // NOTEm, copyBlob seems to just handle the file during a dir rename.
-            // todo test this!
+            // NOTE, copyBlob seems to just handle the file during a dir rename.
+            // TODO test this!
 
             final String fromContainer = (String)args[0];
             final String fromName = (String) args[1];
@@ -234,7 +237,7 @@ public class MockedS3ServerEngineUtils {
             final String toName = (String) args[3];
 //            final CopyOptions options = (CopyOptions) args[4];
 
-            final String[] fromPaths = StringUtils.split(fromName, SEPARATOR_CHAR); // TODO Using hardcoded forward slash, as not sure how this will behave on windows
+            final String[] fromPaths = StringUtils.split(fromName, SEPARATOR_CHAR);
             final String fromFileName = fromPaths[ fromPaths.length -1 ];
 
             final List<S3MockFile> fromFiles = s3MockFileDAO.findAllByName(fromFileName);
@@ -254,8 +257,6 @@ public class MockedS3ServerEngineUtils {
             final S3Mock destinationBucket = findS3MockByBucketName(toContainer);
 
             createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getContent(), destinationBucket);
-
-            // todo remove existing dir?
 
             handleS3Logging("Copied file " + fromName + " from bucket '" + fromContainer + "' into bucket '" + toContainer + "'");
 
