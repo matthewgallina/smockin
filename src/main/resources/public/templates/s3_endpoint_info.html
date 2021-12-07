@@ -79,7 +79,8 @@
 
         <div class="action-buttons">
             <button class="btn btn-default" type="button" ng-click="doClose()">{{ cancelButtonLabel }}</button>
-            <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="isNew && !readOnly">{{ saveButtonLabel }}</button>
+            <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+            <button class="btn btn-primary" type="button" ng-click="doSaveS3Bucket()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
         </div>
 
     </div>

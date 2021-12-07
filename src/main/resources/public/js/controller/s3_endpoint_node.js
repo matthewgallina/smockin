@@ -72,7 +72,7 @@ app.controller('s3EndpointNodeController', function($scope, $uibModalInstance, $
             return;
         }
         if (nodeType == NodeTypeBucket
-                && globalVars.S3BucketNameRegex.exec($scope.node.name) == null) {
+                && utils.matchesRegex(globalVars.S3BucketNameRegex, $scope.node.name)) {
             showAlert("Invalid S3 'Bucket' name (lowercase letters, numbers & hyphens only)");
             return;
         }

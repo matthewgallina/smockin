@@ -19,7 +19,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.endpointHeading = (isNew) ? 'New S3 Bucket' : 'S3 Bucket';
     $scope.pathPlaceHolderTxt = s3PathPlaceHolderTxt;
     $scope.bucketLabel = 'Bucket Name';
-    $scope.bucketStructureLabel = 'Directory Structure';
+    $scope.bucketStructureLabel = 'S3 Bucket Content';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
@@ -33,7 +33,8 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.removeNodeButtonLabel = 'Delete';
     $scope.uploadFileButtonLabel = 'Upload';
     $scope.syncBucketButtonLabel = 'Re-Sync';
-    $scope.saveButtonLabel = 'Create';
+    $scope.deleteButtonLabel = 'Delete';
+    $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Close';
 
 
@@ -119,20 +120,45 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         $scope.endpoint.status = s;
     };
 
-    $scope.doSaveEndpoint = function() {
+    $scope.doSaveS3Bucket = function() {
 
         // Validation
         if (utils.isBlank($scope.endpoint.bucket)) {
             showAlert("'Bucket' is required");
             return;
         }
-        if (globalVars.S3BucketNameRegex.exec($scope.endpoint.bucket) == null) {
+        if (utils.matchesRegex(globalVars.S3BucketNameRegex, $scope.endpoint.bucket)) {
             showAlert("Invalid S3 'Bucket' name (lowercase letters, numbers & hyphens only)");
             return;
         }
 
         // Send to Server
-        createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, null, serverCallbackFuncFollowingNewBucket);
+        if (isNew) {
+
+            createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, null, serverCallbackFuncFollowingNewBucket);
+
+        } else {
+
+            updateBucket($scope.endpoint.extId,
+                         $scope.endpoint.bucket,
+                         $scope.endpoint.status,
+                             function (status, data) {
+
+                                 utils.hideBlockingOverlay();
+
+                                 if (status == 204) {
+                                     showAlert('Bucket status successfully updated', 'success');
+                                     return;
+                                 }
+
+                                 handleErrorResponse(status, data);
+                             });
+
+        }
+    };
+
+    $scope.doDelete = function() {
+        doDeleteBucket();
     };
 
     $scope.doAddNode = function() {
@@ -214,7 +240,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         }
 
         if (selectedNode[0].extId == $scope.endpoint.extId) {
-            doDeleteBucket();
+            showAlert("To delete this S3 bucket, please use the main 'Delete' button below");
             return;
         }
 

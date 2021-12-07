@@ -22,6 +22,11 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
         return (value.match(letters));
     };
 
+    this.matchesRegex = function(regex, value) {
+        regex.lastIndex = 0;
+        return (regex.exec(value) === null);
+    };
+
 
     //
     // Tools
