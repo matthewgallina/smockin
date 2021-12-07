@@ -266,9 +266,10 @@ public class S3MockServiceImpl implements S3MockService {
 
             final S3Mock s3Mock = findS3Mock(extId, token);
             final String bucketName = s3Mock.getBucketName();
+            final RecordStatusEnum status = s3Mock.getStatus();
             s3MockDAO.delete(s3Mock);
 
-            if (RecordStatusEnum.INACTIVE.equals(s3Mock.getStatus())) {
+            if (RecordStatusEnum.INACTIVE.equals(status)) {
                 return;
             }
 
