@@ -1,7 +1,6 @@
 package com.smockin.mockserver.engine;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Module;
 import com.smockin.admin.persistence.entity.S3Mock;
 import com.smockin.mockserver.dto.MockServerState;
@@ -12,7 +11,6 @@ import org.gaul.s3proxy.S3Proxy;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.concurrent.DynamicExecutors;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +25,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 @Service
 @Transactional(readOnly = true)
@@ -50,7 +47,7 @@ public class MockedS3ServerEngine {
         logger.debug("started called");
 
         s3Proxy = S3Proxy.builder()
-                .blobStore(buildInMemoryBlobStore())
+                .blobStore(buildInMemoryBlobStore(configDTO))
                 .endpoint(URI.create(host + ":" + configDTO.getPort()))
                 .build();
 
@@ -93,18 +90,10 @@ public class MockedS3ServerEngine {
 
     }
 
-    private BlobStore buildInMemoryBlobStore() {
+    private BlobStore buildInMemoryBlobStore(final MockedServerConfigDTO configDTO) {
         logger.debug("buildInMemoryBlobStore called");
 
-        ThreadFactory factory = new ThreadFactoryBuilder()
-                .setNameFormat("user thread %d")
-                .setThreadFactory(Executors.defaultThreadFactory())
-                .build();
-
-        ExecutorService executorService = DynamicExecutors.newScalingThreadPool(
-                1, 20, 60 * 1000, factory);
-
-        ExecutorService executorFixed = Executors.newFixedThreadPool(10);
+        final ExecutorService executorFixed = Executors.newFixedThreadPool(10);
 
         BlobStoreContext context = ContextBuilder
                 .newBuilder("transient")
@@ -113,11 +102,12 @@ public class MockedS3ServerEngine {
                         new ExecutorServiceModule(executorFixed)))
                 .build(BlobStoreContext.class);
 
-        return buildS3EventListenerProxy(context.getBlobStore());
+        return buildS3EventListenerProxy(context.getBlobStore(), configDTO);
 
     }
 
-    private BlobStore buildS3EventListenerProxy(final BlobStore originalBlobStore) {
+    private BlobStore buildS3EventListenerProxy(final BlobStore originalBlobStore,
+                                                final MockedServerConfigDTO configDTO) {
         logger.debug("buildS3EventListenerProxy called");
 
         final InvocationHandler handler = (proxy, method, args) -> {
@@ -149,7 +139,7 @@ public class MockedS3ServerEngine {
             if (!isInternalCall.isPresent()
                     || (isInternalCall.isPresent() && !isInternalCall.get())) {
                 try {
-                    mockedS3ServerEngineUtils.persistS3RemoteCall(method.getName(), args);
+                    mockedS3ServerEngineUtils.persistS3RemoteCall(method.getName(), args, configDTO);
                 } catch (Exception ex) {
                     logger.error("Error persisting update to DB", ex);
                 }

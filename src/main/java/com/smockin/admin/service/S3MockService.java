@@ -8,6 +8,7 @@ import com.smockin.admin.enums.S3MockTypeEnum;
 import com.smockin.admin.exception.FileUploadException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.entity.S3Mock;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -23,5 +24,6 @@ public interface S3MockService {
     List<S3MockBucketResponseLiteDTO> loadAll(final String token) throws RecordNotFoundException;
     S3MockBucketResponseDTO loadById(final String extId, final String token) throws ValidationException, RecordNotFoundException;
     void syncS3Bucket(final String extId, final String token) throws RecordNotFoundException, ValidationException;
+    S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final boolean includeFileContent);
 
 }

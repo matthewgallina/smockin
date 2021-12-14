@@ -157,13 +157,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doExport = function(mode) {
 
         if ($scope.mockSelection.length == 0) {
-            showAlert("No mocks have been selected for export");
+            showAlert("No HTTP mocks have been selected for export");
             return;
         }
 
         var msgSuffix = ($scope.mockSelection.length == 1)
-            ? "this 1 mock?"
-            : ("these " + $scope.mockSelection.length + " mocks?");
+            ? "this HTTP mock?"
+            : ("these " + $scope.mockSelection.length + " HTTP mocks?");
 
         utils.openWarningConfirmation("Are you sure you wish to export " + msgSuffix, function (alertResponse) {
 
@@ -331,13 +331,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doDeleteSelection = function() {
 
         if ($scope.mockSelection.length == 0) {
-            showAlert("No mocks have been selected to delete");
+            showAlert("No HTTP mocks have been selected to delete");
             return;
         }
 
         var msgSuffix = ($scope.mockSelection.length == 1)
-            ? "this 1 mock?"
-            : ("these " + $scope.mockSelection.length + " mocks?");
+            ? "this HTTP mock?"
+            : ("these " + $scope.mockSelection.length + " HTTP mocks?");
 
         utils.openDeleteConfirmation("Are you sure wish to delete " + msgSuffix, function (alertResponse) {
 
@@ -403,11 +403,11 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
             loadTableData();
 
-            showAlert("The selected mocks were successfully deleted", "success");
+            showAlert("The selected HTTP mocks were successfully deleted", "success");
             $scope.mockSelection = [];
 
             if (deletionErrorOccurrence) {
-                showAlert("An error occurred. Not all mocks were deleted");
+                showAlert("An error occurred. Not all HTTP mocks were deleted");
             }
 
             deletionAttemptCount = 0;

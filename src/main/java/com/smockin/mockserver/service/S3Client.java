@@ -3,19 +3,20 @@ package com.smockin.mockserver.service;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.smockin.mockserver.engine.MockedS3ServerEngineUtils;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class S3Client {
@@ -79,13 +80,17 @@ public class S3Client {
                                     new DeleteObjectsRequest.KeyVersion(e.getKey()))
                             .collect(Collectors.toList());
 
-            final DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest(bucketName)
-                    .withBucketName(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName)
-                    .withKeys(files)
-                    .withQuiet(false);
+            if (!files.isEmpty()) {
 
-            // delete all bucket content...
-            client.deleteObjects(multiObjectDeleteRequest);
+                final DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest(bucketName)
+                        .withBucketName(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName)
+                        .withKeys(files)
+                        .withQuiet(false);
+
+                // delete all bucket content...
+                client.deleteObjects(multiObjectDeleteRequest);
+
+            }
 
             // ...now delete the bucket itself
             client.deleteBucket(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName);
@@ -95,7 +100,6 @@ public class S3Client {
             logger.error("Error deleting bucket", ex);
 
             if (!muteFailure) {
-                logger.error("Error deleting bucket", ex);
                 throw ex;
             }
         }
@@ -121,19 +125,26 @@ public class S3Client {
 
     }
 
-    public void listObjects(final String bucketName) {
+    public Optional<String> getObjectContent(final String bucketName, final String filePath) {
 
-        final ObjectListing s3Objects = createS3Client().listObjects(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName);
+        final GetObjectRequest getObjectRequest =
+                new GetObjectRequest(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName, filePath);
 
-        s3Objects.getObjectSummaries()
-                .stream()
-                .forEach(o -> {
+        final S3Object s3Object = createS3Client().getObject(getObjectRequest);
 
-                    System.out.println("bucket name: " + o.getBucketName());
-                    System.out.println("key: " + o.getKey());
+        try {
+            return Optional.of(IOUtils.toString(s3Object.getObjectContent(), Charset.defaultCharset()));
+        } catch (IOException ex) {
+            logger.error(String.format("Error retrieving s3Object '%s' in bucket '%s' from mock server", filePath, bucketName), ex);
+        } finally {
+            try {
+                s3Object.close();
+            } catch (IOException ex) {
+                logger.error("Error closing s3Object", ex);
+            }
+        }
 
-                });
-
+        return Optional.empty();
     }
 
     AmazonS3 createS3Client() {

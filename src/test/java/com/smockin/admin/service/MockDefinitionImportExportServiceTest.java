@@ -31,6 +31,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -54,6 +55,8 @@ public class MockDefinitionImportExportServiceTest {
     private MockDefinitionImportExportService mockDefinitionImportExportService = new MockDefinitionImportExportServiceImpl();
 
     private List<RestfulMockResponseDTO> allRestfulMocks;
+    private RestfulMockResponseDTO seqBasedDTO;
+
 
     @Before
     public void setUp() {
@@ -62,7 +65,7 @@ public class MockDefinitionImportExportServiceTest {
         allRestfulMocks = new ArrayList<>();
 
         // Seq based HTTP mock
-        final RestfulMockResponseDTO seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
+        seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.SEQ, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
                 false, false, false, false, 0,0, null, null, null, null, null);
 
@@ -135,10 +138,13 @@ public class MockDefinitionImportExportServiceTest {
     }
 
     @Test
-    public void export_allRestful_Pass() throws IOException {
+    public void export_allRestful_Pass() throws IOException, ValidationException {
+
+        // Setup
+        final List<String> ids = allRestfulMocks.stream().map(r -> r.getExtId()).collect(Collectors.toList());
 
         // Test
-        final String base64Content = mockDefinitionImportExportService.export(Arrays.asList(), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ids, ServerTypeEnum.RESTFUL.name(),"ABC");
 
         // Assertions
         Stream.of(unpackZipToTempArchive(base64Content).listFiles())
@@ -161,13 +167,13 @@ public class MockDefinitionImportExportServiceTest {
     }
 
     @Test
-    public void export_selectedRestful_Pass() throws IOException {
+    public void export_selectedRestful_Pass() throws IOException, ValidationException {
 
         // Setup
         final RestfulMockResponseDTO restfulDTO = allRestfulMocks.get(1);
 
         // Test
-        final String base64Content = mockDefinitionImportExportService.export(Arrays.asList(restfulDTO.getExtId()), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(Arrays.asList(restfulDTO.getExtId()), ServerTypeEnum.RESTFUL.name(), "ABC");
 
         // Assertions
         Stream.of(unpackZipToTempArchive(base64Content).listFiles()).forEach(f -> {

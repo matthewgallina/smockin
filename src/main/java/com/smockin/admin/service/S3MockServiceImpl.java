@@ -13,16 +13,14 @@ import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.S3MockDAO;
 import com.smockin.admin.persistence.dao.S3MockDirDAO;
 import com.smockin.admin.persistence.dao.S3MockFileDAO;
-import com.smockin.admin.persistence.entity.S3Mock;
-import com.smockin.admin.persistence.entity.S3MockDir;
-import com.smockin.admin.persistence.entity.S3MockFile;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.engine.MockedS3ServerEngineUtils;
 import com.smockin.mockserver.service.S3Client;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -34,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -160,30 +159,37 @@ public class S3MockServiceImpl implements S3MockService {
         try {
 
             final InputStream is = file.getInputStream();
-            final Optional<String> fileContent = GeneralUtils.convertInputStreamToString(is, false);
+            final Optional<String> fileContent = GeneralUtils.convertInputStreamToString(is, true);
 
             if (!fileContent.isPresent()) {
                 throw new FileUploadException("Error reading input stream for S3 file upload.");
             }
 
+            final String originalFileName = file.getOriginalFilename();
+            final String contentType = file.getContentType();
+
             if (bucket != null) {
 
                 final String bucketName = bucket.getBucketName();
-                final String newFileExtId = s3MockFileDAO.save(new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), bucket)).getExtId();
+                final S3MockFile s3MockFile = new S3MockFile(originalFileName, contentType, bucket);
+                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent.get());
+                s3MockFile.setFileContent(s3MockFileContent);
+                final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
                 applyUpdateToRunningServer(cli -> {
                     if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())) {
-                        cli.uploadObject(bucketName, file.getOriginalFilename(), is, file.getContentType());
+                        cli.uploadObject(bucketName, originalFileName, IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                     }
                 });
-
 
                 return newFileExtId;
             }
 
             if (mockDir != null) {
 
-                final S3MockFile s3MockFile = new S3MockFile(file.getOriginalFilename(), file.getContentType(), fileContent.get(), mockDir);
+                final S3MockFile s3MockFile = new S3MockFile(originalFileName, contentType, mockDir);
+                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent.get());
+                s3MockFile.setFileContent(s3MockFileContent);
                 final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
                 final S3Mock parentBucket = mockedS3ServerEngineUtils.locateParentBucket(mockDir);
@@ -191,7 +197,7 @@ public class S3MockServiceImpl implements S3MockService {
 
                 applyUpdateToRunningServer(cli -> {
                     if (RecordStatusEnum.ACTIVE.equals(parentBucket.getStatus())) {
-                        cli.uploadObject(parentBucket.getBucketName(), filePath.getRight(), is, file.getContentType());
+                        cli.uploadObject(parentBucket.getBucketName(), filePath.getRight(), IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                     }
                 });
 
@@ -371,7 +377,7 @@ public class S3MockServiceImpl implements S3MockService {
 
         userTokenServiceUtils.validateRecordOwner(s3Mock.getCreatedBy(), token);
 
-        return buildBucketDtoTree(s3Mock, Optional.empty());
+        return buildBucketDtoTree(s3Mock, false);
     }
 
     @Override
@@ -429,7 +435,8 @@ public class S3MockServiceImpl implements S3MockService {
         return s3MockFile;
     }
 
-    S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final Optional<String> parentExtId) {
+    public S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock,
+                                                      final boolean includeFileContent) {
 
         final S3MockBucketResponseDTO dto = new S3MockBucketResponseDTO(
                 s3Mock.getExtId(),
@@ -447,7 +454,9 @@ public class S3MockServiceImpl implements S3MockService {
                             mf.getExtId(),
                             mf.getName(),
                             mf.getMimeType(),
-                            mf.getContent()))
+                                (includeFileContent)
+                                        ? mf.getFileContent().getContent()
+                                        : null))
                 .collect(Collectors.toList()));
 
         s3Mock
@@ -455,12 +464,13 @@ public class S3MockServiceImpl implements S3MockService {
             .stream()
             .forEach(m ->
                 dto.getChildren()
-                        .add(buildDirDtoTree(m, Optional.of(s3Mock.getExtId()))));
+                        .add(buildDirDtoTree(m, includeFileContent)));
 
         return dto;
     }
 
-    S3MockDirResponseDTO buildDirDtoTree(final S3MockDir s3MockDir, final Optional<String> parentExtId) {
+    S3MockDirResponseDTO buildDirDtoTree(final S3MockDir s3MockDir,
+                                         final boolean includeFileContent) {
 
         final S3MockDirResponseDTO dto = new S3MockDirResponseDTO(
                 s3MockDir.getExtId(),
@@ -481,7 +491,9 @@ public class S3MockServiceImpl implements S3MockService {
                                         mf.getExtId(),
                                         mf.getName(),
                                         mf.getMimeType(),
-                                        mf.getContent()))
+                                        (includeFileContent)
+                                                ? mf.getFileContent().getContent()
+                                                : null))
                         .collect(Collectors.toList()));
 
         s3MockDir
@@ -489,7 +501,7 @@ public class S3MockServiceImpl implements S3MockService {
                 .stream()
                 .forEach(m ->
                         dto.getChildren()
-                                .add(buildDirDtoTree(m, Optional.of(s3MockDir.getExtId()))));
+                                .add(buildDirDtoTree(m, includeFileContent)));
 
         return dto;
     }

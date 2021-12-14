@@ -60,6 +60,8 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.mockServerRunning = MockServerRunningStatus;
     $scope.mockServerStopped = MockServerStoppedStatus;
     $scope.mockServerRestarting = MockServerRestartStatus;
+    var deletionErrorOccurrence = false;
+    var deletionAttemptCount = 0;
 
 
     //
@@ -207,6 +209,104 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
 
     };
 
+    $scope.doExport = function(mode) {
+
+        if ($scope.mockSelection.length == 0) {
+            showAlert("No S3 mocks have been selected for export");
+            return;
+        }
+
+        var msgSuffix = ($scope.mockSelection.length == 1)
+            ? "this S3 mock?"
+            : ("these " + $scope.mockSelection.length + " S3 mocks?");
+
+        utils.openWarningConfirmation("Are you sure you wish to export " + msgSuffix, function (alertResponse) {
+
+            if (alertResponse) {
+
+                var req = [];
+
+                for (var m=0; m < $scope.mockSelection.length; m++) {
+                    req.push($scope.mockSelection[m].extId);
+                }
+
+                restClient.doPost($http, '/mock/export/S3', req, function(status, data) {
+
+                    if (status != 200) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    utils.handleExportDownload(data, "smockin_export_" + $scope.mockSelection.length + "_mocks.zip", "application/zip");
+                    $scope.mockSelection = [];
+
+                });
+
+            }
+
+        });
+
+    };
+
+    $scope.doDeleteSelection = function() {
+
+        if ($scope.mockSelection.length == 0) {
+            showAlert("No S3 mocks have been selected to delete");
+            return;
+        }
+
+        var msgSuffix = ($scope.mockSelection.length == 1)
+            ? "this S3 mock?"
+            : ("these " + $scope.mockSelection.length + " S3 mocks?");
+
+        utils.openDeleteConfirmation("Are you sure wish to delete " + msgSuffix, function (alertResponse) {
+
+            if (alertResponse) {
+
+                deletionAttemptCount = 0;
+                utils.showBlockingOverlay();
+
+                for (var m=0; m < $scope.mockSelection.length; m++) {
+                    restClient.doDelete($http, '/s3mock/bucket/' + $scope.mockSelection[m].extId, bulkDeleteCallbackFunc);
+                }
+
+            }
+
+        });
+
+    };
+
+    $scope.doOpenImport = function() {
+
+        var modalInstance = $uibModal.open({
+            templateUrl: 'http_import.html',
+            controller: 'httpImportController',
+            backdrop  : 'static',
+            keyboard  : false
+        });
+
+        modalInstance.result.then(function (response) {
+
+            if (response != null) {
+
+                if (response.uploadCompleted != null
+                        && response.uploadCompleted) {
+
+                    loadTableData();
+                }
+
+            } else {
+
+                $scope.mockSelection = [];
+            }
+
+        }, function () {
+
+            $scope.mockSelection = [];
+        });
+
+    };
+
 
     //
     // Internal Functions
@@ -288,6 +388,32 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
         });
 
     }
+
+    var bulkDeleteCallbackFunc = function (status, data) {
+
+        if (status != 204) {
+            deletionErrorOccurrence = true;
+        }
+
+        deletionAttemptCount++;
+
+        if ($scope.mockSelection.length == deletionAttemptCount) {
+
+            utils.hideBlockingOverlay();
+
+            loadTableData();
+
+            showAlert("The selected S3 mocks were successfully deleted", "success");
+            $scope.mockSelection = [];
+
+            if (deletionErrorOccurrence) {
+                showAlert("An error occurred. Not all S3 mocks were deleted");
+            }
+
+            deletionAttemptCount = 0;
+        }
+
+    };
 
 
     //

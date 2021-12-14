@@ -3,10 +3,14 @@ package com.smockin.admin.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
+import com.smockin.admin.dto.response.S3MockBucketResponseDTO;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.S3MockDAO;
+import com.smockin.admin.persistence.entity.S3Mock;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
@@ -18,12 +22,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,7 +47,17 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     private RestfulMockService restfulMockService;
 
     @Autowired
+    private S3MockService s3MockService;
+
+    @Autowired
     private RestfulMockServiceUtils restfulMockServiceUtils;
+
+    @Autowired
+    private RestfulMockDAO restfulMockDAO;
+
+    @Autowired
+    private S3MockDAO s3MockDAO;
+
 
     @Override
     public String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token)
@@ -79,35 +96,75 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     }
 
     @Override
-    public String export(final List<String> selectedExports, final String token)
-            throws MockExportException, RecordNotFoundException {
+    public String export(final List<String> selectedExports,
+                         final String serverType,
+                         final String token)
+            throws MockExportException, RecordNotFoundException, ValidationException {
 
-        final String exportContent = loadHTTPExportContent(selectedExports, token);
+        final ServerTypeEnum serverTypeEnum = ServerTypeEnum.toServerType(serverType);
 
-        final byte[] archiveBytes = GeneralUtils.createArchive(restExportFileName + exportFileNameExt, exportContent.getBytes());
+        if (serverTypeEnum == null) {
+            throw new ValidationException("Invalid Server Type: " + serverType);
+        }
+        if (selectedExports == null || selectedExports.isEmpty()) {
+            throw new ValidationException(String.format("No %s mocks are selected", serverTypeEnum.name()));
+        }
+
+        final String exportContent;
+        final String exportFileName;
+
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
+
+        if (ServerTypeEnum.RESTFUL.equals(serverTypeEnum)) {
+            exportContent = loadHTTPExportContent(selectedExports, smockinUser);
+            exportFileName = restExportFileName + exportFileNameExt;
+        } else if (ServerTypeEnum.S3.equals(serverTypeEnum)) {
+            exportContent = loadS3ExportContent(selectedExports, smockinUser);
+            exportFileName = s3ExportFileName + exportFileNameExt;
+        } else {
+            throw new ValidationException("Unsupported Server Type: " + serverTypeEnum);
+        }
+
+        final byte[] archiveBytes = GeneralUtils.createArchive(exportFileName, exportContent.getBytes());
 
         return Base64.getEncoder().encodeToString(archiveBytes);
     }
 
     //
     // Export related functions
-    private String loadHTTPExportContent(final List<String> selectedExports, final String token) {
+    private String loadS3ExportContent(final List<String> selectedExports,
+                                       final SmockinUser smockinUser) {
 
-        final List<RestfulMockResponseDTO> allRestfulMocks = restfulMockService.loadAll(token);
+        final List<S3Mock> mocks = s3MockDAO.loadAllActiveByIds(selectedExports, smockinUser.getId());
 
-        final List<RestfulMockResponseDTO> restfulMocksToExport = (!selectedExports.isEmpty())
-                ?
-                selectedExports
-                        .stream()
+        List<S3MockBucketResponseDTO> mockDTOs =
+                mocks.stream()
+                    .map(m ->
+                        s3MockService.buildBucketDtoTree(m, true))
+                    .collect(Collectors.toList());
+
+        return GeneralUtils.serialiseJson(mockDTOs);
+    }
+
+    private String loadHTTPExportContent(final List<String> selectedExports,
+                                         final SmockinUser smockinUser) {
+
+
+        final List<RestfulMockResponseDTO> allRestfulMocks =
+                restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(restfulMockDAO.loadAllActiveByIds(selectedExports, smockinUser.getId()));
+
+        final List<RestfulMockResponseDTO> restfulMocksToExport =
+                (!selectedExports.isEmpty())
+                    ? selectedExports.stream()
                         .map(r -> findRestByExternalId(r, allRestfulMocks))
                         .collect(Collectors.toList())
-                :
-                allRestfulMocks;
+                    : allRestfulMocks;
 
         return GeneralUtils.serialiseJson(restfulMocksToExport);
     }
 
-    private RestfulMockResponseDTO findRestByExternalId(final String externalId, final List<RestfulMockResponseDTO> allRestfulMocks) throws RecordNotFoundException {
+    private RestfulMockResponseDTO findRestByExternalId(final String externalId,
+                                                        final List<RestfulMockResponseDTO> allRestfulMocks) throws RecordNotFoundException {
         return allRestfulMocks
                 .stream()
                 .filter(r -> r.getExtId().equals(externalId))

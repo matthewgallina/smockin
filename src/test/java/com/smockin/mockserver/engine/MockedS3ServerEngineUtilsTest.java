@@ -26,11 +26,10 @@ public class MockedS3ServerEngineUtilsTest {
         final S3MockDir s3MockDirLevel2 = new S3MockDir("C", s3MockDirLevel1);
         final S3MockDir s3MockDirLevel3 = new S3MockDir("D",  s3MockDirLevel2);
 
-        s3MockFile = new S3MockFile("foo.bar", null, "HelloWorld", s3MockDirLevel3);
+        s3MockFile = new S3MockFile("foo.bar", null, s3MockDirLevel3);
         s3MockDirLevel3.getFiles().add(s3MockFile);
 
     }
-
 
     @Test
     public void extractBucketAndFilePathTest() {

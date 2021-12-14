@@ -4,13 +4,11 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.dao.S3MockDAO;
 import com.smockin.admin.persistence.dao.S3MockDirDAO;
 import com.smockin.admin.persistence.dao.S3MockFileDAO;
-import com.smockin.admin.persistence.entity.S3Mock;
-import com.smockin.admin.persistence.entity.S3MockDir;
-import com.smockin.admin.persistence.entity.S3MockFile;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
 import com.smockin.mockserver.service.S3Client;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.LiveLoggingUtils;
@@ -19,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jclouds.blobstore.domain.Blob;
+import org.jclouds.io.Payload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -58,6 +56,7 @@ public class MockedS3ServerEngineUtils {
     private static final String REMOVE_BLOBS_METHOD = "removeBlobs";
     private static final String LIST_METHOD = "list";
     private static final String BLOB_BUILDER_METHOD = "blobBuilder";
+    private static final String GET_BLOB_METHOD = "getBlob";
 
 
     @Autowired
@@ -77,7 +76,8 @@ public class MockedS3ServerEngineUtils {
 
 
     public void persistS3RemoteCall(final String methodName,
-                                 final Object[] args) {
+                                    final Object[] args,
+                                    final MockedServerConfigDTO configDTO) {
 
         logger.debug("persistS3RemoteCall called");
 
@@ -136,7 +136,8 @@ public class MockedS3ServerEngineUtils {
             final String containerName = (String)args[0];
             final Blob blob = (Blob) args[1];
             final String fileName = blob.getMetadata().getName();
-            final String mimeType = blob.getPayload().getContentMetadata().getContentType();
+            final Payload payload = blob.getPayload();
+            final String mimeType = payload.getContentMetadata().getContentType();
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
 
@@ -149,14 +150,14 @@ public class MockedS3ServerEngineUtils {
 
             try {
 
-                content = GeneralUtils.convertInputStreamToString(blob.getPayload().openStream(), true);
+                content = buildS3Client(configDTO.getPort()).getObjectContent(containerName, fileName);
 
                 if (!content.isPresent()) {
                     logger.error("Error reading client's uploaded file");
                     return;
                 }
 
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 logger.error("Error reading client's uploaded file", ex);
                 return;
             }
@@ -256,7 +257,7 @@ public class MockedS3ServerEngineUtils {
 
             final S3Mock destinationBucket = findS3MockByBucketName(toContainer);
 
-            createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getContent(), destinationBucket);
+            createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getFileContent().getContent(), destinationBucket);
 
             handleS3Logging("Copied file " + fromName + " from bucket '" + fromContainer + "' into bucket '" + toContainer + "'");
 
@@ -500,7 +501,8 @@ public class MockedS3ServerEngineUtils {
         final S3MockFile s3File = new S3MockFile();
         s3File.setName(fileName);
         s3File.setMimeType(mimeType);
-        s3File.setContent(content);
+        final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3File, content);
+        s3File.setFileContent(s3MockFileContent);
         if (s3Mock != null)
             s3File.setS3Mock(s3Mock);
         if (parentS3MockDir != null)
@@ -666,7 +668,7 @@ public class MockedS3ServerEngineUtils {
                         s3Client.uploadObject(
                                         bucket.getBucketName(),
                                         f.getName(),
-                                        IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
+                                        IOUtils.toInputStream(f.getFileContent().getContent(), Charset.defaultCharset()),
                                         f.getMimeType()));
 
     }
@@ -699,7 +701,7 @@ public class MockedS3ServerEngineUtils {
                     s3Client.uploadObject(
                                     bucket.getBucketName(),
                                     bucketAndFilePath.getRight(),
-                                    IOUtils.toInputStream(f.getContent(), Charset.defaultCharset()),
+                                    IOUtils.toInputStream(f.getFileContent().getContent(), Charset.defaultCharset()),
                                     f.getMimeType());
 
                 });
@@ -764,6 +766,7 @@ public class MockedS3ServerEngineUtils {
             , REMOVE_BLOBS_METHOD
             , LIST_METHOD
             , BLOB_BUILDER_METHOD
+            , GET_BLOB_METHOD
         );
 
     }

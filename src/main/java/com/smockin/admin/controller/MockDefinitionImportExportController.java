@@ -46,9 +46,9 @@ public class MockDefinitionImportExportController {
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody ResponseEntity<String> exportMocks(@PathVariable("serverType") final String serverType,
-                                                                       @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
-                                                                       @RequestBody final List<String> exports)
-                                                                throws MockExportException, RecordNotFoundException {
+                                                            @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                            @RequestBody final List<String> exports)
+                                                                throws MockExportException, RecordNotFoundException, ValidationException {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
@@ -60,7 +60,7 @@ public class MockDefinitionImportExportController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "application/zip")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportFileName + "\"")
-                .body(mockDefinitionImportExportService.export(exports, token));
+                .body(mockDefinitionImportExportService.export(exports, serverType, token));
     }
 
 }
