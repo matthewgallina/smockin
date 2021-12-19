@@ -13,8 +13,6 @@ import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.S3MockDAO;
-import com.smockin.admin.persistence.dao.S3MockDirDAO;
-import com.smockin.admin.persistence.dao.S3MockFileDAO;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
@@ -36,7 +34,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,12 +64,6 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     @Autowired
     private S3MockDAO s3MockDAO;
-
-    @Autowired
-    private S3MockDirDAO s3MockDirDAO;
-
-    @Autowired
-    private S3MockFileDAO s3MockFileDAO;
 
     @Autowired
     private MockedS3ServerEngineUtils mockedS3ServerEngineUtils;
