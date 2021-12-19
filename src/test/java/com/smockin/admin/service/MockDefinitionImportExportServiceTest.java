@@ -6,6 +6,7 @@ import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.*;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
@@ -20,17 +21,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +49,7 @@ public class MockDefinitionImportExportServiceTest {
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Mock
-    private RestfulMockService restfulMockService;
+    private RestfulMockDAO restfulMockDAO;
 
     @Mock
     private UserTokenServiceUtils userTokenServiceUtils;
@@ -49,6 +57,8 @@ public class MockDefinitionImportExportServiceTest {
     @Mock
     private RestfulMockServiceUtils restfulMockServiceUtils;
 
+    @Mock
+    private RestfulMockService restfulMockService;
 
     @Spy
     @InjectMocks
@@ -61,9 +71,17 @@ public class MockDefinitionImportExportServiceTest {
     @Before
     public void setUp() {
 
+        final SmockinUser smockinUser = new SmockinUser();
+        smockinUser.setSessionToken(GeneralUtils.generateUUID());
+        smockinUser.setId(1);
+        Mockito.when(userTokenServiceUtils.loadCurrentActiveUser(Mockito.anyString())).thenReturn(smockinUser);
+
+
         // HTTP Mocks
         allRestfulMocks = new ArrayList<>();
 
+
+        //
         // Seq based HTTP mock
         seqBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.SEQ, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
@@ -76,6 +94,8 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(seqBasedDTO);
 
+
+        //
         // Rule based HTTP mock
         final RestfulMockResponseDTO ruleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/hello", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.RULE, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
@@ -92,7 +112,9 @@ public class MockDefinitionImportExportServiceTest {
         ruleBasedDTO.getRules().add(rule);
 
         allRestfulMocks.add(ruleBasedDTO);
-        
+
+
+        //
         // Websocket Rule mock
         final RestfulMockResponseDTO wsRuleBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/helloWs", null, RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.RULE_WS, false, GeneralUtils.getCurrentDate(), "bob", 0, 0, 0,
@@ -110,8 +132,8 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(wsRuleBasedDTO);
         
-        
 
+        //
         // WS based HTTP mock
         final RestfulMockResponseDTO wsBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/ws", "mike", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_WS, false, GeneralUtils.getCurrentDate(), "mike", 0, 50000, 0,
@@ -119,6 +141,8 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(wsBasedDTO);
 
+
+        //
         // SSE based HTTP mock
         final RestfulMockResponseDTO sseBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/sse", "paul", RestMethodEnum.GET, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_SSE, false, GeneralUtils.getCurrentDate(), "paul", 0, 0, 40000,
@@ -126,6 +150,8 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(sseBasedDTO);
 
+
+        //
         // Remote Feed based HTTP mock
         final RestfulMockResponseDTO remoteFeedBasedDTO = new RestfulMockResponseDTO(GeneralUtils.generateUUID(), "/remotefeed", null, RestMethodEnum.POST, RecordStatusEnum.ACTIVE,
                 RestMockTypeEnum.PROXY_HTTP, false, GeneralUtils.getCurrentDate(), "howard", 60000, 0, 0,
@@ -133,15 +159,20 @@ public class MockDefinitionImportExportServiceTest {
 
         allRestfulMocks.add(remoteFeedBasedDTO);
 
-        Mockito.when(restfulMockService.loadAll(Mockito.anyString())).thenReturn(allRestfulMocks);
+        Mockito.when(restfulMockDAO.loadAllActiveByIds(Mockito.anyList(), Mockito.anyLong()))
+                .thenReturn(Arrays.asList());
 
+        Mockito.when(restfulMockServiceUtils.buildRestfulMockDefinitionDTOs(Mockito.anyList()))
+                .thenReturn(allRestfulMocks);
     }
 
     @Test
     public void export_allRestful_Pass() throws IOException, ValidationException {
 
         // Setup
-        final List<String> ids = allRestfulMocks.stream().map(r -> r.getExtId()).collect(Collectors.toList());
+        final List<String> ids = allRestfulMocks.stream()
+                .map(r -> r.getExtId())
+                .collect(Collectors.toList());
 
         // Test
         final String base64Content = mockDefinitionImportExportService.export(ids, ServerTypeEnum.RESTFUL.name(),"ABC");
@@ -200,10 +231,6 @@ public class MockDefinitionImportExportServiceTest {
     public void importFile_restful_Pass()
             throws MockImportException, ValidationException, RecordNotFoundException, IOException, URISyntaxException {
 
-        // Setup
-        final SmockinUser smockinUser = new SmockinUser();
-        smockinUser.setSessionToken(GeneralUtils.generateUUID());
-        Mockito.when(userTokenServiceUtils.loadCurrentActiveUser(Mockito.anyString())).thenReturn(smockinUser);
 
         // Test
         final String result = mockDefinitionImportExportService.importFile(buildMockMultiPartFile("import-export/" + mockDefinitionImportExportService.exportZipFileNamePrefix + "rest" + mockDefinitionImportExportService.exportZipFileNameExt), new MockImportConfigDTO(), "ABC");

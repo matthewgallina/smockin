@@ -122,9 +122,10 @@ public class S3MockServiceImpl implements S3MockService {
                     .save(new S3MockDir(dto.getName(), parentDir));
 
             final StringBuilder filePathTracer = new StringBuilder();
-            mockedS3ServerEngineUtils.locateParentBucket(filePathTracer, newDir);
+            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(filePathTracer, newDir);
 
-            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
+            // TODO test removing this duplicated line!!!
+//            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
 
             applyUpdateToRunningServer(cli -> {
                 if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())) {
@@ -433,6 +434,11 @@ public class S3MockServiceImpl implements S3MockService {
         userTokenServiceUtils.validateRecordOwner(bucket.getCreatedBy(), token);
 
         return s3MockFile;
+    }
+
+    public boolean doesBucketAlreadyExist(final String name) {
+
+        return (s3MockDAO.findByBucketName(name) != null);
     }
 
     public S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock,

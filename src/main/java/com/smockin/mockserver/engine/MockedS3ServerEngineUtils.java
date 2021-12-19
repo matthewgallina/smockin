@@ -405,7 +405,6 @@ public class MockedS3ServerEngineUtils {
         }
 
         // Save dir tree and dir
-//        final String[] dirPaths = Arrays.copyOf(paths, paths.length - 1);
         handleSubDirsCreation(paths, s3Mock);
     }
 
@@ -556,39 +555,6 @@ public class MockedS3ServerEngineUtils {
                     })
                     .collect(Collectors.toList())
                     .toArray();
-
-
-        /*
-        final String containerName = (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName))
-                ? (String) originalArgs[1]
-                : (String) originalArgs[0];
-
-
-        if (StringUtils.startsWith(containerName, S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX)) {
-
-            return IntStream
-                    .range(0, originalArgs.length)
-                    .mapToObj(index -> {
-
-                        if (index == 0
-                                && !CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName)) {
-                            return StringUtils.removeStart((String)originalArgs[index], S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX);
-                        }
-
-                        if (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName)
-                                && index == 1) {
-                            return StringUtils.removeStart((String)originalArgs[index], S3Client.SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX);
-                        }
-
-                        return originalArgs[index];
-
-                    })
-                    .collect(Collectors.toList())
-                    .toArray();
-        }
-
-        return originalArgs;
-        */
     }
 
     public Optional<Boolean> isCallInternal(final Object[] originalArgs,
@@ -640,6 +606,18 @@ public class MockedS3ServerEngineUtils {
 
         initBucketContent(s3Client, Arrays.asList(bucket));
     }
+
+    /*
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void loadAndInitBucketContentAsync(final S3Client s3Client,
+                                       final List<String> bucketIds,
+                                       final long userId) {
+        logger.debug("loadAndInitBucketContentAsync called");
+
+        initBucketContent(s3Client, s3MockDAO.loadAllActiveByIds(bucketIds, userId));
+    }
+    */
 
     public void initBucketContent(final S3Client s3Client,
                                   final List<S3Mock> buckets) {

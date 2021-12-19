@@ -2,7 +2,8 @@ package com.smockin.admin.persistence.entity;
 
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -14,7 +15,8 @@ import java.util.List;
  */
 @Entity
 @Table(name = "SMKN_USER")
-@Data
+@Getter
+@Setter
 public class SmockinUser extends Identifier {
 
     @Column(name = "USER_NAME", nullable = false, length = 35, unique = true)

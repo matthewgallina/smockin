@@ -2,21 +2,29 @@ package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.dto.MockImportConfigDTO;
+import com.smockin.admin.dto.S3MockBucketDTO;
 import com.smockin.admin.dto.response.RestfulMockResponseDTO;
 import com.smockin.admin.dto.response.S3MockBucketResponseDTO;
+import com.smockin.admin.dto.response.S3MockDirResponseDTO;
+import com.smockin.admin.dto.response.S3MockFileResponseDTO;
 import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
 import com.smockin.admin.persistence.dao.S3MockDAO;
-import com.smockin.admin.persistence.entity.S3Mock;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.dao.S3MockDirDAO;
+import com.smockin.admin.persistence.dao.S3MockFileDAO;
+import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.engine.MockedS3ServerEngineUtils;
+import com.smockin.mockserver.service.S3Client;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +64,18 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     @Autowired
     private S3MockDAO s3MockDAO;
 
+    @Autowired
+    private S3MockDirDAO s3MockDirDAO;
+
+    @Autowired
+    private S3MockFileDAO s3MockFileDAO;
+
+    @Autowired
+    private MockedS3ServerEngineUtils mockedS3ServerEngineUtils;
+
+    @Autowired
+    private MockedServerEngineService mockedServerEngineService;
+
 
     @Override
     public String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token)
@@ -78,7 +96,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             return readImportArchiveFile(uploadedFile)
                     .entrySet()
                     .stream()
-                    .map(m -> handleMockImport(m.getValue(), config, currentUser, conflictCtxPath))
+                    .map(m -> handleMockImport(m.getKey(), m.getValue(), config, currentUser, conflictCtxPath))
                     .collect(Collectors.joining());
 
         } catch (IOException ex) {
@@ -139,9 +157,9 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
         List<S3MockBucketResponseDTO> mockDTOs =
                 mocks.stream()
-                    .map(m ->
-                        s3MockService.buildBucketDtoTree(m, true))
-                    .collect(Collectors.toList());
+                      .map(m ->
+                              s3MockService.buildBucketDtoTree(m, true))
+                      .collect(Collectors.toList());
 
         return GeneralUtils.serialiseJson(mockDTOs);
     }
@@ -215,39 +233,249 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             return ServerTypeEnum.RESTFUL;
         }
 
+        if (fileName.startsWith(s3ExportFileName)
+                && fileName.endsWith(exportFileNameExt)) {
+            return ServerTypeEnum.S3;
+        }
+
         throw new MockImportException("Unable to determine server type for file: " + f.getName());
     }
 
-    private String handleMockImport(final String content, final MockImportConfigDTO config,
-                                    final SmockinUser currentUser, final String conflictCtxPath) {
+    private String handleMockImport(final ServerTypeEnum serverType,
+                                    final String content,
+                                    final MockImportConfigDTO config,
+                                    final SmockinUser currentUser,
+                                    final String conflictCtxPath) {
+
+        if (ServerTypeEnum.RESTFUL.equals(serverType)) {
+            return handleRestImport(content, config, currentUser, conflictCtxPath);
+        } else if (ServerTypeEnum.S3.equals(serverType)) {
+            return handleS3Import(content, currentUser);
+        } else {
+            throw new MockExportException("Unsupported Server Type: " + serverType);
+        }
+
+    }
+
+    private String handleRestImport(final String content,
+                                    final MockImportConfigDTO config,
+                                    final SmockinUser currentUser,
+                                    final String conflictCtxPath) {
 
         final StringBuilder outcome = new StringBuilder();
 
         GeneralUtils.deserialiseJson(content, new TypeReference<List<RestfulMockResponseDTO>>() {})
-            .stream()
-            .forEach(rm -> {
-
-                if (outcome.length() == 0) {
-                    outcome.append("Successful Imports:\n\n");
-                }
-
-                restfulMockServiceUtils.preHandleExistingEndpoints(rm, config, currentUser, conflictCtxPath);
-
-                try {
-
-                    restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
-
-                    outcome.append(rm.getMethod());
-                    outcome.append(" ");
-                    outcome.append(rm.getPath());
-                    outcome.append("\n");
-
-                } catch (Throwable ex) {
-                    outcome.append(handleImportFail(rm.getMethod() + " " + rm.getPath(), ex));
-                }
-            });
+                .stream()
+                .forEach(rm ->
+                    processRestImport(outcome, config, rm, currentUser, conflictCtxPath));
 
         return outcome.toString();
+    }
+
+    void processRestImport(final StringBuilder outcome,
+                           final MockImportConfigDTO config,
+                           final RestfulMockResponseDTO rm,
+                           final SmockinUser currentUser,
+                           final String conflictCtxPath) {
+
+        if (outcome.length() == 0) {
+            outcome.append("Successful Imports:\n\n");
+        }
+
+        restfulMockServiceUtils.preHandleExistingEndpoints(rm, config, currentUser, conflictCtxPath);
+
+        try {
+
+            restfulMockService.createEndpoint(rm, currentUser.getSessionToken());
+
+            outcome.append(rm.getMethod());
+            outcome.append(" ");
+            outcome.append(rm.getPath());
+            outcome.append("\n");
+
+        } catch (Throwable ex) {
+            outcome.append(handleImportFail(rm.getMethod() + " " + rm.getPath(), ex));
+        }
+
+    }
+
+    private String handleS3Import(final String content,
+                                  final SmockinUser currentUser) {
+
+        final StringBuilder outcome = new StringBuilder();
+
+        final List<S3Mock> newBuckets =
+            GeneralUtils.deserialiseJson(content, new TypeReference<List<S3MockBucketResponseDTO>>() {})
+                .stream()
+                .map(s3 ->
+                        processS3Import(outcome, s3, currentUser))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        // Update mock server with new imported buckets (if running)
+        final MockServerState s3MockServerState = mockedServerEngineService.getS3ServerState();
+
+        if (s3MockServerState.isRunning()) {
+
+            final S3Client s3Client = mockedS3ServerEngineUtils.buildS3Client(s3MockServerState.getPort());
+            mockedS3ServerEngineUtils.initBucketContent(s3Client, newBuckets);
+        }
+
+        return outcome.toString();
+    }
+
+    Optional<S3Mock> processS3Import(final StringBuilder outcome,
+                           final S3MockBucketResponseDTO s3BucketDTO,
+                           final SmockinUser currentUser) {
+
+        if (outcome.length() == 0) {
+            outcome.append("Successful Imports:\n\n");
+        }
+
+        final String bucketName = s3BucketDTO.getBucket();
+
+        try {
+
+            if (s3MockService.doesBucketAlreadyExist(bucketName)) {
+                throw new ValidationException(String.format("Cannot import S3 bucket '%s' as it already exists", bucketName));
+            }
+
+            // Create bucket
+            final S3Mock bucket = createS3Bucket(s3BucketDTO, currentUser);
+
+            // Add files to bucket root
+            s3BucketDTO.getFiles()
+                    .forEach(file ->
+                        createS3BucketFile(file, Optional.of(bucket), Optional.empty()));
+
+            // Start to build bucket dir structure and file content
+            s3BucketDTO.getChildren()
+                    .forEach(dir ->
+                        populateS3BucketContent(dir, Optional.of(bucket), Optional.empty()));
+
+            outcome.append(bucketName);
+            outcome.append("\n");
+
+            // Update bucket (cascade persist all child content)
+            return Optional.of(s3MockDAO.save(bucket));
+
+        } catch (Throwable ex) {
+
+            outcome.append(handleImportFail(bucketName, ex));
+            return Optional.empty();
+        }
+
+    }
+
+    void populateS3BucketContent(final S3MockDirResponseDTO s3DirDTO,
+                                 final Optional<S3Mock> parentBucket,
+                                 final Optional<S3MockDir> parentDir) {
+
+        // Create this dir
+        final S3MockDir newDir = createS3BucketDir(s3DirDTO, parentBucket, parentDir);
+
+        // Add files to this dir
+        s3DirDTO.getFiles()
+                .forEach(file ->
+                    createS3BucketFile(file, Optional.empty(), Optional.of(newDir)));
+
+        // Move onto the sub-dirs of this dir
+        s3DirDTO.getChildren()
+                .forEach(subDir ->
+                    populateS3BucketContent(subDir, Optional.empty(), Optional.of(newDir)));
+
+    }
+
+    S3Mock createS3Bucket(final S3MockBucketDTO bucketDTO,
+                          final SmockinUser currentUser)
+            throws RecordNotFoundException, ValidationException {
+
+        // Validation
+        if (StringUtils.isBlank(bucketDTO.getBucket())) {
+            throw new ValidationException("Bucket name is required");
+        }
+
+        return s3MockDAO
+                .save(new S3Mock(bucketDTO.getBucket(), bucketDTO.getStatus(), currentUser));
+    }
+
+    S3MockDir createS3BucketDir(final S3MockDirResponseDTO dirDTO,
+                                final Optional<S3Mock> parentBucket,
+                                final Optional<S3MockDir> parentDir) throws IllegalArgumentException {
+
+        // Validation
+        if (StringUtils.isBlank(dirDTO.getName())) {
+            throw new IllegalArgumentException("Directory name is required");
+        }
+
+        if (parentBucket.isPresent()) {
+
+            final S3Mock s3MockParent = parentBucket.get();
+            final S3MockDir newS3MockDir = new S3MockDir(dirDTO.getName(), s3MockParent);
+            s3MockParent.getChildrenDirs().add(newS3MockDir);
+
+            return newS3MockDir;
+        }
+
+        if (parentDir.isPresent()) {
+
+            final S3MockDir s3MockParentDir = parentDir.get();
+
+            final S3MockDir newS3MockDir = new S3MockDir(dirDTO.getName(), s3MockParentDir);
+            s3MockParentDir.getChildren().add(newS3MockDir);
+
+            return newS3MockDir;
+        }
+
+        throw new IllegalArgumentException("A parent bucket or parent directory is required");
+    }
+
+     void createS3BucketFile(final S3MockFileResponseDTO fileDTO,
+                                  final Optional<S3Mock> bucket,
+                                  final Optional<S3MockDir> dir) {
+
+        final String fileName = fileDTO.getName();
+        final String mimeType = fileDTO.getMimeType();
+        final String fileContent = fileDTO.getContent();
+
+        if (fileName == null) {
+            throw new IllegalArgumentException("File name cannot be blank");
+        }
+        if (mimeType == null) {
+            throw new IllegalArgumentException("File mimeType cannot be blank");
+        }
+        if (fileContent == null) {
+            throw new IllegalArgumentException("File content is missing");
+        }
+
+        if (bucket.isPresent()) {
+
+            final S3Mock s3MockParent = bucket.get();
+
+            final S3MockFile s3MockFile = new S3MockFile(fileName, mimeType, s3MockParent);
+            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent);
+            s3MockFile.setFileContent(s3MockFileContent);
+
+            s3MockParent.getFiles().add(s3MockFile);
+
+            return;
+        }
+
+        if (dir.isPresent()) {
+
+            final S3MockDir s3MockDirParent = dir.get();
+
+            final S3MockFile s3MockFile = new S3MockFile(fileName, mimeType, s3MockDirParent);
+            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent);
+            s3MockFile.setFileContent(s3MockFileContent);
+
+            s3MockDirParent.getFiles().add(s3MockFile);
+
+            return;
+        }
+
+        throw new IllegalArgumentException("A parent bucket or parent directory is required");
     }
 
     private String handleImportFail(final String info, final Throwable cause) {

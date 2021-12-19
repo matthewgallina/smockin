@@ -1,5 +1,5 @@
 
-app.controller('httpImportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient, restClient, utils) {
+app.controller('httpImportController', function($scope, $uibModalInstance, $timeout, globalVars, $http, uploadClient, restClient, utils, data) {
 
 
     //
@@ -8,13 +8,17 @@ app.controller('httpImportController', function($scope, $uibModalInstance, $time
     $scope.RamlImportType = "RAML";
     $scope.StandardImportType = "sMockin";
     $scope.ImportTypes = [ $scope.StandardImportType, $scope.RamlImportType ];
-
+    $scope.ServerType = data.serverType;
+    $scope.RestfulServerType = globalVars.RestfulServerType;
 
 
     //
     // Labels
-    $scope.importHeading = 'HTTP Mocks - Import Manager';
-    $scope.selectFileLabel = 'Select sMockin File...';
+    var serverTypeLabel = (($scope.ServerType == $scope.RestfulServerType)
+                              ? 'HTTP'
+                              : $scope.ServerType);
+    $scope.importHeading = serverTypeLabel + ' Mocks - Import Manager';
+    $scope.selectFileLabel = 'Select sMockin ' + serverTypeLabel + ' file...';
     $scope.importFeedbackLabel = 'Import Result';
     $scope.pleaseNoteLabel = 'Please note';
     $scope.existingEndpointsInfo = 'Any imported endpoints that conflict with an existing mock, will be prefixed with a timestamp (e.g /bob/raml_20180101120012000/hello)';

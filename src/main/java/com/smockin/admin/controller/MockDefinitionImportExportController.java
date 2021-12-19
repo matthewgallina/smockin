@@ -36,7 +36,7 @@ public class MockDefinitionImportExportController {
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
         final MockImportConfigDTO configDTO = (keepExisting)
-                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW )
+                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW)
                 : new MockImportConfigDTO();
 
         return ResponseEntity.ok(new SimpleMessageResponseDTO(mockDefinitionImportExportService

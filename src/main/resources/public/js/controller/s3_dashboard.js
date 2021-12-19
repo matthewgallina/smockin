@@ -282,7 +282,12 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
             templateUrl: 'http_import.html',
             controller: 'httpImportController',
             backdrop  : 'static',
-            keyboard  : false
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return { "serverType" : S3ServerType };
+                }
+            }
         });
 
         modalInstance.result.then(function (response) {

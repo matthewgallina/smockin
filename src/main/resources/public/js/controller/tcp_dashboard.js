@@ -199,7 +199,12 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             templateUrl: 'http_import.html',
             controller: 'httpImportController',
             backdrop  : 'static',
-            keyboard  : false
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return { "serverType" : RestfulServerType };
+                }
+            }
         });
 
         modalInstance.result.then(function (response) {

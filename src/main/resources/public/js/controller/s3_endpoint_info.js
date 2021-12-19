@@ -30,7 +30,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     // Buttons
     $scope.addNodeButtonLabel = 'Add Dir';
     $scope.renameNodeButtonLabel = 'Rename';
-    $scope.removeNodeButtonLabel = 'Delete';
+    $scope.removeNodeButtonLabel = 'Remove';
     $scope.uploadFileButtonLabel = 'Upload';
     $scope.syncBucketButtonLabel = 'Re-Sync';
     $scope.deleteButtonLabel = 'Delete';
