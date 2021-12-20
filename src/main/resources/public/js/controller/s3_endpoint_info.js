@@ -244,7 +244,12 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
             return;
         }
 
-        utils.openDeleteConfirmation("Are you sure you wish to delete this directory and all of it's content?", function (alertResponse) {
+        var nodeType = selectedNode[0].nodeType;
+        var typeToDeleteTextSuffix = (nodeType == NodeTypeDir)
+                ? "directory and all of it's content"
+                : "file";
+
+        utils.openDeleteConfirmation("Are you sure you wish to delete this " + typeToDeleteTextSuffix + "?", function (alertResponse) {
             if (alertResponse) {
                 deleteNode(selectedNode[0].extId, selectedNode[0].nodeType, false);
             }

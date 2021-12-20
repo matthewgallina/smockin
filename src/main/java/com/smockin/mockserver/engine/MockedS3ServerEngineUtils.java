@@ -104,7 +104,7 @@ public class MockedS3ServerEngineUtils {
             s3Mock.setCreatedBy(adminUserOpt.get());
             s3MockDAO.save(s3Mock);
 
-            handleS3Logging("A new bucket '" + containerName + "' was created");
+            handleS3Logging(String.format("Remote client created a new bucket '%s'", containerName));
 
         } else if (CLEAR_CONTAINER_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -117,7 +117,7 @@ public class MockedS3ServerEngineUtils {
 
             s3MockDAO.save(s3Mock);
 
-            handleS3Logging("The bucket '" + containerName + "' has had all content removed");
+            handleS3Logging(String.format("Remote client has cleared all content in bucket '%s'", containerName));
 
         } else if (DELETE_CONTAINER_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -127,7 +127,7 @@ public class MockedS3ServerEngineUtils {
 
             s3MockDAO.delete(s3Mock);
 
-            handleS3Logging("The bucket '" + containerName + "' was deleted");
+            handleS3Logging(String.format("Remote client has deleted bucket '%s'", containerName));
 
         } else if (PUT_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -143,6 +143,7 @@ public class MockedS3ServerEngineUtils {
 
             if (APPLICATION_XDIRECTORY.equals(mimeType)) {
                 createS3Dir(fileName, s3Mock);
+                handleS3Logging(String.format("Remote client added directory '%s' to bucket '%s'", fileName, containerName));
                 return;
             }
 
@@ -164,7 +165,7 @@ public class MockedS3ServerEngineUtils {
 
             createS3DirsAndFile(fileName, mimeType, content.get(), s3Mock);
 
-            handleS3Logging("Added file " + fileName + " to bucket '" + containerName + "'");
+            handleS3Logging(String.format("Remote client added file '%s' to bucket '%s'", fileName, containerName));
 
         } else if (REMOVE_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -198,7 +199,7 @@ public class MockedS3ServerEngineUtils {
 
                 s3MockDirDAO.delete(s3MockDir);
 
-                handleS3Logging(String.format("Removed dir %s from bucket '%s'", fullFilePathOrDir, containerName));
+                handleS3Logging(String.format("Remote client removed dir '%s' from bucket '%s'", fullFilePathOrDir, containerName));
 
                 return;
             }
@@ -225,7 +226,7 @@ public class MockedS3ServerEngineUtils {
 
             s3MockFileDAO.delete(fromS3MockFile);
 
-            handleS3Logging(String.format("Removed file %s from bucket '%s'", fullFilePathOrDir, containerName));
+            handleS3Logging(String.format("Remote client removed file '%s' from bucket '%s'", fullFilePathOrDir, containerName));
 
         } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -259,7 +260,7 @@ public class MockedS3ServerEngineUtils {
 
             createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getFileContent().getContent(), destinationBucket);
 
-            handleS3Logging("Copied file " + fromName + " from bucket '" + fromContainer + "' into bucket '" + toContainer + "'");
+            handleS3Logging(String.format("Remote client copied file '%s' from bucket '%s' into bucket '%s'", fromName, fromContainer, toContainer));
 
         }
 
@@ -520,7 +521,7 @@ public class MockedS3ServerEngineUtils {
         return s3Mock;
     }
 
-    void handleS3Logging(final String message) {
+    public void handleS3Logging(final String message) {
 
         liveLoggingHandler.broadcast(LiveLoggingUtils.buildS3LiveLogging(message));
     }

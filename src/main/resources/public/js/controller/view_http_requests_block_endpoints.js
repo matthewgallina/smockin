@@ -11,8 +11,8 @@ app.controller('viewHttpRequestsBlockEndpointsController', function($scope, $htt
 
     //
     // Labels
-    $scope.viewRequestsBlockedEndpointsHeading = 'Endpoints To Intercept';
-    $scope.noEndpointsDefinedLabel = 'No Endpoints Defined';
+    $scope.viewRequestsBlockedEndpointsHeading = 'HTTP Endpoints To Intercept';
+    $scope.noEndpointsDefinedLabel = 'No HTTP Endpoints Defined';
     $scope.endpointMethodLabel = 'Method';
     $scope.endpointPathLabel = 'Path';
 
