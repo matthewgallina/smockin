@@ -24,3 +24,11 @@
 .s3-mock-panel {
     min-height: 300px;
 }
+
+#s3-sync-type {
+    width: 100%;
+}
+
+#s3-sync-type-button {
+    width: 100%;
+}

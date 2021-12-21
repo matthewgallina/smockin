@@ -1,6 +1,7 @@
 package com.smockin.admin.dto.response;
 
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.S3SyncModeEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -21,9 +22,10 @@ public class S3MockBucketResponseDTO extends S3MockBucketResponseLiteDTO {
     public S3MockBucketResponseDTO(final String extId,
                                    final String bucket,
                                    final RecordStatusEnum status,
+                                   final S3SyncModeEnum syncMode,
                                    final Date dateCreated,
                                    final String createdBy) {
-        super(extId, bucket, status, dateCreated, createdBy);
+        super(extId, bucket, status, syncMode, dateCreated, createdBy);
     }
 
 }

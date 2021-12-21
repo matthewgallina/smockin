@@ -33,7 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -523,7 +522,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         final byte[] exportBytes = exportContent.getBytes();
 
-        return Optional.of(Base64.getEncoder().encodeToString(exportBytes));
+        return Optional.of(GeneralUtils.base64Encode(exportBytes));
     }
 
     @Override

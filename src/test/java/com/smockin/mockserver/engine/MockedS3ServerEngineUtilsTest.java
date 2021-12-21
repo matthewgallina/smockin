@@ -3,6 +3,8 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.persistence.entity.S3Mock;
 import com.smockin.admin.persistence.entity.S3MockDir;
 import com.smockin.admin.persistence.entity.S3MockFile;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.S3SyncModeEnum;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,7 +22,7 @@ public class MockedS3ServerEngineUtilsTest {
         mockedS3ServerEngineUtils = new MockedS3ServerEngineUtils();
 
         // Setup
-        final S3Mock s3MockParent = new S3Mock("A", null, null);
+        final S3Mock s3MockParent = new S3Mock("A", RecordStatusEnum.ACTIVE, S3SyncModeEnum.NO_SYNC, null);
 
         final S3MockDir s3MockDirLevel1 = new S3MockDir("B", s3MockParent);
         final S3MockDir s3MockDirLevel2 = new S3MockDir("C", s3MockDirLevel1);

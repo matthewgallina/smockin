@@ -175,7 +175,7 @@ public class MockDefinitionImportExportServiceTest {
                 .collect(Collectors.toList());
 
         // Test
-        final String base64Content = mockDefinitionImportExportService.export(ids, ServerTypeEnum.RESTFUL.name(),"ABC");
+        final String base64Content = mockDefinitionImportExportService.export(ids, ServerTypeEnum.RESTFUL,"ABC");
 
         // Assertions
         Stream.of(unpackZipToTempArchive(base64Content).listFiles())
@@ -204,7 +204,7 @@ public class MockDefinitionImportExportServiceTest {
         final RestfulMockResponseDTO restfulDTO = allRestfulMocks.get(1);
 
         // Test
-        final String base64Content = mockDefinitionImportExportService.export(Arrays.asList(restfulDTO.getExtId()), ServerTypeEnum.RESTFUL.name(), "ABC");
+        final String base64Content = mockDefinitionImportExportService.export(Arrays.asList(restfulDTO.getExtId()), ServerTypeEnum.RESTFUL, "ABC");
 
         // Assertions
         Stream.of(unpackZipToTempArchive(base64Content).listFiles()).forEach(f -> {

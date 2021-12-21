@@ -18,6 +18,10 @@ app.service('globalVars', function() {
     this.AdminRole = "ADMIN";
     this.RegularRole = "REGULAR";
 
+    this.SyncModeNone = 'NO_SYNC';
+    this.SyncModeOneWay = 'ONE_WAY';
+    this.SyncModeBiDirectional = 'BI_DIRECTIONAL';
+
     this.RestfulServerType = "RESTFUL";
     this.S3ServerType = "S3";
 

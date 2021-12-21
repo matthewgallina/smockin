@@ -6,12 +6,15 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     // Constants
     var extId = $location.search()["eid"];
     var isNew = (extId == null);
-    var s3PathPlaceHolderTxt = 'e.g. (my_cool_bucket)';
+    var s3PathPlaceHolderTxt = 'e.g. (my-s3-bucket)';
     var NodeTypeBucket = globalVars.NodeTypeBucket;
     var NodeTypeDir = globalVars.NodeTypeDir;
     var NodeTypeFile = globalVars.NodeTypeFile;
     var MockServerRunningStatus = globalVars.MockServerRunningStatus;
     var MockServerStoppedStatus = globalVars.MockServerStoppedStatus;
+    $scope.SyncModeNone = globalVars.SyncModeNone;
+    $scope.SyncModeOneWay = globalVars.SyncModeOneWay;
+    $scope.SyncModeBiDirectional = globalVars.SyncModeBiDirectional;
 
 
     //
@@ -23,7 +26,10 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
-
+    $scope.syncModeLabel = 'Synchronisation Mode';
+    $scope.syncModeNoneLabel = 'Do not push admin changes to running mock server (No Sync)';
+    $scope.syncModeOneWayLabel = 'Push admin changes to running mock server (One Way)';
+    $scope.syncModeBiDirectionalLabel = 'Keep both admin & mock server synced (Bi-Directional)';
 
 
     //
@@ -78,10 +84,9 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     $scope.endpoint = {
         "bucket" : null,
-        "status" : globalVars.ActiveStatus
+        "status" : globalVars.ActiveStatus,
+        "syncMode" : $scope.syncModeNoneLabel
     };
-
-//    $scope.defaultCtxPathPrefix = (auth.isLoggedIn() && !auth.isSysAdmin()) ? ('/' + auth.getUserName()) : null;
 
     if (!isNew) {
 
@@ -93,6 +98,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                 "extId" : endpoint.extId,
                 "bucket" : endpoint.bucket,
                 "status" : endpoint.status,
+                "syncMode" : endpoint.syncMode,
                 "createdBy" : endpoint.createdBy,
                 "dateCreated" : endpoint.dateCreated,
                 "userCtxPath" : endpoint.userCtxPath,
@@ -101,7 +107,6 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                 "files" : endpoint.files
             };
 
-//            $scope.defaultCtxPathPrefix = (!utils.isBlank(endpoint.userCtxPath)) ? ('/' + endpoint.userCtxPath) : null;
             $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
 
             updateTree($scope.endpoint);
@@ -120,6 +125,23 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         $scope.endpoint.status = s;
     };
 
+    $scope.doSetSyncMode = function(syncMode) {
+        $scope.endpoint.syncMode = syncMode;
+    };
+
+    $scope.translateSyncMode = function (syncMode) {
+
+        if (syncMode == $scope.SyncModeNone) {
+            return $scope.syncModeNoneLabel;
+        }
+        if (syncMode == $scope.SyncModeOneWay) {
+            return $scope.syncModeOneWayLabel;
+        }
+        if (syncMode == $scope.SyncModeBiDirectional) {
+            return $scope.syncModeBiDirectionalLabel;
+        }
+    };
+
     $scope.doSaveS3Bucket = function() {
 
         // Validation
@@ -135,19 +157,20 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         // Send to Server
         if (isNew) {
 
-            createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, null, serverCallbackFuncFollowingNewBucket);
+            createNewBucket($scope.endpoint.bucket, $scope.endpoint.status, $scope.endpoint.syncMode, null, serverCallbackFuncFollowingNewBucket);
 
         } else {
 
             updateBucket($scope.endpoint.extId,
                          $scope.endpoint.bucket,
                          $scope.endpoint.status,
+                         $scope.endpoint.syncMode,
                              function (status, data) {
 
                                  utils.hideBlockingOverlay();
 
                                  if (status == 204) {
-                                     showAlert('Bucket status successfully updated', 'success');
+                                     showAlert('Bucket successfully updated', 'success');
                                      return;
                                  }
 
@@ -391,14 +414,6 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     //
     // Internal Functions
-/*
-    function getUserCtxPushPath(endpoint) {
-        return ($scope.defaultCtxPathPrefix != null)
-            ? ($scope.defaultCtxPathPrefix + endpoint.path)
-            : endpoint.path;
-    }
-*/
-
     function reSyncBucketContent() {
 
         // Send to Server
@@ -424,14 +439,15 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
     }
 
-    function createNewBucket(bucket, status, parentId, callbackFunc) {
+    function createNewBucket(bucket, status, syncMode, parentId, callbackFunc) {
 
         // Send to Server
         utils.showBlockingOverlay();
 
         var reqData = {
             "bucket" : bucket,
-            "status" : status
+            "status" : status,
+            "syncMode" : syncMode
         };
 
         restClient.doPost($http, '/s3mock/bucket', reqData, callbackFunc);
@@ -451,14 +467,15 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
         restClient.doPost($http, '/s3mock/dir', reqData, callbackFunc);
     }
 
-    function updateBucket(extId, bucket, status, callbackFunc) {
+    function updateBucket(extId, bucket, status, syncMode, callbackFunc) {
 
         // Send to Server
         utils.showBlockingOverlay();
 
         var reqData = {
             "bucket" : bucket,
-            "status" : status
+            "status" : status,
+            "syncMode" : syncMode
         };
 
         restClient.doPut($http, '/s3mock/bucket/' + extId, reqData, callbackFunc);

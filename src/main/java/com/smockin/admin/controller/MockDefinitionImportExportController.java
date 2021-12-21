@@ -7,6 +7,7 @@ import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockDefinitionImportExportService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +40,8 @@ public class MockDefinitionImportExportController {
                 ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW)
                 : new MockImportConfigDTO();
 
-        return ResponseEntity.ok(new SimpleMessageResponseDTO(mockDefinitionImportExportService
-                .importFile(file, configDTO, token)));
+        return ResponseEntity.ok(
+                new SimpleMessageResponseDTO(mockDefinitionImportExportService.importFile(file, configDTO, token)));
     }
 
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -52,7 +53,17 @@ public class MockDefinitionImportExportController {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
-        final String exportFileName = mockDefinitionImportExportService.exportZipFileNamePrefix
+        final ServerTypeEnum serverTypeEnum = ServerTypeEnum.toServerType(serverType);
+
+        if (serverTypeEnum == null) {
+            throw new ValidationException("Invalid Server Type");
+        }
+
+        final String exportFilePrefix = (ServerTypeEnum.S3.equals(serverTypeEnum))
+                ? mockDefinitionImportExportService.exportS3ZipFileNamePrefix
+                : mockDefinitionImportExportService.exportZipFileNamePrefix;
+
+        final String exportFileName = exportFilePrefix
                 + GeneralUtils.createFileNameUniqueTimeStamp()
                 + mockDefinitionImportExportService.exportZipFileNameExt;
 
@@ -60,7 +71,7 @@ public class MockDefinitionImportExportController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "application/zip")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportFileName + "\"")
-                .body(mockDefinitionImportExportService.export(exports, serverType, token));
+                .body(mockDefinitionImportExportService.export(exports, serverTypeEnum, token));
     }
 
 }

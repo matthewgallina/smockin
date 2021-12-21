@@ -39,8 +39,26 @@
             <div class="col-sm-6">
 
                 <div class="form-group" >
-                    <label for="bucket" class="ng-binding">{{ bucketLabel }}</label><span class="pull-right actual-path" ng-if="defaultCtxPathPrefix != null"> ({{ actualPathPrefixLabel }} {{ defaultCtxPathPrefix }}<b>{{ endpoint.bucket }}</b>)</span>
+                    <label for="bucket" class="ng-binding">{{ bucketLabel }}</label>
                     <input id="bucket" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.bucket" placeholder="{{ pathPlaceHolderTxt }}" type="text" ng-disabled="!isNew || readOnly" />
+                </div>
+
+                <div class="form-group" >
+                    <label for="s3-sync-type" class="ng-binding">{{ syncModeLabel }}</label>
+                    <br />
+                    <div id="s3-sync-type" class="btn-group" uib-dropdown>
+                        <button id="s3-sync-type-button" type="button" class="btn btn-default dropdown-toggle" uib-dropdown-toggle ng-disabled="disabled || readOnly">
+                            <span>{{ translateSyncMode(endpoint.syncMode) }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="s3-sync-type-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem">
+                                <a ng-click="doSetSyncMode(SyncModeNone)">{{ syncModeNoneLabel }}</a>
+                                <a ng-click="doSetSyncMode(SyncModeOneWay)">{{ syncModeOneWayLabel }}</a>
+                                <a ng-click="doSetSyncMode(SyncModeBiDirectional)">{{ syncModeBiDirectionalLabel }}</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
             </div>

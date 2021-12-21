@@ -502,6 +502,33 @@ public final class GeneralUtils {
 
     }
 
+    public static String base64Encode(final byte[] plainContentBytes) {
+
+        if (org.apache.commons.codec.binary.Base64.isBase64(plainContentBytes)) {
+            return new String(plainContentBytes);
+        }
+
+        return Base64.getEncoder().encodeToString(plainContentBytes);
+    }
+
+    public static String base64Encode(final String plainContent) {
+
+        if (org.apache.commons.codec.binary.Base64.isBase64(plainContent)) {
+            return plainContent;
+        }
+
+        return Base64.getEncoder().encodeToString(plainContent.getBytes());
+    }
+
+    public static String base64Decode(final String encodedContent) {
+
+        if (!org.apache.commons.codec.binary.Base64.isBase64(encodedContent)) {
+            return encodedContent;
+        }
+
+        return new String(Base64.getDecoder().decode(encodedContent.getBytes()));
+    }
+
     public static void closeSilently(final InputStream fis) {
         if (fis != null) {
             try {

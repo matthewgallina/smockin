@@ -34,7 +34,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -110,15 +109,14 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
     @Override
     public String export(final List<String> selectedExports,
-                         final String serverType,
+                         final ServerTypeEnum serverTypeEnum,
                          final String token)
             throws MockExportException, RecordNotFoundException, ValidationException {
 
-        final ServerTypeEnum serverTypeEnum = ServerTypeEnum.toServerType(serverType);
-
         if (serverTypeEnum == null) {
-            throw new ValidationException("Invalid Server Type: " + serverType);
+            throw new ValidationException("Invalid Server Type");
         }
+
         if (selectedExports == null || selectedExports.isEmpty()) {
             throw new ValidationException(String.format("No %s mocks are selected", serverTypeEnum.name()));
         }
@@ -140,7 +138,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
 
         final byte[] archiveBytes = GeneralUtils.createArchive(exportFileName, exportContent.getBytes());
 
-        return Base64.getEncoder().encodeToString(archiveBytes);
+        return GeneralUtils.base64Encode(archiveBytes);
     }
 
     //
@@ -321,8 +319,8 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     }
 
     Optional<S3Mock> processS3Import(final StringBuilder outcome,
-                           final S3MockBucketResponseDTO s3BucketDTO,
-                           final SmockinUser currentUser) {
+                                     final S3MockBucketResponseDTO s3BucketDTO,
+                                     final SmockinUser currentUser) {
 
         if (outcome.length() == 0) {
             outcome.append("Successful Imports:\n\n");
@@ -392,7 +390,10 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         }
 
         return s3MockDAO
-                .save(new S3Mock(bucketDTO.getBucket(), bucketDTO.getStatus(), currentUser));
+                .save(new S3Mock(bucketDTO.getBucket(),
+                                 bucketDTO.getStatus(),
+                                 bucketDTO.getSyncMode(),
+                                 currentUser));
     }
 
     S3MockDir createS3BucketDir(final S3MockDirResponseDTO dirDTO,
@@ -427,8 +428,8 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
     }
 
      void createS3BucketFile(final S3MockFileResponseDTO fileDTO,
-                                  final Optional<S3Mock> bucket,
-                                  final Optional<S3MockDir> dir) {
+                             final Optional<S3Mock> bucket,
+                             final Optional<S3MockDir> dir) {
 
         final String fileName = fileDTO.getName();
         final String mimeType = fileDTO.getMimeType();
@@ -449,7 +450,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             final S3Mock s3MockParent = bucket.get();
 
             final S3MockFile s3MockFile = new S3MockFile(fileName, mimeType, s3MockParent);
-            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent);
+            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, GeneralUtils.base64Encode(fileContent));
             s3MockFile.setFileContent(s3MockFileContent);
 
             s3MockParent.getFiles().add(s3MockFile);
@@ -462,7 +463,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             final S3MockDir s3MockDirParent = dir.get();
 
             final S3MockFile s3MockFile = new S3MockFile(fileName, mimeType, s3MockDirParent);
-            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent);
+            final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, GeneralUtils.base64Encode(fileContent));
             s3MockFile.setFileContent(s3MockFileContent);
 
             s3MockDirParent.getFiles().add(s3MockFile);

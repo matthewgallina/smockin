@@ -74,7 +74,7 @@ public class S3MockServiceImpl implements S3MockService {
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         final String extId = s3MockDAO
-                .save(new S3Mock(dto.getBucket(), dto.getStatus(), smockinUser))
+                .save(new S3Mock(dto.getBucket(), dto.getStatus(), dto.getSyncMode(), smockinUser))
                 .getExtId();
 
         applyUpdateToRunningServer(cli -> {
@@ -178,7 +178,7 @@ public class S3MockServiceImpl implements S3MockService {
 
                 final String bucketName = bucket.getBucketName();
                 final S3MockFile s3MockFile = new S3MockFile(originalFileName, contentType, bucket);
-                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent.get());
+                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, GeneralUtils.base64Encode(fileContent.get()));
                 s3MockFile.setFileContent(s3MockFileContent);
                 final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
@@ -196,7 +196,7 @@ public class S3MockServiceImpl implements S3MockService {
             if (mockDir != null) {
 
                 final S3MockFile s3MockFile = new S3MockFile(originalFileName, contentType, mockDir);
-                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, fileContent.get());
+                final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3MockFile, GeneralUtils.base64Encode(fileContent.get()));
                 s3MockFile.setFileContent(s3MockFileContent);
                 final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
@@ -233,6 +233,7 @@ public class S3MockServiceImpl implements S3MockService {
 
         s3Mock.setBucketName(dto.getBucket());
         s3Mock.setStatus(dto.getStatus());
+        s3Mock.setSyncMode(dto.getSyncMode());
 
         s3MockDAO.save(s3Mock);
 
@@ -248,6 +249,7 @@ public class S3MockServiceImpl implements S3MockService {
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
                         mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed bucket '%s' to '%s'", smockinUser.getUsername(), originalBucket, dto.getBucket()));
                     }
+
                 }
             }
         );
@@ -391,6 +393,7 @@ public class S3MockServiceImpl implements S3MockService {
                         new S3MockBucketResponseLiteDTO(m.getExtId(),
                                 m.getBucketName(),
                                 m.getStatus(),
+                                m.getSyncMode(),
                                 m.getDateCreated(),
                                 m.getCreatedBy().getUsername()))
                 .collect(Collectors.toList());
@@ -477,12 +480,13 @@ public class S3MockServiceImpl implements S3MockService {
     }
 
     public S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock,
-                                                      final boolean includeFileContent) {
+                                                      final boolean includeBase64EncodedFileContent) {
 
         final S3MockBucketResponseDTO dto = new S3MockBucketResponseDTO(
                 s3Mock.getExtId(),
                 s3Mock.getBucketName(),
                 s3Mock.getStatus(),
+                s3Mock.getSyncMode(),
                 s3Mock.getDateCreated(),
                 s3Mock.getCreatedBy().getUsername());
 
@@ -495,8 +499,8 @@ public class S3MockServiceImpl implements S3MockService {
                             mf.getExtId(),
                             mf.getName(),
                             mf.getMimeType(),
-                                (includeFileContent)
-                                        ? mf.getFileContent().getContent()
+                                (includeBase64EncodedFileContent)
+                                        ? mf.getFileContent().getContent() // straight from DB so already base64 encoded
                                         : null))
                 .collect(Collectors.toList()));
 
@@ -505,13 +509,13 @@ public class S3MockServiceImpl implements S3MockService {
             .stream()
             .forEach(m ->
                 dto.getChildren()
-                        .add(buildDirDtoTree(m, includeFileContent)));
+                        .add(buildDirDtoTree(m, includeBase64EncodedFileContent)));
 
         return dto;
     }
 
     S3MockDirResponseDTO buildDirDtoTree(final S3MockDir s3MockDir,
-                                         final boolean includeFileContent) {
+                                         final boolean includeBase64EncodedFileContent) {
 
         final S3MockDirResponseDTO dto = new S3MockDirResponseDTO(
                 s3MockDir.getExtId(),
@@ -532,8 +536,8 @@ public class S3MockServiceImpl implements S3MockService {
                                         mf.getExtId(),
                                         mf.getName(),
                                         mf.getMimeType(),
-                                        (includeFileContent)
-                                                ? mf.getFileContent().getContent()
+                                        (includeBase64EncodedFileContent)
+                                                ? mf.getFileContent().getContent() // straight from DB so already base64 encoded
                                                 : null))
                         .collect(Collectors.toList()));
 
@@ -542,7 +546,7 @@ public class S3MockServiceImpl implements S3MockService {
                 .stream()
                 .forEach(m ->
                         dto.getChildren()
-                                .add(buildDirDtoTree(m, includeFileContent)));
+                                .add(buildDirDtoTree(m, includeBase64EncodedFileContent)));
 
         return dto;
     }

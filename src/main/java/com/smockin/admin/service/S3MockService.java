@@ -25,6 +25,6 @@ public interface S3MockService {
     S3MockBucketResponseDTO loadById(final String extId, final String token) throws ValidationException, RecordNotFoundException;
     void syncS3Bucket(final String extId, final String token) throws RecordNotFoundException, ValidationException;
     boolean doesBucketAlreadyExist(final String name);
-    S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final boolean includeFileContent);
+    S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final boolean includeBase64EncodedFileContent);
 
 }

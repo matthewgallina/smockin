@@ -258,7 +258,7 @@ public class MockedS3ServerEngineUtils {
 
             final S3Mock destinationBucket = findS3MockByBucketName(toContainer);
 
-            createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), fromS3MockFile.getFileContent().getContent(), destinationBucket);
+            createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), GeneralUtils.base64Decode(fromS3MockFile.getFileContent().getContent()), destinationBucket);
 
             handleS3Logging(String.format("Remote client copied file '%s' from bucket '%s' into bucket '%s'", fromName, fromContainer, toContainer));
 
@@ -501,7 +501,7 @@ public class MockedS3ServerEngineUtils {
         final S3MockFile s3File = new S3MockFile();
         s3File.setName(fileName);
         s3File.setMimeType(mimeType);
-        final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3File, content);
+        final S3MockFileContent s3MockFileContent = new S3MockFileContent(s3File, GeneralUtils.base64Encode(content));
         s3File.setFileContent(s3MockFileContent);
         if (s3Mock != null)
             s3File.setS3Mock(s3Mock);
@@ -511,7 +511,7 @@ public class MockedS3ServerEngineUtils {
         s3MockFileDAO.save(s3File);
     }
 
-        S3Mock findS3MockByBucketName(final String name) throws RecordNotFoundException {
+    S3Mock findS3MockByBucketName(final String name) throws RecordNotFoundException {
 
         final S3Mock s3Mock = s3MockDAO.findByBucketName(name);
 
@@ -645,10 +645,10 @@ public class MockedS3ServerEngineUtils {
                 .getFiles()
                 .forEach(f ->
                         s3Client.uploadObject(
-                                        bucket.getBucketName(),
-                                        f.getName(),
-                                        IOUtils.toInputStream(f.getFileContent().getContent(), Charset.defaultCharset()),
-                                        f.getMimeType()));
+                            bucket.getBucketName(),
+                            f.getName(),
+                            IOUtils.toInputStream(GeneralUtils.base64Decode(f.getFileContent().getContent()), Charset.defaultCharset()),
+                            f.getMimeType()));
 
     }
 
@@ -678,10 +678,10 @@ public class MockedS3ServerEngineUtils {
                     final Pair<String, String> bucketAndFilePath = extractBucketAndFilePath(f);
 
                     s3Client.uploadObject(
-                                    bucket.getBucketName(),
-                                    bucketAndFilePath.getRight(),
-                                    IOUtils.toInputStream(f.getFileContent().getContent(), Charset.defaultCharset()),
-                                    f.getMimeType());
+                                bucket.getBucketName(),
+                                bucketAndFilePath.getRight(),
+                                IOUtils.toInputStream(GeneralUtils.base64Decode(f.getFileContent().getContent()), Charset.defaultCharset()),
+                                f.getMimeType());
 
                 });
 
