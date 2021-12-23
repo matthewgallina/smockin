@@ -8,7 +8,7 @@
 
 <br />
 
-### Dynamic REST API simulation and for application development & QA testing
+### Dynamic API & AWS S3 simulation for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -22,11 +22,11 @@
 
 ### OVERVIEW
 
-sMockin is an API mocking tool used to dynamically simulate HTTP endpoints.
+sMockin is a development tool used to dynamically simulate API endpoints and S3 buckets.
 
-Featuring a rich UI and HTTP mock server, replicating existing or creating new APIs can be done quickly both with JavaScript or without code.
+Featuring a rich UI an built in mock servers, creating and managing mocks can be done quickly, both with or without code.
 
-Whether you are a developer who needs to simulate RESTFul endpoints or an engineer working with complex SOA / IoT / microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
+Whether you are a developer who needs to simulate RESTFul API endpoints or an engineer working with complex microservice infrastructure, sMockin can help by mimicking any services that are either unavailable or otherwise too difficult or time consuming to set up.
 
 sMockin runs as a small web app which can be either installed locally onto a personal machine or hosted centrally and used by multiple users.
 
@@ -41,10 +41,12 @@ sMockin runs as a small web app which can be either installed locally onto a per
 ### KEY FEATURES
 
 * Create dynamic API mocks to mimic real world application behaviour.
+* (NEW) Create & manage S3 Bucket mocks where an AWS account may not be available.
 * Run sMockin centrally and create user accounts for your team.
 * Import / Export mocks to share between your team & version control.
-* Monitor and log traffic going to the HTTP mock server.
-* A complete UI solution requiring zero coding.
+* Monitor and log traffic going to the HTTP or S3 mock servers.
+* Choose whether to build your API mocks using JavaScript or without code.
+* A rich and complete UI solution.
 
 
 <br/>
@@ -141,6 +143,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         JWT-Decode                  -       https://github.com/auth0/jwt-decode
         JQuery                      -       https://jquery.com/
         Code Mirror                 -       https://codemirror.net/
+        S3proxy                     -       https://github.com/gaul/s3proxy
 
 <br/>
 <br />
@@ -149,6 +152,18 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 ### RECENT RELEASE CHANGES
 
 <br />
+
+**New in version 2.17.0**
+
+- Introducing S3 bucket mocking!
+
+Simply create a mock bucket, build your S3 content and point your application to the S3 mock server.
+
+Featuring different synchronisation modes, developing and testing around S3 has never been easier.
+
+<br />
+<br />
+
 
 **New in version 2.11.0**
 
