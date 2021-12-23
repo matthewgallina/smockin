@@ -6,6 +6,7 @@ import com.smockin.admin.persistence.dao.S3MockDirDAO;
 import com.smockin.admin.persistence.dao.S3MockFileDAO;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.S3SyncModeEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
@@ -112,6 +113,10 @@ public class MockedS3ServerEngineUtils {
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
 
+            if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
+                return;
+            }
+
             s3Mock.getChildrenDirs().clear();
             s3Mock.getFiles().clear();
 
@@ -124,6 +129,10 @@ public class MockedS3ServerEngineUtils {
             final String containerName = (String)args[0];
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
+
+            if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
+                return;
+            }
 
             s3MockDAO.delete(s3Mock);
 
@@ -140,6 +149,10 @@ public class MockedS3ServerEngineUtils {
             final String mimeType = payload.getContentMetadata().getContentType();
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
+
+            if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
+                return;
+            }
 
             if (APPLICATION_XDIRECTORY.equals(mimeType)) {
                 createS3Dir(fileName, s3Mock);
@@ -173,6 +186,13 @@ public class MockedS3ServerEngineUtils {
 
             final String containerName = (String)args[0];
             final String fullFilePathOrDir = (String)args[1];
+
+            final S3Mock s3Mock = s3MockDAO.findByBucketName(containerName);
+
+            if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
+                return;
+            }
+
 
             //
             // Remove Directory
@@ -238,6 +258,12 @@ public class MockedS3ServerEngineUtils {
             final String toContainer = (String) args[2];
             final String toName = (String) args[3];
 //            final CopyOptions options = (CopyOptions) args[4];
+
+            final S3Mock s3Mock = s3MockDAO.findByBucketName(fromContainer);
+
+            if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
+                return;
+            }
 
             final String[] fromPaths = StringUtils.split(fromName, SEPARATOR_CHAR);
             final String fromFileName = fromPaths[ fromPaths.length -1 ];

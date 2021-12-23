@@ -21,9 +21,6 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.searchFilterPlaceHolderTxt = 'Quick Search...';
-    var syncModeNoneTableLabel = 'No Sync';
-    var syncModeOneWayTableLabel = 'One Way';
-    var syncModeBiDirectionalTableLabel = 'Bi-Directional';
 
 
     //
@@ -319,13 +316,13 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
     $scope.translateSyncMode = function (syncMode) {
 
         if (syncMode == globalVars.SyncModeNone) {
-            return syncModeNoneTableLabel;
+            return globalVars.SyncModeNoneLabel;
         }
         if (syncMode == globalVars.SyncModeOneWay) {
-            return syncModeOneWayTableLabel;
+            return globalVars.SyncModeOneWayLabel;
         }
         if (syncMode == globalVars.SyncModeBiDirectional) {
-            return syncModeBiDirectionalTableLabel;
+            return globalVars.SyncModeBiDirectionalLabel;
         }
     };
 

@@ -135,7 +135,7 @@ public class MockedS3ServerEngine {
             final Object result = method.invoke(originalBlobStore, args);
 
             // (Hacky, but could not find any other way to differentiate internal and external client calls.)
-            // Nothing to update DB as this is an internal S3 client call.
+            // Nothing to update in DB as this is an internal S3 client call.
             if (!isInternalCall.isPresent()
                     || (isInternalCall.isPresent() && !isInternalCall.get())) {
                 try {

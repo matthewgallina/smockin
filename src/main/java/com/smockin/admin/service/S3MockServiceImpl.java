@@ -15,6 +15,7 @@ import com.smockin.admin.persistence.dao.S3MockDirDAO;
 import com.smockin.admin.persistence.dao.S3MockFileDAO;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
+import com.smockin.admin.persistence.enums.S3SyncModeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.engine.MockedS3ServerEngineUtils;
@@ -77,12 +78,15 @@ public class S3MockServiceImpl implements S3MockService {
                 .save(new S3Mock(dto.getBucket(), dto.getStatus(), dto.getSyncMode(), smockinUser))
                 .getExtId();
 
-        applyUpdateToRunningServer(cli -> {
-            if (RecordStatusEnum.ACTIVE.equals(dto.getStatus())) {
+        if (RecordStatusEnum.ACTIVE.equals(dto.getStatus())
+                && !S3SyncModeEnum.NO_SYNC.equals(dto.getSyncMode())) {
+
+            applyUpdateToRunningServer(cli -> {
                 cli.createBucket(dto.getBucket());
                 mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created bucket %s", smockinUser.getUsername(), dto.getBucket()));
-            }
-        });
+            });
+
+        }
 
         return extId;
     }
@@ -105,13 +109,16 @@ public class S3MockServiceImpl implements S3MockService {
                     .save(new S3MockDir(dto.getName(), parentBucket))
                     .getExtId();
 
-            applyUpdateToRunningServer(cli -> {
-                if (RecordStatusEnum.ACTIVE.equals(parentBucket.getStatus())) {
+            if (RecordStatusEnum.ACTIVE.equals(parentBucket.getStatus())
+                    && !S3SyncModeEnum.NO_SYNC.equals(parentBucket.getSyncMode())) {
+
+                applyUpdateToRunningServer(cli -> {
                     cli.createSubDirectory(parentBucket.getBucketName(), dto.getName());
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
                     mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()));
-                }
-            });
+                });
+
+            }
 
             return extId;
         }
@@ -130,13 +137,16 @@ public class S3MockServiceImpl implements S3MockService {
             // TODO test removing this duplicated line!!!
 //            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
 
-            applyUpdateToRunningServer(cli -> {
-                if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())) {
+            if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())
+                    && !S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {
+
+                applyUpdateToRunningServer(cli -> {
                     cli.createSubDirectory(bucket.getBucketName(), filePathTracer.toString());
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
                     mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()));
-                }
-            });
+                });
+
+            }
 
             return newDir.getExtId();
         }
@@ -182,13 +192,16 @@ public class S3MockServiceImpl implements S3MockService {
                 s3MockFile.setFileContent(s3MockFileContent);
                 final String newFileExtId = s3MockFileDAO.save(s3MockFile).getExtId();
 
-                applyUpdateToRunningServer(cli -> {
-                    if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())) {
+                if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())
+                        && !S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {
+
+                    applyUpdateToRunningServer(cli -> {
                         cli.uploadObject(bucketName, originalFileName, IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
                         mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), originalFileName, bucket));
-                    }
-                });
+                    });
+
+                }
 
                 return newFileExtId;
             }
@@ -203,13 +216,16 @@ public class S3MockServiceImpl implements S3MockService {
                 final S3Mock parentBucket = mockedS3ServerEngineUtils.locateParentBucket(mockDir);
                 final Pair<String, String> filePath = mockedS3ServerEngineUtils.extractBucketAndFilePath(s3MockFile);
 
-                applyUpdateToRunningServer(cli -> {
-                    if (RecordStatusEnum.ACTIVE.equals(parentBucket.getStatus())) {
+                if (RecordStatusEnum.ACTIVE.equals(parentBucket.getStatus())
+                        && !S3SyncModeEnum.NO_SYNC.equals(parentBucket.getSyncMode())) {
+
+                    applyUpdateToRunningServer(cli -> {
                         cli.uploadObject(parentBucket.getBucketName(), filePath.getRight(), IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
                         mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), filePath.getRight(), parentBucket.getBucketName()));
-                    }
-                });
+                    });
+
+                }
 
                 return newFileExtId;
             }
@@ -238,21 +254,22 @@ public class S3MockServiceImpl implements S3MockService {
         s3MockDAO.save(s3Mock);
 
         // Remove current bucket and re-create with latest content...
-        applyUpdateToRunningServer(
-            cli -> cli.deleteBucket(originalBucket, true),
-            cli -> {
-                if (RecordStatusEnum.ACTIVE.equals(dto.getStatus())) {
+        if (RecordStatusEnum.ACTIVE.equals(s3Mock.getStatus())
+                && !S3SyncModeEnum.NO_SYNC.equals(s3Mock.getSyncMode())) {
 
-                    mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock);
+            applyUpdateToRunningServer(
+                    cli -> cli.deleteBucket(originalBucket, true),
+                    cli -> {
+                        mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock);
 
-                    if (!StringUtils.equals(originalBucket, dto.getBucket())) {
-                        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed bucket '%s' to '%s'", smockinUser.getUsername(), originalBucket, dto.getBucket()));
+                        if (!StringUtils.equals(originalBucket, dto.getBucket())) {
+                            final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
+                            mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed bucket '%s' to '%s'", smockinUser.getUsername(), originalBucket, dto.getBucket()));
+                        }
                     }
+            );
 
-                }
-            }
-        );
+        }
 
     }
 
@@ -269,7 +286,8 @@ public class S3MockServiceImpl implements S3MockService {
 
         final S3Mock s3Mock = mockedS3ServerEngineUtils.locateParentBucket(s3MockDir);
 
-        if (RecordStatusEnum.INACTIVE.equals(s3Mock.getStatus())) {
+        if (RecordStatusEnum.INACTIVE.equals(s3Mock.getStatus())
+                || S3SyncModeEnum.NO_SYNC.equals(s3Mock.getSyncMode())) {
             return;
         }
 
@@ -298,7 +316,8 @@ public class S3MockServiceImpl implements S3MockService {
             final RecordStatusEnum status = s3Mock.getStatus();
             s3MockDAO.delete(s3Mock);
 
-            if (RecordStatusEnum.INACTIVE.equals(status)) {
+            if (RecordStatusEnum.INACTIVE.equals(status)
+                    || S3SyncModeEnum.NO_SYNC.equals(s3Mock.getSyncMode())) {
                 return;
             }
 
@@ -322,7 +341,8 @@ public class S3MockServiceImpl implements S3MockService {
 
             final S3Mock bucket = s3MockDAO.getById(bucketId);
 
-            if (RecordStatusEnum.INACTIVE.equals(bucket.getStatus())) {
+            if (RecordStatusEnum.INACTIVE.equals(bucket.getStatus())
+                    || S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {
                 return;
             }
 
@@ -364,7 +384,8 @@ public class S3MockServiceImpl implements S3MockService {
 
             if (bucket != null) {
 
-                if (RecordStatusEnum.INACTIVE.equals(bucket.getStatus())) {
+                if (RecordStatusEnum.INACTIVE.equals(bucket.getStatus())
+                        || S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {
                     return;
                 }
 
@@ -416,7 +437,7 @@ public class S3MockServiceImpl implements S3MockService {
     }
 
     @Override
-    public void syncS3Bucket(final String extId, final String token) throws RecordNotFoundException, ValidationException {
+    public void resetS3BucketOnMockServer(final String extId, final String token) throws RecordNotFoundException, ValidationException {
 
         final S3Mock s3Mock = findS3Mock(extId, token);
 

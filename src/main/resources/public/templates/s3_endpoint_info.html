@@ -76,9 +76,9 @@
                         <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
                         {{ uploadFileButtonLabel }}
                     </button>
-                    <button class="btn btn-warning" type="button" ng-click="doSyncBucket()" ng-disabled="mockServerStatus == mockServerStoppedStatus">
-                        <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
-                        {{ syncBucketButtonLabel }}
+                    <button class="btn btn-default" type="button" ng-click="doResetBucketOnServer()" ng-disabled="mockServerStatus == mockServerStoppedStatus">
+                        {{ resetBucketContentButtonLabel }}
+                        <span class="glyphicon glyphicon-send" aria-hidden="true"></span>
                     </button>
 
                     <div class="pull-right">

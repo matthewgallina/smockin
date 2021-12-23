@@ -22,6 +22,10 @@ app.service('globalVars', function() {
     this.SyncModeOneWay = 'ONE_WAY';
     this.SyncModeBiDirectional = 'BI_DIRECTIONAL';
 
+    this.SyncModeNoneLabel = 'NO SYNC';
+    this.SyncModeOneWayLabel = 'ONE WAY';
+    this.SyncModeBiDirectionalLabel = 'BI-DIRECTIONAL';
+
     this.RestfulServerType = "RESTFUL";
     this.S3ServerType = "S3";
 

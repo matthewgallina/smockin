@@ -23,7 +23,7 @@ public interface S3MockService {
     void deleteS3BucketOrFile(final String extId, final S3MockTypeEnum type, final String token) throws RecordNotFoundException, ValidationException;
     List<S3MockBucketResponseLiteDTO> loadAll(final String token) throws RecordNotFoundException;
     S3MockBucketResponseDTO loadById(final String extId, final String token) throws ValidationException, RecordNotFoundException;
-    void syncS3Bucket(final String extId, final String token) throws RecordNotFoundException, ValidationException;
+    void resetS3BucketOnMockServer(final String extId, final String token) throws RecordNotFoundException, ValidationException;
     boolean doesBucketAlreadyExist(final String name);
     S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final boolean includeBase64EncodedFileContent);
 

@@ -62,12 +62,12 @@ public class S3MockController {
                     GeneralUtils.extractOAuthToken(bearerToken))), HttpStatus.CREATED);
     }
 
-    @RequestMapping(path="/s3mock/bucket/{extId}/sync", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<Void> synchronizeS3Bucket(@PathVariable("extId") final String extId,
-                                                                  @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+    @RequestMapping(path="/s3mock/bucket/{extId}/resynchronize", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<Void> resynchronizeS3Bucket(@PathVariable("extId") final String extId,
+                                                                    @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        s3MockService.syncS3Bucket(extId, GeneralUtils.extractOAuthToken(bearerToken));
+        s3MockService.resetS3BucketOnMockServer(extId, GeneralUtils.extractOAuthToken(bearerToken));
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
