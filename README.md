@@ -149,7 +149,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 <br />
 
 
-### RECENT RELEASE CHANGES
+### RECENT RELEASE FEATURES
 
 <br />
 
@@ -196,139 +196,6 @@ This can be highly useful for either temporarily modifying an existing API or ad
 <br />
 <br />
 
-
-**New in version 2.9**
-
-- Added ability to run sMockin as a proxy server so this can sit between any application and the downstream server it would normally make API calls too.
-
-- Proxy mode can be run in 2 ways:
-
-**Option A** sMockin will attempt to find a mock first and only forward the request to your server downstream if a mock could not be found.
-
-**Option B** sMockin will forward the request to the server downstream first and then try to find a suitable mock if the downstream server returns a 404.
-
-- Please note, proxy mode is not available when running sMockin in 'multi user' mode.
-
-<br />
-<br />
-
-
-**New in version 2.8**
-
-- Added the ability to save Key / Value pair data which can be recalled in your mock responses.
-
-To add Key / Value data, click on the drop down box list from the top right hand corner of the UI and select **Manage Key/Value Data**. 
-
-To then reference your Key / Value data in your mock responses, this can be achieved as follows:
-
-For **Response Variables** syntax:
-
-```
-$lookUpKvp(kvpKeyName)
-```
-
-Or if using a **Custom JavaScript** based mock:
-
-```
-lookUpKvp('kvpKeyName');
-```
-
-For greater flexibility, you can also reference inbound request values as part of your lookup like so:
-
-**Response Variables** syntax:
-
-```
-$lookUpKvp($requestParameter(firstName))
-```
-
-**Custom JavaScript** syntax:
-
-```
-lookUpKvp(request.parameters.firstName);
-```
-
-<br />
-
-- Changes to the syntax format used in **Response Variables**.
-
-For example: 
-
-```
-${REQ_PARAM=firstName} is now be expressed as $requestParameter(firstName)
-${REQ_HEAD=firstName} is expressed as $requestHeader(firstName)
-${REQ_PARAM=firstName} is expressed as $requestParameter(firstName)
-${PATH_VAR=firstName} is expressed as $pathVar(firstName)
-${RANDOM_NUMBER=1 TO 10} is expressed as $randomNumber(1, 10) or $randomNumber(10)
-${ISO_DATETIME} is expressed as $isoDatetime
-${ISO_DATE} is expressed as $isoDate
-${UUID} is expressed as $uuid
-
-$requestBody has been added as a new option
-```
-
-More details to follow at https://help.smockin.com
-
-
-<br />
-<br />
-
-
-**New in version 2.7**
-
-- Introducing **'Stateful REST'** mocking. Mocked endpoints using this feature, can cache and manage JSON state based on the RESTful instructions they receive, helping to mimic 'real world' data behavior.
-
-<br />
-
-To give it a go, simply create a new mock (e.g /pets) selecting the 'Stateful REST' type and save.
-
-<br />
-
-Then run the following calls to see it immediately action:
-
-> curl -i -X GET http://localhost:8001/pets
-
-> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "fido", "age" : 4, "type" : "DOG" }'
-
-> curl -i -X POST http://localhost:8001/pets -d '{ "name" : "minty", "age" : 6, "type" : "CAT" }'
-
-<br />
-
-Your next call to GET /pets should return the following:
-
-> curl -i -X GET http://localhost:8001/pets
-
-```
-[
-  {
-    "name": "fido",
-    "age": 4,
-    "type": "DOG",
-    "id": "223af502-ae81-4274-9101-4886821ea823"
-  },
-  {
-    "name": "minty",
-    "age": 6,
-    "type": "CAT",
-    "id": "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5"
-  }
-]
-```
-
-<br />
-
-You can proceed to GET, PUT, PATCH and DELETE your mock using the generated id...
-
-> curl -i -X GET http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
-
-> curl -i -X PUT http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 -d '{ "id" : "0a1c837a-8cd5-4a3c-b2e8-a519933e99d5", "name" : "Minty", "age" : 7, "type" : "CAT" }'
-
-> curl -i -X PATCH http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5 - d '{ "op" : "REPLACE", "path" : "/name", "value" : "Minty Mi" }'
-
-> curl -i -X DELETE http://localhost:8001/pets/0a1c837a-8cd5-4a3c-b2e8-a519933e99d5
-
-
-<br />
-<br/>
 
 
 ### ABOUT
