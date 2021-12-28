@@ -83,7 +83,8 @@ public class S3MockServiceImpl implements S3MockService {
 
             applyUpdateToRunningServer(cli -> {
                 cli.createBucket(dto.getBucket());
-                mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created bucket %s", smockinUser.getUsername(), dto.getBucket()));
+                mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created bucket %s", smockinUser.getUsername(), dto.getBucket()),
+                        smockinUser.getExtId());
             });
 
         }
@@ -115,7 +116,8 @@ public class S3MockServiceImpl implements S3MockService {
                 applyUpdateToRunningServer(cli -> {
                     cli.createSubDirectory(parentBucket.getBucketName(), dto.getName());
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()));
+                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()),
+                            parentBucket.getCreatedBy().getExtId());
                 });
 
             }
@@ -143,7 +145,8 @@ public class S3MockServiceImpl implements S3MockService {
                 applyUpdateToRunningServer(cli -> {
                     cli.createSubDirectory(bucket.getBucketName(), filePathTracer.toString());
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()));
+                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' created directory '%s'", smockinUser.getUsername(), dto.getName()),
+                            bucket.getCreatedBy().getExtId());
                 });
 
             }
@@ -198,7 +201,8 @@ public class S3MockServiceImpl implements S3MockService {
                     applyUpdateToRunningServer(cli -> {
                         cli.uploadObject(bucketName, originalFileName, IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), originalFileName, bucket));
+                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), originalFileName, bucket),
+                                bucket.getCreatedBy().getExtId());
                     });
 
                 }
@@ -222,7 +226,8 @@ public class S3MockServiceImpl implements S3MockService {
                     applyUpdateToRunningServer(cli -> {
                         cli.uploadObject(parentBucket.getBucketName(), filePath.getRight(), IOUtils.toInputStream(fileContent.get(), Charset.defaultCharset()), contentType);
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), filePath.getRight(), parentBucket.getBucketName()));
+                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' uploaded file '%s' to bucket '%s'", smockinUser.getUsername(), filePath.getRight(), parentBucket.getBucketName()),
+                                parentBucket.getCreatedBy().getExtId());
                     });
 
                 }
@@ -264,7 +269,8 @@ public class S3MockServiceImpl implements S3MockService {
 
                         if (!StringUtils.equals(originalBucket, dto.getBucket())) {
                             final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                            mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed bucket '%s' to '%s'", smockinUser.getUsername(), originalBucket, dto.getBucket()));
+                            mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed bucket '%s' to '%s'", smockinUser.getUsername(), originalBucket, dto.getBucket()),
+                                    s3Mock.getCreatedBy().getExtId());
                         }
                     }
             );
@@ -297,7 +303,8 @@ public class S3MockServiceImpl implements S3MockService {
                 cli -> {
                     mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock);
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed directory '%s' to '%s'", smockinUser.getUsername(), originalName, dto.getName()));
+                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' renamed directory '%s' to '%s'", smockinUser.getUsername(), originalName, dto.getName()),
+                            s3Mock.getCreatedBy().getExtId());
                 }
         );
 
@@ -324,7 +331,8 @@ public class S3MockServiceImpl implements S3MockService {
             applyUpdateToRunningServer(cli -> {
                 cli.deleteBucket(bucketName, true);
                 final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted bucket '%s'", smockinUser.getUsername(), bucketName));
+                mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted bucket '%s'", smockinUser.getUsername(), bucketName),
+                        s3Mock.getCreatedBy().getExtId());
             });
 
             return;
@@ -352,7 +360,8 @@ public class S3MockServiceImpl implements S3MockService {
                     cli -> {
                         mockedS3ServerEngineUtils.initBucketContent(cli, bucket);
                         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted directory '%s' in bucket '%s'", smockinUser.getUsername(), directoryName, bucket.getBucketName()));
+                        mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted directory '%s' in bucket '%s'", smockinUser.getUsername(), directoryName, bucket.getBucketName()),
+                                bucket.getCreatedBy().getExtId());
                     }
             );
 
@@ -392,7 +401,8 @@ public class S3MockServiceImpl implements S3MockService {
                 applyUpdateToRunningServer(cli -> {
                     cli.deleteObject(bucket.getBucketName(), filePath);
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted file '%s' in bucket '%s'", smockinUser.getUsername(), filePath, bucket.getBucketName()));
+                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' deleted file '%s' in bucket '%s'", smockinUser.getUsername(), filePath, bucket.getBucketName()),
+                            bucket.getCreatedBy().getExtId());
                 });
             }
 
@@ -450,7 +460,8 @@ public class S3MockServiceImpl implements S3MockService {
                 cli -> {
                     mockedS3ServerEngineUtils.initBucketContent(cli, s3Mock);
                     final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
-                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' has reset bucket '%s'", smockinUser.getUsername(), s3Mock.getBucketName()));
+                    mockedS3ServerEngineUtils.handleS3Logging(String.format("User '%s' has reset bucket '%s'", smockinUser.getUsername(), s3Mock.getBucketName()),
+                            s3Mock.getCreatedBy().getExtId());
                 }
         );
     }

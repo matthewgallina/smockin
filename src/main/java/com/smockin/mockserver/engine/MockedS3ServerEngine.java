@@ -133,17 +133,20 @@ public class MockedS3ServerEngine {
             }
 
             final Object result = method.invoke(originalBlobStore, args);
+            Optional<String> bucketOwnerId = Optional.empty();
 
             // (Hacky, but could not find any other way to differentiate internal and external client calls.)
             // Nothing to update in DB as this is an internal S3 client call.
             if (!isInternalCall.isPresent()
                     || (isInternalCall.isPresent() && !isInternalCall.get())) {
                 try {
-                    mockedS3ServerEngineUtils.persistS3RemoteCall(method.getName(), args, configDTO);
+                    bucketOwnerId = mockedS3ServerEngineUtils.persistS3RemoteCall(method.getName(), args, configDTO);
                 } catch (Exception ex) {
                     logger.error("Error persisting update to DB", ex);
                 }
             }
+
+            mockedS3ServerEngineUtils.logS3RemoteCall(method.getName(), args, bucketOwnerId);
 
             return result;
         };

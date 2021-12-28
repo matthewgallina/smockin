@@ -71,11 +71,10 @@ public final class LiveLoggingUtils {
                                 status)));
     }
 
-    public static LiveLoggingDTO buildS3LiveLogging(final String message) {
+    public static LiveLoggingDTO buildS3LiveLogging(final String message, final String bucketOwnerId) {
 
-        final LiveLoggingS3DTO liveLoggingS3DTO = new LiveLoggingS3DTO(null, message);
-
-        return new LiveLoggingDTO(LiveLoggingMessageTypeEnum.S3, liveLoggingS3DTO);
+        return new LiveLoggingDTO(LiveLoggingMessageTypeEnum.S3,
+                new LiveLoggingS3DTO(null, message, bucketOwnerId));
     }
 
 }

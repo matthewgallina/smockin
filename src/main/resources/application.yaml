@@ -3,6 +3,8 @@ server:
 
 #logging.level.com.smockin: ERROR
 
+spring.main.allow-circular-references: true
+
 jpa:
   show-sql: false
   hibernate:

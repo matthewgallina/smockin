@@ -203,15 +203,18 @@ public class LiveLoggingHandlerImpl extends TextWebSocketHandler implements Live
 
             if (LiveLoggingMessageTypeEnum.S3.equals(dto.getType())) {
 
-                final LiveLoggingS3DTO liveLoggingS3DTO = (LiveLoggingS3DTO)dto.getPayload();
-
                 if (isSysAdmin(session) && adminViewAll) {
 
                     session.sendMessage(serialiseMessage(dto));
                     return;
                 }
 
-                // TODO as things stand this will go to everyone... perhaps we can filter this by bucket?
+                final String connectedUserId = (String) session.getAttributes().get(WS_CONNECTED_USER_ID);
+
+                if (!StringUtils.equals(((LiveLoggingS3DTO)dto.getPayload()).getBucketOwnerId(), connectedUserId)) {
+                    return;
+                }
+
                 session.sendMessage(serialiseMessage(dto));
 
                 return;

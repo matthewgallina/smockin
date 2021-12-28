@@ -76,7 +76,7 @@ public class MockedS3ServerEngineUtils {
     private LiveLoggingHandler liveLoggingHandler;
 
 
-    public void persistS3RemoteCall(final String methodName,
+    public Optional<String> persistS3RemoteCall(final String methodName,
                                     final Object[] args,
                                     final MockedServerConfigDTO configDTO) {
 
@@ -86,7 +86,7 @@ public class MockedS3ServerEngineUtils {
             logger.debug("Remote S3 Client > Method name: " + methodName);
 
         if (!supportedInternalS3ClientUpdateMethods.contains(methodName)) {
-            return;
+            return Optional.empty();
         }
 
         if (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName)) {
@@ -96,7 +96,7 @@ public class MockedS3ServerEngineUtils {
             final Optional<SmockinUser> adminUserOpt = smockinUserService.loadDefaultUser();
 
             if (!adminUserOpt.isPresent()) {
-                return;
+                return Optional.empty();
             }
 
             final S3Mock s3Mock = new S3Mock();
@@ -105,7 +105,7 @@ public class MockedS3ServerEngineUtils {
             s3Mock.setCreatedBy(adminUserOpt.get());
             s3MockDAO.save(s3Mock);
 
-            handleS3Logging(String.format("Remote client created a new bucket '%s'", containerName));
+            return Optional.of(s3Mock.getCreatedBy().getExtId());
 
         } else if (CLEAR_CONTAINER_METHOD.equalsIgnoreCase(methodName)) {
 
@@ -114,7 +114,7 @@ public class MockedS3ServerEngineUtils {
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
-                return;
+                return Optional.of(s3Mock.getCreatedBy().getExtId());
             }
 
             s3Mock.getChildrenDirs().clear();
@@ -122,25 +122,25 @@ public class MockedS3ServerEngineUtils {
 
             s3MockDAO.save(s3Mock);
 
-            handleS3Logging(String.format("Remote client has cleared all content in bucket '%s'", containerName));
+            return Optional.of(s3Mock.getCreatedBy().getExtId());
 
-        } else if (DELETE_CONTAINER_METHOD.equalsIgnoreCase(methodName)) {
+        } else if (DELETE_CONTAINER_METHOD.equalsIgnoreCase(methodName)
+                || DELETE_CONTAINER_IF_EMPTY_METHOD.equals(methodName)) {
 
             final String containerName = (String)args[0];
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
+            final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
-                return;
+                return Optional.of(createdBy);
             }
 
             s3MockDAO.delete(s3Mock);
 
-            handleS3Logging(String.format("Remote client has deleted bucket '%s'", containerName));
+            return Optional.of(createdBy);
 
         } else if (PUT_BLOB_METHOD.equalsIgnoreCase(methodName)) {
-
-            // TODO test this!
 
             final String containerName = (String)args[0];
             final Blob blob = (Blob) args[1];
@@ -149,15 +149,15 @@ public class MockedS3ServerEngineUtils {
             final String mimeType = payload.getContentMetadata().getContentType();
 
             final S3Mock s3Mock = findS3MockByBucketName(containerName);
+            final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
-                return;
+                return Optional.of(createdBy);
             }
 
             if (APPLICATION_XDIRECTORY.equals(mimeType)) {
                 createS3Dir(fileName, s3Mock);
-                handleS3Logging(String.format("Remote client added directory '%s' to bucket '%s'", fileName, containerName));
-                return;
+                return Optional.of(createdBy);
             }
 
             Optional<String> content;
@@ -168,29 +168,28 @@ public class MockedS3ServerEngineUtils {
 
                 if (!content.isPresent()) {
                     logger.error("Error reading client's uploaded file");
-                    return;
+                    return Optional.of(createdBy);
                 }
 
             } catch (Exception ex) {
                 logger.error("Error reading client's uploaded file", ex);
-                return;
+                return Optional.of(createdBy);
             }
 
             createS3DirsAndFile(fileName, mimeType, content.get(), s3Mock);
 
-            handleS3Logging(String.format("Remote client added file '%s' to bucket '%s'", fileName, containerName));
+            return Optional.of(createdBy);
 
         } else if (REMOVE_BLOB_METHOD.equalsIgnoreCase(methodName)) {
-
-            // TODO need to differentiate between a dir and file.
 
             final String containerName = (String)args[0];
             final String fullFilePathOrDir = (String)args[1];
 
             final S3Mock s3Mock = s3MockDAO.findByBucketName(containerName);
+            final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
-                return;
+                return Optional.of(createdBy);
             }
 
 
@@ -207,21 +206,19 @@ public class MockedS3ServerEngineUtils {
 
                 if (dirs.isEmpty()) {
                     logger.error(String.format("Error unable to locate the dir %s in container %s to delete from DB. (No dirs found)", fullFilePathOrDir, containerName));
-                    return;
+                    return Optional.of(createdBy);
                 }
 
                 final S3MockDir s3MockDir = findS3MockDir(fullFilePathOrDir, dirs, containerName);
 
                 if (s3MockDir == null) {
                     logger.error(String.format("Error unable to locate the dir %s in container %s to delete from DB. (dir match not made)", fullFilePathOrDir, containerName));
-                    return;
+                    return Optional.of(createdBy);
                 }
 
                 s3MockDirDAO.delete(s3MockDir);
 
-                handleS3Logging(String.format("Remote client removed dir '%s' from bucket '%s'", fullFilePathOrDir, containerName));
-
-                return;
+                return Optional.of(createdBy);
             }
 
             //
@@ -233,25 +230,23 @@ public class MockedS3ServerEngineUtils {
 
             if (files.isEmpty()) {
                 logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB. (No files found)", fullFilePathOrDir, containerName));
-                return;
+                return Optional.of(createdBy);
             }
 
-            // TODO include 'fullFilePath' in this search...  MG check this done...
             final S3MockFile fromS3MockFile = findS3MockFile(fullFilePathOrDir, files, containerName);
 
             if (fromS3MockFile == null) {
                 logger.error(String.format("Error unable to locate the file %s in container %s to delete from DB. (file match not made)", fullFilePathOrDir, containerName));
-                return;
+                return Optional.of(createdBy);
             }
 
             s3MockFileDAO.delete(fromS3MockFile);
 
-            handleS3Logging(String.format("Remote client removed file '%s' from bucket '%s'", fullFilePathOrDir, containerName));
+            return Optional.of(createdBy);
 
         } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
 
             // NOTE, copyBlob seems to just handle the file during a dir rename.
-            // TODO test this!
 
             final String fromContainer = (String)args[0];
             final String fromName = (String) args[1];
@@ -260,9 +255,10 @@ public class MockedS3ServerEngineUtils {
 //            final CopyOptions options = (CopyOptions) args[4];
 
             final S3Mock s3Mock = s3MockDAO.findByBucketName(fromContainer);
+            final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
-                return;
+                return Optional.of(createdBy);
             }
 
             final String[] fromPaths = StringUtils.split(fromName, SEPARATOR_CHAR);
@@ -272,24 +268,139 @@ public class MockedS3ServerEngineUtils {
 
             if (fromFiles.isEmpty()) {
                 logger.error("Error unable to locate (from DB) file to copy:" + fromName);
-                return;
+                return Optional.of(createdBy);
             }
 
             final S3MockFile fromS3MockFile = findS3MockFile(fromName, fromFiles, fromContainer);
 
             if (fromS3MockFile == null) {
                 logger.error(String.format("Error unable to locate source file %s from container %s to copy", fromName, fromContainer));
-                return;
+                return Optional.of(createdBy);
             }
 
             final S3Mock destinationBucket = findS3MockByBucketName(toContainer);
 
             createS3DirsAndFile(toName, fromS3MockFile.getMimeType(), GeneralUtils.base64Decode(fromS3MockFile.getFileContent().getContent()), destinationBucket);
 
-            handleS3Logging(String.format("Remote client copied file '%s' from bucket '%s' into bucket '%s'", fromName, fromContainer, toContainer));
+            return Optional.of(createdBy);
+        }
+
+        return Optional.empty();
+    }
+
+    public void logS3RemoteCall(final String methodName,
+                                final Object[] args,
+                                final Optional<String> bucketOwnerIdOpt) {
+
+        logger.debug("logS3RemoteCall called");
+
+        if (!supportedInternalS3ClientUpdateMethods.contains(methodName)) {
+            return;
+        }
+
+        if (CREATE_CONTAINER_IN_LOCATION_METHOD.equalsIgnoreCase(methodName)) {
+
+            final String containerName = (String)args[1];
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : loadDefaultUserId();
+
+            handleS3Logging(String.format("Remote client created a new bucket '%s'", containerName), bucketOwnerId);
+
+        } else if (CLEAR_CONTAINER_METHOD.equalsIgnoreCase(methodName)) {
+
+            final String containerName = (String)args[0];
+
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : findS3MockByBucketName(containerName).getCreatedBy().getExtId();
+
+            handleS3Logging(String.format("Remote client has cleared all content in bucket '%s'", containerName),
+                    bucketOwnerId);
+
+        } else if (DELETE_CONTAINER_METHOD.equalsIgnoreCase(methodName)
+                    || DELETE_CONTAINER_IF_EMPTY_METHOD.equals(methodName)) {
+
+            final String containerName = (String)args[0];
+
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : findS3MockByBucketName(containerName).getCreatedBy().getExtId();
+
+            handleS3Logging(String.format("Remote client has deleted bucket '%s'", containerName),
+                    bucketOwnerId);
+
+        } else if (PUT_BLOB_METHOD.equalsIgnoreCase(methodName)) {
+
+            final String containerName = (String)args[0];
+            final Blob blob = (Blob) args[1];
+            final String fileName = blob.getMetadata().getName();
+            final Payload payload = blob.getPayload();
+            final String mimeType = payload.getContentMetadata().getContentType();
+
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : findS3MockByBucketName(containerName).getCreatedBy().getExtId();
+
+            if (APPLICATION_XDIRECTORY.equals(mimeType)) {
+                handleS3Logging(String.format("Remote client added directory '%s' to bucket '%s'", fileName, containerName),
+                        bucketOwnerId);
+                return;
+            }
+
+            handleS3Logging(String.format("Remote client added file '%s' to bucket '%s'", fileName, containerName),
+                    bucketOwnerId);
+
+        } else if (REMOVE_BLOB_METHOD.equalsIgnoreCase(methodName)) {
+
+            final String containerName = (String)args[0];
+            final String fullFilePathOrDir = (String)args[1];
+
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : s3MockDAO.findByBucketName(containerName).getCreatedBy().getExtId();
+
+            //
+            // Remove Directory
+            if (StringUtils.endsWith(fullFilePathOrDir, SEPARATOR_CHAR)) { // This a dir
+
+                handleS3Logging(String.format("Remote client removed dir '%s' from bucket '%s'", fullFilePathOrDir, containerName),
+                        bucketOwnerId);
+
+                return;
+            }
+
+            //
+            // Remove File
+            handleS3Logging(String.format("Remote client removed file '%s' from bucket '%s'", fullFilePathOrDir, containerName),
+                    bucketOwnerId);
+
+        } else if (COPY_BLOB_METHOD.equalsIgnoreCase(methodName)) {
+
+            final String fromContainer = (String)args[0];
+            final String fromName = (String) args[1];
+            final String toContainer = (String) args[2];
+
+            final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
+                    ? bucketOwnerIdOpt.get()
+                    : s3MockDAO.findByBucketName(fromContainer).getCreatedBy().getExtId();
+
+            handleS3Logging(String.format("Remote client copied file '%s' from bucket '%s' into bucket '%s'", fromName, fromContainer, toContainer),
+                    bucketOwnerId);
 
         }
 
+    }
+
+    String loadDefaultUserId() {
+
+        final Optional<SmockinUser> adminUserOpt = smockinUserService.loadDefaultUser();
+
+        if (!adminUserOpt.isPresent()) {
+            throw new RecordNotFoundException();
+        }
+
+        return adminUserOpt.get().getExtId();
     }
 
     S3MockFile findS3MockFile(final String expectedPath,
@@ -547,9 +658,9 @@ public class MockedS3ServerEngineUtils {
         return s3Mock;
     }
 
-    public void handleS3Logging(final String message) {
+    public void handleS3Logging(final String message, final String bucketOwnerId) {
 
-        liveLoggingHandler.broadcast(LiveLoggingUtils.buildS3LiveLogging(message));
+        liveLoggingHandler.broadcast(LiveLoggingUtils.buildS3LiveLogging(message, bucketOwnerId));
     }
 
     public Object[] sanitiseContainerNameInArgs(final Object[] originalArgs,

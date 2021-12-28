@@ -13,9 +13,9 @@
                         <span id="server-status-running" ng-show="mockServerStatus == mockServerRunning">{{ mockServerRunning }}</span>
                         <span id="server-status-restarting" ng-show="mockServerStatus == mockServerRestarting">{{ mockServerRestarting }}</span>
                         <br />
-                        <span class="server-config-group">
+                        <span class="server-config-group" ng-if="!readOnly">
                             (
-                            <a id="server-config" href="" ng-click="doOpenServerConfig()" ng-if="!readOnly">{{ serverConfigLabel }}</a>
+                            <a id="server-config" href="" ng-click="doOpenServerConfig()">{{ serverConfigLabel }}</a>
                             )
                         </span>
                     </h3>

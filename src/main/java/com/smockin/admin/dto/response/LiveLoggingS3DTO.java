@@ -13,12 +13,15 @@ public class LiveLoggingS3DTO implements LiveLoggingPayloadDTO {
     private String id;
     private Date date;
     private String information;
+    private String bucketOwnerId;
 
     public LiveLoggingS3DTO(final String id,
-                            final String information) {
+                            final String information,
+                            final String bucketOwnerId) {
         this.id = id;
         this.date = GeneralUtils.getCurrentDate();
         this.information = information;
+        this.bucketOwnerId = bucketOwnerId;
     }
 
 }
