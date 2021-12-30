@@ -79,6 +79,20 @@ public class CoreDataHandler {
             serverConfigDAO.save(restServerConfig);
         }
 
+
+        if (serverConfigDAO.findByServerType(ServerTypeEnum.S3) == null) {
+
+            final ServerConfig s3ServerConfig = new ServerConfig();
+
+            s3ServerConfig.setPort(8002);
+            s3ServerConfig.setMinThreads(10);
+            s3ServerConfig.setMaxThreads(10);
+            s3ServerConfig.setTimeOutMillis(20000);
+            s3ServerConfig.setServerType(ServerTypeEnum.S3);
+
+            serverConfigDAO.save(s3ServerConfig);
+        }
+
     }
 
     void applyAppVersioning() {
