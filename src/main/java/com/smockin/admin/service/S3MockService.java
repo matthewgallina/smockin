@@ -9,9 +9,11 @@ import com.smockin.admin.exception.FileUploadException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.entity.S3Mock;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface S3MockService {
 
@@ -24,7 +26,7 @@ public interface S3MockService {
     List<S3MockBucketResponseLiteDTO> loadAll(final String token) throws RecordNotFoundException;
     S3MockBucketResponseDTO loadById(final String extId, final String token) throws ValidationException, RecordNotFoundException;
     void resetS3BucketOnMockServer(final String extId, final String token) throws RecordNotFoundException, ValidationException;
-    boolean doesBucketAlreadyExist(final String name);
+    Optional<Pair<String, String>> doesBucketAlreadyExist(final String name);
     S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock, final boolean includeBase64EncodedFileContent);
 
 }

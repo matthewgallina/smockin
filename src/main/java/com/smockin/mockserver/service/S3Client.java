@@ -35,6 +35,12 @@ public class S3Client {
         this.port = port;
     }
 
+    public boolean doesBucketExist(final String bucketName) {
+        logger.debug(String.format("does bucket '%s' exist", bucketName));
+
+        return createS3Client().doesBucketExistV2(SMOCKIN_INTERNAL_UPDATE_CALL_PREFIX + bucketName);
+    }
+
     public void createBucket(final String bucketName) {
         logger.debug(String.format("creating bucket '%s'", bucketName));
 

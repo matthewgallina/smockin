@@ -238,7 +238,7 @@ app.controller('s3DashboardController', function($scope, $window, $rootScope, $l
                         return;
                     }
 
-                    utils.handleExportDownload(data, "smockin_export_" + $scope.mockSelection.length + "_mocks.zip", "application/zip");
+                    utils.handleExportDownload(data, "smockin_S3_export_" + $scope.mockSelection.length + "_mocks.zip", "application/zip");
                     $scope.mockSelection = [];
 
                 });

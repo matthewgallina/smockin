@@ -114,7 +114,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             final String allErrors = ramlModelResult
                     .getValidationResults().stream().map(vr -> vr.getPath() + " " + vr.getMessage())
-                    .collect(Collectors.joining("\n"));
+                    .collect(Collectors.joining(GeneralUtils.CARRIAGE));
 
             throw new MockImportException(allErrors);
         }

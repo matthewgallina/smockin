@@ -506,9 +506,15 @@ public class S3MockServiceImpl implements S3MockService {
         return s3MockFile;
     }
 
-    public boolean doesBucketAlreadyExist(final String name) {
+    public Optional<Pair<String, String>> doesBucketAlreadyExist(final String name) {
 
-        return (s3MockDAO.findByBucketName(name) != null);
+        final S3Mock s3Mock = s3MockDAO.findByBucketName(name);
+
+        if (s3Mock == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(Pair.of(s3Mock.getExtId(), s3Mock.getCreatedBy().getExtId()));
     }
 
     public S3MockBucketResponseDTO buildBucketDtoTree(final S3Mock s3Mock,

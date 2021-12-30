@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.AntPathMatcher;
 import spark.Request;
 
@@ -40,7 +42,7 @@ public final class GeneralUtils {
 
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
-    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMdd_HHmmss";
+    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMdd-HHmmss";
 
     public static final String OAUTH_HEADER_VALUE_PREFIX = "Bearer";
     public static final String OAUTH_HEADER_NAME = "Authorization";
@@ -54,6 +56,7 @@ public final class GeneralUtils {
     public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
     public static final String PATH_WILDCARD = "*";
     public static final String URL_PATH_SEPARATOR = "/";
+    public static final String CARRIAGE = "\n";
 
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
@@ -449,7 +452,6 @@ public final class GeneralUtils {
 
     public static String removeJsComments(final String jsSrc) {
 
-        final String carriage = "\n";
         final String comment = "//";
 
         if (jsSrc == null
@@ -458,11 +460,11 @@ public final class GeneralUtils {
         }
 
         // i.e single line
-        if (StringUtils.indexOf(jsSrc, carriage) == -1) {
+        if (StringUtils.indexOf(jsSrc, CARRIAGE) == -1) {
             return StringUtils.substring(jsSrc, 0, StringUtils.indexOf(jsSrc, comment)).trim();
         }
 
-        final String[] lines = StringUtils.split(jsSrc, carriage);
+        final String[] lines = StringUtils.split(jsSrc, CARRIAGE);
 
         return Stream.of(lines)
                 .filter(l ->
@@ -475,7 +477,7 @@ public final class GeneralUtils {
                             ? StringUtils.substring(l, 0, commentInLine)
                             : l;
                 })
-                .collect(Collectors.joining(carriage))
+                .collect(Collectors.joining(CARRIAGE))
                 .trim();
     }
 
@@ -537,6 +539,14 @@ public final class GeneralUtils {
                 logger.error("Error closing inputstream", ex);
             }
         }
+    }
+
+    public static void executeAfterTransactionCommits(final Runnable task) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            public void afterCommit() {
+                task.run();
+            }
+        });
     }
 
 }

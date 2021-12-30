@@ -2,6 +2,7 @@ package com.smockin.mockserver.engine;
 
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Module;
+import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.entity.S3Mock;
 import com.smockin.mockserver.dto.MockServerState;
 import com.smockin.mockserver.dto.MockedServerConfigDTO;
@@ -134,6 +135,7 @@ public class MockedS3ServerEngine {
 
             final Object result = method.invoke(originalBlobStore, args);
             Optional<String> bucketOwnerId = Optional.empty();
+            boolean bucketNotFoundOnServer = false;
 
             // (Hacky, but could not find any other way to differentiate internal and external client calls.)
             // Nothing to update in DB as this is an internal S3 client call.
@@ -141,12 +143,21 @@ public class MockedS3ServerEngine {
                     || (isInternalCall.isPresent() && !isInternalCall.get())) {
                 try {
                     bucketOwnerId = mockedS3ServerEngineUtils.persistS3RemoteCall(method.getName(), args, configDTO);
+                } catch (RecordNotFoundException ex) {
+                    bucketNotFoundOnServer = true;
                 } catch (Exception ex) {
                     logger.error("Error persisting update to DB", ex);
                 }
             }
 
-            mockedS3ServerEngineUtils.logS3RemoteCall(method.getName(), args, bucketOwnerId);
+            if (!bucketNotFoundOnServer) {
+                try {
+                    mockedS3ServerEngineUtils.logS3RemoteCall(method.getName(), args, bucketOwnerId);
+                } catch (RecordNotFoundException ex) {
+                } catch (Exception ex) {
+                    logger.error("Error logging S3 activity", ex);
+                }
+            }
 
             return result;
         };

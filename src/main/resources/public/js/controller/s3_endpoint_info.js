@@ -233,6 +233,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                     var newNodeExtId = data.message;
                     appendNodeChild(parentExtId, $scope.endpoint, nodeName, newNodeExtId, NodeTypeDir);
                     updateTree($scope.endpoint);
+                    showAlert("Directory successfully created", "success");
                     return;
                 }
 
@@ -388,6 +389,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
                     }
 
                     updateTree($scope.endpoint);
+                    showAlert('Bucket successfully updated', 'success');
                     return;
                 }
 
@@ -526,6 +528,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
                 removeNodeChild(extId, $scope.endpoint, nodeType);
                 updateTree($scope.endpoint);
+                showAlert(((isRoot) ? 'Bucket' : 'Node') + ' successfully deleted', 'success');
 
                 return;
             }
@@ -634,6 +637,7 @@ app.controller('s3EndpointInfoController', function($scope, $location, $uibModal
 
         if (status == 201) {
             $location.path("/dashboard").search({ "dv" : globalVars.S3ServerMode });
+
             return;
         }
 

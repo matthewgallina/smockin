@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
@@ -58,6 +59,7 @@ public class MockedS3ServerEngineUtils {
     private static final String LIST_METHOD = "list";
     private static final String BLOB_BUILDER_METHOD = "blobBuilder";
     private static final String GET_BLOB_METHOD = "getBlob";
+    private static final String DOES_BUCKET_EXIST_METHOD = "containerExists";
 
 
     @Autowired
@@ -185,7 +187,7 @@ public class MockedS3ServerEngineUtils {
             final String containerName = (String)args[0];
             final String fullFilePathOrDir = (String)args[1];
 
-            final S3Mock s3Mock = s3MockDAO.findByBucketName(containerName);
+            final S3Mock s3Mock = findS3MockByBucketName(containerName);
             final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
@@ -254,7 +256,7 @@ public class MockedS3ServerEngineUtils {
             final String toName = (String) args[3];
 //            final CopyOptions options = (CopyOptions) args[4];
 
-            final S3Mock s3Mock = s3MockDAO.findByBucketName(fromContainer);
+            final S3Mock s3Mock = findS3MockByBucketName(fromContainer);
             final String createdBy = s3Mock.getCreatedBy().getExtId();
 
             if (!S3SyncModeEnum.BI_DIRECTIONAL.equals(s3Mock.getSyncMode())) {
@@ -358,7 +360,7 @@ public class MockedS3ServerEngineUtils {
 
             final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
                     ? bucketOwnerIdOpt.get()
-                    : s3MockDAO.findByBucketName(containerName).getCreatedBy().getExtId();
+                    : findS3MockByBucketName(containerName).getCreatedBy().getExtId();
 
             //
             // Remove Directory
@@ -383,7 +385,7 @@ public class MockedS3ServerEngineUtils {
 
             final String bucketOwnerId = (bucketOwnerIdOpt.isPresent())
                     ? bucketOwnerIdOpt.get()
-                    : s3MockDAO.findByBucketName(fromContainer).getCreatedBy().getExtId();
+                    : findS3MockByBucketName(fromContainer).getCreatedBy().getExtId();
 
             handleS3Logging(String.format("Remote client copied file '%s' from bucket '%s' into bucket '%s'", fromName, fromContainer, toContainer),
                     bucketOwnerId);
@@ -738,6 +740,14 @@ public class MockedS3ServerEngineUtils {
         return locateParentBucket(filePathTracer, s3MockDir.getParent());
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void loadAndInitBucketContentAsync(final S3Client s3Client,
+                                              final String bucketExtId) {
+        logger.debug("loadAndInitBucketContentAsync called");
+
+        initBucketContent(s3Client, s3MockDAO.findByExtId(bucketExtId));
+    }
+
     public void initBucketContent(final S3Client s3Client,
                                   final S3Mock bucket) {
         logger.debug("initBucketContent called");
@@ -745,25 +755,30 @@ public class MockedS3ServerEngineUtils {
         initBucketContent(s3Client, Arrays.asList(bucket));
     }
 
-    /*
-    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void loadAndInitBucketContentAsync(final S3Client s3Client,
-                                       final List<String> bucketIds,
-                                       final long userId) {
+                                              final List<String> bucketExtIds,
+                                              final long userId) {
         logger.debug("loadAndInitBucketContentAsync called");
 
-        initBucketContent(s3Client, s3MockDAO.loadAllActiveByIds(bucketIds, userId));
+        initBucketContent(s3Client, s3MockDAO.loadAllActiveByIds(bucketExtIds, userId));
     }
-    */
 
     public void initBucketContent(final S3Client s3Client,
                                   final List<S3Mock> buckets) {
         logger.debug("initBucketContent called");
 
         // Create all buckets
-        buckets.forEach(m ->
-                s3Client.createBucket(m.getBucketName()));
+        buckets.forEach(m -> {
+
+            // If present then remove existing bucket...
+            if (s3Client.doesBucketExist(m.getBucketName())) {
+                s3Client.deleteBucket(m.getBucketName(), false);
+            }
+
+            s3Client.createBucket(m.getBucketName());
+
+        });
 
         // Create bucket files
         buckets.forEach(m ->
@@ -883,6 +898,7 @@ public class MockedS3ServerEngineUtils {
             , LIST_METHOD
             , BLOB_BUILDER_METHOD
             , GET_BLOB_METHOD
+            , DOES_BUCKET_EXIST_METHOD
         );
 
     }
