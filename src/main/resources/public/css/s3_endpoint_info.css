@@ -1,0 +1,34 @@
+
+.action-buttons {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+.endpoint-status-row {
+    text-align: right;
+}
+
+#endpoint-status {
+    margin-left: 20px;
+}
+
+#endpoint-status-button {
+    width: 100px;
+}
+
+.s3-mock-panel {
+    min-height: 300px;
+}
+
+#s3-sync-type {
+    width: 100%;
+}
+
+#s3-sync-type-button {
+    width: 100%;
+}

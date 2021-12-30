@@ -7,6 +7,7 @@ import com.smockin.admin.exception.MockExportException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.MockDefinitionImportExportService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,23 +37,33 @@ public class MockDefinitionImportExportController {
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
         final MockImportConfigDTO configDTO = (keepExisting)
-                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW )
+                ? new MockImportConfigDTO(MockImportKeepStrategyEnum.RENAME_NEW)
                 : new MockImportConfigDTO();
 
-        return ResponseEntity.ok(new SimpleMessageResponseDTO(mockDefinitionImportExportService
-                .importFile(file, configDTO, token)));
+        return ResponseEntity.ok(
+                new SimpleMessageResponseDTO(mockDefinitionImportExportService.importFile(file, configDTO, token)));
     }
 
     @RequestMapping(path="/mock/export/{serverType}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
     public @ResponseBody ResponseEntity<String> exportMocks(@PathVariable("serverType") final String serverType,
-                                                                       @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
-                                                                       @RequestBody final List<String> exports)
-                                                                throws MockExportException, RecordNotFoundException {
+                                                            @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken,
+                                                            @RequestBody final List<String> exports)
+                                                                throws MockExportException, RecordNotFoundException, ValidationException {
 
         final String token = GeneralUtils.extractOAuthToken(bearerToken);
 
-        final String exportFileName = mockDefinitionImportExportService.exportZipFileNamePrefix
+        final ServerTypeEnum serverTypeEnum = ServerTypeEnum.toServerType(serverType);
+
+        if (serverTypeEnum == null) {
+            throw new ValidationException("Invalid Server Type");
+        }
+
+        final String exportFilePrefix = (ServerTypeEnum.S3.equals(serverTypeEnum))
+                ? mockDefinitionImportExportService.exportS3ZipFileNamePrefix
+                : mockDefinitionImportExportService.exportZipFileNamePrefix;
+
+        final String exportFileName = exportFilePrefix
                 + GeneralUtils.createFileNameUniqueTimeStamp()
                 + mockDefinitionImportExportService.exportZipFileNameExt;
 
@@ -60,7 +71,7 @@ public class MockDefinitionImportExportController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "application/zip")
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + exportFileName + "\"")
-                .body(mockDefinitionImportExportService.export(exports, token));
+                .body(mockDefinitionImportExportService.export(exports, serverTypeEnum, token));
     }
 
 }

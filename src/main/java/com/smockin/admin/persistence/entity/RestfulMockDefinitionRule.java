@@ -52,7 +52,9 @@ public class RestfulMockDefinitionRule extends Identifier {
     public RestfulMockDefinitionRule() {
     }
 
-    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode, final String responseContentType, final String responseBody, long sleepInMillis, boolean suspend) {
+    public RestfulMockDefinitionRule(final RestfulMock mock, final int orderNo, final int httpStatusCode,
+                                     final String responseContentType, final String responseBody,
+                                     long sleepInMillis, boolean suspend) {
         this.restfulMock = mock;
         this.orderNo = orderNo;
         this.httpStatusCode = httpStatusCode;

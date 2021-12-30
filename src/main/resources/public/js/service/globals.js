@@ -11,11 +11,23 @@ app.service('globalVars', function() {
     this.SmockinAuthToken = "SMOCKIN_AUTH_TOKEN";
     this.PasswordResetUrl = "/reset_password.html?rt=";
 
+    this.HttpServerMode = "HTTP";
+    this.S3ServerMode = "S3";
+
     this.SysAdminRole = "SYS_ADMIN";
     this.AdminRole = "ADMIN";
     this.RegularRole = "REGULAR";
 
+    this.SyncModeNone = 'NO_SYNC';
+    this.SyncModeOneWay = 'ONE_WAY';
+    this.SyncModeBiDirectional = 'BI_DIRECTIONAL';
+
+    this.SyncModeNoneLabel = 'NO SYNC';
+    this.SyncModeOneWayLabel = 'ONE WAY';
+    this.SyncModeBiDirectionalLabel = 'BI-DIRECTIONAL';
+
     this.RestfulServerType = "RESTFUL";
+    this.S3ServerType = "S3";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';
@@ -28,6 +40,11 @@ app.service('globalVars', function() {
     this.EqualsText = 'EQUALS';
     this.ContainsText = 'CONTAINS';
     this.IsMissingText = 'IS_MISSING';
+
+    this.NodeTypeBucket = 'BUCKET';
+    this.NodeTypeDir = 'DIR';
+    this.NodeTypeFile = 'FILE';
+    this.S3BucketNameRegex = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/gm;
 
     this.ActiveStatus = "ACTIVE";
     this.InActiveStatus = "INACTIVE";

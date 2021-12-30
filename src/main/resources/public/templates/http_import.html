@@ -13,7 +13,7 @@
 
         <br />
 
-        <div class="form-group">
+        <div class="form-group" ng-if="ServerType == RestfulServerType">
             <div id="import-type" class="btn-group" uib-dropdown>
                 <button id="import-type-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="readOnly">
                     {{ importTypeLabel }} {{ importType }} <span class="caret"></span>

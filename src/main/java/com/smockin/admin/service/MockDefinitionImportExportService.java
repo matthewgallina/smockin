@@ -13,11 +13,15 @@ import java.util.List;
 public interface MockDefinitionImportExportService {
 
     String exportZipFileNamePrefix = "smockin_export_";
+    String exportS3ZipFileNamePrefix = "smockin_s3_export_";
     String exportZipFileNameExt = ".zip";
     String restExportFileName = "rest_export";
+    String s3ExportFileName = "s3_export";
     String exportFileNameExt = ".json";
 
-    String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token) throws MockImportException, ValidationException, RecordNotFoundException;
-    String export(final List<String> selectedExports, final String token) throws MockExportException, RecordNotFoundException;
+    String importFile(final MultipartFile file, final MockImportConfigDTO config, final String token)
+            throws MockImportException, ValidationException, RecordNotFoundException;
+    String export(final List<String> selectedExports, final ServerTypeEnum serverType, final String token)
+            throws MockExportException, RecordNotFoundException, ValidationException;
 
 }

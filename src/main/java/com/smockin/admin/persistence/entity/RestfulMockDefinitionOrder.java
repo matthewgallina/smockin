@@ -52,7 +52,9 @@ public class RestfulMockDefinitionOrder extends Identifier {
     public RestfulMockDefinitionOrder() {
     }
 
-    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType, String responseBody, int orderNo, long sleepInMillis, boolean suspend, int frequencyCount, int frequencyPercentage) {
+    public RestfulMockDefinitionOrder(RestfulMock restfulMock, int httpStatusCode, String responseContentType,
+                                      String responseBody, int orderNo, long sleepInMillis,
+                                      boolean suspend, int frequencyCount, int frequencyPercentage) {
         this.restfulMock = restfulMock;
         this.httpStatusCode = httpStatusCode;
         this.responseContentType = responseContentType;

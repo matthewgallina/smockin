@@ -3,13 +3,18 @@
 <html>
 
     <head>
+
         <title>sMockin</title>
+
         <link rel="icon" type="image/x-icon" href="../favicon.ico" />
         <link rel="stylesheet" href="../css/lib/bootstrap.min.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/lib/bootstrap-theme.min.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/smockin_navbar.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/main.css" crossorigin="anonymous" />
         <link rel="stylesheet" href="../css/overlay.css" crossorigin="anonymous" />
+
+        <link rel="stylesheet" href="../css/lib/tree/bootstrap-treeview.min.css" crossorigin="anonymous" />
+
     </head>
 
     <body ng-app="smockinApp" ng-controller="mainController" class="ng-cloak">
@@ -46,6 +51,9 @@
         <!-- JS Beautify -->
         <script src="../js/lib/js-beautify.min.js"></script>
 
+        <!-- MDB (Used for tree view) -->
+        <script type="text/javascript" src="../js/lib/tree/bootstrap-treeview.min.js"></script>
+
         <!-- Code Mirror -->
         <script src="../js/lib/codemirror/jshint.js"></script>
         <script src="../js/lib/codemirror/codemirror.js"></script>
@@ -63,9 +71,13 @@
         <script src="../js/controller/ws_client.js"></script>
         <script src="../js/controller/dashboard.js"></script>
         <script src="../js/controller/tcp_dashboard.js"></script>
+        <script src="../js/controller/s3_dashboard.js"></script>
         <script src="../js/controller/server_config.js"></script>
         <script src="../js/controller/server_proxy_mappings.js"></script>
         <script src="../js/controller/tcp_endpoint_info.js"></script>
+        <script src="../js/controller/s3_endpoint_info.js"></script>
+        <script src="../js/controller/s3_endpoint_node.js"></script>
+        <script src="../js/controller/s3_endpoint_file_uploader.js"></script>
         <script src="../js/controller/endpoint_info_rule.js"></script>
         <script src="../js/controller/endpoint_info_rule_condition.js"></script>
         <script src="../js/controller/endpoint_info_seq.js"></script>

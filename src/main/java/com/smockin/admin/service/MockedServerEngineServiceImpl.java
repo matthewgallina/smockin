@@ -5,11 +5,9 @@ import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.ProxyForwardUserConfigDAO;
 import com.smockin.admin.persistence.dao.RestfulMockDAO;
+import com.smockin.admin.persistence.dao.S3MockDAO;
 import com.smockin.admin.persistence.dao.ServerConfigDAO;
-import com.smockin.admin.persistence.entity.ProxyForwardMapping;
-import com.smockin.admin.persistence.entity.ProxyForwardUserConfig;
-import com.smockin.admin.persistence.entity.ServerConfig;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.ServerTypeEnum;
@@ -18,6 +16,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.engine.MockedRestServerEngine;
 import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
+import com.smockin.mockserver.engine.MockedS3ServerEngine;
 import com.smockin.mockserver.engine.ProxyMappingCache;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
@@ -34,7 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,6 +56,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private RestfulMockDAO restfulMockDefinitionDAO;
 
     @Autowired
+    private MockedS3ServerEngine mockedS3ServerEngine;
+
+    @Autowired
     private ServerConfigDAO serverConfigDAO;
 
     @Autowired
@@ -71,6 +72,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private ProxyMappingCache proxyMappingCache;
+
+    @Autowired
+    private S3MockDAO s3MockDAO;
 
 
     //
@@ -137,6 +141,78 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             mockedRestServerEngine.shutdown();
         } catch (MockServerException ex) {
             logger.error("Stopping REST Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+
+    //
+    // S3
+    @Override
+    public MockedServerConfigDTO startS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        return startS3();
+    }
+
+    private MockedServerConfigDTO startS3() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.S3);
+
+            final List<S3Mock> activeMocks = s3MockDAO.findAllActiveBuckets();
+
+            mockedS3ServerEngine.start(configDTO, activeMocks);
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            logger.error("Starting S3 Mocking Engine", ex);
+            mockedS3ServerEngine.shutdown();
+            throw ex;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting S3 Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock S3 server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting S3 Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public MockedServerConfigDTO restartS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (getS3ServerState().isRunning()) {
+            shutdownS3();
+        }
+
+        return startS3();
+    }
+
+    @Override
+    public MockServerState getS3ServerState() throws MockServerException {
+        return mockedS3ServerEngine.getCurrentState();
+    }
+
+    @Override
+    public void shutdownS3(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        shutdownS3();
+    }
+
+    private void shutdownS3() throws MockServerException {
+
+        try {
+            mockedS3ServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping S£ Mocking Engine", ex);
             throw ex;
         }
 
@@ -446,7 +522,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         final byte[] exportBytes = exportContent.getBytes();
 
-        return Optional.of(Base64.getEncoder().encodeToString(exportBytes));
+        return Optional.of(GeneralUtils.base64Encode(exportBytes));
     }
 
     @Override
@@ -546,6 +622,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             case RESTFUL:
                 startRest();
                 break;
+            case S3:
+                startS3();
             default:
                 logger.warn("Found auto start instruction for discontinued server type: " + serverType);
         }

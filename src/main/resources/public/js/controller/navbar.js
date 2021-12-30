@@ -1,5 +1,13 @@
 
-app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, restClient) {
+app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
+
+    var dashboardView = $location.search()["dv"];
+
+    //
+    // Constants
+    $scope.httpServerMode = globalVars.HttpServerMode;
+    $scope.s3ServerMode = globalVars.S3ServerMode;
+
 
     //
     // Labels
@@ -11,7 +19,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     // Buttons / Links
     $scope.httpClientLink = "Open HTTP Client";
     $scope.wsClientLink = "Open WS Client";
-    $scope.viewHttpRequestsLink = "HTTP Live Feed";
+    $scope.viewHttpRequestsLink = "Live Feed";
     $scope.myAccountLink = "Change Password";
     $scope.manageUsersLink = "Manage Users";
     $scope.logoutLink = "Logout";
@@ -21,6 +29,9 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     //
     // Data Objects
+    $scope.selectedServerMode = (dashboardView != null)
+        ? dashboardView
+        : $scope.httpServerMode;
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.isAdmin = auth.isAdmin();
     var httpClientState = null;
@@ -29,6 +40,22 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     //
     // Scoped Functions
+    $scope.doOpenDashboard = function() {
+
+        var currentDashboardView = $location.search()["dv"];
+
+        $scope.selectedServerMode = (currentDashboardView != null)
+            ? currentDashboardView
+            : $scope.httpServerMode;
+
+        $location.path("/dashboard").search({
+            "dv" : (currentDashboardView != null)
+                ? currentDashboardView
+                : $scope.httpServerMode
+            });
+
+    };
+
     $scope.doOpenHttpClient = function() {
 
         var modalInstance = $uibModal.open({
@@ -114,6 +141,17 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.doOpenKvpUserData = function() {
 
         $location.path("/manage_user_kvp_data");
+    };
+
+    $scope.doChangeServerMode = function(mode) {
+
+        $scope.selectedServerMode = mode;
+        $location.path("/dashboard").search({ "dv" : mode });
+    };
+
+    $scope.displayServerDropDown = function() {
+
+        return $location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard";
     };
 
     $scope.doLogout = function() {

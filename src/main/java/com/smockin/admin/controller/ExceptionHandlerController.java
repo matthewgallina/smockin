@@ -1,10 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
-import com.smockin.admin.exception.AuthException;
-import com.smockin.admin.exception.MockImportException;
-import com.smockin.admin.exception.RecordNotFoundException;
-import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.exception.*;
 import com.smockin.mockserver.exception.MockServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +89,13 @@ public class ExceptionHandlerController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(new SimpleMessageResponseDTO(ex.getMessage()));
+    }
+
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<String> handleFileUploadException(FileUploadException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .build();
     }
 
 }

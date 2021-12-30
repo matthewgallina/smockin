@@ -1,5 +1,10 @@
 
-app.controller('dashboardController', function($scope, $routeParams, $timeout, globalVars) {
+app.controller('dashboardController', function($scope, $location, $routeParams, $timeout, globalVars) {
+
+    //
+    // Constants
+    $scope.httpServerMode = globalVars.HttpServerMode;
+    $scope.s3ServerMode = globalVars.S3ServerMode;
 
 
     //
@@ -23,5 +28,19 @@ app.controller('dashboardController', function($scope, $routeParams, $timeout, g
     }
 
     $scope.closeAlert = closeAlertFunc;
+
+
+    //
+    // Data
+    $scope.currentServerModeView = globalVars.HttpServerMode;
+
+
+    //
+    // Check dashboard view
+    var dashboardView = $location.search()["dv"];
+
+    if (dashboardView != null) {
+        $scope.currentServerModeView = dashboardView;
+    }
 
 });

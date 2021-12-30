@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.smockin.admin.enums.UserModeEnum;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -12,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.AntPathMatcher;
 import spark.Request;
 
@@ -38,7 +42,7 @@ public final class GeneralUtils {
 
     public static final String ISO_DATE_FORMAT = "yyyy-MM-dd";
     public static final String ISO_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";
-    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMdd_HHmmss";
+    public static final String UNIQUE_TIMESTAMP_FORMAT = "yyMMdd-HHmmss";
 
     public static final String OAUTH_HEADER_VALUE_PREFIX = "Bearer";
     public static final String OAUTH_HEADER_NAME = "Authorization";
@@ -46,17 +50,19 @@ public final class GeneralUtils {
 
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
 
+    public static final String S3_HOST = "localhost";
+
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
     public static final String PATH_WILDCARD = "*";
     public static final String URL_PATH_SEPARATOR = "/";
+    public static final String CARRIAGE = "\n";
 
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     static {
-
         JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
+        JSON_MAPPER.registerModule(new Jdk8Module());
     }
 
     public final static String generateUUID() {
@@ -446,7 +452,6 @@ public final class GeneralUtils {
 
     public static String removeJsComments(final String jsSrc) {
 
-        final String carriage = "\n";
         final String comment = "//";
 
         if (jsSrc == null
@@ -455,11 +460,11 @@ public final class GeneralUtils {
         }
 
         // i.e single line
-        if (StringUtils.indexOf(jsSrc, carriage) == -1) {
+        if (StringUtils.indexOf(jsSrc, CARRIAGE) == -1) {
             return StringUtils.substring(jsSrc, 0, StringUtils.indexOf(jsSrc, comment)).trim();
         }
 
-        final String[] lines = StringUtils.split(jsSrc, carriage);
+        final String[] lines = StringUtils.split(jsSrc, CARRIAGE);
 
         return Stream.of(lines)
                 .filter(l ->
@@ -472,7 +477,7 @@ public final class GeneralUtils {
                             ? StringUtils.substring(l, 0, commentInLine)
                             : l;
                 })
-                .collect(Collectors.joining(carriage))
+                .collect(Collectors.joining(CARRIAGE))
                 .trim();
     }
 
@@ -481,6 +486,67 @@ public final class GeneralUtils {
         final AntPathMatcher matcher = new AntPathMatcher(AntPathMatcher.DEFAULT_PATH_SEPARATOR);
 
         return matcher.match(mockPath, inboundPath);
+    }
+
+    public static Optional<String> convertInputStreamToString(final InputStream inputStream,
+                                                              final boolean closeStream) {
+
+        try {
+            return Optional.of(IOUtils.toString(inputStream, Charset.defaultCharset()));
+        } catch (IOException ex) {
+            logger.error("Error reading input stream to string", ex);
+            return Optional.empty();
+        } finally {
+            if (closeStream) {
+                GeneralUtils.closeSilently(inputStream);
+            }
+        }
+
+    }
+
+    public static String base64Encode(final byte[] plainContentBytes) {
+
+        if (org.apache.commons.codec.binary.Base64.isBase64(plainContentBytes)) {
+            return new String(plainContentBytes);
+        }
+
+        return Base64.getEncoder().encodeToString(plainContentBytes);
+    }
+
+    public static String base64Encode(final String plainContent) {
+
+        if (org.apache.commons.codec.binary.Base64.isBase64(plainContent)) {
+            return plainContent;
+        }
+
+        return Base64.getEncoder().encodeToString(plainContent.getBytes());
+    }
+
+    public static String base64Decode(final String encodedContent) {
+
+        if (!org.apache.commons.codec.binary.Base64.isBase64(encodedContent)) {
+            return encodedContent;
+        }
+
+        return new String(Base64.getDecoder().decode(encodedContent.getBytes()));
+    }
+
+    public static void closeSilently(final InputStream fis) {
+        if (fis != null) {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                logger.error("Error closing inputstream", ex);
+            }
+        }
+    }
+
+    public static void executeAfterTransactionCommits(final Runnable task) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            public void afterCommit() {
+                task.run();
+            }
+        });
     }
 
 }

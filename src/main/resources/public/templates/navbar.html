@@ -4,7 +4,7 @@
     <div class="container-fluid navbar-background">
 
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" ng-click="doOpenDashboard()">
                 <img id="smockin-logo" src="../image/smockin_logo_white.png" alt="sMockin" />
             </a>
         </div>
@@ -12,6 +12,21 @@
         <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
 
             <ul class="nav navbar-nav navbar-right">
+
+                <li uib-dropdown on-toggle="toggled(open)" ng-if="displayServerDropDown()" class="server-mode-dropdown">
+                    <a href id="server-dropdown" class="tools-link" uib-dropdown-toggle>
+                        <span class="glyphicon glyphicon-tasks server-mode-dropdown-icon" aria-hidden="true"></span> &nbsp; {{ selectedServerMode }} <span class="caret"></span>
+                    </a>
+                        <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">
+                            <li>
+                                <a href="" ng-click="doChangeServerMode(httpServerMode)"> {{ httpServerMode }} </a>
+                            </li>
+                            <li>
+                                <a href="" ng-click="doChangeServerMode(s3ServerMode)"> {{ s3ServerMode }} </a>
+                            </li>
+                        </ul>
+                </li>
+
                 <li uib-dropdown on-toggle="toggled(open)">
                     <a href id="tools-dropdown" class="tools-link" uib-dropdown-toggle>{{ navbarLabel }} <span class="caret"></span></a>
                     <ul class="dropdown-menu" uib-dropdown-menu aria-labelledby="tools-dropdown">

@@ -8,7 +8,8 @@
 
         <br />
 
-        <div ng-include="'tcp_dashboard.html'"></div>
+        <div ng-include="'tcp_dashboard.html'" ng-if="currentServerModeView == httpServerMode"></div>
+        <div ng-include="'s3_dashboard.html'" ng-if="currentServerModeView == s3ServerMode"></div>
 
     </div>
 

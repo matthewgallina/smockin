@@ -1,7 +1,7 @@
 package com.smockin.admin.service;
 
-import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.ApiImportDTO;
+import com.smockin.admin.dto.MockImportConfigDTO;
 import com.smockin.admin.dto.RestfulMockDTO;
 import com.smockin.admin.dto.RestfulMockDefinitionDTO;
 import com.smockin.admin.exception.MockImportException;
@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -113,7 +114,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             final String allErrors = ramlModelResult
                     .getValidationResults().stream().map(vr -> vr.getPath() + " " + vr.getMessage())
-                    .collect(Collectors.joining("\n"));
+                    .collect(Collectors.joining(GeneralUtils.CARRIAGE));
 
             throw new MockImportException(allErrors);
         }
@@ -263,10 +264,13 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         final String fileName = file.getOriginalFilename();
         final String fileTypeExtension = GeneralUtils.getFileTypeExtension(fileName);
 
+        InputStream fis = null;
+
         try {
 
+            fis = file.getInputStream();
             final File uploadedFile = new File(tempDir + File.separator + file.getOriginalFilename());
-            FileUtils.copyInputStreamToFile(file.getInputStream(), uploadedFile);
+            FileUtils.copyInputStreamToFile(fis, uploadedFile);
 
             if (".zip".equalsIgnoreCase(fileTypeExtension)) {
 
@@ -292,6 +296,8 @@ public class RamlApiImportServiceImpl implements ApiImportService {
         } catch (IOException e) {
             logger.error("Error reading uploaded RAML file: " + fileName, e);
             throw new MockImportException("Error reading uploaded RAML file: " + fileName);
+        } finally {
+            GeneralUtils.closeSilently(fis);
         }
 
     }

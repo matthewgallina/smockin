@@ -222,7 +222,10 @@ public class RestfulMockServiceUtils {
         dto.setPath(GeneralUtils.prefixPath(dto.getPath()));
     }
 
-    public void preHandleExistingEndpoints(final RestfulMockDTO dto, final MockImportConfigDTO apiImportConfig, final SmockinUser user, final String conflictCtxPath) {
+    public void preHandleExistingEndpoints(final RestfulMockDTO dto,
+                                           final MockImportConfigDTO apiImportConfig,
+                                           final SmockinUser user,
+                                           final String conflictCtxPath) {
 
         final RestfulMock existingRestFulMock = restfulMockDAO.findByPathAndMethodAndUser(dto.getPath(), dto.getMethod(), user);
 

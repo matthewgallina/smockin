@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="2.16.0"
+APP_VERSION="2.17.0"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
@@ -99,6 +99,7 @@ fi
 
 if ([ ! -z "$1" ] && [ $1 = "-DEBUG" ]) || ([ ! -z "$2" ] && [ $2 = "-DEBUG" ]) || ([ ! -z "$3" ] && [ $3 = "-DEBUG" ]); then
     ENABLE_REMOTE_DEBUG=true
+    USE_CONSOLE=true
 fi
 
 

@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="../css/s3_endpoint_node.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div class="modal-header">
+    <h4 class="modal-title" id="modal-title">{{ heading }}</h4>
+</div>
+
+<div class="modal-body" id="modal-body">
+
+    <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{ alert.msg }}</div>
+
+    <div class="form-group">
+        <input id="name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="node.name" placeholder="{{ namePlaceholderText }}" type="text" focus="true" />
+    </div>
+
+    <span ng-if="dirParentName != null">
+        {{ dirDestinationText }} <b>{{ dirParentName }}</b>
+    </span>
+
+</div>
+
+<div class="modal-footer">
+    <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+    <button class="btn btn-primary" type="button" ng-click="doAddNode()">{{ addButtonLabel }}</button>
+</div>

@@ -22,6 +22,11 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
         return (value.match(letters));
     };
 
+    this.matchesRegex = function(regex, value) {
+        regex.lastIndex = 0;
+        return (regex.exec(value) === null);
+    };
+
 
     //
     // Tools
@@ -211,6 +216,20 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
     this.checkRestServerStatus = function (callback) {
 
         restClient.doGet($http, '/mockedserver/rest/status', function(status, data) {
+
+            if (status == 200) {
+                callback(data.running, data.port);
+                return;
+            }
+
+            callback();
+        });
+
+    };
+
+    this.checkS3ServerStatus = function (callback) {
+
+        restClient.doGet($http, '/mockedserver/s3/status', function(status, data) {
 
             if (status == 200) {
                 callback(data.running, data.port);

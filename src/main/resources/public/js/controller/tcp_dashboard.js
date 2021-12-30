@@ -48,7 +48,6 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     // Table Labels
     $scope.pathTableLabel = 'Path';
     $scope.dateCreatedTableLabel = 'Date Created';
-    $scope.createdByTableLabel = 'Created By';
     $scope.statusTableLabel = 'Deployment Status';
     $scope.mockTypeTableLabel = 'HTTP Mock Type';
     $scope.actionTableLabel = 'Action';
@@ -158,13 +157,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doExport = function(mode) {
 
         if ($scope.mockSelection.length == 0) {
-            showAlert("No mocks have been selected for export");
+            showAlert("No HTTP mocks have been selected for export");
             return;
         }
 
         var msgSuffix = ($scope.mockSelection.length == 1)
-            ? "this 1 mock?"
-            : ("these " + $scope.mockSelection.length + " mocks?");
+            ? "this HTTP mock?"
+            : ("these " + $scope.mockSelection.length + " HTTP mocks?");
 
         utils.openWarningConfirmation("Are you sure you wish to export " + msgSuffix, function (alertResponse) {
 
@@ -200,7 +199,12 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             templateUrl: 'http_import.html',
             controller: 'httpImportController',
             backdrop  : 'static',
-            keyboard  : false
+            keyboard  : false,
+            resolve: {
+                data: function () {
+                    return { "serverType" : RestfulServerType };
+                }
+            }
         });
 
         modalInstance.result.then(function (response) {
@@ -332,13 +336,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.doDeleteSelection = function() {
 
         if ($scope.mockSelection.length == 0) {
-            showAlert("No mocks have been selected to delete");
+            showAlert("No HTTP mocks have been selected to delete");
             return;
         }
 
         var msgSuffix = ($scope.mockSelection.length == 1)
-            ? "this 1 mock?"
-            : ("these " + $scope.mockSelection.length + " mocks?");
+            ? "this HTTP mock?"
+            : ("these " + $scope.mockSelection.length + " HTTP mocks?");
 
         utils.openDeleteConfirmation("Are you sure wish to delete " + msgSuffix, function (alertResponse) {
 
@@ -404,11 +408,11 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
             loadTableData();
 
-            showAlert("The selected mocks were successfully deleted", "success");
+            showAlert("The selected HTTP mocks were successfully deleted", "success");
             $scope.mockSelection = [];
 
             if (deletionErrorOccurrence) {
-                showAlert("An error occurred. Not all mocks were deleted");
+                showAlert("An error occurred. Not all HTTP mocks were deleted");
             }
 
             deletionAttemptCount = 0;
@@ -525,7 +529,8 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
                 restartTcpMockServer(function(port) {
 
                     if (port != null) {
-                        $window.location.href = '/templates/main.html';
+                        utils.hideLoadingOverlay();
+                        $scope.mockServerStatus = MockServerRunningStatus;
                         return;
                     }
 
@@ -536,7 +541,10 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             }
 
             RestartServerRequired = false;
-            $scope.mockServerStatus = (running)?MockServerRunningStatus:MockServerStoppedStatus;
+
+            $scope.mockServerStatus = (running)
+                ? MockServerRunningStatus
+                : MockServerStoppedStatus;
         });
 
     }

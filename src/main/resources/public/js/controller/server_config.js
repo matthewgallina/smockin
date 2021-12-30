@@ -84,22 +84,26 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             return;
         }
 
-        if (utils.isBlank($scope.serverConfig.maxThreads)
-                || !utils.isNumeric($scope.serverConfig.maxThreads)) {
-            showAlert("'Max Threads' is required and must be numeric");
-            return;
-        }
+        if (ServerType == globalVars.RestfulServerType) {
 
-        if (utils.isBlank($scope.serverConfig.minThreads)
-                || !utils.isNumeric($scope.serverConfig.minThreads)) {
-            showAlert("'Min Threads' is required and must be numeric");
-            return;
-        }
+            if (utils.isBlank($scope.serverConfig.maxThreads)
+                    || !utils.isNumeric($scope.serverConfig.maxThreads)) {
+                showAlert("'Max Threads' is required and must be numeric");
+                return;
+            }
 
-        if (utils.isBlank($scope.serverConfig.timeOutMillis)
-                || !utils.isNumeric($scope.serverConfig.timeOutMillis)) {
-            showAlert("'Idle Time out' is required and must be numeric");
-            return;
+            if (utils.isBlank($scope.serverConfig.minThreads)
+                    || !utils.isNumeric($scope.serverConfig.minThreads)) {
+                showAlert("'Min Threads' is required and must be numeric");
+                return;
+            }
+
+            if (utils.isBlank($scope.serverConfig.timeOutMillis)
+                    || !utils.isNumeric($scope.serverConfig.timeOutMillis)) {
+                showAlert("'Idle Time out' is required and must be numeric");
+                return;
+            }
+
         }
 
         var req = {

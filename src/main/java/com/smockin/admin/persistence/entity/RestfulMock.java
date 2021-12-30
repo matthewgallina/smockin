@@ -104,8 +104,10 @@ public class RestfulMock extends Identifier {
     public RestfulMock() {
     }
 
-    public RestfulMock(final String path, final RestMethodEnum method, final RecordStatusEnum status, final RestMockTypeEnum mockType, final long proxyTimeOutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
-                       final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch, final SmockinUser createdBy, boolean randomiseLatency, final long randomiseLatencyRangeMinMillis,
+    public RestfulMock(final String path, final RestMethodEnum method, final RecordStatusEnum status, final RestMockTypeEnum mockType,
+                       final long proxyTimeOutInMillis, final long webSocketTimeoutInMillis, final long sseHeartBeatInMillis,
+                       final boolean proxyPushIdOnConnect, final boolean randomiseDefinitions, final boolean proxyForwardWhenNoRuleMatch,
+                       final SmockinUser createdBy, boolean randomiseLatency, final long randomiseLatencyRangeMinMillis,
                        final long randomiseLatencyRangeMaxMillis, final RestfulProject project) {
         this.path = path;
         this.method = method;

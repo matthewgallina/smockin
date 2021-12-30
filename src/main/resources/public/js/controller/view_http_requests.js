@@ -10,6 +10,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     var LiveLoggingAmendment = 'LIVE_LOGGING_AMENDMENT';
     var RequestDirectionValue = 'REQUEST';
     var ResponseDirectionValue = 'RESPONSE';
+    var BlockedResponseType = 'BLOCKED_RESPONSE';
     var EnableLiveLogBlocking = 'ENABLE_LIVE_LOG_BLOCKING';
     var DisableLiveLogBlocking = 'DISABLE_LIVE_LOG_BLOCKING';
     var ProxiedDownstreamUrlResponseHeader = 'X-Proxied-Downstream-Url';
@@ -17,6 +18,8 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.XmlContentType = globalVars.XmlContentType;
     $scope.contentTypes = globalVars.ContentMimeTypes;
     $scope.SmockinTraceIdHeader = 'X-Smockin-Trace-ID';
+    $scope.TrafficType = 'TRAFFIC';
+    $scope.S3Type = 'S3';
     var ContentTypeHeader = 'Content-Type';
     var wsProtocol = (utils.isSecureConnectionType())
                          ? "wss://"
@@ -28,7 +31,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
     //
     // Labels
-    $scope.viewRequestsHeading = 'HTTP Live Feed';
+    $scope.viewRequestsHeading = 'Live Feed';
     $scope.noActivityData = 'Listening for activity...';
 
     $scope.statusLabel = 'Status';
@@ -42,6 +45,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.noFeedRecordSelected = 'Nothing Selected';
     $scope.requestLabel = 'Request';
     $scope.responseLabel = 'Response';
+    $scope.s3DetailsLabel = 'S3 Details';
     $scope.httpResponseLabel = 'HTTP Response:';
     $scope.proxiedResponseOriginPrefix = 'Origin';
     $scope.formatJsonLabel = 'Validate & Format JSON';
@@ -50,8 +54,9 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
     $scope.manageLabel = 'manage';
     $scope.blockedLabel = '(intercepted)';
     $scope.addHeaderLabel = '+ Add Header';
-    $scope.enableResponseInterceptorLabel = 'Enable Response Interceptor';
+    $scope.enableResponseInterceptorLabel = 'Enable HTTP Response Interceptor';
     $scope.interceptEndpointLabel = '+ intercept';
+    $scope.s3Label = 'S3';
 
 
     //
@@ -430,7 +435,6 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
         };
 
         wsSocket.onmessage = function (event) {
-
             handleResponseMsg(JSON.parse(event.data));
         };
 
@@ -477,11 +481,11 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
     function handleResponseMsg(inboundMsg) {
 
-        if (inboundMsg.type == 'BLOCKED_RESPONSE') {
+        if (inboundMsg.type == BlockedResponseType) {
 
             amendActivityFeedWithBlockedResponse(inboundMsg.payload);
 
-        } else if (inboundMsg.type == 'TRAFFIC') {
+        } else if (inboundMsg.type == $scope.TrafficType) {
 
             var liveLog = inboundMsg.payload;
 
@@ -491,8 +495,25 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
                 appendResponse(liveLog);
             }
 
+        } else if (inboundMsg.type == $scope.S3Type) {
+
+            buildS3Response(inboundMsg.payload);
+
         }
 
+    }
+
+    function buildS3Response(action) {
+
+        var s3Data = {
+            'type' : $scope.S3Type,
+            'action' : action,
+            'response' : {},
+            'isSelected' : false
+        };
+
+        $scope.activityFeed.push(s3Data);
+        $scope.$digest();
     }
 
     function buildInitialRequest(req) {
@@ -501,6 +522,7 @@ app.controller('viewHttpRequestsController', function($scope, $http, $timeout, $
 
         var data = {
             'id' : req.id,
+            'type' : $scope.TrafficType,
             'request' : req.content,
             'proxied' : req.proxied,
             'response' : null,
