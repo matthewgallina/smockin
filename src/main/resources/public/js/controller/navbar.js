@@ -176,7 +176,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     };
 
     $scope.doOpenHelp = function() {
-        $window.open('https://help.smockin.com', '_blank');
+        $window.open('https://www.smockin.com/help/', '_blank');
     };
 
 });
