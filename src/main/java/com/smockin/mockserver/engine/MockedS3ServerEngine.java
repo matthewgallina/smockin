@@ -33,7 +33,7 @@ public class MockedS3ServerEngine {
 
     private final Logger logger = LoggerFactory.getLogger(MockedS3ServerEngine.class);
 
-    private String host = "http://127.0.0.1";
+    private String host = "http://0.0.0.0";
 
     @Autowired
     private MockedS3ServerEngineUtils mockedS3ServerEngineUtils;
