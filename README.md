@@ -161,6 +161,10 @@ Simply create a mock bucket, build your S3 content and point your application to
 
 Featuring different synchronisation modes, developing and testing around S3 has never been easier.
 
+Once you've created your first bucket, this can be accessed from port 8002 using any S3 client like so:
+
+![s3 client](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/s3-client.png)
+
 <br />
 <br />
 
