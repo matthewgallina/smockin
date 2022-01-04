@@ -8,7 +8,7 @@
 
 <br />
 
-### Dynamic API & AWS S3 simulation for application development & QA testing
+### Dynamic API & S3 Bucket simulation for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
