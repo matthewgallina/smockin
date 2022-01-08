@@ -212,7 +212,81 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         try {
             mockedS3ServerEngine.shutdown();
         } catch (MockServerException ex) {
-            logger.error("Stopping S£ Mocking Engine", ex);
+            logger.error("Stopping S3 Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+
+    //
+    // Mail
+    @Override
+    public MockedServerConfigDTO startMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        return startMail();
+    }
+
+    private MockedServerConfigDTO startMail() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.MAIL);
+
+            // todo
+
+            // load mocks
+
+            // start mock server
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            logger.error("Starting Mail Mocking Engine", ex);
+            mockedS3ServerEngine.shutdown();
+            throw ex;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting Mail Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock Mail server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting Mail Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public MockedServerConfigDTO restartMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (getS3ServerState().isRunning()) {
+            shutdownMail();
+        }
+
+        return startMail();
+    }
+
+    @Override
+    public MockServerState getMailServerState() throws MockServerException {
+        return new MockServerState(false, 0); // todo
+    }
+
+    @Override
+    public void shutdownMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        shutdownMail();
+    }
+
+    private void shutdownMail() throws MockServerException {
+
+        try {
+            // todo
+        } catch (MockServerException ex) {
+            logger.error("Stopping Mail Mocking Engine", ex);
             throw ex;
         }
 

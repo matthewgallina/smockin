@@ -5,6 +5,7 @@ app.controller('dashboardController', function($scope, $location, $routeParams, 
     // Constants
     $scope.httpServerMode = globalVars.HttpServerMode;
     $scope.s3ServerMode = globalVars.S3ServerMode;
+    $scope.mailServerMode = globalVars.MailServerMode;
 
 
     //

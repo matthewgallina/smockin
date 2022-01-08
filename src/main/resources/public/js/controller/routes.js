@@ -17,6 +17,10 @@ app.config(function($routeProvider) {
             templateUrl : "s3_endpoint_info.html",
             controller : "s3EndpointInfoController"
         })
+        .when("/mail_endpoint", {
+            templateUrl : "mail_endpoint_info.html",
+            controller : "mailEndpointInfoController"
+        })
         .when("/manage_users", {
             templateUrl : "manage_users.html",
             controller : "manageUsersController"

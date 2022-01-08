@@ -1,0 +1,31 @@
+
+.action-buttons {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.dropdown-menu {
+    width: 100%;
+}
+
+.endpoint-status-row {
+    text-align: right;
+}
+
+#endpoint-status {
+    margin-left: 20px;
+}
+
+#endpoint-status-button {
+    width: 100px;
+}
+
+.mail-mock-panel {
+    min-height: 300px;
+}
+
+#mail-address {
+    max-width: 450px;
+}
+

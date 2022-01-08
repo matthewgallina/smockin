@@ -32,6 +32,12 @@ public interface MockedServerEngineService {
     void shutdownS3(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockedServerConfigDTO restartS3(final String token) throws MockServerException, RecordNotFoundException, AuthException;
 
+    // Mail
+    MockedServerConfigDTO startMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockServerState getMailServerState() throws MockServerException;
+    void shutdownMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+
     // Config
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;

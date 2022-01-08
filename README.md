@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.17.0
+  version 2.18.0
 </p>
 
 <br />
@@ -153,7 +153,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 <br />
 
-**New in version 2.17.0**
+**New in version 2.18.0**
 
 - Introducing S3 bucket mocking!
 

@@ -1,0 +1,59 @@
+<link rel="stylesheet" href="../css/mail_endpoint_info.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <h3>
+            <div class="row">
+
+                <div class="col-sm-9" class="tcp-endpoint-heading">
+                    {{ endpointHeading }}
+                </div>
+
+                <div class="col-sm-3 endpoint-status-row">
+                    {{ endpointStatusLabel }}
+                    <div id="endpoint-status" class="btn-group" uib-dropdown>
+                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle>
+                            <span>{{ (endpoint.status == activeStatus) ? enabledLabel : disabledLabel }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="endpoint-status-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem">
+                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ enabledLabel }}</a>
+                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ disabledLabel }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </h3>
+
+        <br />
+
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
+
+        <div class="mail-mock-panel">
+
+            <div class="form-group" >
+                <label for="mail-address" class="ng-binding">{{ inboxAddressLabel }}</label>
+                <input id="mail-address" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.address" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
+            </div>
+
+        </div>
+
+
+
+        <hr />
+
+        <div class="action-buttons">
+            <button class="btn btn-default" type="button" ng-click="doClose()">{{ cancelButtonLabel }}</button>
+            <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+            <button class="btn btn-primary" type="button" ng-click="doSaveMailAddress()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
+        </div>
+
+    </div>
+
+</div>

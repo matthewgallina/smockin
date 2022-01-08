@@ -80,6 +80,29 @@ public class MockedServerEngineController {
         return new ResponseEntity<>(mockedServerEngineService.getS3ServerState(), HttpStatus.OK);
     }
 
+    //
+    // Mail Server
+    @RequestMapping(path="/mockedserver/mail/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        return new ResponseEntity<>(mockedServerEngineService.startMail(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/mail/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<?> stopMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        mockedServerEngineService.shutdownMail(GeneralUtils.extractOAuthToken(bearerToken));
+        return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+    }
+
+    @RequestMapping(path="/mockedserver/mail/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+        return new ResponseEntity<>(mockedServerEngineService.restartMail(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
+    }
+
+    @RequestMapping(path="/mockedserver/mail/status", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ResponseEntity<MockServerState> mailStatus() throws MockServerException {
+        return new ResponseEntity<>(mockedServerEngineService.getMailServerState(), HttpStatus.OK);
+    }
+
 
     //
     // Server Config

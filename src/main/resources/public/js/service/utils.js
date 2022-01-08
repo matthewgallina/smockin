@@ -241,6 +241,20 @@ app.service('utils', function($uibModal, globalVars, restClient, $http) {
 
     };
 
+    this.checkMailServerStatus = function (callback) {
+
+        restClient.doGet($http, '/mockedserver/mail/status', function(status, data) {
+
+            if (status == 200) {
+                callback(data.running, data.port);
+                return;
+            }
+
+            callback();
+        });
+
+    };
+
     this.isSecureConnectionType = function() {
         return window.location.protocol.indexOf("https") > -1;
     };

@@ -20,7 +20,7 @@ public class DataMigrationService {
 
     private final Logger logger = LoggerFactory.getLogger(DataMigrationService.class);
 
-    // TODO try and load in these depedancies at runtime instead...
+    // TODO try and load in these dependencies into the spring appcontext at runtime instead...
 
     @Autowired
     private MigrationPatch_121 migrationPatch_121;
@@ -57,9 +57,6 @@ public class DataMigrationService {
 
     @Autowired
     private MigrationPatch_2160 migrationPatch_2160;
-
-    @Autowired
-    private MigrationPatch_2170 migrationPatch_2170;
 
 
     private final Set<MigrationPatch> patches = new HashSet<>();
@@ -111,8 +108,6 @@ public class DataMigrationService {
         patches.add(migrationPatch_290);
         patches.add(migrationPatch_2100);
         patches.add(migrationPatch_2160);
-        patches.add(migrationPatch_2170);
-
     }
 
 }

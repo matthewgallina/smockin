@@ -93,6 +93,19 @@ public class CoreDataHandler {
             serverConfigDAO.save(s3ServerConfig);
         }
 
+        if (serverConfigDAO.findByServerType(ServerTypeEnum.MAIL) == null) {
+
+            final ServerConfig s3ServerConfig = new ServerConfig();
+
+            s3ServerConfig.setPort(8003);
+            s3ServerConfig.setMinThreads(10);
+            s3ServerConfig.setMaxThreads(10);
+            s3ServerConfig.setTimeOutMillis(20000);
+            s3ServerConfig.setServerType(ServerTypeEnum.MAIL);
+
+            serverConfigDAO.save(s3ServerConfig);
+        }
+
     }
 
     void applyAppVersioning() {

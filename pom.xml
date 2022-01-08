@@ -6,7 +6,7 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>2.17.0</version>
+    <version>2.18.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -38,6 +38,7 @@
         <s3mock.version>2.2.2</s3mock.version>
         <aws-java-sdk-s3.version>1.12.85</aws-java-sdk-s3.version>
         <s3proxy.version>1.7.1</s3proxy.version>
+        <greenmail.version>1.6.5</greenmail.version>
     </properties>
 
     <dependencies>
@@ -119,6 +120,12 @@
             <groupId>org.raml</groupId>
             <artifactId>raml-parser-2</artifactId>
             <version>${raml-parser.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mailapi</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- OpenAPI -->
@@ -158,6 +165,13 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Mail Server -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail</artifactId>
+            <version>${greenmail.version}</version>
         </dependency>
 
 
