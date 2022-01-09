@@ -14,7 +14,7 @@
 
    - Contact us or follow us on Twitter: <b>@smockin_com</b>
    
-   - User Guide: https://help.smockin.com/
+   - User Guide: https://www.smockin.com/help/
 
 <br />
 <br />
@@ -98,7 +98,7 @@ http://localhost:8000/index.html
 
 For further details, please consult the [Installation](https://github.com/mgtechsoftware/smockin/wiki/Installation) and [Getting Started](https://github.com/mgtechsoftware/smockin/wiki/API-Mock-Tutorial:-Getting-Started) guides in the Wiki. 
 
-You can also check out the latest help guide at [help.smockin.com](https://help.smockin.com)
+You can also check out the latest help guide [here](https://www.smockin.com/help/)
 
 <br/>
 
