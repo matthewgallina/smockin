@@ -8,7 +8,7 @@
 
 <br />
 
-### Dynamic API & S3 Bucket simulation for application development & QA testing
+### Dynamic API, S3 Bucket & Mail Server simulation for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -41,7 +41,8 @@ sMockin runs as a small web app which can be either installed locally onto a per
 ### KEY FEATURES
 
 * Create dynamic API mocks to mimic real world application behaviour.
-* (NEW) Create & manage S3 Bucket mocks where an AWS account may not be available.
+* Create & manage S3 Bucket mocks where an AWS account may not be available.
+* (NEW) Create & manage mock mail inboxes.
 * Run sMockin centrally and create user accounts for your team.
 * Import / Export mocks to share between your team & version control.
 * Monitor and log traffic going to the HTTP or S3 mock servers.
@@ -154,6 +155,16 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 <br />
 
 **New in version 2.18.0**
+
+- Introducing the Mock Mail Server!
+
+...
+
+<br />
+<br />
+
+
+**New in version 2.17.0**
 
 - Introducing S3 bucket mocking!
 

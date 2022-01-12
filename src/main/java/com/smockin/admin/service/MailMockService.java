@@ -4,6 +4,7 @@ import com.smockin.admin.dto.MailMockDTO;
 import com.smockin.admin.dto.response.MailMockResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
+import com.smockin.mockserver.dto.MailMessageDTO;
 
 import java.util.List;
 
@@ -14,5 +15,6 @@ public interface MailMockService {
     String create(final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException;
     void update(final String externalId, final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException;
     void delete(final String externalId, final String token) throws RecordNotFoundException;
+    List<MailMessageDTO> loadAllInboxAddressMessages(final String externalId, final String token) throws ValidationException;
 
 }

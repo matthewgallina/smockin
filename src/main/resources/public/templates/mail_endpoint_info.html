@@ -42,8 +42,51 @@
                 <input id="mail-address" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.address" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
             </div>
 
-        </div>
+            <div class="form-group">
+                <input id="save-received-mail" ng-model="endpoint.saveReceivedMail" type="checkbox" />
+                <label for="save-received-mail" class="ng-binding">{{ saveReceivedMailLabel }}</label>
+            </div>
 
+            <br />
+            <br />
+
+            <div ng-if="!isNew && mockServerStatus != mockServerStoppedStatus">
+
+                <label for="mail-address" class="ng-binding">{{ inboxMessagesLabel }}</label>
+
+                <h4 class="no-data-label" ng-if="mailMessages.length == 0">
+                    {{ noDataFoundMsg }}
+                </h4>
+
+                <table class="table table-striped" ng-if="mailMessages.length > 0">
+                    <thead>
+                    <tr>
+                        <th>{{ senderTableLabel }}</th>
+                        <th>{{ subjectTableLabel }}</th>
+                        <th>{{ dateReceivedTableLabel }}</th>
+                        <th>{{ actionTableLabel }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="x in mailMessages">
+                        <td>
+                            <b>{{ x.sender }}</b>
+                        </td>
+                        <td>{{ x.subject }}</td>
+                        <td>{{ x.dateReceived | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary" ng-click="doOpenMailMessage(x)">{{ viewMessageButtonLabel }}</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br />
+                <br />
+
+            </div>
+
+        </div>
 
 
         <hr />

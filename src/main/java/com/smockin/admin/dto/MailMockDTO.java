@@ -12,5 +12,6 @@ public class MailMockDTO {
 
     private String address;
     private RecordStatusEnum status;
+    private boolean saveReceivedMail;
 
 }

@@ -29,3 +29,7 @@
     max-width: 450px;
 }
 
+.no-data-label {
+    margin: 100px;
+    text-align: center;
+}

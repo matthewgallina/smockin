@@ -3,10 +3,7 @@ package com.smockin.admin.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
-import com.smockin.admin.persistence.dao.ProxyForwardUserConfigDAO;
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.dao.S3MockDAO;
-import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.dao.*;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -14,10 +11,7 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.*;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
-import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
-import com.smockin.mockserver.engine.MockedS3ServerEngine;
-import com.smockin.mockserver.engine.ProxyMappingCache;
+import com.smockin.mockserver.engine.*;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
@@ -75,6 +69,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private S3MockDAO s3MockDAO;
+
+    @Autowired
+    private MockedMailServerEngine mockedMailServerEngine;
+
+    @Autowired
+    private MailMockDAO mailMockDAO;
 
 
     //
@@ -235,16 +235,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
             final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.MAIL);
 
-            // todo
-
-            // load mocks
-
-            // start mock server
+            mockedMailServerEngine.start(configDTO, mailMockDAO.findAllActive());
 
             return configDTO;
         } catch (IllegalArgumentException ex) {
             logger.error("Starting Mail Mocking Engine", ex);
-            mockedS3ServerEngine.shutdown();
+            mockedMailServerEngine.shutdown();
             throw ex;
         } catch (RecordNotFoundException ex) {
             logger.error("Starting Mail Mocking Engine, due to missing mock server config", ex);
@@ -270,7 +266,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Override
     public MockServerState getMailServerState() throws MockServerException {
-        return new MockServerState(false, 0); // todo
+        return mockedMailServerEngine.getCurrentState();
     }
 
     @Override
@@ -284,7 +280,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
     private void shutdownMail() throws MockServerException {
 
         try {
-            // todo
+            mockedMailServerEngine.shutdown();
         } catch (MockServerException ex) {
             logger.error("Stopping Mail Mocking Engine", ex);
             throw ex;

@@ -16,16 +16,26 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.endpointHeading = (isNew) ? 'New Mail Inbox' : 'Mail Inbox';
     $scope.pathPlaceHolderTxt = mailPathPlaceHolderTxt;
     $scope.inboxAddressLabel = 'Inbox Address';
+    $scope.saveReceivedMailLabel = 'Save Received Messages';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
+    $scope.inboxMessagesLabel = 'Received Messages';
+    $scope.noDataFoundMsg = 'No Messages Found';
 
+    //
+    // Table Labels
+    $scope.senderTableLabel = 'Sent By';
+    $scope.subjectTableLabel = 'Subject';
+    $scope.dateReceivedTableLabel = 'Date Received';
+    $scope.actionTableLabel = '';
 
     //
     // Buttons
     $scope.deleteButtonLabel = 'Delete';
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Close';
+    $scope.viewMessageButtonLabel = 'View';
 
 
     //
@@ -65,33 +75,12 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.isNew = isNew;
     $scope.mockServerStatus = MockServerStoppedStatus;
     $scope.mockServerStoppedStatus = MockServerStoppedStatus;
-
     $scope.endpoint = {
         "address" : null,
-        "status" : globalVars.ActiveStatus
+        "status" : globalVars.ActiveStatus,
+        "saveReceivedMail" : false
     };
-
-    if (!isNew) {
-
-        var handleLoadedMock = function(endpoint) {
-
-            extId = endpoint.extId;
-
-            $scope.endpoint = {
-                "extId" : endpoint.externalId,
-                "address" : endpoint.address,
-                "status" : endpoint.status,
-                "dateCreated" : endpoint.dateCreated
-            };
-
-//            $scope.readOnly = (auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
-
-        };
-
-        loadMockData(extId, handleLoadedMock);
-    }
-
-//    $scope.readOnly = (!isNew && auth.isLoggedIn() && auth.getUserName() != $scope.endpoint.createdBy);
+    $scope.mailMessages = [];
 
 
     //
@@ -120,13 +109,14 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         // Send to Server
         if (isNew) {
 
-            createNewAddress($scope.endpoint.address, $scope.endpoint.status, serverCallbackFuncFollowingNewRecord);
+            createNewAddress($scope.endpoint.address, $scope.endpoint.status, $scope.endpoint.saveReceivedMail, serverCallbackFuncFollowingNewRecord);
 
         } else {
 
             updateAddress($scope.endpoint.extId,
                           $scope.endpoint.address,
                           $scope.endpoint.status,
+                          $scope.endpoint.saveReceivedMail,
                             function (status, data) {
 
                                  utils.hideBlockingOverlay();
@@ -146,6 +136,10 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         doDeleteAddress();
     };
 
+    $scope.doLoadInboxMessages = function() {
+        loadInboxMessages();
+    };
+
     $scope.doClose = function() {
 
         $location.path("/dashboard").search({
@@ -153,36 +147,48 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         });
     };
 
+    $scope.doOpenMailMessage = function(messageData) {
+
+        console.log(messageData);
+
+    };
+
 
     //
     // Internal Functions
-    function createNewAddress(address, status, callbackFunc) {
+    function createNewAddress(address, status, saveReceivedMail, callbackFunc) {
 
         // Send to Server
         utils.showBlockingOverlay();
 
         var reqData = {
             "address" : address,
-            "status" : status
+            "status" : status,
+            "saveReceivedMail" : saveReceivedMail
         };
 
         restClient.doPost($http, '/mailmock', reqData, callbackFunc);
     }
 
-    function updateAddress(extId, address, status, callbackFunc) {
+    function updateAddress(extId, address, status, saveReceivedMail, callbackFunc) {
 
         // Send to Server
         utils.showBlockingOverlay();
 
         var reqData = {
             "address" : address,
-            "status" : status
+            "status" : status,
+            "saveReceivedMail" : saveReceivedMail
         };
 
         restClient.doPut($http, '/mailmock/' + extId, reqData, callbackFunc);
     }
 
     function doDeleteAddress() {
+
+        if (isNew) {
+            return;
+        }
 
         utils.openDeleteConfirmation("Are you sure you wish to delete this mail address and all of it's content?", function (alertResponse) {
             if (alertResponse) {
@@ -193,6 +199,10 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     }
 
     function deleteAddress(extId) {
+
+        if (isNew) {
+            return;
+        }
 
         utils.showBlockingOverlay();
 
@@ -215,6 +225,10 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     function loadMockData(extId, callback) {
 
+        if (isNew) {
+            return;
+        }
+
         restClient.doGet($http, '/mailmock/' + extId, function(status, data) {
 
             if (status != 200) {
@@ -223,6 +237,28 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             }
 
             callback(data);
+        });
+
+    }
+
+    function loadInboxMessages() {
+
+        if (isNew
+                || $scope.mockServerStatus == MockServerStoppedStatus) {
+            return;
+        }
+
+        $scope.mailMessages = [];
+
+        restClient.doGet($http, '/mailmock/' + extId + '/messages', function(status, data) {
+
+            if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            $scope.mailMessages = data;
+
         });
 
     }
@@ -253,7 +289,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         showAlert(globalVars.GeneralErrorMessage);
     }
 
-    function loadMailServerStatus() {
+    function loadMailServerStatus(callbackFunc) {
 
         utils.checkMailServerStatus(function(running, port) {
 
@@ -265,6 +301,11 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             $scope.mockServerStatus = (running)
                 ? MockServerRunningStatus
                 : MockServerStoppedStatus;
+
+            if (callbackFunc != null) {
+                callbackFunc();
+            }
+
         });
 
     }
@@ -272,6 +313,24 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     //
     // init page
-    loadMailServerStatus();
+    if (!isNew) {
+
+        loadMockData(extId, function(endpoint) {
+
+            $scope.endpoint = {
+                "extId" : endpoint.externalId,
+                "address" : endpoint.address,
+                "status" : endpoint.status,
+                "dateCreated" : endpoint.dateCreated,
+                "saveReceivedMail" : endpoint.saveReceivedMail
+            };
+
+            loadMailServerStatus(function() {
+                loadInboxMessages();
+            });
+
+        });
+
+    }
 
 });

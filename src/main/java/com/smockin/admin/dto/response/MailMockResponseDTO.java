@@ -15,9 +15,10 @@ public class MailMockResponseDTO extends MailMockDTO {
     public MailMockResponseDTO(final String externalId,
                                final Date dateCreated,
                                final String address,
-                               final RecordStatusEnum status
+                               final RecordStatusEnum status,
+                               final boolean saveReceivedMail
                                ) {
-        super(address, status);
+        super(address, status, saveReceivedMail);
         this.externalId = externalId;
         this.dateCreated = dateCreated;
     }
