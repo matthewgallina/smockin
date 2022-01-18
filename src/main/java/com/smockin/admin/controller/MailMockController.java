@@ -2,6 +2,7 @@ package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.MailMockDTO;
 import com.smockin.admin.dto.response.MailMockResponseDTO;
+import com.smockin.admin.dto.response.MailMockResponseLiteDTO;
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -24,7 +25,7 @@ public class MailMockController {
 
     @RequestMapping(path="/mailmock", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    ResponseEntity<List<MailMockResponseDTO>> getAll(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+    ResponseEntity<List<MailMockResponseLiteDTO>> getAll(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException {
 
         return ResponseEntity.ok(mailMockService.loadAll(GeneralUtils.extractOAuthToken(bearerToken)));

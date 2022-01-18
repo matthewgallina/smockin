@@ -7,12 +7,11 @@ import java.util.Date;
 
 @Data
 @AllArgsConstructor
-public class MailMessageDTO {
+public class MailServerMessageInboxDTO {
 
-    private String sender;
+    private String from;
     private Date dateReceived;
     private String subject;
-    private String plainTextBody;
-    private String htmlBody;
+    private String body;
 
 }

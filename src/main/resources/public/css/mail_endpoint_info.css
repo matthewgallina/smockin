@@ -33,3 +33,7 @@
     margin: 100px;
     text-align: center;
 }
+
+.offline-message {
+    color: #FF0000;
+}

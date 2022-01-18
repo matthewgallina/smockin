@@ -25,8 +25,8 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
 
     //
     // Table Labels
-    $scope.inboxTableLabel = 'Inbox Address';
-    $scope.dateCreatedTableLabel = 'Date Created';
+    $scope.inboxTableLabel = 'Email Address';
+    $scope.dateCreatedTableLabel = 'Date Received';
     $scope.statusTableLabel = 'Deployment Status';
     $scope.actionTableLabel = 'Action';
 

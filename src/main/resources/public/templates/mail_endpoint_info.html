@@ -50,9 +50,18 @@
             <br />
             <br />
 
-            <div ng-if="!isNew && mockServerStatus != mockServerStoppedStatus">
+            <div ng-if="!isNew">
 
-                <label for="mail-address" class="ng-binding">{{ inboxMessagesLabel }}</label>
+                <label for="mail-address" class="ng-binding">{{ inboxMessagesLabel }}
+                    (
+                    <span ng-if="mockServerStatus == mockServerRunningStatus">
+                        <a href="" ng-click="doReloadMock()">{{ reloadMessagesLabel }}</a>
+                    </span>
+                    <span ng-if="mockServerStatus == mockServerStoppedStatus">
+                        {{ mailServerLabel }}: <span class="offline-message">{{ offlineLabel }}</span>
+                    </span>
+                    )
+                </label>
 
                 <h4 class="no-data-label" ng-if="mailMessages.length == 0">
                     {{ noDataFoundMsg }}
@@ -64,16 +73,21 @@
                         <th>{{ senderTableLabel }}</th>
                         <th>{{ subjectTableLabel }}</th>
                         <th>{{ dateReceivedTableLabel }}</th>
+                        <th>{{ savedLabel }}</th>
                         <th>{{ actionTableLabel }}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr ng-repeat="x in mailMessages">
                         <td>
-                            <b>{{ x.sender }}</b>
+                            <b>{{ x.from }}</b>
                         </td>
                         <td>{{ x.subject }}</td>
                         <td>{{ x.dateReceived | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td>
+                            <span ng-if="x.extId != null">{{ yesLabel }}</span>
+                            <span ng-if="x.extId == null">{{ noLabel }}</span>
+                        </td>
                         <td>
                             <button type="button" class="btn btn-primary" ng-click="doOpenMailMessage(x)">{{ viewMessageButtonLabel }}</button>
                         </td>

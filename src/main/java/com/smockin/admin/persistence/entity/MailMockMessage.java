@@ -3,6 +3,7 @@ package com.smockin.admin.persistence.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.Date;
 
 /**
  * Created by mgallina.
@@ -20,6 +21,10 @@ public class MailMockMessage extends Identifier {
 
     @Column(name = "MAIL_BODY", nullable = false, length = Integer.MAX_VALUE)
     private String body;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "DATE_RECEIVED", nullable = false)
+    private Date dateReceived;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="MAIL_MOCK_ID", nullable = false)

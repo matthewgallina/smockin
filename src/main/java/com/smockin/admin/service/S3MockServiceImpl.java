@@ -136,9 +136,6 @@ public class S3MockServiceImpl implements S3MockService {
             final StringBuilder filePathTracer = new StringBuilder();
             final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(filePathTracer, newDir);
 
-            // TODO test removing this duplicated line!!!
-//            final S3Mock bucket = mockedS3ServerEngineUtils.locateParentBucket(newDir);
-
             if (RecordStatusEnum.ACTIVE.equals(bucket.getStatus())
                     && !S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {
 

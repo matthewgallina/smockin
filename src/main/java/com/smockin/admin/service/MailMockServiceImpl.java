@@ -2,14 +2,17 @@ package com.smockin.admin.service;
 
 import com.icegreen.greenmail.store.FolderException;
 import com.smockin.admin.dto.MailMockDTO;
+import com.smockin.admin.dto.response.MailMockMessageResponseDTO;
 import com.smockin.admin.dto.response.MailMockResponseDTO;
+import com.smockin.admin.dto.response.MailMockResponseLiteDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.MailMockDAO;
 import com.smockin.admin.persistence.entity.MailMock;
+import com.smockin.admin.persistence.entity.MailMockMessage;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
-import com.smockin.mockserver.dto.MailMessageDTO;
+import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.mockserver.engine.MockedMailServerEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.mail.MessagingException;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,14 +43,14 @@ public class MailMockServiceImpl implements MailMockService {
     private MockedMailServerEngine mockedMailServerEngine;
 
 
-    public List<MailMockResponseDTO> loadAll(final String token) throws RecordNotFoundException {
+    public List<MailMockResponseLiteDTO> loadAll(final String token) throws RecordNotFoundException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         return mailMockDAO.findAllByUser(smockinUser.getId())
                 .stream()
                 .map(m ->
-                        new MailMockResponseDTO(
+                        new MailMockResponseLiteDTO(
                                 m.getExtId(),
                                 m.getDateCreated(),
                                 m.getAddress(),
@@ -62,12 +65,26 @@ public class MailMockServiceImpl implements MailMockService {
 
         final MailMock mailMock = loadById(externalId, smockinUser);
 
-        return new MailMockResponseDTO(
+        MailMockResponseDTO dto = new MailMockResponseDTO(
                 mailMock.getExtId(),
                 mailMock.getDateCreated(),
                 mailMock.getAddress(),
                 mailMock.getStatus(),
                 mailMock.isSaveReceivedMail());
+
+        dto.setMessages(mailMock
+                .getMessages()
+                .stream()
+                .map(m ->
+                        new MailMockMessageResponseDTO(
+                            m.getExtId(),
+                            m.getFrom(),
+                            m.getSubject(),
+                            m.getBody(),
+                            m.getDateReceived()))
+                .collect(Collectors.toList()));
+
+        return dto;
     }
 
     public String create(final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException {
@@ -79,10 +96,11 @@ public class MailMockServiceImpl implements MailMockService {
         final String extId = mailMockDAO.save(mailMock).getExtId();
 
         if (mockedServerEngineService.getMailServerState().isRunning()) {
+            // Add user to mail server
             try {
                 mockedMailServerEngine.addMailUser(mailMock);
-            } catch (MessagingException | FolderException e) {
-                logger.error("Error adding user ");
+            } catch (FolderException e) {
+                logger.error("Error adding user to mail server", e);
             }
         }
 
@@ -101,7 +119,16 @@ public class MailMockServiceImpl implements MailMockService {
 
         mailMockDAO.save(mailMock);
 
-        // TODO update user's mail box from mail server
+        if (mockedServerEngineService.getMailServerState().isRunning()) {
+            // Update user's mail box from mail server
+            if (mailMockDTO.isSaveReceivedMail()) {
+                mockedMailServerEngine.addListenerForMailUser(mailMock);
+                handleSaveCurrentInbox(mailMock);
+                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
+            } else {
+                mockedMailServerEngine.removeListenerForMailUser(mailMock);
+            }
+        }
     }
 
     public void delete(final String externalId, final String token) throws RecordNotFoundException {
@@ -110,13 +137,15 @@ public class MailMockServiceImpl implements MailMockService {
 
         final MailMock mailMock = loadById(externalId, smockinUser);
 
+        if (mockedServerEngineService.getMailServerState().isRunning()) {
+            // Delete user's mail box from mail server
+            mockedMailServerEngine.removeMailUser(mailMock);
+        }
+
         mailMockDAO.delete(mailMock);
-
-        // TODO delete user's mail box from mail server
-
     }
 
-    public List<MailMessageDTO> loadAllInboxAddressMessages(final String externalId, final String token)
+    public List<MailServerMessageInboxDTO> loadMessagesFromMailServerInbox(final String externalId, final String token)
             throws ValidationException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
@@ -127,7 +156,39 @@ public class MailMockServiceImpl implements MailMockService {
             throw new ValidationException("Mail server is not running");
         }
 
-        return mockedMailServerEngine.getAllEmailsForAddress(mailMock.getAddress());
+        return mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getAddress());
+    }
+
+    private void handleSaveCurrentInbox(final MailMock mailMock) {
+
+        final List<MailServerMessageInboxDTO> mailMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getAddress());
+
+        mailMessages.stream()
+                .forEach(m ->
+                    saveMockMessage(mailMock,
+                    m.getFrom(),
+                    m.getSubject(),
+                    m.getBody(),
+                    m.getDateReceived()));
+
+    }
+
+    private void saveMockMessage(final MailMock mailMock,
+                                final String sender,
+                                final String subject,
+                                final String body,
+                                final Date dateReceived) {
+
+        final MailMockMessage mailMockMessage = new MailMockMessage();
+        mailMockMessage.setFrom(sender);
+        mailMockMessage.setDateReceived(dateReceived);
+        mailMockMessage.setSubject(subject);
+        mailMockMessage.setBody(body);
+        mailMockMessage.setMailMock(mailMock);
+
+        mailMock.getMessages().add(mailMockMessage);
+
+        mailMockDAO.save(mailMock);
     }
 
     private MailMock loadById(final String extId, final SmockinUser smockinUser) throws RecordNotFoundException {
