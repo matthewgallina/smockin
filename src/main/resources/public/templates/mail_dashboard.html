@@ -72,6 +72,7 @@
                 <th>{{ inboxTableLabel }}</th>
                 <th>{{ dateCreatedTableLabel }}</th>
                 <th>{{ statusTableLabel }}</th>
+                <th>{{ messageCountTableLabel }}</th>
                 <th>{{ actionTableLabel }}</th>
             </tr>
             </thead>
@@ -85,6 +86,7 @@
                     <td class="status-{{x.status | lowercase}}">
                         {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                     </td>
+                    <td>{{ x.messageCount }}</td>
                     <td>
                         <button type="button" class="btn btn-primary" ng-click="doOpenMailInboxEndpointInfo(x.externalId)">{{ viewEndpointButtonLabel }}</button>
                     </td>

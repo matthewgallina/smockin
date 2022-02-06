@@ -1,6 +1,5 @@
 package com.smockin.admin.dto.response;
 
-import com.smockin.admin.persistence.entity.Identifier;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,12 +10,13 @@ import java.util.Date;
  */
 @Data
 @AllArgsConstructor
-public class MailMockMessageResponseDTO extends Identifier {
+public class MailMockMessageResponseDTO {
 
     private String extId;
     private String from;
     private String subject;
     private String body;
     private Date dateReceived;
+    private int attachmentsCount;
 
 }

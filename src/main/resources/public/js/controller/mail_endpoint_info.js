@@ -34,7 +34,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.senderTableLabel = 'From';
     $scope.subjectTableLabel = 'Subject';
     $scope.dateReceivedTableLabel = 'Date Received';
-    $scope.savedLabel = 'Archived';
+    $scope.savedLabel = 'Saved';
+    $scope.attachmentsLabel = 'Attachments';
     $scope.actionTableLabel = '';
 
 
@@ -44,6 +45,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Close';
     $scope.viewMessageButtonLabel = 'View';
+    $scope.deleteMessagesButtonLabel = 'Delete Messages';
 
 
     //
@@ -90,6 +92,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         "saveReceivedMail" : false
     };
     $scope.mailMessages = [];
+    $scope.messagesSelection = [];
 
 
     //
@@ -172,17 +175,80 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     $scope.doOpenMailMessage = function(mailMessage) {
 
-        $uibModal.open({
+        var modalInstance = $uibModal.open({
             templateUrl: 'mail_endpoint_message.html',
             controller: 'mailEndpointMessageController',
             backdrop  : 'static',
             keyboard  : false,
             resolve: {
                 data: function () {
-                    return mailMessage;
+                    return {
+                        "mockMailExtId" : $scope.endpoint.extId,
+                        "mailMessageData" : mailMessage
+                    };
                 }
             }
         });
+
+        modalInstance.result.then(function() {
+        }, function () {
+        });
+
+    };
+
+    $scope.doDeleteSelection = function() {
+
+        if ($scope.messagesSelection.length == 0) {
+            return;
+        }
+
+        utils.openDeleteConfirmation("Are you sure wish to delete the selected messages?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                for (let m=0; m < $scope.messagesSelection.length; m++) {
+
+                    let containsErrors = false;
+
+                    var deleteMsgCallback = function(status, data) {
+
+                        if (!containsErrors && status != 204) {
+                            containsErrors = true;
+                        }
+
+                        if ((m+1) == $scope.messagesSelection.length) {
+
+                            loadMock();
+
+                            if (containsErrors) {
+                                showAlert(globalVars.GeneralErrorMessage + ' not all messages were deleted');
+                            }
+
+                        }
+
+                    }
+
+                    restClient.doDelete($http, '/mailmock/' + $scope.endpoint.extId + '/inbox/' + $scope.messagesSelection[m], deleteMsgCallback);
+                }
+
+                // todo
+
+            }
+
+        });
+
+    };
+
+    $scope.toggleMessageSelection = function(message) {
+
+        var pos = $scope.messagesSelection.indexOf(message.extId);
+
+        if (pos == -1) {
+            $scope.messagesSelection.push(message.extId);
+            return;
+        }
+
+        $scope.messagesSelection.splice(pos, 1);
 
     };
 

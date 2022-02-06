@@ -37,3 +37,7 @@
 .offline-message {
     color: #FF0000;
 }
+
+.bulk-mail-message-buttons {
+    text-align: right;
+}

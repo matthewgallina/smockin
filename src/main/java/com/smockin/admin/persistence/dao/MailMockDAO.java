@@ -21,4 +21,7 @@ public interface MailMockDAO extends JpaRepository<MailMock, Long> {
     @Query("FROM MailMock m WHERE m.status = 'ACTIVE'")
     List<MailMock> findAllActive();
 
+    @Query("SELECT COUNT(1) FROM MailMockMessage m WHERE m.mailMock.id = :id")
+    Integer findMessageCountByMailMockId(@Param("id") final long mailMockId);
+
 }

@@ -14,10 +14,11 @@ public class MailMockResponseDTO extends MailMockResponseLiteDTO {
 
     public MailMockResponseDTO(final String externalId,
                                final Date dateCreated,
+                               final int messageCount,
                                final String address,
                                final RecordStatusEnum status,
                                final boolean saveReceivedMail) {
-        super(externalId, dateCreated, address, status, saveReceivedMail);
+        super(externalId, dateCreated, messageCount, address, status, saveReceivedMail);
     }
 
 }

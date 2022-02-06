@@ -47,21 +47,36 @@
                 <label for="save-received-mail" class="ng-binding">{{ saveReceivedMailLabel }}</label>
             </div>
 
-            <br />
+            <hr />
             <br />
 
             <div ng-if="!isNew">
 
-                <label for="mail-address" class="ng-binding">{{ inboxMessagesLabel }}
-                    (
-                    <span ng-if="mockServerStatus == mockServerRunningStatus">
-                        <a href="" ng-click="doReloadMock()">{{ reloadMessagesLabel }}</a>
-                    </span>
-                    <span ng-if="mockServerStatus == mockServerStoppedStatus">
-                        {{ mailServerLabel }}: <span class="offline-message">{{ offlineLabel }}</span>
-                    </span>
-                    )
-                </label>
+                <div class="row">
+                    <div class="col-sm-6">
+
+                        <label for="mail-address" class="ng-binding">
+                            <span style="font-size: 24px; font-weight: 500;">{{ inboxMessagesLabel }}</span>
+                            (
+                            <span ng-if="mockServerStatus == mockServerRunningStatus">
+                                <a href="" ng-click="doReloadMock()">{{ reloadMessagesLabel }}</a>
+                            </span>
+                            <span ng-if="mockServerStatus == mockServerStoppedStatus">
+                                {{ mailServerLabel }}: <span class="offline-message">{{ offlineLabel }}</span>
+                            </span>
+                            )
+                        </label>
+
+                    </div>
+                    <div class="col-sm-6 bulk-mail-message-buttons">
+
+                        <button id="bulk-delete-messages-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()"
+                                ng-disabled="messagesSelection.length == 0">{{ deleteMessagesButtonLabel }}</button>
+
+                    </div>
+                </div>
+
+                <br />
 
                 <h4 class="no-data-label" ng-if="mailMessages.length == 0">
                     {{ noDataFoundMsg }}
@@ -70,15 +85,18 @@
                 <table class="table table-striped" ng-if="mailMessages.length > 0">
                     <thead>
                     <tr>
+                        <th></th>
                         <th>{{ senderTableLabel }}</th>
                         <th>{{ subjectTableLabel }}</th>
                         <th>{{ dateReceivedTableLabel }}</th>
                         <th>{{ savedLabel }}</th>
+                        <th>{{ attachmentsLabel }}</th>
                         <th>{{ actionTableLabel }}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr ng-repeat="x in mailMessages">
+                        <td><input type="checkbox" ng-click="toggleMessageSelection(x)" /></td>
                         <td>
                             <b>{{ x.from }}</b>
                         </td>
@@ -88,6 +106,7 @@
                             <span ng-if="x.extId != null">{{ yesLabel }}</span>
                             <span ng-if="x.extId == null">{{ noLabel }}</span>
                         </td>
+                        <td>{{ x.attachmentsCount }}</td>
                         <td>
                             <button type="button" class="btn btn-primary" ng-click="doOpenMailMessage(x)">{{ viewMessageButtonLabel }}</button>
                         </td>

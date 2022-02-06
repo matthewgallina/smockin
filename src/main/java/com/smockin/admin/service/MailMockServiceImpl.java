@@ -50,13 +50,23 @@ public class MailMockServiceImpl implements MailMockService {
         return mailMockDAO.findAllByUser(smockinUser.getId())
                 .stream()
                 .map(m ->
-                        new MailMockResponseLiteDTO(
-                                m.getExtId(),
-                                m.getDateCreated(),
-                                m.getAddress(),
-                                m.getStatus(),
-                                m.isSaveReceivedMail()))
+                    new MailMockResponseLiteDTO(
+                            m.getExtId(),
+                            m.getDateCreated(),
+                            retrieveReceivedMessageCount(m),
+                            m.getAddress(),
+                            m.getStatus(),
+                            m.isSaveReceivedMail()))
                 .collect(Collectors.toList());
+    }
+
+    int retrieveReceivedMessageCount(final MailMock mailMock) {
+
+        return (mailMock.isSaveReceivedMail())
+                ? mailMockDAO.findMessageCountByMailMockId(mailMock.getId())
+                : ((mockedServerEngineService.getMailServerState().isRunning()))
+                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getAddress())
+                    : 0;
     }
 
     public MailMockResponseDTO loadById(final String externalId, final String token) throws RecordNotFoundException {
@@ -68,6 +78,7 @@ public class MailMockServiceImpl implements MailMockService {
         MailMockResponseDTO dto = new MailMockResponseDTO(
                 mailMock.getExtId(),
                 mailMock.getDateCreated(),
+                mailMock.getMessages().size(),
                 mailMock.getAddress(),
                 mailMock.getStatus(),
                 mailMock.isSaveReceivedMail());
@@ -81,7 +92,8 @@ public class MailMockServiceImpl implements MailMockService {
                             m.getFrom(),
                             m.getSubject(),
                             m.getBody(),
-                            m.getDateReceived()))
+                            m.getDateReceived(),
+                            m.getAttachments().size()))
                 .collect(Collectors.toList()));
 
         return dto;

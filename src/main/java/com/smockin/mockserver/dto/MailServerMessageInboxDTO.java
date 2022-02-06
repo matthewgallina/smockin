@@ -9,9 +9,11 @@ import java.util.Date;
 @AllArgsConstructor
 public class MailServerMessageInboxDTO {
 
+    private long mailServerUID;
     private String from;
-    private Date dateReceived;
     private String subject;
     private String body;
+    private Date dateReceived;
+    private int attachmentsCount;
 
 }

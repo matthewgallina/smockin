@@ -1,5 +1,6 @@
 package com.smockin.mockserver.engine;
 
+import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
 import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.imap.commands.IdRange;
 import com.icegreen.greenmail.store.FolderException;
@@ -8,26 +9,28 @@ import com.icegreen.greenmail.store.MailFolder;
 import com.icegreen.greenmail.store.StoredMessage;
 import com.icegreen.greenmail.user.GreenMailUser;
 import com.icegreen.greenmail.util.GreenMail;
-import com.icegreen.greenmail.util.GreenMailUtil;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.persistence.entity.MailMock;
-import com.smockin.mockserver.dto.GreenMailUserWrapper;
-import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
-import com.smockin.mockserver.dto.MockServerState;
-import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.admin.service.MailMockMessageService;
+import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.exception.MockServerException;
-import com.smockin.mockserver.service.MailMockMessageService;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.mail.util.MimeMessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import javax.mail.Address;
-import javax.mail.Flags;
-import javax.mail.MessagingException;
+
+import javax.mail.*;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -39,6 +42,7 @@ public class MockedMailServerEngine {
 
     private String host = "0.0.0.0";
     private String defaultMailUserPassword = "letmein";
+    private static final String MULTIPART = "multipart";
 
     private GreenMail greenMail;
     private ImapHostManager imapHostManager;
@@ -129,9 +133,6 @@ public class MockedMailServerEngine {
             : null;
 
         mailUsersMap.putIfAbsent(mailMock.getAddress(), new GreenMailUserWrapper(user, folderListener));
-
-//        populateAddressInboxHistory(mailMock, user);
-
     }
 
     public void removeMailUser(final MailMock mailMock) {
@@ -150,8 +151,7 @@ public class MockedMailServerEngine {
         final GreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
 
         try {
-            final FolderListener folderListener = applySaveMailListener(user.getUser(), mailMock);
-            user.setListener(folderListener);
+            user.setListener(applySaveMailListener(user.getUser(), mailMock));
         } catch (Exception e) {
             logger.error("Error adding listener for user: " + mailMock.getAddress(), e);
         }
@@ -193,41 +193,20 @@ public class MockedMailServerEngine {
                 try {
 
                     final MailFolder inbox = imapHostManager.getInbox(user);
-
                     final StoredMessage storedMessage = inbox.getMessage(i);
+                    final MimeMessage message = storedMessage.getMimeMessage();
 
-//                    if (!storedMessage.getFlags().contains(Flags.Flag.SEEN)) {
+                    final String externalId = mailMockMessageService.saveMailMessage(
+                            mailMockExtId,
+                            extractMailSender(message),
+                            message.getSubject(),
+                            extractMailBodyContent(message),
+                            message.getReceivedDate(),
+                            Optional.empty());
 
-                        final MimeMessage message = storedMessage.getMimeMessage();
+                    extractAndSaveAllAttachments(externalId, message);
 
-                        mailMockMessageService.saveMessage(
-                                mailMockExtId,
-                                extractMailSender(message),
-                                message.getSubject(), GreenMailUtil.getBody(message),
-                                message.getReceivedDate());
-
-                        inbox.expunge(new IdRange[] { new IdRange(i) });
-//                    }
-
-                    /*
-
-                    System.out.println("inbox.getUnseenCount(): " + inbox.getUnseenCount());
-
-                    final long[] nos = inbox.search(new FlagTerm(new Flags(Flags.Flag.SEEN), false));
-
-                    for (long no : nos) {
-                        System.out.println("no: " + no);
-                    }
-
-                    System.out.println("inbox.getFirstUnseen() " + inbox.getFirstUnseen());
-
-                    if (inbox.getFirstUnseen() > -1) {
-                        StoredMessage storedMessage = inbox.getMessage(inbox.getFirstUnseen());
-                        if (storedMessage != null) {
-                            System.out.println("subject: " + storedMessage.getMimeMessage().getSubject());
-                        }
-                    }
-                    */
+                    inbox.expunge(new IdRange[] { new IdRange(i) });
 
                 } catch (Exception e) {
                     logger.error("Error saving received mail message to DB", e);
@@ -236,8 +215,8 @@ public class MockedMailServerEngine {
             }
 
             public void mailboxDeleted() {}
-            public void expunged(int i) {}
-            public void flagsUpdated(int i, Flags flags, Long aLong) {}
+            public void expunged(final int i) {}
+            public void flagsUpdated(final int i, final Flags flags, final Long aLong) {}
 
         });
 
@@ -266,12 +245,14 @@ public class MockedMailServerEngine {
                     try {
 
                         return new MailServerMessageInboxDTO(
+                                m.getUid(),
                                 extractMailSender(message),
-                                message.getReceivedDate(),
                                 message.getSubject(),
-                                GreenMailUtil.getBody(message));
+                                extractMailBodyContent(message),
+                                message.getReceivedDate(),
+                                countMessageAttachments(message));
 
-                    } catch (MessagingException e) {
+                    } catch (Exception e) {
                         logger.error(String.format("Error reading message from mail server for address '%s'", address), e);
                         return null;
                     }
@@ -280,6 +261,44 @@ public class MockedMailServerEngine {
                 .collect(Collectors.toList());
     }
 
+    public int getMessageCountFromMailServerInbox(final String address) throws MockServerException {
+        logger.debug("getMessageCountFromMailServerInbox called");
+
+        final GreenMailUserWrapper user = findGreenMailUser(address);
+
+        try {
+            return imapHostManager.getInbox(user.getUser()).getMessageCount();
+        } catch (FolderException e) {
+            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
+        }
+
+    }
+
+    public List<MailServerMessageInboxAttachmentDTO> getMessageAttachmentsFromMailServerInbox(final String address,
+                                                                                              final String messageId) throws MockServerException {
+        logger.debug("getMessageAttachmentsFromMailServerInbox called");
+
+        final GreenMailUserWrapper user = findGreenMailUser(address);
+
+        final Optional<StoredMessage> storedMessageOpt;
+
+        try {
+
+            storedMessageOpt = imapHostManager.getInbox(user.getUser())
+                    .getMessages(new MsgRangeFilter(messageId, true))
+                    .stream()
+                    .findFirst();
+
+        } catch (Exception e) {
+            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
+        }
+
+        if (!storedMessageOpt.isPresent()) {
+            throw new MockServerException(String.format("Error locating inbox message for user '%s'", address));
+        }
+
+        return extractAllMessageAttachments(storedMessageOpt.get().getMimeMessage());
+    }
 
     public void purgeAllMailServerInboxMessages(final String address) throws MockServerException {
         logger.debug("purgeAllMailServerInboxMessages called");
@@ -320,57 +339,110 @@ public class MockedMailServerEngine {
         return user;
     }
 
-    /*
-    // TODO is this necessary, adding messages from DB to the mail server...?!
-    void populateAddressInboxHistory(final MailMock mailMock,
-                                     final GreenMailUser user) throws MessagingException, FolderException {
-        logger.debug("populateAddressInboxHistory called");
-
-        final List<MailMockMessage> messages = mailMock.getMessages();
-
-        if (!messages.isEmpty()) {
-            return;
-        }
-
-        messages.stream()
-                .forEach(m ->
-                    createMessage(m, user));
-    }
-
-    void createMessage(final MailMockMessage message,
-                       final GreenMailUser user) {
+    List<MailServerMessageInboxAttachmentDTO> extractAllMessageAttachments(final MimeMessage mimeMessage) throws MockServerException {
 
         try {
 
-            final MailFolder inbox = imapHostManager.getInbox(user);
-            final MimeMessage mimeMessage = new MimeMessage((Session) null);
-            mimeMessage.setFrom(new InternetAddress(message.getFrom()));
-            mimeMessage.setSubject(message.getSubject());
-            mimeMessage.setSentDate(message.getDateReceived());
+            final List<MailServerMessageInboxAttachmentDTO> attachmentDTOs = new ArrayList<>();
 
-            final BodyPart messageBodyPart = new MimeBodyPart();
-            messageBodyPart.setText(message.getBody());
+            if (!mimeMessage.getContentType().contains(MULTIPART)
+                    || !(mimeMessage.getContent() instanceof Multipart)) {
+                return attachmentDTOs;
+            }
 
-            final Multipart multipart = new MimeMultipart();
+            final Multipart multipart = (Multipart) mimeMessage.getContent();
 
-            // Attachments
-//          final MimeBodyPart attachmentPart = new MimeBodyPart();
-//          attachmentPart.attachFile(new File("/Users/gallina/Downloads/comments-regular.svg"));;
-//          multipart.addBodyPart(attachmentPart);
+            for (int i=0; i < multipart.getCount(); i++) {
 
-            mimeMessage.setContent(multipart);
-            multipart.addBodyPart(messageBodyPart);
+                if (multipart.getBodyPart(i) instanceof MimeBodyPart) {
 
-            mimeMessage.setFlag(Flags.Flag.SEEN, true);
-            mimeMessage.saveChanges();
+                    final MimeBodyPart mimeBodyPart = (MimeBodyPart)multipart.getBodyPart(i);
 
-            inbox.store(mimeMessage);
+                    if (Part.ATTACHMENT.equalsIgnoreCase(mimeBodyPart.getDisposition())) {
+
+                        attachmentDTOs.add(new MailServerMessageInboxAttachmentDTO(
+                                Optional.empty(),
+                                mimeBodyPart.getFileName(),
+                                sanitizeContentType(mimeBodyPart.getContentType()),
+                                IOUtils.toString(mimeBodyPart.getInputStream(), Charset.defaultCharset())));
+                    }
+
+                }
+
+            }
+
+            return attachmentDTOs;
 
         } catch (Exception e) {
-            logger.error("Error creating mock mail message on mail server", e);
+            throw new MockServerException("Error extracting attachment(s) from mail message", e);
         }
 
     }
-    */
+
+    int countMessageAttachments(final MimeMessage mimeMessage) throws MockServerException {
+
+        try {
+
+            if (!mimeMessage.getContentType().contains(MULTIPART)
+                    || !(mimeMessage.getContent() instanceof Multipart)) {
+                return 0;
+            }
+
+            final Multipart multipart = (Multipart) mimeMessage.getContent();
+
+            int counter = 0;
+
+            for (int i=0; i < multipart.getCount(); i++) {
+
+                if (multipart.getBodyPart(i) instanceof MimeBodyPart
+                        && Part.ATTACHMENT.equalsIgnoreCase((multipart.getBodyPart(i)).getDisposition())) {
+                    counter++;
+                }
+            }
+
+            return counter;
+
+        } catch (Exception e) {
+            throw new MockServerException("Error extracting attachment count for mail message", e);
+        }
+
+    }
+
+    String extractMailBodyContent(final MimeMessage message) throws Exception {
+
+        final String content = extractHtmlContent(message);
+
+        if (content != null) {
+            return content;
+        }
+
+        return extractPlainContent(message);
+    }
+
+    String extractHtmlContent(final MimeMessage message) throws Exception {
+        return new MimeMessageParser(message).parse().getHtmlContent();
+    }
+
+    String extractPlainContent(final MimeMessage message) throws Exception {
+        return new MimeMessageParser(message).parse().getPlainContent();
+    }
+
+    void extractAndSaveAllAttachments(final String messageExternalId,
+                                      final MimeMessage mimeMessage) {
+
+        extractAllMessageAttachments(mimeMessage)
+                .stream()
+                .forEach(a ->
+                        mailMockMessageService.saveMailMessageAttachment(
+                            messageExternalId,
+                            a.getName(),
+                            a.getMimeType(),
+                            a.getContent()));
+
+    }
+
+    String sanitizeContentType(final String contentType) {
+        return StringUtils.substringBefore(contentType, ";");
+    }
 
 }
