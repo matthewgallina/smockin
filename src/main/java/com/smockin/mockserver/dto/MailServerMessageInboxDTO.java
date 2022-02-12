@@ -9,7 +9,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class MailServerMessageInboxDTO {
 
-    private long mailServerUID;
+    private String cacheID;
     private String from;
     private String subject;
     private String body;

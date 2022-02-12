@@ -1,6 +1,5 @@
 package com.smockin.mockserver.engine;
 
-import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
 import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.imap.commands.IdRange;
 import com.icegreen.greenmail.store.FolderException;
@@ -8,6 +7,8 @@ import com.icegreen.greenmail.store.FolderListener;
 import com.icegreen.greenmail.store.MailFolder;
 import com.icegreen.greenmail.store.StoredMessage;
 import com.icegreen.greenmail.user.GreenMailUser;
+import com.icegreen.greenmail.user.UserException;
+import com.icegreen.greenmail.user.UserManager;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -15,6 +16,7 @@ import com.smockin.admin.persistence.entity.MailMock;
 import com.smockin.admin.service.MailMockMessageService;
 import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.mail.util.MimeMessageParser;
@@ -27,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,9 @@ public class MockedMailServerEngine {
     @Autowired
     private MailMockMessageService mailMockMessageService;
 
+    @Autowired
+    private MailInboxCache mailInboxCache;
+
 
     public void start(final MockedServerConfigDTO configDTO,
                       final List<MailMock> mailInboxes) throws MockServerException {
@@ -62,8 +66,14 @@ public class MockedMailServerEngine {
 
             try {
 
+                mailInboxCache.clearAll();
+
                 final ServerSetup mailServerSetup = new ServerSetup(configDTO.getPort(), host, ServerSetup.PROTOCOL_SMTP);
                 greenMail = new GreenMail(mailServerSetup);
+
+                // Custom message delivery handler stops auto user creation
+                applyMessageDeliveryHandler(greenMail);
+
                 imapHostManager = greenMail.getManagers().getImapHostManager();
 
                 createAllMailUsers(mailInboxes);
@@ -101,9 +111,30 @@ public class MockedMailServerEngine {
                 serverState.setRunning(false);
             }
 
+            mailInboxCache.clearAll();
+
         } catch (Exception e) {
             throw new MockServerException("Error shutting down mail mock engine", e);
         }
+
+    }
+
+    void applyMessageDeliveryHandler(final GreenMail greenMail) {
+
+        final UserManager userManager = greenMail.getUserManager();
+
+        // Greenmail automatically creates a user for any email address received.
+        // This overrides this behavior and returns an exception instead.
+        userManager.setMessageDeliveryHandler((msg, mailAddress) -> {
+
+            final GreenMailUser user = userManager.getUserByEmail(mailAddress.getEmail());
+
+            if (user != null) {
+                return user;
+            }
+
+            throw new UserException(String.format("Inbox %s not found on mail server", mailAddress.getEmail()));
+        });
 
     }
 
@@ -128,9 +159,10 @@ public class MockedMailServerEngine {
         final GreenMailUser user =
                 greenMail.setUser(mailMock.getAddress(), mailMock.getAddress(), defaultMailUserPassword);
 
-        final FolderListener folderListener = (mailMock.isSaveReceivedMail())
-            ? applySaveMailListener(user, mailMock)
-            : null;
+        final FolderListener folderListener =
+                (mailMock.isSaveReceivedMail())
+                    ? applySaveMailListener(user, mailMock) // Use DB for storing messages
+                    : applyCacheMailListener(user, mailMock); // Use Cache for storing messages
 
         mailUsersMap.putIfAbsent(mailMock.getAddress(), new GreenMailUserWrapper(user, folderListener));
     }
@@ -151,7 +183,14 @@ public class MockedMailServerEngine {
         final GreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
 
         try {
-            user.setListener(applySaveMailListener(user.getUser(), mailMock));
+            if (mailMock.isSaveReceivedMail()) {
+                // Use DB for storing messages
+                user.setListener(applySaveMailListener(user.getUser(), mailMock));
+            } else {
+                // Use Cache for storing messages
+                user.setListener(applyCacheMailListener(user.getUser(), mailMock));
+            }
+
         } catch (Exception e) {
             logger.error("Error adding listener for user: " + mailMock.getAddress(), e);
         }
@@ -178,6 +217,7 @@ public class MockedMailServerEngine {
 
     FolderListener applySaveMailListener(final GreenMailUser user,
                                          final MailMock mailMock) throws FolderException {
+        logger.debug("applySaveMailListener called");
 
         // Note, we cannot pass the MailMock entity into this listener as there will be not be a
         // transaction available at the time this executes, so will pass in the externalId.
@@ -223,8 +263,68 @@ public class MockedMailServerEngine {
         return folderListener;
     }
 
-    public List<MailServerMessageInboxDTO> getMessagesFromMailServerInbox(final String address) throws MockServerException {
+    FolderListener applyCacheMailListener(final GreenMailUser user,
+                                          final MailMock mailMock) throws FolderException {
+        logger.debug("applyCacheMailListener called");
+
+        // Note, we cannot pass the MailMock entity into this listener as there will be not be a
+        // transaction available at the time this executes, so will pass in the externalId.
+        final String mailMockExtId = mailMock.getExtId();
+
+        FolderListener folderListener;
+
+        imapHostManager.getInbox(user)
+                .addListener(folderListener = new FolderListener() {
+
+                    public void added(final int i) {
+
+                        try {
+
+                            final MailFolder inbox = imapHostManager.getInbox(user);
+                            final StoredMessage storedMessage = inbox.getMessage(i);
+                            final MimeMessage message = storedMessage.getMimeMessage();
+
+                            final List<MailServerMessageInboxAttachmentDTO> attachments = extractAllMessageAttachments(message);
+
+                            final MailServerMessageInboxDTO mailServerMessageInboxDTO
+                                    = new MailServerMessageInboxDTO(
+                                            GeneralUtils.generateUUID(),
+                                            extractMailSender(message),
+                                            message.getSubject(),
+                                            extractMailBodyContent(message),
+                                            message.getReceivedDate(),
+                                            attachments.size());
+
+                            mailInboxCache.add(
+                                    mailMockExtId,
+                                    new CachedMailServerMessage(mailServerMessageInboxDTO, attachments));
+
+                            inbox.expunge(new IdRange[] { new IdRange(i) });
+
+                        } catch (Exception e) {
+                            logger.error("Error adding received mail message to mail cache", e);
+                        }
+
+                    }
+
+                    public void mailboxDeleted() {}
+                    public void expunged(final int i) {}
+                    public void flagsUpdated(final int i, final Flags flags, final Long aLong) {}
+
+                });
+
+        return folderListener;
+    }
+
+    public List<MailServerMessageInboxDTO> getMessagesFromMailServerInbox(final String mailMockExtId) throws MockServerException {
         logger.debug("getAllEmailsForAddress called");
+
+        return mailInboxCache.findAllMessages(mailMockExtId)
+                .stream()
+                .map(c -> c.getMailServerMessageInboxDTO())
+                .collect(Collectors.toList());
+
+        /*
 
         final GreenMailUserWrapper user = findGreenMailUser(address);
 
@@ -259,27 +359,33 @@ public class MockedMailServerEngine {
 
                 })
                 .collect(Collectors.toList());
+        */
+
     }
 
-    public int getMessageCountFromMailServerInbox(final String address) throws MockServerException {
+    public int getMessageCountFromMailServerInbox(final String mailMockExtId) throws MockServerException {
         logger.debug("getMessageCountFromMailServerInbox called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final GreenMailUserWrapper user = findGreenMailUser(address);
 
-        try {
-            return imapHostManager.getInbox(user.getUser()).getMessageCount();
-        } catch (FolderException e) {
-            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
-        }
+//        try {
+//            return imapHostManager.getInbox(user.getUser()).getMessageCount();
+
+            return mailInboxCache.findAllMessages(mailMockExtId).size();
+
+//        } catch (FolderException e) {
+//            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
+//        }
 
     }
 
-    public List<MailServerMessageInboxAttachmentDTO> getMessageAttachmentsFromMailServerInbox(final String address,
+    public List<MailServerMessageInboxAttachmentDTO> getMessageAttachmentsFromMailServerInbox(final String mailMockExtId,
                                                                                               final String messageId) throws MockServerException {
         logger.debug("getMessageAttachmentsFromMailServerInbox called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final GreenMailUserWrapper user = findGreenMailUser(address);
 
+        /*
         final Optional<StoredMessage> storedMessageOpt;
 
         try {
@@ -298,18 +404,70 @@ public class MockedMailServerEngine {
         }
 
         return extractAllMessageAttachments(storedMessageOpt.get().getMimeMessage());
+        */
+
+        final Optional<CachedMailServerMessage> cachedMailServerMessageOpt = mailInboxCache.findMessageById(mailMockExtId, messageId);
+
+        if (!cachedMailServerMessageOpt.isPresent()) {
+            throw new MockServerException(String.format("Error locating inbox for mailMockExtId '%s'", mailMockExtId));
+        }
+
+        return cachedMailServerMessageOpt.get().getAttachments();
     }
 
-    public void purgeAllMailServerInboxMessages(final String address) throws MockServerException {
+    public boolean purgeSingleMessageFromMailServerInbox(final String mailMockExtId,
+                                                         final String messageId) throws MockServerException {
+        logger.debug("purgeSingleMessageFromMailServerInbox called");
+
+//        final GreenMailUserWrapper user = findGreenMailUser(address);
+
+        /*
+        final Optional<StoredMessage> storedMessageOpt;
+
+        final MailFolder inbox;
+
+        try {
+
+            inbox = imapHostManager.getInbox(user.getUser());
+
+            storedMessageOpt = inbox
+                    .getMessages(new MsgRangeFilter(messageId, true))
+                    .stream()
+                    .findFirst();
+
+        } catch (Exception e) {
+            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
+        }
+
+        if (!storedMessageOpt.isPresent()) {
+            return false;
+        }
+
+        System.out.println("DELETING FROM MAIL MOCK SERVER...");
+        final StoredMessage storedMessage = storedMessageOpt.get();
+        storedMessage.setFlag(Flags.Flag.DELETED, true);
+        inbox.expunge(new IdRange[] { new IdRange(storedMessage.getUid()) });
+        */
+
+        mailInboxCache.delete(mailMockExtId, messageId);
+
+        return true;
+    }
+
+    public void purgeAllMailServerInboxMessages(final String mailMockExtId) throws MockServerException {
         logger.debug("purgeAllMailServerInboxMessages called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final GreenMailUserWrapper user = findGreenMailUser(address);
 
+        /*
         try {
             imapHostManager.getInbox(user.getUser()).deleteAllMessages();
         } catch (FolderException e) {
             throw new MockServerException(String.format("Error deleting inbox for user '%s'", address), e);
         }
+        */
+
+        mailInboxCache.deleteAll(mailMockExtId);
 
     }
 
@@ -364,7 +522,7 @@ public class MockedMailServerEngine {
                                 Optional.empty(),
                                 mimeBodyPart.getFileName(),
                                 sanitizeContentType(mimeBodyPart.getContentType()),
-                                IOUtils.toString(mimeBodyPart.getInputStream(), Charset.defaultCharset())));
+                                GeneralUtils.base64Encode(IOUtils.toByteArray(mimeBodyPart.getInputStream()))));
                     }
 
                 }
@@ -379,6 +537,7 @@ public class MockedMailServerEngine {
 
     }
 
+    /*
     int countMessageAttachments(final MimeMessage mimeMessage) throws MockServerException {
 
         try {
@@ -407,6 +566,7 @@ public class MockedMailServerEngine {
         }
 
     }
+    */
 
     String extractMailBodyContent(final MimeMessage message) throws Exception {
 
@@ -437,7 +597,7 @@ public class MockedMailServerEngine {
                             messageExternalId,
                             a.getName(),
                             a.getMimeType(),
-                            a.getContent()));
+                            a.getBase64Content()));
 
     }
 

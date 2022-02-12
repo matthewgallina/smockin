@@ -65,7 +65,7 @@ public class MailMockServiceImpl implements MailMockService {
         return (mailMock.isSaveReceivedMail())
                 ? mailMockDAO.findMessageCountByMailMockId(mailMock.getId())
                 : ((mockedServerEngineService.getMailServerState().isRunning()))
-                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getAddress())
+                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
                     : 0;
     }
 
@@ -132,13 +132,14 @@ public class MailMockServiceImpl implements MailMockService {
         mailMockDAO.save(mailMock);
 
         if (mockedServerEngineService.getMailServerState().isRunning()) {
-            // Update user's mail box from mail server
+
+            // Update user's mail box listener (DB or Cache) on mail server
+            mockedMailServerEngine.removeListenerForMailUser(mailMock);
+            mockedMailServerEngine.addListenerForMailUser(mailMock);
+
             if (mailMockDTO.isSaveReceivedMail()) {
-                mockedMailServerEngine.addListenerForMailUser(mailMock);
                 handleSaveCurrentInbox(mailMock);
-                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
-            } else {
-                mockedMailServerEngine.removeListenerForMailUser(mailMock);
+//                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
             }
         }
     }
@@ -168,12 +169,12 @@ public class MailMockServiceImpl implements MailMockService {
             throw new ValidationException("Mail server is not running");
         }
 
-        return mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getAddress());
+        return mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId());
     }
 
     private void handleSaveCurrentInbox(final MailMock mailMock) {
 
-        final List<MailServerMessageInboxDTO> mailMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getAddress());
+        final List<MailServerMessageInboxDTO> mailMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId());
 
         mailMessages.stream()
                 .forEach(m ->

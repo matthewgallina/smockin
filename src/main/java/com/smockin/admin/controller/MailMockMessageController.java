@@ -64,16 +64,16 @@ public class MailMockMessageController {
     }
 
     @RequestMapping(
-            path="/mailmock/{mailExtId}/inbox/{messageExtId}",
+            path="/mailmock/{mailExtId}/inbox/{messageId}",
             method = RequestMethod.DELETE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ResponseEntity<?> deleteInboxMessage(
                 @PathVariable("mailExtId") final String mailExtId,
-                @PathVariable("messageExtId") final String messageExtId,
+                @PathVariable("messageId") final String messageId,
                 @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                     throws RecordNotFoundException, ValidationException {
 
-        mailMockMessageService.deleteMailMessage(messageExtId, GeneralUtils.extractOAuthToken(bearerToken));
+        mailMockMessageService.deleteMailMessage(mailExtId, messageId, GeneralUtils.extractOAuthToken(bearerToken));
 
         return ResponseEntity.noContent().build();
     }

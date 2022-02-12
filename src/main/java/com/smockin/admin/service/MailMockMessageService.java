@@ -17,7 +17,7 @@ public interface MailMockMessageService {
                      final Date dateReceived,
                      final Optional<String> token) throws ValidationException;
 
-    void deleteMailMessage(final String mailMessageExtId, final String token) throws ValidationException;
+    void deleteMailMessage(final String mailExtId, final String mailMessageId, final String token) throws ValidationException;
 
     void deleteAllMailMessages(final String mailExtId, final String token) throws ValidationException;
 
@@ -26,7 +26,7 @@ public interface MailMockMessageService {
     void saveMailMessageAttachment(final String mailMockMessageExtId,
                                    final String fileName,
                                    final String mimeType,
-                                   final String content);
+                                   final String base64Content);
 
     List<MailServerMessageInboxAttachmentLiteDTO> findAllMessageAttachments(
             final String mailMockExtId,

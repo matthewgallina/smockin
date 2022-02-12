@@ -12,7 +12,6 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentLiteDTO;
 import com.smockin.mockserver.engine.MockedMailServerEngine;
-import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,13 +81,25 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
     }
 
     @Override
-    public void deleteMailMessage(final String mailMessageExtId,
+    public void deleteMailMessage(final String mailExtId,
+                                  final String mailMessageId,
                                   final String token)
             throws ValidationException {
 
-        final MailMockMessage mailMockMessage = mailMockMessageDAO.findByExtId(mailMessageExtId);
+        final MailMockMessage mailMockMessage = mailMockMessageDAO.findByExtId(mailMessageId);
 
         if (mailMockMessage == null) {
+
+            // Check if mail exists on mail server...
+            if (mockedServerEngineService.getMailServerState().isRunning()) {
+
+                final MailMock mailMock = findMailMockById(mailExtId);
+
+                if (mockedMailServerEngine.purgeSingleMessageFromMailServerInbox(mailMock.getExtId(), mailMessageId)) {
+                    return;
+                }
+            }
+
             throw new RecordNotFoundException();
         }
 
@@ -100,11 +111,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
     @Override
     public void deleteAllMailMessages(final String mailExtId, final String token) throws ValidationException {
 
-        final MailMock mailMock = mailMockDAO.findByExtId(mailExtId);
-
-        if (mailMock == null) {
-            throw new RecordNotFoundException();
-        }
+        final MailMock mailMock = findMailMockById(mailExtId);
 
         userTokenServiceUtils.validateRecordOwner(mailMock.getCreatedBy(), token);
 
@@ -116,11 +123,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
     @Override
     public void deleteAllMailMessagesOnServer(final String mailExtId, final String token) throws ValidationException {
 
-        final MailMock mailMock = mailMockDAO.findByExtId(mailExtId);
-
-        if (mailMock == null) {
-            throw new RecordNotFoundException();
-        }
+        final MailMock mailMock = findMailMockById(mailExtId);
 
         userTokenServiceUtils.validateRecordOwner(mailMock.getCreatedBy(), token);
 
@@ -128,13 +131,13 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
             throw new ValidationException("Mail mock server is not currently running");
         }
 
-        mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
+        mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getExtId());
     }
 
     public void saveMailMessageAttachment(final String mailMockMessageExtId,
                                           final String fileName,
                                           final String mimeType,
-                                          final String content) {
+                                          final String base64Content) {
 
         final MailMockMessage mailMockMessage = mailMockMessageDAO.findByExtId(mailMockMessageExtId);
 
@@ -147,7 +150,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
         attachment.setMimeType(mimeType);
 
         final MailMockMessageAttachmentContent attachmentContent = new MailMockMessageAttachmentContent();
-        attachmentContent.setContent(GeneralUtils.base64Encode(content));
+        attachmentContent.setContent(base64Content);
         attachmentContent.setMailMockMessageAttachment(attachment);
 
         attachment.setMailMockMessageAttachmentContent(attachmentContent);
@@ -163,11 +166,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
                                                                                    final String token)
             throws ValidationException {
 
-        final MailMock mailMock = mailMockDAO.findByExtId(mailMockExtId);
-
-        if (mailMock == null) {
-            throw new RecordNotFoundException();
-        }
+        final MailMock mailMock = findMailMockById(mailMockExtId);
 
         userTokenServiceUtils.validateRecordOwner(mailMock.getCreatedBy(), token);
 
@@ -189,7 +188,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
         } else if (mockedServerEngineService.getMailServerState().isRunning()) {
 
             // Find message and attachments from mail server...
-            return mockedMailServerEngine.getMessageAttachmentsFromMailServerInbox(mailMock.getAddress(), messageId)
+            return mockedMailServerEngine.getMessageAttachmentsFromMailServerInbox(mailMock.getExtId(), messageId)
                     .stream()
                     .map(a ->
                             new MailServerMessageInboxAttachmentLiteDTO(a.getExtId(), a.getName(), a.getMimeType()))
@@ -205,14 +204,9 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
                                                                      final String token)
             throws RecordNotFoundException, ValidationException {
 
-        final MailMock mailMock = mailMockDAO.findByExtId(mailMockExtId);
-
-        if (mailMock == null) {
-            throw new RecordNotFoundException();
-        }
+        final MailMock mailMock = findMailMockById(mailMockExtId);
 
         userTokenServiceUtils.validateRecordOwner(mailMock.getCreatedBy(), token);
-
 
         if (mailMock.isSaveReceivedMail()) {
 
@@ -240,7 +234,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
 
             // Load message attachments from mail server and then look up attachment by name...
             final Optional<MailServerMessageInboxAttachmentDTO> attachmentDTO
-                    = mockedMailServerEngine.getMessageAttachmentsFromMailServerInbox(mailMock.getAddress(), messageId)
+                    = mockedMailServerEngine.getMessageAttachmentsFromMailServerInbox(mailMock.getExtId(), messageId)
                         .stream()
                         .filter(a ->
                             StringUtils.equals(a.getName(), attachmentIdOrName))
@@ -254,6 +248,17 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
         }
 
         return null;
+    }
+
+    MailMock findMailMockById(final String mailMockExtId) {
+
+        final MailMock mailMock = mailMockDAO.findByExtId(mailMockExtId);
+
+        if (mailMock == null) {
+            throw new RecordNotFoundException();
+        }
+
+        return mailMock;
     }
 
 }

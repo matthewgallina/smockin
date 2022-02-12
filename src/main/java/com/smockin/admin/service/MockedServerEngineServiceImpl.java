@@ -694,6 +694,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 break;
             case S3:
                 startS3();
+                break;
+            case MAIL:
+                startMail();
+                break;
             default:
                 logger.warn("Found auto start instruction for discontinued server type: " + serverType);
         }

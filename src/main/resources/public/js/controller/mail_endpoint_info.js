@@ -241,10 +241,14 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     $scope.toggleMessageSelection = function(message) {
 
-        var pos = $scope.messagesSelection.indexOf(message.extId);
+        var messageId = (message.extId != null)
+            ? message.extId
+            : message.cacheID;
+
+        var pos = $scope.messagesSelection.indexOf(messageId);
 
         if (pos == -1) {
-            $scope.messagesSelection.push(message.extId);
+            $scope.messagesSelection.push(messageId);
             return;
         }
 

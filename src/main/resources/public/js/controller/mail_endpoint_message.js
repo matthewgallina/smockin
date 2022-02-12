@@ -73,7 +73,7 @@ app.controller('mailEndpointMessageController', function($scope, $uibModalInstan
 
         var messageId = (data.mailMessageData.extId != null)
               ? data.mailMessageData.extId
-              : data.mailMessageData.mailServerUID;
+              : data.mailMessageData.cacheID;
 
         var attachmentIdOrName = (attachment.extId != null)
               ? attachment.extId
@@ -108,7 +108,7 @@ app.controller('mailEndpointMessageController', function($scope, $uibModalInstan
                 return;
             }
 
-            utils.handleExportDownload(data.content, data.name, data.mimeType);
+            utils.handleExportDownload(data.base64Content, data.name, data.mimeType);
         });
 
     }
@@ -120,6 +120,6 @@ app.controller('mailEndpointMessageController', function($scope, $uibModalInstan
         data.mockMailExtId,
         (data.mailMessageData.extId != null)
             ? data.mailMessageData.extId
-            : data.mailMessageData.mailServerUID);
+            : data.mailMessageData.cacheID);
 
 });
