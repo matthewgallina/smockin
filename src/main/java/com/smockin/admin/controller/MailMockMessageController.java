@@ -9,6 +9,7 @@ import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentLiteDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -36,10 +37,26 @@ public class MailMockMessageController {
     public @ResponseBody
     ResponseEntity<List<MailServerMessageInboxDTO>> getInboxMessages(
                 @PathVariable("mailExtId") final String mailExtId,
+                @RequestParam(value = "sender", required = false) final String sender,
+                @RequestParam(value = "subject", required = false) final String subject,
+                @RequestParam(value = "dateReceived", required = false) final String dateReceived,
                 @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                     throws RecordNotFoundException, ValidationException {
 
-        return ResponseEntity.ok(mailMockService.loadMessagesFromMailServerInbox(mailExtId, GeneralUtils.extractOAuthToken(bearerToken)));
+        if (StringUtils.isNotBlank(sender)
+                || StringUtils.isNotBlank(subject)
+                || StringUtils.isNotBlank(dateReceived)) {
+
+            return ResponseEntity.ok(mailMockService.searchForMessagesFromMailServerInbox(
+                    mailExtId,
+                    Optional.ofNullable(sender),
+                    Optional.ofNullable(subject),
+                    Optional.ofNullable(dateReceived),
+                    GeneralUtils.extractOAuthToken(bearerToken)));
+        }
+
+        return ResponseEntity.ok(mailMockService.loadMessagesFromMailServerInbox(mailExtId,
+                GeneralUtils.extractOAuthToken(bearerToken)));
     }
 
     @RequestMapping(

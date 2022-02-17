@@ -39,6 +39,14 @@
         <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
     </div>
 
+    <div class="form-group delete-mail-message-panel" ng-if="serverConfig.serverType == MailServerType">
+        <br />
+        <br />
+        <button class="btn btn-danger" type="button" ng-click="doPurgeAllMailMessages('CACHE')">{{ purgeMailMessagesInCacheButtonLabel }}</button>
+        &nbsp;&nbsp;
+        <button class="btn btn-danger" type="button" ng-click="doPurgeAllMailMessages('DB')">{{ purgeMailMessagesInDatabaseButtonLabel }}</button>
+    </div>
+
 </div>
 
 <div class="modal-footer">

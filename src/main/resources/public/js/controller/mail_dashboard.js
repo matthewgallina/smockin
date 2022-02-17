@@ -83,10 +83,9 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
 
         modalInstance.result.then(function (response) {
             if (response != null
-                    && response.restartReq
-                    && !$scope.readOnly) {
-                RestartServerRequired = true;
-                loadMailServerStatus();
+                    && response.reload) {
+                loadTableData();
+                showAlert("Mail messages successfully deleted", "success");
             }
         }, function () {
 

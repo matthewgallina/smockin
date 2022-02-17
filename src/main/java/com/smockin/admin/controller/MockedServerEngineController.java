@@ -1,6 +1,7 @@
 package com.smockin.admin.controller;
 
 import com.smockin.admin.dto.LiveLoggingBlockingEndpointDTO;
+import com.smockin.admin.enums.StoreTypeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -36,18 +37,21 @@ public class MockedServerEngineController {
     //
     // REST Server
     @RequestMapping(path="/mockedserver/rest/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.startRest(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
     @RequestMapping(path="/mockedserver/rest/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> stopRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<?> stopRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         mockedServerEngineService.shutdownRest(GeneralUtils.extractOAuthToken(bearerToken));
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(path="/mockedserver/rest/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartRest(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.restartRest(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
@@ -60,18 +64,21 @@ public class MockedServerEngineController {
     //
     // S3 Server
     @RequestMapping(path="/mockedserver/s3/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.startS3(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
     @RequestMapping(path="/mockedserver/s3/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> stopS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<?> stopS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         mockedServerEngineService.shutdownS3(GeneralUtils.extractOAuthToken(bearerToken));
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(path="/mockedserver/s3/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartS3(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.restartS3(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
@@ -83,18 +90,21 @@ public class MockedServerEngineController {
     //
     // Mail Server
     @RequestMapping(path="/mockedserver/mail/start", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> startMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.startMail(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
     @RequestMapping(path="/mockedserver/mail/stop", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<?> stopMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<?> stopMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         mockedServerEngineService.shutdownMail(GeneralUtils.extractOAuthToken(bearerToken));
         return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
     }
 
     @RequestMapping(path="/mockedserver/mail/restart", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken) throws MockServerException, RecordNotFoundException, AuthException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> restartMail(@RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws MockServerException, RecordNotFoundException, AuthException {
         return new ResponseEntity<>(mockedServerEngineService.restartMail(GeneralUtils.extractOAuthToken(bearerToken)), HttpStatus.OK);
     }
 
@@ -103,11 +113,22 @@ public class MockedServerEngineController {
         return new ResponseEntity<>(mockedServerEngineService.getMailServerState(), HttpStatus.OK);
     }
 
+    @RequestMapping(path="/mockedserver/mail/clear/{storeType}", method = RequestMethod.DELETE)
+    public @ResponseBody ResponseEntity<MockServerState> clearAllMail(@PathVariable("storeType") final String storeType,
+                                                                      @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
+            throws AuthException {
+
+        mockedServerEngineService.clearAllMailMessages(StoreTypeEnum.toEnum(storeType), GeneralUtils.extractOAuthToken(bearerToken));
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 
     //
     // Server Config
     @RequestMapping(path="/mockedserver/config/{serverType}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ResponseEntity<MockedServerConfigDTO> getServerConfig(@PathVariable("serverType") final String serverType) throws ValidationException, RecordNotFoundException {
+    public @ResponseBody ResponseEntity<MockedServerConfigDTO> getServerConfig(@PathVariable("serverType") final String serverType)
+            throws ValidationException, RecordNotFoundException {
         final ServerTypeEnum type = convertServerType(serverType);
         return new ResponseEntity<>(mockedServerEngineService.loadServerConfig(type), HttpStatus.OK);
     }

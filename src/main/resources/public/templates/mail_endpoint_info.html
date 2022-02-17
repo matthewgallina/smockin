@@ -76,6 +76,13 @@
                     </div>
                 </div>
 
+                <span class="batch-actions-group">
+                    (
+                        <a href ng-click="doSelectAllMessages()">{{ selectAllEndpointsHeading }}</a> |
+                        <a href ng-click="doClearAllMessages()">{{ deselectAllEndpointsHeading }}</a>
+                    )
+                </span>
+
                 <br />
 
                 <h4 class="no-data-label" ng-if="mailMessages.length == 0">
@@ -96,7 +103,9 @@
                     </thead>
                     <tbody>
                     <tr ng-repeat="x in mailMessages">
-                        <td><input type="checkbox" ng-click="toggleMessageSelection(x)" /></td>
+                        <td>
+                            <input type="checkbox" ng-click="toggleMessageSelection(x)" ng-checked="doesMessagesSelectionContain(x)" />
+                        </td>
                         <td>
                             <b>{{ x.from }}</b>
                         </td>

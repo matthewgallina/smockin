@@ -1,5 +1,6 @@
 package com.smockin.admin.service;
 
+import com.smockin.admin.enums.StoreTypeEnum;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.MockImportException;
 import com.smockin.admin.exception.RecordNotFoundException;
@@ -37,6 +38,7 @@ public interface MockedServerEngineService {
     MockServerState getMailServerState() throws MockServerException;
     void shutdownMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     MockedServerConfigDTO restartMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    void clearAllMailMessages(final StoreTypeEnum storeType, final String token) throws AuthException;
 
     // Config
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;

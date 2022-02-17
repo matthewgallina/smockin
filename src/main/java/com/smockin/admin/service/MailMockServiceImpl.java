@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,7 +70,11 @@ public class MailMockServiceImpl implements MailMockService {
                     : 0;
     }
 
-    public MailMockResponseDTO loadById(final String externalId, final String token) throws RecordNotFoundException {
+    public MailMockResponseDTO loadByIdWithFilteredMessages(final String externalId,
+                                                            final Optional<String> sender,
+                                                            final Optional<String> subject,
+                                                            final Optional<String> dateReceived,
+                                                            final String token) throws RecordNotFoundException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
@@ -82,6 +87,8 @@ public class MailMockServiceImpl implements MailMockService {
                 mailMock.getAddress(),
                 mailMock.getStatus(),
                 mailMock.isSaveReceivedMail());
+
+        // TODO filter messages
 
         dto.setMessages(mailMock
                 .getMessages()
@@ -170,6 +177,26 @@ public class MailMockServiceImpl implements MailMockService {
         }
 
         return mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId());
+    }
+
+    public List<MailServerMessageInboxDTO> searchForMessagesFromMailServerInbox(
+            final String externalId,
+            final Optional<String> sender,
+            final Optional<String> subject,
+            final Optional<String> dateReceived,
+            final String token) throws ValidationException {
+
+        final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
+
+        final MailMock mailMock = loadById(externalId, smockinUser);
+
+        if (!mockedServerEngineService.getMailServerState().isRunning()) {
+            throw new ValidationException("Mail server is not running");
+        }
+
+        // TODO
+
+        return null;
     }
 
     private void handleSaveCurrentInbox(final MailMock mailMock) {

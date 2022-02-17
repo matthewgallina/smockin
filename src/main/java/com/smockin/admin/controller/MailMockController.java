@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class MailMockController {
@@ -34,10 +35,18 @@ public class MailMockController {
     @RequestMapping(path="/mailmock/{extId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
     ResponseEntity<MailMockResponseDTO> get(@PathVariable("extId") final String extId,
+                                            @RequestParam(value = "sender", required = false) final String sender,
+                                            @RequestParam(value = "subject", required = false) final String subject,
+                                            @RequestParam(value = "dateReceived", required = false) final String dateReceived,
                                             @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException {
 
-        return ResponseEntity.ok(mailMockService.loadById(extId, GeneralUtils.extractOAuthToken(bearerToken)));
+        return ResponseEntity.ok(mailMockService.loadByIdWithFilteredMessages(
+                extId,
+                Optional.ofNullable(sender),
+                Optional.ofNullable(subject),
+                Optional.ofNullable(dateReceived),
+                GeneralUtils.extractOAuthToken(bearerToken)));
     }
 
     @RequestMapping(path="/mailmock", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)

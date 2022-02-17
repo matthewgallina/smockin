@@ -7,6 +7,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     var ServerType = data.serverType;
     var AlertTimeoutMillis = globalVars.AlertTimeoutMillis;
     $scope.RestfulServerType = globalVars.RestfulServerType;
+    $scope.MailServerType = globalVars.MailServerType;
     $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
     $scope.isLoggedIn = auth.isLoggedIn();
 
@@ -31,6 +32,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     // Buttons
     $scope.cancelButtonLabel = 'Cancel';
     $scope.saveButtonLabel = 'Update Server';
+    $scope.purgeMailMessagesInCacheButtonLabel = 'Clear all messages on Mail Server';
+    $scope.purgeMailMessagesInDatabaseButtonLabel = 'Delete all messages in Database';
 
 
     //
@@ -135,6 +138,30 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
             }
 
             showAlert(globalVars.GeneralErrorMessage);
+        });
+
+    };
+
+    $scope.doPurgeAllMailMessages = function (storeType) {
+
+        utils.openDeleteConfirmation("Are you sure wish to delete all mail messages from the " + storeType + "?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doDelete($http, '/mockedserver/mail/clear/' + storeType, function(status, data) {
+
+                    if (status == 204) {
+
+                        $uibModalInstance.close({
+                            "reload" : true
+                        });
+
+                        return;
+                    }
+
+                    showAlert(globalVars.GeneralErrorMessage);
+                });
+            }
         });
 
     };

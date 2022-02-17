@@ -1,6 +1,7 @@
 package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smockin.admin.enums.StoreTypeEnum;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
 import com.smockin.admin.persistence.dao.*;
@@ -75,6 +76,9 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private MailMockDAO mailMockDAO;
+
+    @Autowired
+    private MailMockMessageDAO mailMockMessageDAO;
 
 
     //
@@ -644,6 +648,18 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         }
 
         return null;
+    }
+
+    public void clearAllMailMessages(final StoreTypeEnum storeType,
+                                     final String token) throws AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (StoreTypeEnum.DB.equals(storeType)) {
+            mailMockMessageDAO.deleteAll();
+        } else if (StoreTypeEnum.CACHE.equals(storeType)) {
+            mockedMailServerEngine.purgeAllMailMessagesForAllInboxes();
+        }
     }
 
     void saveUserProxyMappings(final ProxyForwardUserConfig proxyForwardUserConfig,

@@ -165,6 +165,13 @@ fi
 
 
 #
+# Override any proxy environment variables, as this can cause 403 issues with internal S3 client and S3 mock server
+#
+export HTTP_PROXY=
+export HTTPS_PROXY=
+
+
+#
 # START UP SMOCKIN APPLICATION
 # (JPA WILL CREATE THE ACTUAL SMOCKIN DB AUTOMATICALLY IF IT DOES NOT ALREADY EXIST)
 #

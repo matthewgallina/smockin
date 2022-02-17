@@ -471,6 +471,12 @@ public class MockedMailServerEngine {
 
     }
 
+    public void purgeAllMailMessagesForAllInboxes() throws MockServerException {
+        logger.debug("purgeAllMailMessagesForAllInboxes called");
+
+        mailInboxCache.clearAll();
+    }
+
     String extractMailSender(final MimeMessage message) throws MessagingException {
 
         if (message.getSender() != null) {
