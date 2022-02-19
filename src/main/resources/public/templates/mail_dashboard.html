@@ -49,8 +49,10 @@
             </div>
             <div class="col-sm-6 add-endpoint-button-div">
                 <button id="bulk-delete-endpoints-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()" ng-disabled="mockSelection.length == 0">{{ bulkDeleteEndpointsButtonLabel }}</button>
+                <!--
                 <button type="button" class="btn btn-primary import-export-button" ng-click="doExport()" ng-disabled="mockSelection.length == 0"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> {{ exportEndpointButtonLabel }}</button>
                 <button type="button" class="btn btn-primary import-export-button" ng-click="doOpenImport()"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> {{ importEndpointButtonLabel }}</button>
+                -->
                 <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenMailInboxEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addInboxButtonLabel }}</button>
             </div>
         </div>

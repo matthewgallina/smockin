@@ -209,6 +209,7 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
 
     };
 
+    /*
     $scope.doExport = function(mode) {
 
         if ($scope.mockSelection.length == 0) {
@@ -247,6 +248,7 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
         });
 
     };
+    */
 
     $scope.doDeleteSelection = function() {
 
@@ -276,6 +278,7 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
 
     };
 
+    /*
     $scope.doOpenImport = function() {
 
         var modalInstance = $uibModal.open({
@@ -311,6 +314,7 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
         });
 
     };
+    */
 
 
     //

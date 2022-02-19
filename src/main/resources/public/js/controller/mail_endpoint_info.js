@@ -264,7 +264,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
                                     showAlert(globalVars.GeneralErrorMessage + ' not all messages were deleted');
                                 }
 
-                            }, 2000);
+                            }, 1000);
 
                         }
 
