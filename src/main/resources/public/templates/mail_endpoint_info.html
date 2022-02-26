@@ -43,8 +43,13 @@
             </div>
 
             <div class="form-group">
-                <input id="save-received-mail" ng-model="endpoint.saveReceivedMail" type="checkbox" />
+                <input id="save-received-mail" ng-model="endpoint.saveReceivedMail" type="checkbox" ng-click="doToggleIncludeMailMessagesInSavePrompt()" />
                 <label for="save-received-mail" class="ng-binding">{{ saveReceivedMailLabel }}</label>
+            </div>
+
+            <div class="form-group" ng-if="showIncludeMailMessagesInSavePrompt">
+                <input id="include-current-messages" ng-model="endpoint.retainCachedMail" type="checkbox" />
+                <label for="include-current-messages" class="ng-binding">{{ includeMailMessagesInSavePromptLabel }}</label>
             </div>
 
             <hr />
@@ -96,7 +101,7 @@
                         <th>{{ senderTableLabel }}</th>
                         <th>{{ subjectTableLabel }}</th>
                         <th>{{ dateReceivedTableLabel }}</th>
-                        <th>{{ savedLabel }}</th>
+                        <th>{{ locationLabel }}</th>
                         <th>{{ attachmentsLabel }}</th>
                         <th>{{ actionTableLabel }}</th>
                     </tr>
@@ -112,8 +117,8 @@
                         <td>{{ x.subject }}</td>
                         <td>{{ x.dateReceived | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
                         <td>
-                            <span ng-if="x.extId != null">{{ yesLabel }}</span>
-                            <span ng-if="x.extId == null">{{ noLabel }}</span>
+                            <span ng-if="x.extId != null">{{ savedToDatabaseLabel }}</span>
+                            <span ng-if="x.extId == null">{{ savedToMailServerLabel }}</span>
                         </td>
                         <td>{{ x.attachmentsCount }}</td>
                         <td>

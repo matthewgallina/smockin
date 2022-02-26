@@ -62,10 +62,11 @@ public class MailMockController {
     public @ResponseBody
     ResponseEntity<?> update(@PathVariable("extId") final String extId,
                              @RequestBody final MailMockDTO dto,
+                             @RequestParam(value = "retainCachedMail", required = false) final Boolean retainCachedMail,
                              @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException, ValidationException {
 
-        mailMockService.update(extId, dto, GeneralUtils.extractOAuthToken(bearerToken));
+        mailMockService.update(extId, dto, retainCachedMail, GeneralUtils.extractOAuthToken(bearerToken));
 
         return ResponseEntity.noContent().build();
     }

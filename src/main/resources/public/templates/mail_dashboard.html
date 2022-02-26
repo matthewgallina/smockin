@@ -75,6 +75,7 @@
                 <th>{{ dateCreatedTableLabel }}</th>
                 <th>{{ statusTableLabel }}</th>
                 <th>{{ messageCountTableLabel }}</th>
+                <th>{{ autoSaveEnabledLabel }}</th>
                 <th>{{ actionTableLabel }}</th>
             </tr>
             </thead>
@@ -89,6 +90,10 @@
                         {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
                     </td>
                     <td>{{ x.messageCount }}</td>
+                    <td>
+                        <span ng-if="x.saveReceivedMail" class="status-active">{{ enabledLabel }}</span>
+                        <span ng-if="!x.saveReceivedMail" class="status-inactive">{{ disabledLabel }}</span>
+                    </td>
                     <td>
                         <button type="button" class="btn btn-primary" ng-click="doOpenMailInboxEndpointInfo(x.externalId)">{{ viewEndpointButtonLabel }}</button>
                     </td>

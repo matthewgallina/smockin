@@ -17,10 +17,15 @@ public interface MailMockService {
                                                      final Optional<String> sender,
                                                      final Optional<String> subject,
                                                      final Optional<String> dateReceived,
-                                                         final String token) throws RecordNotFoundException;
-    String create(final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException;
-    void update(final String externalId, final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException;
-    void delete(final String externalId, final String token) throws RecordNotFoundException;
+                                                     final String token) throws RecordNotFoundException;
+    String create(final MailMockDTO mailMockDTO,
+                  final String token) throws RecordNotFoundException, ValidationException;
+    void update(final String externalId,
+                final MailMockDTO mailMockDTO,
+                final Boolean retainCachedMail,
+                final String token) throws RecordNotFoundException, ValidationException;
+    void delete(final String externalId,
+                final String token) throws RecordNotFoundException;
     List<MailServerMessageInboxDTO> loadMessagesFromMailServerInbox(final String externalId,
                                                                     final String token) throws ValidationException;
     List<MailServerMessageInboxDTO> searchForMessagesFromMailServerInbox(final String externalId,

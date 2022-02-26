@@ -16,15 +16,16 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.endpointHeading = (isNew) ? 'New Mail Inbox' : 'Mail Inbox';
     $scope.pathPlaceHolderTxt = mailPathPlaceHolderTxt;
     $scope.inboxAddressLabel = 'Inbox Address';
-    $scope.saveReceivedMailLabel = 'Auto Save Received Messages';
+    $scope.saveReceivedMailLabel = 'Auto-Save messages';
+    $scope.includeMailMessagesInSavePromptLabel = 'Include messages currently located on mail server?';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
-    $scope.inboxMessagesLabel = 'Received Messages';
+    $scope.inboxMessagesLabel = 'Mail Messages';
     $scope.noDataFoundMsg = 'No Messages Found';
     $scope.reloadMessagesLabel = 'refresh';
-    $scope.yesLabel = 'Yes';
-    $scope.noLabel = 'No';
+    $scope.savedToDatabaseLabel = 'Saved to DB';
+    $scope.savedToMailServerLabel = 'Mail Server';
     $scope.mailServerLabel = 'server';
     $scope.offlineLabel = 'offline';
     $scope.selectAllEndpointsHeading = 'select all';
@@ -36,7 +37,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.senderTableLabel = 'From';
     $scope.subjectTableLabel = 'Subject';
     $scope.dateReceivedTableLabel = 'Date Received';
-    $scope.savedLabel = 'Saved';
+    $scope.locationLabel = 'Location';
     $scope.attachmentsLabel = 'Attachments';
     $scope.actionTableLabel = '';
 
@@ -82,6 +83,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     //
     // Data Objects
+    var currentSaveReceivedMailState = false;
+    $scope.showIncludeMailMessagesInSavePrompt = false;
     $scope.activeStatus = globalVars.ActiveStatus;
     $scope.inActiveStatus = globalVars.InActiveStatus;
     $scope.isNew = isNew;
@@ -91,6 +94,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.endpoint = {
         "address" : null,
         "status" : globalVars.ActiveStatus,
+        "retainCachedMail" : false,
         "saveReceivedMail" : false
     };
     $scope.mailMessages = [];
@@ -101,6 +105,25 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     // Scoped Functions
     $scope.doSetEndpointStatus = function(s) {
         $scope.endpoint.status = s;
+    };
+
+    $scope.doToggleIncludeMailMessagesInSavePrompt = function() {
+
+        if (isNew) {
+            return;
+        }
+
+        if (!$scope.endpoint.saveReceivedMail) {
+            $scope.showIncludeMailMessagesInSavePrompt = false;
+            $scope.endpoint.retainCachedMail = false;
+            return;
+        }
+
+        if (!$scope.showIncludeMailMessagesInSavePrompt
+                && !currentSaveReceivedMailState) {
+            $scope.showIncludeMailMessagesInSavePrompt = true;
+        }
+
     };
 
     $scope.doSaveMailAddress = function() {
@@ -141,21 +164,23 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         } else {
 
             updateAddress($scope.endpoint.extId,
-                          $scope.endpoint.address,
-                          $scope.endpoint.status,
-                          $scope.endpoint.saveReceivedMail,
-                            function (status, data) {
+                  $scope.endpoint.address,
+                  $scope.endpoint.status,
+                  $scope.endpoint.saveReceivedMail,
+                  $scope.endpoint.retainCachedMail,
+                  function (status, data) {
 
-                                 utils.hideBlockingOverlay();
+                     utils.hideBlockingOverlay();
 
-                                 if (status == 204) {
-                                     showAlert('Mail Address successfully updated', 'success');
-                                     loadMock();
-                                     return;
-                                 }
+                     if (status == 204) {
+                         showAlert('Mail Inbox successfully updated', 'success');
+                         $scope.showIncludeMailMessagesInSavePrompt = false;
+                         loadMock();
+                         return;
+                     }
 
-                                 handleErrorResponse(status, data);
-                             });
+                     handleErrorResponse(status, data);
+                  });
 
         }
     };
@@ -311,6 +336,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
                 "saveReceivedMail" : endpoint.saveReceivedMail
             };
 
+            currentSaveReceivedMailState = endpoint.saveReceivedMail;
+
             // saved messages from DB
             $scope.mailMessages = endpoint.messages;
 
@@ -337,7 +364,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         restClient.doPost($http, '/mailmock', reqData, callbackFunc);
     }
 
-    function updateAddress(extId, address, status, saveReceivedMail, callbackFunc) {
+    function updateAddress(extId, address, status, saveReceivedMail, retainCachedMail, callbackFunc) {
 
         // Send to Server
         utils.showBlockingOverlay();
@@ -348,7 +375,11 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             "saveReceivedMail" : saveReceivedMail
         };
 
-        restClient.doPut($http, '/mailmock/' + extId, reqData, callbackFunc);
+        var retainCachedMailReqParam = (retainCachedMail != null)
+            ? '?retainCachedMail=' + retainCachedMail
+            : '';
+
+        restClient.doPut($http, '/mailmock/' + extId + retainCachedMailReqParam, reqData, callbackFunc);
     }
 
     function doDeleteAddress() {

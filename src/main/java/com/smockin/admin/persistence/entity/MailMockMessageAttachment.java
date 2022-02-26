@@ -1,6 +1,8 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -12,6 +14,8 @@ import javax.persistence.*;
 @Table(name = "MAIL_MOCK_MSG_ATCH")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class MailMockMessageAttachment extends Identifier {
 
     @Column(name = "FILE_NAME", nullable = false, length = 200)

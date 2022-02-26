@@ -1,6 +1,8 @@
 package com.smockin.admin.persistence.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -10,6 +12,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "MAIL_MOCK_MSG_ATCH_CONT")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class MailMockMessageAttachmentContent extends Identifier {
 
     @OneToOne(fetch = FetchType.LAZY)

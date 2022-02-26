@@ -8,10 +8,10 @@ import com.smockin.admin.dto.response.MailMockResponseLiteDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.MailMockDAO;
-import com.smockin.admin.persistence.entity.MailMock;
-import com.smockin.admin.persistence.entity.MailMockMessage;
-import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.entity.*;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
+import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.mockserver.engine.MockedMailServerEngine;
 import org.slf4j.Logger;
@@ -63,11 +63,18 @@ public class MailMockServiceImpl implements MailMockService {
 
     int retrieveReceivedMessageCount(final MailMock mailMock) {
 
-        return (mailMock.isSaveReceivedMail())
-                ? mailMockDAO.findMessageCountByMailMockId(mailMock.getId())
-                : ((mockedServerEngineService.getMailServerState().isRunning()))
-                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
-                    : 0;
+        final Integer messageCountInDBInt = mailMockDAO.findMessageCountByMailMockId(mailMock.getId());
+        final int messageCountInDB = (messageCountInDBInt != null)
+                                        ? messageCountInDBInt.intValue()
+                                        : 0;
+
+        final int messageCountInServer =
+                (!mailMock.isSaveReceivedMail()
+                        && mockedServerEngineService.getMailServerState().isRunning())
+                            ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
+                            : 0;
+
+        return messageCountInDB + messageCountInServer;
     }
 
     public MailMockResponseDTO loadByIdWithFilteredMessages(final String externalId,
@@ -126,11 +133,16 @@ public class MailMockServiceImpl implements MailMockService {
         return extId;
     }
 
-    public void update(final String externalId, final MailMockDTO mailMockDTO, final String token) throws RecordNotFoundException, ValidationException {
+    public void update(final String externalId,
+                       final MailMockDTO mailMockDTO,
+                       final Boolean retainCachedMail,
+                       final String token) throws RecordNotFoundException, ValidationException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         final MailMock mailMock = loadById(externalId, smockinUser);
+
+        final RecordStatusEnum currentStatus = mailMock.getStatus();
 
         mailMock.setAddress(mailMockDTO.getAddress());
         mailMock.setStatus(mailMockDTO.getStatus());
@@ -140,11 +152,29 @@ public class MailMockServiceImpl implements MailMockService {
 
         if (mockedServerEngineService.getMailServerState().isRunning()) {
 
+            if (!currentStatus.equals(mailMockDTO.getStatus())) {
+
+                if (RecordStatusEnum.ACTIVE.equals(mailMockDTO.getStatus())) {
+
+                    try {
+                        mockedMailServerEngine.enableMailUser(mailMock);
+                    } catch (FolderException e) {
+                        logger.error("Error adding activated user to mail server", e);
+                    }
+
+                } else if (RecordStatusEnum.INACTIVE.equals(mailMockDTO.getStatus())) {
+
+                    mockedMailServerEngine.suspendMailUser(mailMock);
+                }
+
+                return;
+            }
+
             // Update user's mail box listener (DB or Cache) on mail server
             mockedMailServerEngine.removeListenerForMailUser(mailMock);
             mockedMailServerEngine.addListenerForMailUser(mailMock);
 
-            if (mailMockDTO.isSaveReceivedMail()) {
+            if (mailMockDTO.isSaveReceivedMail() && (retainCachedMail != null && retainCachedMail)) {
                 handleSaveCurrentInbox(mailMock);
 //                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
             }
@@ -205,15 +235,19 @@ public class MailMockServiceImpl implements MailMockService {
 
         mailMessages.stream()
                 .forEach(m ->
-                    saveMockMessage(mailMock,
+                    saveMockMessage(
+                    mailMock,
+                    m.getCacheID(),
                     m.getFrom(),
                     m.getSubject(),
                     m.getBody(),
                     m.getDateReceived()));
 
+        mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getExtId());
     }
 
     private void saveMockMessage(final MailMock mailMock,
+                                final String messageId,
                                 final String sender,
                                 final String subject,
                                 final String body,
@@ -225,6 +259,15 @@ public class MailMockServiceImpl implements MailMockService {
         mailMockMessage.setSubject(subject);
         mailMockMessage.setBody(body);
         mailMockMessage.setMailMock(mailMock);
+
+        final List<MailMockMessageAttachment> attachments = mockedMailServerEngine
+                .getMessageAttachmentsFromMailServerInbox(mailMock.getExtId(), messageId)
+                .stream()
+                .map(dto ->
+                        toMailMockMessageAttachment(dto, mailMockMessage))
+                .collect(Collectors.toList());
+
+        mailMockMessage.getAttachments().addAll(attachments);
 
         mailMock.getMessages().add(mailMockMessage);
 
@@ -240,6 +283,23 @@ public class MailMockServiceImpl implements MailMockService {
         }
 
         return mailMock;
+    }
+
+    private MailMockMessageAttachment toMailMockMessageAttachment(final MailServerMessageInboxAttachmentDTO dto,
+                                                   final MailMockMessage mailMockMessage) {
+
+        final MailMockMessageAttachment attachment = new MailMockMessageAttachment();
+        attachment.setName(dto.getName());
+        attachment.setMimeType(dto.getMimeType());
+        attachment.setMailMockMessage(mailMockMessage);
+
+        final MailMockMessageAttachmentContent attachmentContent = new MailMockMessageAttachmentContent();
+        attachmentContent.setContent(dto.getBase64Content());
+        attachmentContent.setMailMockMessageAttachment(attachment);
+
+        attachment.setMailMockMessageAttachmentContent(attachmentContent);
+
+        return attachment;
     }
 
 }

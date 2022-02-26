@@ -28,7 +28,8 @@ app.controller('mailDashboardController', function($scope, $window, $rootScope, 
     $scope.inboxTableLabel = 'Email Address';
     $scope.dateCreatedTableLabel = 'Date Created';
     $scope.statusTableLabel = 'Deployment Status';
-    $scope.messageCountTableLabel = 'Messages Received';
+    $scope.messageCountTableLabel = 'Message Total';
+    $scope.autoSaveEnabledLabel = 'Auto-Save';
     $scope.actionTableLabel = 'Action';
 
 

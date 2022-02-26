@@ -49,7 +49,7 @@ public class MockedMailServerEngine {
     private ImapHostManager imapHostManager;
     private final Object serverStateMonitor = new Object();
     private MockServerState serverState = new MockServerState(false, 0);
-    private final ConcurrentHashMap<String, GreenMailUserWrapper> mailUsersMap = new ConcurrentHashMap<>(0);
+    private final ConcurrentHashMap<String, SmockinGreenMailUserWrapper> mailUsersMap = new ConcurrentHashMap<>(0);
 
     @Autowired
     private MailMockMessageService mailMockMessageService;
@@ -128,8 +128,11 @@ public class MockedMailServerEngine {
         userManager.setMessageDeliveryHandler((msg, mailAddress) -> {
 
             final GreenMailUser user = userManager.getUserByEmail(mailAddress.getEmail());
+            final SmockinGreenMailUserWrapper smockinGreenMailUserWrapper = mailUsersMap.get(mailAddress.getEmail());
 
-            if (user != null) {
+            if (user != null
+                    && smockinGreenMailUserWrapper != null
+                    && !smockinGreenMailUserWrapper.isDisabled()) {
                 return user;
             }
 
@@ -164,23 +167,47 @@ public class MockedMailServerEngine {
                     ? applySaveMailListener(user, mailMock) // Use DB for storing messages
                     : applyCacheMailListener(user, mailMock); // Use Cache for storing messages
 
-        mailUsersMap.putIfAbsent(mailMock.getAddress(), new GreenMailUserWrapper(user, folderListener));
+        mailUsersMap.putIfAbsent(mailMock.getAddress(), new SmockinGreenMailUserWrapper(user, folderListener, false));
+    }
+
+    public void enableMailUser(final MailMock mailMock) throws FolderException {
+        logger.debug("enableMailUser called");
+
+        final SmockinGreenMailUserWrapper user = mailUsersMap.get(mailMock.getAddress());
+
+        if (user == null) {
+            addMailUser(mailMock);
+            return;
+        }
+
+        user.setDisabled(false);
+    }
+
+    public void suspendMailUser(final MailMock mailMock) {
+        logger.debug("suspendMailUser called");
+
+        final SmockinGreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
+
+        user.setDisabled(true);
+
+        purgeAllMailServerInboxMessages(mailMock.getExtId());
     }
 
     public void removeMailUser(final MailMock mailMock) {
         logger.debug("removeMailUser called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
+        final SmockinGreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
 
         user.getUser().delete();
 
         mailUsersMap.remove(mailMock.getAddress());
+        purgeAllMailServerInboxMessages(mailMock.getExtId());
     }
 
     public void addListenerForMailUser(final MailMock mailMock) {
         logger.debug("addListenerForMailUser called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
+        final SmockinGreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
 
         try {
             if (mailMock.isSaveReceivedMail()) {
@@ -200,7 +227,7 @@ public class MockedMailServerEngine {
     public void removeListenerForMailUser(final MailMock mailMock) {
         logger.debug("removeListenerForMailUser called");
 
-        final GreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
+        final SmockinGreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
 
         try {
 
@@ -326,7 +353,7 @@ public class MockedMailServerEngine {
 
         /*
 
-        final GreenMailUserWrapper user = findGreenMailUser(address);
+        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
 
         final List<StoredMessage> storedMessages;
 
@@ -366,7 +393,7 @@ public class MockedMailServerEngine {
     public int getMessageCountFromMailServerInbox(final String mailMockExtId) throws MockServerException {
         logger.debug("getMessageCountFromMailServerInbox called");
 
-//        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
 
 //        try {
 //            return imapHostManager.getInbox(user.getUser()).getMessageCount();
@@ -383,7 +410,7 @@ public class MockedMailServerEngine {
                                                                                               final String messageId) throws MockServerException {
         logger.debug("getMessageAttachmentsFromMailServerInbox called");
 
-//        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
 
         /*
         final Optional<StoredMessage> storedMessageOpt;
@@ -419,7 +446,7 @@ public class MockedMailServerEngine {
                                                          final String messageId) throws MockServerException {
         logger.debug("purgeSingleMessageFromMailServerInbox called");
 
-//        final GreenMailUserWrapper user = findGreenMailUser(address);
+//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
 
         /*
         final Optional<StoredMessage> storedMessageOpt;
@@ -457,14 +484,14 @@ public class MockedMailServerEngine {
     public void purgeAllMailServerInboxMessages(final String mailMockExtId) throws MockServerException {
         logger.debug("purgeAllMailServerInboxMessages called");
 
-//        final GreenMailUserWrapper user = findGreenMailUser(address);
+//      final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
 
         /*
-        try {
-            imapHostManager.getInbox(user.getUser()).deleteAllMessages();
-        } catch (FolderException e) {
-            throw new MockServerException(String.format("Error deleting inbox for user '%s'", address), e);
-        }
+            try {
+                imapHostManager.getInbox(user.getUser()).deleteAllMessages();
+            } catch (FolderException e) {
+                throw new MockServerException(String.format("Error deleting inbox for user '%s'", address), e);
+            }
         */
 
         mailInboxCache.deleteAll(mailMockExtId);
@@ -492,9 +519,9 @@ public class MockedMailServerEngine {
         throw new MessagingException("Unable to determine mail sender");
     }
 
-    GreenMailUserWrapper findGreenMailUser(final String address) {
+    SmockinGreenMailUserWrapper findGreenMailUser(final String address) {
 
-        final GreenMailUserWrapper user = mailUsersMap.get(address);
+        final SmockinGreenMailUserWrapper user = mailUsersMap.get(address);
 
         if (user == null) {
             throw new RecordNotFoundException();

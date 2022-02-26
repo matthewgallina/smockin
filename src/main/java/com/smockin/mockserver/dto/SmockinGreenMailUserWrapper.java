@@ -7,9 +7,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GreenMailUserWrapper {
+public class SmockinGreenMailUserWrapper {
 
     private GreenMailUser user;
     private FolderListener listener;
+    private boolean disabled;
 
 }

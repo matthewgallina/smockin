@@ -237,9 +237,11 @@
                     </execution>
                 </executions>
                 <!-- For hot loading during development  -->
+                <!--
                 <configuration>
                     <addResources>true</addResources>
                 </configuration>
+                -->
             </plugin>
 
             <plugin>
