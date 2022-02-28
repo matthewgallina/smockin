@@ -64,17 +64,18 @@ public class MailMockServiceImpl implements MailMockService {
     int retrieveReceivedMessageCount(final MailMock mailMock) {
 
         final Integer messageCountInDBInt = mailMockDAO.findMessageCountByMailMockId(mailMock.getId());
-        final int messageCountInDB = (messageCountInDBInt != null)
-                                        ? messageCountInDBInt.intValue()
-                                        : 0;
+
+        final int messageCountInDB =
+                (messageCountInDBInt != null)
+                    ? messageCountInDBInt.intValue()
+                    : 0;
 
         final int messageCountInServer =
-                (!mailMock.isSaveReceivedMail()
-                        && mockedServerEngineService.getMailServerState().isRunning())
+                (mockedServerEngineService.getMailServerState().isRunning())
                             ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
                             : 0;
 
-        return messageCountInDB + messageCountInServer;
+        return (messageCountInDB + messageCountInServer);
     }
 
     public MailMockResponseDTO loadByIdWithFilteredMessages(final String externalId,

@@ -17,7 +17,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.pathPlaceHolderTxt = mailPathPlaceHolderTxt;
     $scope.inboxAddressLabel = 'Inbox Address';
     $scope.saveReceivedMailLabel = 'Auto-Save messages';
-    $scope.includeMailMessagesInSavePromptLabel = 'Include messages currently located on mail server?';
+    $scope.includeMailMessagesInSavePromptLabel1 = 'Include';
+    $scope.includeMailMessagesInSavePromptLabel2 = 'message(s) currently on mail server?';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
@@ -99,6 +100,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     };
     $scope.mailMessages = [];
     $scope.messagesSelection = [];
+    $scope.mailServerMessageCount = 0;
 
 
     //
@@ -109,7 +111,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     $scope.doToggleIncludeMailMessagesInSavePrompt = function() {
 
-        if (isNew) {
+        if (isNew
+                || $scope.mailServerMessageCount == 0) {
             return;
         }
 
@@ -287,7 +290,10 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
                                 if (containsErrors) {
                                     showAlert(globalVars.GeneralErrorMessage + ' not all messages were deleted');
+                                    return;
                                 }
+
+                                showAlert('Selected messages have been deleted', 'success');
 
                             }, 1000);
 
@@ -441,9 +447,9 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     function loadInboxMessages() {
 
-        if (isNew
-                || $scope.endpoint.saveReceivedMail
-                || $scope.mockServerStatus == MockServerStoppedStatus) {
+        $scope.mailServerMessageCount = 0;
+
+        if (isNew || $scope.mockServerStatus == MockServerStoppedStatus) {
             return;
         }
 
@@ -454,6 +460,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
                 return;
             }
 
+            $scope.mailServerMessageCount = data.length;
             $scope.mailMessages = $scope.mailMessages.concat(data);
         });
 
