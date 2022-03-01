@@ -13,6 +13,7 @@ app.service('globalVars', function() {
 
     this.HttpServerMode = "HTTP";
     this.S3ServerMode = "S3";
+    this.MailServerMode = "MAIL";
 
     this.SysAdminRole = "SYS_ADMIN";
     this.AdminRole = "ADMIN";
@@ -28,6 +29,7 @@ app.service('globalVars', function() {
 
     this.RestfulServerType = "RESTFUL";
     this.S3ServerType = "S3";
+    this.MailServerType = "MAIL";
 
     this.TextDataType = 'TEXT';
     this.NumericDataType = 'NUMERIC';

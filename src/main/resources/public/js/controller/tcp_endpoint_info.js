@@ -1344,7 +1344,6 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         return null;
     }
 
-    // TODO Remove jQuery and replace with directive
     function applyPathFieldEvent() {
 
         var typingTimer;

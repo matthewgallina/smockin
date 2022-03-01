@@ -6,13 +6,13 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>2.17.0</version>
+    <version>2.18.0</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.3</version>
     </parent>
 
     <properties>
@@ -26,6 +26,7 @@
         <commons-lang3.version>3.5</commons-lang3.version>
         <httpclient.version>4.5.13</httpclient.version>
         <commons-io.version>2.7</commons-io.version>
+        <commons-email.version>1.5</commons-email.version>
         <mockito-core.version>3.2.0</mockito-core.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <raml-parser.version>1.0.25</raml-parser.version>
@@ -38,6 +39,7 @@
         <s3mock.version>2.2.2</s3mock.version>
         <aws-java-sdk-s3.version>1.12.85</aws-java-sdk-s3.version>
         <s3proxy.version>1.7.1</s3proxy.version>
+        <greenmail.version>1.6.5</greenmail.version>
     </properties>
 
     <dependencies>
@@ -106,6 +108,12 @@
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-email</artifactId>
+            <version>${commons-email.version}</version>
+        </dependency>
+
 
         <!-- Lombok -->
         <dependency>
@@ -119,6 +127,12 @@
             <groupId>org.raml</groupId>
             <artifactId>raml-parser-2</artifactId>
             <version>${raml-parser.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.mail</groupId>
+                    <artifactId>mailapi</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- OpenAPI -->
@@ -158,6 +172,13 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Mail Server -->
+        <dependency>
+            <groupId>com.icegreen</groupId>
+            <artifactId>greenmail</artifactId>
+            <version>${greenmail.version}</version>
         </dependency>
 
 

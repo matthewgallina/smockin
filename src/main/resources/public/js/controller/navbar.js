@@ -7,6 +7,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     // Constants
     $scope.httpServerMode = globalVars.HttpServerMode;
     $scope.s3ServerMode = globalVars.S3ServerMode;
+    $scope.mailServerMode = globalVars.MailServerMode;
 
 
     //

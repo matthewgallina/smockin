@@ -1,12 +1,10 @@
 package com.smockin.admin.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.smockin.admin.enums.StoreTypeEnum;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.*;
-import com.smockin.admin.persistence.dao.ProxyForwardUserConfigDAO;
-import com.smockin.admin.persistence.dao.RestfulMockDAO;
-import com.smockin.admin.persistence.dao.S3MockDAO;
-import com.smockin.admin.persistence.dao.ServerConfigDAO;
+import com.smockin.admin.persistence.dao.*;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.ProxyModeTypeEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
@@ -14,10 +12,7 @@ import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.*;
-import com.smockin.mockserver.engine.MockedRestServerEngine;
-import com.smockin.mockserver.engine.MockedRestServerEngineUtils;
-import com.smockin.mockserver.engine.MockedS3ServerEngine;
-import com.smockin.mockserver.engine.ProxyMappingCache;
+import com.smockin.mockserver.engine.*;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
@@ -75,6 +70,15 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private S3MockDAO s3MockDAO;
+
+    @Autowired
+    private MockedMailServerEngine mockedMailServerEngine;
+
+    @Autowired
+    private MailMockDAO mailMockDAO;
+
+    @Autowired
+    private MailMockMessageDAO mailMockMessageDAO;
 
 
     //
@@ -212,7 +216,77 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         try {
             mockedS3ServerEngine.shutdown();
         } catch (MockServerException ex) {
-            logger.error("Stopping S£ Mocking Engine", ex);
+            logger.error("Stopping S3 Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+
+    //
+    // Mail
+    @Override
+    public MockedServerConfigDTO startMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        return startMail();
+    }
+
+    private MockedServerConfigDTO startMail() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.MAIL);
+
+            mockedMailServerEngine.start(configDTO, mailMockDAO.findAllActive());
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            logger.error("Starting Mail Mocking Engine", ex);
+            mockedMailServerEngine.shutdown();
+            throw ex;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting Mail Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock Mail server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting Mail Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public MockedServerConfigDTO restartMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (getS3ServerState().isRunning()) {
+            shutdownMail();
+        }
+
+        return startMail();
+    }
+
+    @Override
+    public MockServerState getMailServerState() throws MockServerException {
+        return mockedMailServerEngine.getCurrentState();
+    }
+
+    @Override
+    public void shutdownMail(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        shutdownMail();
+    }
+
+    private void shutdownMail() throws MockServerException {
+
+        try {
+            mockedMailServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping Mail Mocking Engine", ex);
             throw ex;
         }
 
@@ -576,6 +650,18 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         return null;
     }
 
+    public void clearAllMailMessages(final StoreTypeEnum storeType,
+                                     final String token) throws AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (StoreTypeEnum.DB.equals(storeType)) {
+            mailMockMessageDAO.deleteAll();
+        } else if (StoreTypeEnum.CACHE.equals(storeType)) {
+            mockedMailServerEngine.purgeAllMailMessagesForAllInboxes();
+        }
+    }
+
     void saveUserProxyMappings(final ProxyForwardUserConfig proxyForwardUserConfig,
                                final List<ProxyForwardMappingDTO> proxyForwardMappings) {
 
@@ -624,6 +710,10 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
                 break;
             case S3:
                 startS3();
+                break;
+            case MAIL:
+                startMail();
+                break;
             default:
                 logger.warn("Found auto start instruction for discontinued server type: " + serverType);
         }

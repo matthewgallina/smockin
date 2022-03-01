@@ -1,0 +1,149 @@
+<link rel="stylesheet" href="../css/mail_endpoint_info.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="../css/alert_fade.css" crossorigin="anonymous" />
+
+<div ng-cloak class="ng-cloak">
+
+    <div class="container">
+
+        <h3>
+            <div class="row">
+
+                <div class="col-sm-9" class="tcp-endpoint-heading">
+                    {{ endpointHeading }}
+                </div>
+
+                <div class="col-sm-3 endpoint-status-row">
+                    {{ endpointStatusLabel }}
+                    <div id="endpoint-status" class="btn-group" uib-dropdown>
+                        <button id="endpoint-status-button" type="button" class="btn btn-{{(endpoint.status == activeStatus)?'success':'default'}} dropdown-toggle" uib-dropdown-toggle>
+                            <span>{{ (endpoint.status == activeStatus) ? enabledLabel : disabledLabel }}</span>
+                            <span class="caret"></span>
+                        </button>
+                        <ul id="endpoint-status-list" class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                            <li role="menuitem">
+                                <a ng-click="doSetEndpointStatus(activeStatus)">{{ enabledLabel }}</a>
+                                <a ng-click="doSetEndpointStatus(inActiveStatus)">{{ disabledLabel }}</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </h3>
+
+        <br />
+
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
+
+        <div class="mail-mock-panel">
+
+            <div class="form-group" >
+                <label for="mail-address" class="ng-binding">{{ inboxAddressLabel }}</label>
+                <input id="mail-address" class="form-control ng-isolate-scope ng-pristine ng-valid" focus="isNew" ng-model="endpoint.address" placeholder="{{ pathPlaceHolderTxt }}" type="text" />
+            </div>
+
+            <div class="form-group">
+                <input id="save-received-mail" ng-model="endpoint.saveReceivedMail" type="checkbox" ng-click="doToggleIncludeMailMessagesInSavePrompt()" />
+                <label for="save-received-mail" class="ng-binding">{{ saveReceivedMailLabel }}</label>
+            </div>
+
+            <div class="form-group" ng-if="showIncludeMailMessagesInSavePrompt">
+                <input id="include-current-messages" ng-model="endpoint.retainCachedMail" type="checkbox" />
+                <label for="include-current-messages" class="ng-binding">{{ includeMailMessagesInSavePromptLabel1 }} {{ mailServerMessageCount }} {{ includeMailMessagesInSavePromptLabel2 }}</label>
+            </div>
+
+            <hr ng-if="!isNew" />
+            <br />
+
+            <div ng-if="!isNew">
+
+                <div class="row">
+                    <div class="col-sm-6">
+
+                        <label for="mail-address" class="ng-binding">
+                            <span style="font-size: 24px; font-weight: 500;">{{ inboxMessagesLabel }}</span>
+                            (
+                            <span ng-if="mockServerStatus == mockServerRunningStatus">
+                                <a href="" ng-click="doReloadMock()">{{ reloadMessagesLabel }}</a>
+                            </span>
+                            <span ng-if="mockServerStatus == mockServerStoppedStatus">
+                                {{ mailServerLabel }}: <span class="offline-message">{{ offlineLabel }}</span>
+                            </span>
+                            )
+                        </label>
+
+                    </div>
+                    <div class="col-sm-6 bulk-mail-message-buttons">
+
+                        <button id="bulk-delete-messages-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()"
+                                ng-disabled="messagesSelection.length == 0">{{ deleteMessagesButtonLabel }}</button>
+
+                    </div>
+                </div>
+
+                <span class="batch-actions-group">
+                    (
+                        <a href ng-click="doSelectAllMessages()">{{ selectAllEndpointsHeading }}</a> |
+                        <a href ng-click="doClearAllMessages()">{{ deselectAllEndpointsHeading }}</a>
+                    )
+                </span>
+
+                <br />
+
+                <h4 class="no-data-label" ng-if="mailMessages.length == 0">
+                    {{ noDataFoundMsg }}
+                </h4>
+
+                <table class="table table-striped" ng-if="mailMessages.length > 0">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th>{{ senderTableLabel }}</th>
+                        <th>{{ subjectTableLabel }}</th>
+                        <th>{{ dateReceivedTableLabel }}</th>
+                        <th>{{ locationLabel }}</th>
+                        <th>{{ attachmentsLabel }}</th>
+                        <th>{{ actionTableLabel }}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="x in mailMessages">
+                        <td>
+                            <input type="checkbox" ng-click="toggleMessageSelection(x)" ng-checked="doesMessagesSelectionContain(x)" />
+                        </td>
+                        <td>
+                            <b>{{ x.from }}</b>
+                        </td>
+                        <td>{{ x.subject }}</td>
+                        <td>{{ x.dateReceived | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                        <td>
+                            <span ng-if="x.extId != null">{{ savedToDatabaseLabel }}</span>
+                            <span ng-if="x.extId == null">{{ savedToMailServerLabel }}</span>
+                        </td>
+                        <td>{{ x.attachmentsCount }}</td>
+                        <td>
+                            <button type="button" class="btn btn-primary" ng-click="doOpenMailMessage(x)">{{ viewMessageButtonLabel }}</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <br />
+                <br />
+
+            </div>
+
+        </div>
+
+
+        <hr />
+
+        <div class="action-buttons">
+            <button class="btn btn-default" type="button" ng-click="doClose()">{{ cancelButtonLabel }}</button>
+            <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
+            <button class="btn btn-primary" type="button" ng-click="doSaveMailAddress()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
+        </div>
+
+    </div>
+
+</div>

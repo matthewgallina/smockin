@@ -1,0 +1,106 @@
+<link rel="stylesheet" href="../css/mail_dashboard.css" crossorigin="anonymous" />
+
+<div ng-controller="mailDashboardController">
+
+    <div class="container">
+
+        <div class="jumbotron">
+            <div class="row">
+                <div class="col-sm-8">
+                    <h3>
+                        {{ mockServerStatusLabel }}
+                        <span id="server-status-stopped" ng-show="mockServerStatus == mockServerStopped">{{ mockServerStopped }}</span>
+                        <span id="server-status-running" ng-show="mockServerStatus == mockServerRunning">{{ mockServerRunning }}</span>
+                        <span id="server-status-restarting" ng-show="mockServerStatus == mockServerRestarting">{{ mockServerRestarting }}</span>
+                        <br />
+                        <span class="server-config-group" ng-if="!readOnly">
+                            (
+                            <a id="server-config" href="" ng-click="doOpenServerConfig()">{{ serverConfigLabel }}</a>
+                            )
+                        </span>
+                    </h3>
+                </div>
+                <div class="col-sm-4" ng-if="!readOnly">
+                    <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startMailMockServer()"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>
+                    <button type="button" class="btn btn-default stop-button" ng-if="mockServerStatus == mockServerRunning" ng-click="stopMailMockServer()"><span class="glyphicon glyphicon-stop" aria-hidden="true" /></button>
+                </div>
+           </div>
+        </div>
+
+    </div>
+
+    <hr />
+    <br />
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>
+                    {{ endpointsHeading }}
+                    <br />
+                    <span class="batch-actions-group">
+                        (
+                            <a href ng-click="doSelectAllEndpoints()">{{ selectAllEndpointsHeading }}</a> |
+                            <a href ng-click="doClearAllEndpoints()">{{ deselectAllEndpointsHeading }}</a>
+                        )
+                    </span>
+                </h3>
+            </div>
+            <div class="col-sm-6 add-endpoint-button-div">
+                <button id="bulk-delete-endpoints-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()" ng-disabled="mockSelection.length == 0">{{ bulkDeleteEndpointsButtonLabel }}</button>
+                <!--
+                <button type="button" class="btn btn-primary import-export-button" ng-click="doExport()" ng-disabled="mockSelection.length == 0"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> {{ exportEndpointButtonLabel }}</button>
+                <button type="button" class="btn btn-primary import-export-button" ng-click="doOpenImport()"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> {{ importEndpointButtonLabel }}</button>
+                -->
+                <button id="add-endpoint-button" type="button" class="btn btn-primary" ng-click="doOpenMailInboxEndpointInfo()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addInboxButtonLabel }}</button>
+            </div>
+        </div>
+
+        <br />
+
+        <div class="form-group">
+            <input id="searchFilter" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="searchFilter" placeholder="{{ searchFilterPlaceHolderTxt }}" type="text" ng-keyup="filterMailMocks()" />
+        </div>
+
+        <h4 class="no-data-label" ng-if="mailServices.length == 0">
+            {{ noDataFoundMsg }}
+        </h4>
+
+        <table class="table table-striped" ng-if="mailServices.length > 0">
+            <thead>
+            <tr>
+                <th></th>
+                <th>{{ inboxTableLabel }}</th>
+                <th>{{ dateCreatedTableLabel }}</th>
+                <th>{{ statusTableLabel }}</th>
+                <th>{{ messageCountTableLabel }}</th>
+                <th>{{ autoSaveEnabledLabel }}</th>
+                <th>{{ actionTableLabel }}</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="x in mailServices">
+                    <td><input type="checkbox" ng-checked="doesSelectionContain(x.externalId)" ng-click="toggleSelection(x)" /></td>
+                    <td>
+                        <b>{{ x.address }}</b>
+                    </td>
+                    <td>{{ x.dateCreated | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                    <td class="status-{{x.status | lowercase}}">
+                        {{ (x.status == activeStatus) ? enabledLabel : disabledLabel }}
+                    </td>
+                    <td>{{ x.messageCount }}</td>
+                    <td>
+                        <span ng-if="x.saveReceivedMail" class="status-active">{{ enabledLabel }}</span>
+                        <span ng-if="!x.saveReceivedMail" class="status-inactive">{{ disabledLabel }}</span>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary" ng-click="doOpenMailInboxEndpointInfo(x.externalId)">{{ viewEndpointButtonLabel }}</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

@@ -133,6 +133,9 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
         } else if (ServerTypeEnum.S3.equals(serverTypeEnum)) {
             exportContent = loadS3ExportContent(selectedExports, smockinUser);
             exportFileName = s3ExportFileName + exportFileNameExt;
+        } else if (ServerTypeEnum.MAIL.equals(serverTypeEnum)) {
+            // TODO
+            throw new MockExportException("Unsupported Server Type: " + serverTypeEnum);
         } else {
             throw new ValidationException("Unsupported Server Type: " + serverTypeEnum);
         }
@@ -245,6 +248,9 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             return handleRestImport(content, config, currentUser, conflictCtxPath);
         } else if (ServerTypeEnum.S3.equals(serverType)) {
             return handleS3Import(content, config, currentUser);
+        } else if (ServerTypeEnum.MAIL.equals(serverType)) {
+            // TODO
+            throw new MockExportException("Unsupported Server Type: " + serverType);
         } else {
             throw new MockExportException("Unsupported Server Type: " + serverType);
         }

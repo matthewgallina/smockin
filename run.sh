@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="2.17.0"
+APP_VERSION="2.18.0"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
@@ -162,6 +162,13 @@ fi
 if ( $RESET_SYS_ADMIN ); then
   RESET_SYS_ADMIN_ARG="-Dreset.sys.admin=true"
 fi
+
+
+#
+# Override any proxy environment variables, as this can cause 403 issues with internal S3 client and S3 mock server
+#
+export HTTP_PROXY=
+export HTTPS_PROXY=
 
 
 #

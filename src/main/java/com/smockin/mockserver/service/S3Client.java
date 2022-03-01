@@ -1,5 +1,6 @@
 package com.smockin.mockserver.service;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -163,9 +164,18 @@ public class S3Client {
 //                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(username, password)))
 //                .withClientConfiguration(
 //                        configureClientToIgnoreInvalidSslCertificates(new ClientConfiguration()))
+                .withClientConfiguration(clientNoProxyConfiguration())
                 .withEndpointConfiguration(getEndpointConfiguration(region))
                 .enablePathStyleAccess()
                 .build();
+    }
+
+    ClientConfiguration clientNoProxyConfiguration() {
+
+        final ClientConfiguration config = new ClientConfiguration();
+        config.setDisableSocketProxy(true);
+
+        return config;
     }
 
     /*

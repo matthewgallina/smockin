@@ -6,11 +6,10 @@
     background-image: linear-gradient(to bottom,#337ab7 0,#265a88 100%);
 }
 
-.restart-message {
-    font-style: italic;
-    font-size: 12px;
+#message-body {
+    height: 200px;
 }
 
-.delete-mail-message-panel {
-    text-align: center;
+.mail-message-info {
+    margin-bottom: 0px;
 }
