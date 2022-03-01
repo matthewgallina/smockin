@@ -158,7 +158,13 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 **New in version 2.18.0**
 
-- Introducing the Mock Mail Server!
+- Introducing the Email Mock Server!
+
+1. Swap in the sMockin mock mail server (running on port 8003) as your application's delivery mail server.
+2. Create Email accounts in the sMockin UI.
+3. View all received email messages from the UI (including mail attachments).
+
+Mail messages can be stored in-memory or saved to database.
 
 
 <br />
