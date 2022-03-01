@@ -196,7 +196,11 @@ public class MockedMailServerEngine {
     public void removeMailUser(final MailMock mailMock) {
         logger.debug("removeMailUser called");
 
-        final SmockinGreenMailUserWrapper user = findGreenMailUser(mailMock.getAddress());
+        final SmockinGreenMailUserWrapper user = mailUsersMap.get(mailMock.getAddress());
+
+        if (user == null) {
+            return;
+        }
 
         user.getUser().delete();
 

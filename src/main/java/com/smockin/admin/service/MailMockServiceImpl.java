@@ -122,7 +122,8 @@ public class MailMockServiceImpl implements MailMockService {
 
         final String extId = mailMockDAO.save(mailMock).getExtId();
 
-        if (mockedServerEngineService.getMailServerState().isRunning()) {
+        if (RecordStatusEnum.ACTIVE.equals(mailMockDTO.getStatus())
+                && mockedServerEngineService.getMailServerState().isRunning()) {
             // Add user to mail server
             try {
                 mockedMailServerEngine.addMailUser(mailMock);

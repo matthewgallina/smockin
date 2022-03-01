@@ -52,7 +52,7 @@
                 <label for="include-current-messages" class="ng-binding">{{ includeMailMessagesInSavePromptLabel1 }} {{ mailServerMessageCount }} {{ includeMailMessagesInSavePromptLabel2 }}</label>
             </div>
 
-            <hr />
+            <hr ng-if="!isNew" />
             <br />
 
             <div ng-if="!isNew">
