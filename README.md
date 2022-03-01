@@ -22,7 +22,7 @@
 
 ### OVERVIEW
 
-sMockin is a development tool used to dynamically simulate API endpoints and S3 buckets.
+sMockin is a development tool used to dynamically simulate API endpoints, S3 buckets & Email Accounts.
 
 Featuring a rich UI an built in mock servers, creating and managing mocks can be done quickly, both with or without code.
 
@@ -145,6 +145,8 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         JQuery                      -       https://jquery.com/
         Code Mirror                 -       https://codemirror.net/
         S3proxy                     -       https://github.com/gaul/s3proxy
+        GreenMail                   -       https://greenmail-mail-test.github.io/greenmail/
+
 
 <br/>
 <br />
@@ -158,7 +160,6 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 - Introducing the Mock Mail Server!
 
-...
 
 <br />
 <br />
