@@ -42,6 +42,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     @Autowired
     private UserKeyValueDataService userKeyValueDataService;
 
+    private final static String CARRIAGE_RETURN_REGEX = "\\r\\n|\\r|\\n";
     private final String extensionsDir = "js-extensions/";
 
     public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
@@ -334,12 +335,9 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
     }
 
-    private String removeLineBreaks(final String input) {
+    String removeLineBreaks(final String input) {
 
-        final String systemCarriage = System.getProperty("line.separator");
-        final String carriage = "\\r\\n|\\r|\\n";
-
-        return StringUtils.replaceAll(input, (systemCarriage != null) ? systemCarriage : carriage, "");
+        return StringUtils.replaceAll(input, CARRIAGE_RETURN_REGEX, "");
     }
 
 }
