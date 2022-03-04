@@ -640,4 +640,32 @@ public class JavaScriptResponseHandlerTest {
 
     }
 
+    @Test
+    public void removeLineBreaks_windows_Test() {
+
+        // Setup
+        final String input = "Hello\r\nWorld";
+
+        // Test
+        final String result = javaScriptResponseHandler.removeLineBreaks(input);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("HelloWorld", result);
+    }
+
+    @Test
+    public void removeLineBreaks_linux_Test() {
+
+        // Setup
+        final String input = "Hello\nWorld";
+
+        // Test
+        final String result = javaScriptResponseHandler.removeLineBreaks(input);
+
+        // Assertions
+        Assert.assertNotNull(result);
+        Assert.assertEquals("HelloWorld", result);
+    }
+
 }
