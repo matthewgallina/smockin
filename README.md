@@ -8,7 +8,7 @@
 
 <br />
 
-### Dynamic API, S3 Bucket & Mail Server simulation for application development & QA testing
+### Dynamic API, S3 Bucket & Mail Server mocking for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -22,7 +22,7 @@
 
 ### OVERVIEW
 
-sMockin is a development tool used to dynamically simulate API endpoints, S3 buckets & Email Accounts.
+sMockin is a development tool used to dynamically mock API endpoints, S3 buckets & Email Accounts.
 
 Featuring a rich UI an built in mock servers, creating and managing mocks can be done quickly, both with or without code.
 
