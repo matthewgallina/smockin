@@ -17,8 +17,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.pathPlaceHolderTxt = mailPathPlaceHolderTxt;
     $scope.inboxAddressLabel = 'Inbox Address';
     $scope.saveReceivedMailLabel = 'Auto-Save messages';
-    $scope.includeMailMessagesInSavePromptLabel1 = 'Include';
-    $scope.includeMailMessagesInSavePromptLabel2 = 'message(s) currently on mail server?';
+    $scope.includeMailMessagesInSavePromptLabel = 'Also save message(s) below?';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
@@ -29,6 +28,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.offlineLabel = 'offline';
     $scope.selectAllEndpointsHeading = 'select all';
     $scope.deselectAllEndpointsHeading = 'clear selection';
+    $scope.purgeSavedMailWarningLabel = '(WARNING disabling auto-save will delete all existing messages)';
 
 
     //
@@ -86,6 +86,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     // Data Objects
     var currentSaveReceivedMailState = false;
     $scope.showIncludeMailMessagesInSavePrompt = false;
+    $scope.showPurgeSavedMailWarning = false;
     $scope.activeStatus = globalVars.ActiveStatus;
     $scope.inActiveStatus = globalVars.InActiveStatus;
     $scope.isNew = isNew;
@@ -115,9 +116,16 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     $scope.doToggleIncludeMailMessagesInSavePrompt = function() {
 
+        $scope.showPurgeSavedMailWarning = false;
+
         if (isNew
                 || $scope.mailMessagesTotal == 0) {
             return;
+        }
+
+        if (!$scope.endpoint.saveReceivedMail
+                && currentSaveReceivedMailState) {
+            $scope.showPurgeSavedMailWarning = true;
         }
 
         if (!$scope.endpoint.saveReceivedMail) {

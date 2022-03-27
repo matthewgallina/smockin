@@ -47,9 +47,13 @@
                 <label for="save-received-mail" class="ng-binding">{{ saveReceivedMailLabel }}</label>
             </div>
 
+            <div class="form-group" ng-if="showPurgeSavedMailWarning">
+                {{ purgeSavedMailWarningLabel }}
+            </div>
+
             <div class="form-group" ng-if="showIncludeMailMessagesInSavePrompt">
                 <input id="include-current-messages" ng-model="endpoint.retainCachedMail" type="checkbox" />
-                <label for="include-current-messages" class="ng-binding">{{ includeMailMessagesInSavePromptLabel1 }} {{ mailServerMessageCount }} {{ includeMailMessagesInSavePromptLabel2 }}</label>
+                <label for="include-current-messages" class="ng-binding">{{ includeMailMessagesInSavePromptLabel }}</label>
             </div>
 
             <hr ng-if="!isNew" />

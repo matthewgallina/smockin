@@ -72,19 +72,18 @@ public class MailMockServiceImpl implements MailMockService {
 
     long retrieveReceivedMessageCount(final MailMock mailMock) {
 
-        final Integer messageCountInDBInt = mailMockMessageDAO.countAllMessageByMailMockId(mailMock.getId());
+        if (mailMock.isSaveReceivedMail()) {
 
-        final int messageCountInDB =
-                (messageCountInDBInt != null)
-                    ? messageCountInDBInt.intValue()
+            final Integer messageCountInDBInt = mailMockMessageDAO.countAllMessageByMailMockId(mailMock.getId());
+
+            return (messageCountInDBInt != null)
+                        ? messageCountInDBInt.intValue()
+                        : 0;
+        }
+
+        return (mockedServerEngineService.getMailServerState().isRunning())
+                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
                     : 0;
-
-        final long messageCountInServer =
-                (mockedServerEngineService.getMailServerState().isRunning())
-                            ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
-                            : 0;
-
-        return (messageCountInDB + messageCountInServer);
     }
 
     public MailMockResponseDTO loadByIdWithFilteredMessages(final String externalId,
@@ -177,6 +176,7 @@ public class MailMockServiceImpl implements MailMockService {
 
         if (mockedServerEngineService.getMailServerState().isRunning()) {
 
+            // Mail Status change
             if (!currentStatus.equals(mailMockDTO.getStatus())) {
 
                 if (RecordStatusEnum.ACTIVE.equals(mailMockDTO.getStatus())) {
@@ -199,13 +199,14 @@ public class MailMockServiceImpl implements MailMockService {
             mockedMailServerEngine.removeListenerForMailUser(mailMock);
             mockedMailServerEngine.addListenerForMailUser(mailMock);
 
+            // Enabling auto-save mode: optionally saves cached mail and then purges this from the cache.
             if (!saveReceivedMailCurrentValue && mailMockDTO.isSaveReceivedMail()) {
 
                 if (retainCachedMail != null && retainCachedMail) {
                     handleSaveCurrentInbox(mailMock);
                 }
 
-                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
+                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getExtId());
             }
 
         }
