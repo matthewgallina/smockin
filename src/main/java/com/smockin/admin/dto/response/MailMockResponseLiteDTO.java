@@ -13,11 +13,11 @@ public class MailMockResponseLiteDTO extends MailMockDTO {
 
     private String externalId;
     private Date dateCreated;
-    private int messageCount;
+    private long messageCount;
 
     public MailMockResponseLiteDTO(final String externalId,
                                    final Date dateCreated,
-                                   final int messageCount,
+                                   final long messageCount,
                                    final String address,
                                    final RecordStatusEnum status,
                                    final boolean saveReceivedMail

@@ -3,14 +3,12 @@ package com.smockin.admin.dto.response;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 public class MailMockResponseDTO extends MailMockResponseLiteDTO {
 
-    private List<MailMockMessageResponseDTO> messages = new ArrayList<>();
+    private PagingResponseDTO<MailMockMessageResponseDTO> messages;
 
     public MailMockResponseDTO(final String externalId,
                                final Date dateCreated,

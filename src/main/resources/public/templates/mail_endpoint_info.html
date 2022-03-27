@@ -75,7 +75,10 @@
                     </div>
                     <div class="col-sm-6 bulk-mail-message-buttons">
 
-                        <button id="bulk-delete-messages-button" type="button" class="btn btn-danger" ng-click="doDeleteSelection()"
+                        <button id="delete-all-messages-button" type="button" class="btn btn-danger" ng-click="doDeleteAll()"
+                                ng-disabled="mailMessages.length == 0">{{ deleteAllMessagesButtonLabel }}</button>
+                        &nbsp;
+                        <button id="bulk-delete-messages-button" type="button" class="btn btn-warning" ng-click="doDeleteSelection()"
                                 ng-disabled="messagesSelection.length == 0">{{ deleteMessagesButtonLabel }}</button>
 
                     </div>
@@ -101,7 +104,6 @@
                         <th>{{ senderTableLabel }}</th>
                         <th>{{ subjectTableLabel }}</th>
                         <th>{{ dateReceivedTableLabel }}</th>
-                        <th>{{ locationLabel }}</th>
                         <th>{{ attachmentsLabel }}</th>
                         <th>{{ actionTableLabel }}</th>
                     </tr>
@@ -116,10 +118,6 @@
                         </td>
                         <td>{{ x.subject }}</td>
                         <td>{{ x.dateReceived | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
-                        <td>
-                            <span ng-if="x.extId != null">{{ savedToDatabaseLabel }}</span>
-                            <span ng-if="x.extId == null">{{ savedToMailServerLabel }}</span>
-                        </td>
                         <td>{{ x.attachmentsCount }}</td>
                         <td>
                             <button type="button" class="btn btn-primary" ng-click="doOpenMailMessage(x)">{{ viewMessageButtonLabel }}</button>
@@ -130,6 +128,24 @@
 
                 <br />
                 <br />
+
+                <div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <button type="button" class="btn btn-primary" ng-click="doOpenPreviousPage()" ng-if="currentPageIndex > 0">
+                                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                                {{ previousPageButtonLabel }}
+                            </button>
+                        </div>
+                        <div class="col-sm-6">
+                            <button type="button" class="btn btn-primary pull-right" ng-click="doOpenNextPage()" ng-if="maxPageIndex > currentPageIndex">
+                                {{ nextPageButtonLabel }} <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
 
             </div>
 

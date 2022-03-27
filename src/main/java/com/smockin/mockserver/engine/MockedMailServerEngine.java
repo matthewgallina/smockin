@@ -347,95 +347,26 @@ public class MockedMailServerEngine {
         return folderListener;
     }
 
-    public List<MailServerMessageInboxDTO> getMessagesFromMailServerInbox(final String mailMockExtId) throws MockServerException {
+    public List<MailServerMessageInboxDTO> getMessagesFromMailServerInbox(final String mailMockExtId,
+                                                                          final Optional<Integer> pageStart) throws MockServerException {
         logger.debug("getAllEmailsForAddress called");
 
-        return mailInboxCache.findAllMessages(mailMockExtId)
+        return mailInboxCache.findAllMessages(mailMockExtId, pageStart)
                 .stream()
-                .map(c -> c.getMailServerMessageInboxDTO())
+                .map(c ->
+                        c.getMailServerMessageInboxDTO())
                 .collect(Collectors.toList());
-
-        /*
-
-        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
-
-        final List<StoredMessage> storedMessages;
-
-        try {
-            storedMessages = imapHostManager.getInbox(user.getUser()).getMessages();
-        } catch (FolderException e) {
-            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
-        }
-
-        return storedMessages
-                .stream()
-                .map(m -> {
-
-                    final MimeMessage message = m.getMimeMessage();
-
-                    try {
-
-                        return new MailServerMessageInboxDTO(
-                                m.getUid(),
-                                extractMailSender(message),
-                                message.getSubject(),
-                                extractMailBodyContent(message),
-                                message.getReceivedDate(),
-                                countMessageAttachments(message));
-
-                    } catch (Exception e) {
-                        logger.error(String.format("Error reading message from mail server for address '%s'", address), e);
-                        return null;
-                    }
-
-                })
-                .collect(Collectors.toList());
-        */
-
     }
 
-    public int getMessageCountFromMailServerInbox(final String mailMockExtId) throws MockServerException {
+    public long getMessageCountFromMailServerInbox(final String mailMockExtId) throws MockServerException {
         logger.debug("getMessageCountFromMailServerInbox called");
 
-//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
-
-//        try {
-//            return imapHostManager.getInbox(user.getUser()).getMessageCount();
-
-            return mailInboxCache.findAllMessages(mailMockExtId).size();
-
-//        } catch (FolderException e) {
-//            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
-//        }
-
+        return mailInboxCache.countAllMessages(mailMockExtId);
     }
 
     public List<MailServerMessageInboxAttachmentDTO> getMessageAttachmentsFromMailServerInbox(final String mailMockExtId,
                                                                                               final String messageId) throws MockServerException {
         logger.debug("getMessageAttachmentsFromMailServerInbox called");
-
-//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
-
-        /*
-        final Optional<StoredMessage> storedMessageOpt;
-
-        try {
-
-            storedMessageOpt = imapHostManager.getInbox(user.getUser())
-                    .getMessages(new MsgRangeFilter(messageId, true))
-                    .stream()
-                    .findFirst();
-
-        } catch (Exception e) {
-            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
-        }
-
-        if (!storedMessageOpt.isPresent()) {
-            throw new MockServerException(String.format("Error locating inbox message for user '%s'", address));
-        }
-
-        return extractAllMessageAttachments(storedMessageOpt.get().getMimeMessage());
-        */
 
         final Optional<CachedMailServerMessage> cachedMailServerMessageOpt = mailInboxCache.findMessageById(mailMockExtId, messageId);
 
@@ -450,36 +381,6 @@ public class MockedMailServerEngine {
                                                          final String messageId) throws MockServerException {
         logger.debug("purgeSingleMessageFromMailServerInbox called");
 
-//        final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
-
-        /*
-        final Optional<StoredMessage> storedMessageOpt;
-
-        final MailFolder inbox;
-
-        try {
-
-            inbox = imapHostManager.getInbox(user.getUser());
-
-            storedMessageOpt = inbox
-                    .getMessages(new MsgRangeFilter(messageId, true))
-                    .stream()
-                    .findFirst();
-
-        } catch (Exception e) {
-            throw new MockServerException(String.format("Error loading inbox for user '%s'", address), e);
-        }
-
-        if (!storedMessageOpt.isPresent()) {
-            return false;
-        }
-
-        System.out.println("DELETING FROM MAIL MOCK SERVER...");
-        final StoredMessage storedMessage = storedMessageOpt.get();
-        storedMessage.setFlag(Flags.Flag.DELETED, true);
-        inbox.expunge(new IdRange[] { new IdRange(storedMessage.getUid()) });
-        */
-
         mailInboxCache.delete(mailMockExtId, messageId);
 
         return true;
@@ -488,18 +389,7 @@ public class MockedMailServerEngine {
     public void purgeAllMailServerInboxMessages(final String mailMockExtId) throws MockServerException {
         logger.debug("purgeAllMailServerInboxMessages called");
 
-//      final SmockinGreenMailUserWrapper user = findGreenMailUser(address);
-
-        /*
-            try {
-                imapHostManager.getInbox(user.getUser()).deleteAllMessages();
-            } catch (FolderException e) {
-                throw new MockServerException(String.format("Error deleting inbox for user '%s'", address), e);
-            }
-        */
-
         mailInboxCache.deleteAll(mailMockExtId);
-
     }
 
     public void purgeAllMailMessagesForAllInboxes() throws MockServerException {
@@ -573,37 +463,6 @@ public class MockedMailServerEngine {
         }
 
     }
-
-    /*
-    int countMessageAttachments(final MimeMessage mimeMessage) throws MockServerException {
-
-        try {
-
-            if (!mimeMessage.getContentType().contains(MULTIPART)
-                    || !(mimeMessage.getContent() instanceof Multipart)) {
-                return 0;
-            }
-
-            final Multipart multipart = (Multipart) mimeMessage.getContent();
-
-            int counter = 0;
-
-            for (int i=0; i < multipart.getCount(); i++) {
-
-                if (multipart.getBodyPart(i) instanceof MimeBodyPart
-                        && Part.ATTACHMENT.equalsIgnoreCase((multipart.getBodyPart(i)).getDisposition())) {
-                    counter++;
-                }
-            }
-
-            return counter;
-
-        } catch (Exception e) {
-            throw new MockServerException("Error extracting attachment count for mail message", e);
-        }
-
-    }
-    */
 
     String extractMailBodyContent(final MimeMessage message) throws Exception {
 
