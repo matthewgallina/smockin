@@ -427,6 +427,8 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
             } else {
 
+                loadMailServerStatus();
+
                 // saved messages from DB
                 $scope.mailMessages = endpoint.messages.pageData;
                 $scope.mailMessagesTotal = endpoint.messages.totalRecords;
