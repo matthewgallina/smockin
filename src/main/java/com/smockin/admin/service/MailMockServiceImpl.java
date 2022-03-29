@@ -5,18 +5,24 @@ import com.smockin.admin.dto.MailMockDTO;
 import com.smockin.admin.dto.response.MailMockMessageResponseDTO;
 import com.smockin.admin.dto.response.MailMockResponseDTO;
 import com.smockin.admin.dto.response.MailMockResponseLiteDTO;
+import com.smockin.admin.dto.response.PagingResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.dao.MailMockDAO;
+import com.smockin.admin.persistence.dao.MailMockMessageDAO;
 import com.smockin.admin.persistence.entity.*;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.mockserver.engine.MockedMailServerEngine;
+import com.smockin.utils.GeneralUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +42,9 @@ public class MailMockServiceImpl implements MailMockService {
 
     @Autowired
     private MailMockDAO mailMockDAO;
+
+    @Autowired
+    private MailMockMessageDAO mailMockMessageDAO;
 
     @Autowired
     private MockedServerEngineService mockedServerEngineService;
@@ -61,55 +70,62 @@ public class MailMockServiceImpl implements MailMockService {
                 .collect(Collectors.toList());
     }
 
-    int retrieveReceivedMessageCount(final MailMock mailMock) {
+    long retrieveReceivedMessageCount(final MailMock mailMock) {
 
-        final Integer messageCountInDBInt = mailMockDAO.findMessageCountByMailMockId(mailMock.getId());
+        if (mailMock.isSaveReceivedMail()) {
 
-        final int messageCountInDB =
-                (messageCountInDBInt != null)
-                    ? messageCountInDBInt.intValue()
+            final Integer messageCountInDBInt = mailMockMessageDAO.countAllMessageByMailMockId(mailMock.getId());
+
+            return (messageCountInDBInt != null)
+                        ? messageCountInDBInt.intValue()
+                        : 0;
+        }
+
+        return (mockedServerEngineService.getMailServerState().isRunning())
+                    ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
                     : 0;
-
-        final int messageCountInServer =
-                (mockedServerEngineService.getMailServerState().isRunning())
-                            ? mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId())
-                            : 0;
-
-        return (messageCountInDB + messageCountInServer);
     }
 
     public MailMockResponseDTO loadByIdWithFilteredMessages(final String externalId,
                                                             final Optional<String> sender,
                                                             final Optional<String> subject,
                                                             final Optional<String> dateReceived,
+                                                            final int pageStart,
                                                             final String token) throws RecordNotFoundException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
 
         final MailMock mailMock = loadById(externalId, smockinUser);
 
+        final int totalRecords = mailMockMessageDAO.countAllMessageByMailMockId(mailMock.getId());
+
         MailMockResponseDTO dto = new MailMockResponseDTO(
                 mailMock.getExtId(),
                 mailMock.getDateCreated(),
-                mailMock.getMessages().size(),
+                totalRecords,
                 mailMock.getAddress(),
                 mailMock.getStatus(),
                 mailMock.isSaveReceivedMail());
 
-        // TODO filter messages
+        final Pageable pageable = PageRequest.of(pageStart, GeneralUtils.DEFAULT_RECORDS_PER_PAGE);
+        final Page<MailMockMessage> messages = mailMockMessageDAO.findAllMessageByMailMockId(mailMock.getId(), pageable);
 
-        dto.setMessages(mailMock
-                .getMessages()
-                .stream()
-                .map(m ->
-                        new MailMockMessageResponseDTO(
-                            m.getExtId(),
-                            m.getFrom(),
-                            m.getSubject(),
-                            m.getBody(),
-                            m.getDateReceived(),
-                            m.getAttachments().size()))
-                .collect(Collectors.toList()));
+        dto.setMessages(
+                new PagingResponseDTO<>(
+                    totalRecords,
+                    pageStart,
+                    GeneralUtils.DEFAULT_RECORDS_PER_PAGE,
+                    messages.getContent()
+                            .stream()
+                            .map(m ->
+                                    new MailMockMessageResponseDTO(
+                                            m.getExtId(),
+                                            m.getFrom(),
+                                            m.getSubject(),
+                                            m.getBody(),
+                                            m.getDateReceived(),
+                                            m.getAttachments().size()))
+                            .collect(Collectors.toList())));
 
         return dto;
     }
@@ -145,6 +161,12 @@ public class MailMockServiceImpl implements MailMockService {
         final MailMock mailMock = loadById(externalId, smockinUser);
 
         final RecordStatusEnum currentStatus = mailMock.getStatus();
+        final boolean saveReceivedMailCurrentValue = mailMock.isSaveReceivedMail();
+
+        // Purge all existing saved messages if moving away from auto save
+        if (saveReceivedMailCurrentValue && !mailMockDTO.isSaveReceivedMail()) {
+            mailMock.getMessages().clear();
+        }
 
         mailMock.setAddress(mailMockDTO.getAddress());
         mailMock.setStatus(mailMockDTO.getStatus());
@@ -154,6 +176,7 @@ public class MailMockServiceImpl implements MailMockService {
 
         if (mockedServerEngineService.getMailServerState().isRunning()) {
 
+            // Mail Status change
             if (!currentStatus.equals(mailMockDTO.getStatus())) {
 
                 if (RecordStatusEnum.ACTIVE.equals(mailMockDTO.getStatus())) {
@@ -176,10 +199,16 @@ public class MailMockServiceImpl implements MailMockService {
             mockedMailServerEngine.removeListenerForMailUser(mailMock);
             mockedMailServerEngine.addListenerForMailUser(mailMock);
 
-            if (mailMockDTO.isSaveReceivedMail() && (retainCachedMail != null && retainCachedMail)) {
-                handleSaveCurrentInbox(mailMock);
-//                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getAddress());
+            // Enabling auto-save mode: optionally saves cached mail and then purges this from the cache.
+            if (!saveReceivedMailCurrentValue && mailMockDTO.isSaveReceivedMail()) {
+
+                if (retainCachedMail != null && retainCachedMail) {
+                    handleSaveCurrentInbox(mailMock);
+                }
+
+                mockedMailServerEngine.purgeAllMailServerInboxMessages(mailMock.getExtId());
             }
+
         }
     }
 
@@ -197,7 +226,9 @@ public class MailMockServiceImpl implements MailMockService {
         mailMockDAO.delete(mailMock);
     }
 
-    public List<MailServerMessageInboxDTO> loadMessagesFromMailServerInbox(final String externalId, final String token)
+    public PagingResponseDTO<MailServerMessageInboxDTO> loadMessagesFromMailServerInbox(final String externalId,
+                                                                                        final int pageStart,
+                                                                                        final String token)
             throws ValidationException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
@@ -208,14 +239,18 @@ public class MailMockServiceImpl implements MailMockService {
             throw new ValidationException("Mail server is not running");
         }
 
-        return mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId());
+        final List<MailServerMessageInboxDTO> mailServerMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId(), Optional.of(pageStart));
+        final long total = mockedMailServerEngine.getMessageCountFromMailServerInbox(mailMock.getExtId());
+
+        return new PagingResponseDTO<>(total, pageStart, GeneralUtils.DEFAULT_RECORDS_PER_PAGE, mailServerMessages);
     }
 
-    public List<MailServerMessageInboxDTO> searchForMessagesFromMailServerInbox(
+    public PagingResponseDTO<MailServerMessageInboxDTO> searchForMessagesFromMailServerInbox(
             final String externalId,
             final Optional<String> sender,
             final Optional<String> subject,
             final Optional<String> dateReceived,
+            final int pageStart,
             final String token) throws ValidationException {
 
         final SmockinUser smockinUser = userTokenServiceUtils.loadCurrentActiveUser(token);
@@ -233,7 +268,7 @@ public class MailMockServiceImpl implements MailMockService {
 
     private void handleSaveCurrentInbox(final MailMock mailMock) {
 
-        final List<MailServerMessageInboxDTO> mailMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId());
+        final List<MailServerMessageInboxDTO> mailMessages = mockedMailServerEngine.getMessagesFromMailServerInbox(mailMock.getExtId(), Optional.empty());
 
         mailMessages.stream()
                 .forEach(m ->

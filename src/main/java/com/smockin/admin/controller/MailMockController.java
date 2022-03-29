@@ -38,6 +38,7 @@ public class MailMockController {
                                             @RequestParam(value = "sender", required = false) final String sender,
                                             @RequestParam(value = "subject", required = false) final String subject,
                                             @RequestParam(value = "dateReceived", required = false) final String dateReceived,
+                                            @RequestParam(value = "pageStart") final int pageStart,
                                             @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
             throws RecordNotFoundException {
 
@@ -46,6 +47,7 @@ public class MailMockController {
                 Optional.ofNullable(sender),
                 Optional.ofNullable(subject),
                 Optional.ofNullable(dateReceived),
+                pageStart,
                 GeneralUtils.extractOAuthToken(bearerToken)));
     }
 

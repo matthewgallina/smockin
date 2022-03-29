@@ -2,13 +2,12 @@ package com.smockin.mockserver.engine;
 
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
+import com.smockin.utils.GeneralUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,8 @@ public class MailInboxCache {
         mailMessageCache.put(
                 new CachedMailServerMessageKey(
                         mailMockExtId,
-                        mailServerMessageInbox.getMailServerMessageInboxDTO().getCacheID()), mailServerMessageInbox);
+                        mailServerMessageInbox.getMailServerMessageInboxDTO().getCacheID(),
+                        GeneralUtils.getCurrentDate()), mailServerMessageInbox);
     }
 
     public void delete(final String mailMockExtId, final String messageId) {
@@ -53,15 +53,37 @@ public class MailInboxCache {
         }
     }
 
-    public List<CachedMailServerMessage> findAllMessages(final String mailMockExtId) {
+    public List<CachedMailServerMessage> findAllMessages(final String mailMockExtId,
+                                                         final Optional<Integer> pageStart) {
+
+        // Sort by date and find page start...
+        int start = (pageStart.isPresent())
+                ? pageStart.get()
+                : 0;
+
+        final int startFromRecord = (start * GeneralUtils.DEFAULT_RECORDS_PER_PAGE);
 
         return mailMessageCache
                 .entrySet()
                 .stream()
                 .filter(e ->
                         e.getKey().getMockMailId().equals(mailMockExtId))
+                .sorted(Comparator.comparing(e ->
+                        e.getKey().getDateAdded()))
                 .map(Map.Entry::getValue)
+                .skip(startFromRecord)
+                .limit(GeneralUtils.DEFAULT_RECORDS_PER_PAGE)
                 .collect(Collectors.toList());
+    }
+
+    public long countAllMessages(final String mailMockExtId) {
+
+        return mailMessageCache
+                .entrySet()
+                .stream()
+                .filter(e ->
+                        e.getKey().getMockMailId().equals(mailMockExtId))
+                .count();
     }
 
     public Optional<CachedMailServerMessage> findMessageById(final String mailMockExtId, final String messageId) {
@@ -83,6 +105,7 @@ public class MailInboxCache {
 class CachedMailServerMessageKey {
     private String mockMailId;
     private String mailMessageId;
+    private Date dateAdded;
 }
 
 @Data

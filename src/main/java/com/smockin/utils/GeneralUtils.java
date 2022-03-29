@@ -58,12 +58,15 @@ public final class GeneralUtils {
     public static final String URL_PATH_SEPARATOR = "/";
     public static final String CARRIAGE = "\n";
 
+    public static final int DEFAULT_RECORDS_PER_PAGE = 25;
+
     static final ObjectMapper JSON_MAPPER = new ObjectMapper();
 
     static {
         JSON_MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         JSON_MAPPER.registerModule(new Jdk8Module());
     }
+
 
     public final static String generateUUID() {
         return UUID.randomUUID().toString();

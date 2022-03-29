@@ -17,20 +17,18 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.pathPlaceHolderTxt = mailPathPlaceHolderTxt;
     $scope.inboxAddressLabel = 'Inbox Address';
     $scope.saveReceivedMailLabel = 'Auto-Save messages';
-    $scope.includeMailMessagesInSavePromptLabel1 = 'Include';
-    $scope.includeMailMessagesInSavePromptLabel2 = 'message(s) currently on mail server?';
+    $scope.includeMailMessagesInSavePromptLabel = 'Also save message(s) below?';
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.endpointStatusLabel = 'Status:';
     $scope.inboxMessagesLabel = 'Mail Messages';
     $scope.noDataFoundMsg = 'No Messages Found';
     $scope.reloadMessagesLabel = 'refresh';
-    $scope.savedToDatabaseLabel = 'Saved to DB';
-    $scope.savedToMailServerLabel = 'Mail Server';
     $scope.mailServerLabel = 'server';
     $scope.offlineLabel = 'offline';
     $scope.selectAllEndpointsHeading = 'select all';
     $scope.deselectAllEndpointsHeading = 'clear selection';
+    $scope.purgeSavedMailWarningLabel = '(WARNING disabling auto-save will delete all existing messages)';
 
 
     //
@@ -38,7 +36,6 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.senderTableLabel = 'From';
     $scope.subjectTableLabel = 'Subject';
     $scope.dateReceivedTableLabel = 'Date Received';
-    $scope.locationLabel = 'Location';
     $scope.attachmentsLabel = 'Attachments';
     $scope.actionTableLabel = '';
 
@@ -49,7 +46,10 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.saveButtonLabel = 'Save';
     $scope.cancelButtonLabel = 'Close';
     $scope.viewMessageButtonLabel = 'View';
-    $scope.deleteMessagesButtonLabel = 'Delete Messages';
+    $scope.deleteMessagesButtonLabel = 'Delete Selected Messages';
+    $scope.deleteAllMessagesButtonLabel = 'Delete All Messages';
+    $scope.previousPageButtonLabel = 'Previous';
+    $scope.nextPageButtonLabel = 'Next';
 
 
     //
@@ -86,6 +86,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     // Data Objects
     var currentSaveReceivedMailState = false;
     $scope.showIncludeMailMessagesInSavePrompt = false;
+    $scope.showPurgeSavedMailWarning = false;
     $scope.activeStatus = globalVars.ActiveStatus;
     $scope.inActiveStatus = globalVars.InActiveStatus;
     $scope.isNew = isNew;
@@ -98,9 +99,13 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         "retainCachedMail" : false,
         "saveReceivedMail" : false
     };
+
+    $scope.currentPageIndex = 0;
+    $scope.maxPageIndex = 0;
+    $scope.recordsPerPage = null;
+    $scope.mailMessagesTotal = 0;
     $scope.mailMessages = [];
     $scope.messagesSelection = [];
-    $scope.mailServerMessageCount = 0;
 
 
     //
@@ -111,9 +116,16 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     $scope.doToggleIncludeMailMessagesInSavePrompt = function() {
 
+        $scope.showPurgeSavedMailWarning = false;
+
         if (isNew
-                || $scope.mailServerMessageCount == 0) {
+                || $scope.mailMessagesTotal == 0) {
             return;
+        }
+
+        if (!$scope.endpoint.saveReceivedMail
+                && currentSaveReceivedMailState) {
+            $scope.showPurgeSavedMailWarning = true;
         }
 
         if (!$scope.endpoint.saveReceivedMail) {
@@ -152,38 +164,39 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             createNewAddress($scope.endpoint.address,
                              $scope.endpoint.status,
                              $scope.endpoint.saveReceivedMail,
-                             function (status, data) {
+            function (status, data) {
 
-                                 utils.hideBlockingOverlay();
+                utils.hideBlockingOverlay();
 
-                                 if (status == 201) {
-                                     $location.path("/dashboard").search({ "dv" : globalVars.MailServerMode });
-                                     return;
-                                 }
+                if (status == 201) {
+                    $location.path("/dashboard").search({ "dv" : globalVars.MailServerMode });
+                    return;
+                }
 
-                                 handleErrorResponse(status, data);
-                             });
+                handleErrorResponse(status, data);
+            });
 
         } else {
 
             updateAddress($scope.endpoint.extId,
-                  $scope.endpoint.address,
-                  $scope.endpoint.status,
-                  $scope.endpoint.saveReceivedMail,
-                  $scope.endpoint.retainCachedMail,
-                  function (status, data) {
+                          $scope.endpoint.address,
+                          $scope.endpoint.status,
+                          $scope.endpoint.saveReceivedMail,
+                          $scope.endpoint.retainCachedMail,
+                function (status, data) {
 
-                     utils.hideBlockingOverlay();
+                    utils.hideBlockingOverlay();
 
-                     if (status == 204) {
-                         showAlert('Mail Inbox successfully updated', 'success');
-                         $scope.showIncludeMailMessagesInSavePrompt = false;
-                         loadMock();
-                         return;
-                     }
+                    if (status == 204) {
+                        showAlert('Mail Inbox successfully updated', 'success');
+                        $scope.showIncludeMailMessagesInSavePrompt = false;
+                        window.scrollTo(0, 0);
+                        loadMock();
+                        return;
+                    }
 
-                     handleErrorResponse(status, data);
-                  });
+                    handleErrorResponse(status, data);
+                });
 
         }
     };
@@ -262,6 +275,48 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         $scope.messagesSelection = [];
     };
 
+    $scope.doDeleteAll = function() {
+
+        if ($scope.mailMessages.length == 0) {
+            return;
+        }
+
+        utils.openDeleteConfirmation("Are you sure wish to delete ALL messages?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                var deleteMsgCallback = function(status, data) {
+
+                    if (status != 204) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    if ($scope.mockServerStatus == MockServerRunningStatus) {
+
+                        restClient.doDelete($http, '/mailmock/' + $scope.endpoint.extId + '/server/inbox', function(status, data) {
+
+                            if (status != 204) {
+                                showAlert(globalVars.GeneralErrorMessage);
+                                return;
+                            }
+
+                            loadMock();
+                        });
+
+                    } else {
+                        loadMock();
+                    }
+
+                };
+
+                restClient.doDelete($http, '/mailmock/' + $scope.endpoint.extId + '/inbox', deleteMsgCallback);
+            }
+
+        });
+
+    };
+
     $scope.doDeleteSelection = function() {
 
         if ($scope.messagesSelection.length == 0) {
@@ -327,10 +382,29 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     };
 
+    $scope.doOpenPreviousPage = function() {
+
+        $scope.currentPageIndex--;
+
+        loadMock();
+
+    };
+
+    $scope.doOpenNextPage = function() {
+
+        $scope.currentPageIndex++;
+
+        loadMock();
+
+    };
+
 
     //
     // Internal Functions
     function loadMock() {
+
+        $scope.mailMessages = [];
+        $scope.mailMessagesTotal = 0;
 
         loadMockData(extId, function(endpoint) {
 
@@ -344,13 +418,23 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
             currentSaveReceivedMailState = endpoint.saveReceivedMail;
 
-            // saved messages from DB
-            $scope.mailMessages = endpoint.messages;
+            if (!endpoint.saveReceivedMail) {
 
-            // messages from mail server
-            loadMailServerStatus(function() {
-                loadInboxMessages();
-            });
+                // messages from mail server
+                loadMailServerStatus(function() {
+                    loadInboxMessages();
+                });
+
+            } else {
+
+                loadMailServerStatus();
+
+                // saved messages from DB
+                $scope.mailMessages = endpoint.messages.pageData;
+                $scope.mailMessagesTotal = endpoint.messages.totalRecords;
+                $scope.recordsPerPage = endpoint.messages.recordsPerPage;
+                $scope.maxPageIndex = ($scope.mailMessagesTotal / $scope.recordsPerPage) - 1;
+            }
 
         });
 
@@ -433,7 +517,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             return;
         }
 
-        restClient.doGet($http, '/mailmock/' + extId, function(status, data) {
+        restClient.doGet($http, '/mailmock/' + extId + '?pageStart=' + $scope.currentPageIndex, function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -447,21 +531,25 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
 
     function loadInboxMessages() {
 
-        $scope.mailServerMessageCount = 0;
+        $scope.mailMessagesTotal = 0;
+        $scope.mailMessages = [];
 
         if (isNew || $scope.mockServerStatus == MockServerStoppedStatus) {
             return;
         }
 
-        restClient.doGet($http, '/mailmock/' + extId + '/inbox', function(status, data) {
+        restClient.doGet($http, '/mailmock/' + extId + '/inbox?pageStart=' + $scope.currentPageIndex, function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
                 return;
             }
 
-            $scope.mailServerMessageCount = data.length;
-            $scope.mailMessages = $scope.mailMessages.concat(data);
+            $scope.mailMessagesTotal = data.totalRecords;
+            $scope.mailMessages = data.pageData;
+            $scope.recordsPerPage = data.recordsPerPage;
+            $scope.maxPageIndex = ($scope.mailMessagesTotal / $scope.recordsPerPage) - 1;
+
         });
 
     }

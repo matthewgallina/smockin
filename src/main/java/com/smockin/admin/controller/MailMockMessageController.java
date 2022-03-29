@@ -1,5 +1,6 @@
 package com.smockin.admin.controller;
 
+import com.smockin.admin.dto.response.PagingResponseDTO;
 import com.smockin.admin.dto.response.SimpleMessageResponseDTO;
 import com.smockin.admin.exception.RecordNotFoundException;
 import com.smockin.admin.exception.ValidationException;
@@ -35,11 +36,12 @@ public class MailMockMessageController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody
-    ResponseEntity<List<MailServerMessageInboxDTO>> getInboxMessages(
+    ResponseEntity<PagingResponseDTO<MailServerMessageInboxDTO>> getInboxMessages(
                 @PathVariable("mailExtId") final String mailExtId,
                 @RequestParam(value = "sender", required = false) final String sender,
                 @RequestParam(value = "subject", required = false) final String subject,
                 @RequestParam(value = "dateReceived", required = false) final String dateReceived,
+                @RequestParam(value = "pageStart") final int pageStart,
                 @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                     throws RecordNotFoundException, ValidationException {
 
@@ -47,15 +49,19 @@ public class MailMockMessageController {
                 || StringUtils.isNotBlank(subject)
                 || StringUtils.isNotBlank(dateReceived)) {
 
+            // TODO: NOTE THIS SERVICE IS NOT IMPLEMENTED YET!
             return ResponseEntity.ok(mailMockService.searchForMessagesFromMailServerInbox(
                     mailExtId,
                     Optional.ofNullable(sender),
                     Optional.ofNullable(subject),
                     Optional.ofNullable(dateReceived),
+                    pageStart,
                     GeneralUtils.extractOAuthToken(bearerToken)));
         }
 
-        return ResponseEntity.ok(mailMockService.loadMessagesFromMailServerInbox(mailExtId,
+        return ResponseEntity.ok(mailMockService.loadMessagesFromMailServerInbox(
+                mailExtId,
+                pageStart,
                 GeneralUtils.extractOAuthToken(bearerToken)));
     }
 
