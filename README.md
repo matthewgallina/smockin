@@ -163,6 +163,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 1. Swap in the sMockin mock mail server (running on port 8003) as your application's delivery mail server.
 2. Create Email accounts in the sMockin UI.
 3. View all received email messages from the UI (including mail attachments).
+4. Support for mail inbox auto-generation so as to support random addresses during testing.
 
 Mail messages can be stored in-memory or saved to database.
 
