@@ -39,6 +39,11 @@
         <label for="enableCors" class="ng-binding">{{ enableCorsLabel }}</label>
     </div>
 
+    <div class="form-group" ng-if="serverConfig.serverType == MailServerType">
+        <input id="autoGenInboxes"  ng-model="serverConfig.autoGenInboxes" type="checkbox" ng-disabled="readOnly" />
+        <label for="autoGenInboxes" class="ng-binding">{{ autoGenInboxesLabel }}</label>
+    </div>
+
     <div class="form-group delete-mail-message-panel" ng-if="serverConfig.serverType == MailServerType">
         <br />
         <br />

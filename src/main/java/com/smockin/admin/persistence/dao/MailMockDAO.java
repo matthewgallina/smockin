@@ -12,6 +12,9 @@ public interface MailMockDAO extends JpaRepository<MailMock, Long> {
     @Query("FROM MailMock m WHERE m.extId = :extId")
     MailMock findByExtId(@Param("extId") final String extId);
 
+    @Query("FROM MailMock m WHERE m.address = :address")
+    MailMock findByAddress(@Param("address") final String address);
+
     @Query("FROM MailMock m WHERE m.extId = :extId AND m.createdBy.id = :userId")
     MailMock findByExtIdAndUser(@Param("extId") final String extId, @Param("userId") final long userId);
 

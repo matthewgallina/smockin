@@ -22,6 +22,7 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.timeOutMillisLabel = 'Idle Time out';
     $scope.autoStartLabel = 'Auto start on application launch';
     $scope.enableCorsLabel = 'Enable Cross-Origin Resource Sharing (across all endpoints)';
+    $scope.autoGenInboxesLabel = 'Auto create inboxes where anonymous mail is received (requires restart)';
     $scope.portPlaceholderTxt = "The Port this mock server will run off";
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
@@ -68,7 +69,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "minThreads" : 0,
         "timeOutMillis" : 0,
         "autoStart" : false,
-        "enableCors" : false
+        "enableCors" : false,
+        "autoGenInboxes" : false
     };
 
 
@@ -122,7 +124,12 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         // Handle Native Server Properties
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
-                "ENABLE_CORS" : ($scope.serverConfig.enableCors)?"TRUE":"FALSE"
+                "ENABLE_CORS" : ($scope.serverConfig.enableCors) ? "TRUE" : "FALSE"
+            };
+        }
+        if (ServerType == globalVars.MailServerType) {
+            req.nativeProperties = {
+                "AUTO_GEN_INBOXES" : ($scope.serverConfig.autoGenInboxes) ? "TRUE" : "FALSE"
             };
         }
 
@@ -187,7 +194,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "minThreads" : data.minThreads,
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
-                    "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE")
+                    "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
+                    "autoGenInboxes" : (data.nativeProperties.AUTO_GEN_INBOXES != null && data.nativeProperties.AUTO_GEN_INBOXES.toUpperCase() == "TRUE")
                 };
 
                 return;
