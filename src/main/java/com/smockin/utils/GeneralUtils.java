@@ -49,6 +49,7 @@ public final class GeneralUtils {
     public static final String KEEP_EXISTING_HEADER_NAME = "KeepExisting";
 
     public static final String ENABLE_CORS_PARAM = "ENABLE_CORS";
+    public static final String AUTO_GEN_INBOXES_PARAM = "AUTO_GEN_INBOXES";
 
     public static final String S3_HOST = "localhost";
 

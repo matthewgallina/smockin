@@ -97,7 +97,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
         "address" : null,
         "status" : globalVars.ActiveStatus,
         "retainCachedMail" : false,
-        "saveReceivedMail" : false
+        "saveReceivedMail" : true
     };
 
     $scope.currentPageIndex = 0;

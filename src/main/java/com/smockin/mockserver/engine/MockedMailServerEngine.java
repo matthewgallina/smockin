@@ -12,12 +12,17 @@ import com.icegreen.greenmail.user.UserManager;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.smockin.admin.exception.RecordNotFoundException;
+import com.smockin.admin.persistence.dao.MailMockDAO;
 import com.smockin.admin.persistence.entity.MailMock;
+import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.MailMockMessageService;
+import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.mail.util.MimeMessageParser;
 import org.slf4j.Logger;
@@ -57,6 +62,12 @@ public class MockedMailServerEngine {
     @Autowired
     private MailInboxCache mailInboxCache;
 
+    @Autowired
+    private SmockinUserService smockinUserService;
+
+    @Autowired
+    private MailMockDAO mailMockDAO;
+
 
     public void start(final MockedServerConfigDTO configDTO,
                       final List<MailMock> mailInboxes) throws MockServerException {
@@ -72,7 +83,8 @@ public class MockedMailServerEngine {
                 greenMail = new GreenMail(mailServerSetup);
 
                 // Custom message delivery handler stops auto user creation
-                applyMessageDeliveryHandler(greenMail);
+                applyMessageDeliveryHandler(greenMail,
+                        BooleanUtils.toBoolean(configDTO.getNativeProperties().get(GeneralUtils.AUTO_GEN_INBOXES_PARAM)));
 
                 imapHostManager = greenMail.getManagers().getImapHostManager();
 
@@ -119,7 +131,8 @@ public class MockedMailServerEngine {
 
     }
 
-    void applyMessageDeliveryHandler(final GreenMail greenMail) {
+    void applyMessageDeliveryHandler(final GreenMail greenMail,
+                                     final boolean autoGenerateInboxes) {
 
         final UserManager userManager = greenMail.getUserManager();
 
@@ -136,8 +149,42 @@ public class MockedMailServerEngine {
                 return user;
             }
 
+            if (autoGenerateInboxes) {
+                return autoGenerateMailInbox(mailAddress.getEmail());
+            }
+
             throw new UserException(String.format("Inbox %s not found on mail server", mailAddress.getEmail()));
         });
+
+    }
+
+    GreenMailUser autoGenerateMailInbox(final String email) throws UserException {
+        logger.debug(String.format("Auto generating inbox for email: %s", email));
+
+        try {
+
+            final MailMock existingMailMock = mailMockDAO.findByAddress(email);
+
+            if (existingMailMock != null) {
+                throw new UserException(
+                        String.format("Inbox '%s' already exists. Likely created by another user or disabled. It currently has a status of '%s'",
+                            email,
+                            existingMailMock.getStatus()));
+            }
+
+            final Optional<SmockinUser> adminUserOpt = smockinUserService.loadDefaultUser();
+
+            if (!adminUserOpt.isPresent()) {
+                throw new UserException(String.format("An error occurred during the auto inbox generation of email %s. Default sMockin user could not be found!", email));
+            }
+
+            final MailMock mailMock = new MailMock(email, RecordStatusEnum.ACTIVE, adminUserOpt.get(), true);
+
+            return addMailUser(mailMockDAO.save(mailMock));
+
+        } catch (Exception e) {
+            throw new UserException(String.format("An error occurred during the auto inbox generation of email %s", email), e);
+        }
 
     }
 
@@ -156,7 +203,7 @@ public class MockedMailServerEngine {
 
     }
 
-    public void addMailUser(final MailMock mailMock) throws FolderException {
+    public GreenMailUser addMailUser(final MailMock mailMock) throws FolderException {
         logger.debug("addMailUser called");
 
         final GreenMailUser user =
@@ -168,6 +215,8 @@ public class MockedMailServerEngine {
                     : applyCacheMailListener(user, mailMock); // Use Cache for storing messages
 
         mailUsersMap.putIfAbsent(mailMock.getAddress(), new SmockinGreenMailUserWrapper(user, folderListener, false));
+
+        return user;
     }
 
     public void enableMailUser(final MailMock mailMock) throws FolderException {
