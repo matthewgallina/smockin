@@ -10,7 +10,6 @@ import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentLiteDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.utils.GeneralUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -38,30 +37,15 @@ public class MailMockMessageController {
     public @ResponseBody
     ResponseEntity<PagingResponseDTO<MailServerMessageInboxDTO>> getInboxMessages(
                 @PathVariable("mailExtId") final String mailExtId,
-                @RequestParam(value = "sender", required = false) final String sender,
-                @RequestParam(value = "subject", required = false) final String subject,
-                @RequestParam(value = "dateReceived", required = false) final String dateReceived,
                 @RequestParam(value = "pageStart") final int pageStart,
+                @RequestParam(value = "search", required = false) final String search,
                 @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
                     throws RecordNotFoundException, ValidationException {
-
-        if (StringUtils.isNotBlank(sender)
-                || StringUtils.isNotBlank(subject)
-                || StringUtils.isNotBlank(dateReceived)) {
-
-            // TODO: NOTE THIS SERVICE IS NOT IMPLEMENTED YET!
-            return ResponseEntity.ok(mailMockService.searchForMessagesFromMailServerInbox(
-                    mailExtId,
-                    Optional.ofNullable(sender),
-                    Optional.ofNullable(subject),
-                    Optional.ofNullable(dateReceived),
-                    pageStart,
-                    GeneralUtils.extractOAuthToken(bearerToken)));
-        }
 
         return ResponseEntity.ok(mailMockService.loadMessagesFromMailServerInbox(
                 mailExtId,
                 pageStart,
+                search,
                 GeneralUtils.extractOAuthToken(bearerToken)));
     }
 

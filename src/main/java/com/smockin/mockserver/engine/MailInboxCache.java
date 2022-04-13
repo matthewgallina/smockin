@@ -1,10 +1,12 @@
 package com.smockin.mockserver.engine;
 
+import com.smockin.mockserver.dto.MailMessageSearchDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
 import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
 import com.smockin.utils.GeneralUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -54,6 +56,7 @@ public class MailInboxCache {
     }
 
     public List<CachedMailServerMessage> findAllMessages(final String mailMockExtId,
+                                                         final Optional<MailMessageSearchDTO> mailMessageSearchDTO,
                                                          final Optional<Integer> pageStart) {
 
         // Sort by date and find page start...
@@ -62,6 +65,25 @@ public class MailInboxCache {
                 : 0;
 
         final int startFromRecord = (start * GeneralUtils.DEFAULT_RECORDS_PER_PAGE);
+
+        // Just supporting 'subject' in search for now...
+        if (mailMessageSearchDTO.isPresent()
+                && StringUtils.isNotBlank(mailMessageSearchDTO.get().getSubject())) {
+            return mailMessageCache
+                    .entrySet()
+                    .stream()
+                    .filter(e ->
+                            e.getKey().getMockMailId().equals(mailMockExtId)
+                                && StringUtils.contains(
+                                    e.getValue().getMailServerMessageInboxDTO().getSubject(),
+                                    mailMessageSearchDTO.get().getSubject()))
+                    .sorted(Comparator.comparing(e ->
+                            e.getKey().getDateAdded()))
+                    .map(Map.Entry::getValue)
+                    .skip(startFromRecord)
+                    .limit(GeneralUtils.DEFAULT_RECORDS_PER_PAGE)
+                    .collect(Collectors.toList());
+        }
 
         return mailMessageCache
                 .entrySet()
@@ -76,7 +98,21 @@ public class MailInboxCache {
                 .collect(Collectors.toList());
     }
 
-    public long countAllMessages(final String mailMockExtId) {
+    public long countAllMessages(final String mailMockExtId,
+                                 final Optional<MailMessageSearchDTO> mailMessageSearchDTO) {
+
+        if (mailMessageSearchDTO.isPresent()
+                && StringUtils.isNotBlank(mailMessageSearchDTO.get().getSubject())) {
+            return mailMessageCache
+                    .entrySet()
+                    .stream()
+                    .filter(e ->
+                            e.getKey().getMockMailId().equals(mailMockExtId)
+                                && StringUtils.contains(
+                                    e.getValue().getMailServerMessageInboxDTO().getSubject(),
+                                    mailMessageSearchDTO.get().getSubject()))
+                    .count();
+        }
 
         return mailMessageCache
                 .entrySet()

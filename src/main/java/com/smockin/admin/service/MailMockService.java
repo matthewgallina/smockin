@@ -19,6 +19,7 @@ public interface MailMockService {
                                                      final Optional<String> subject,
                                                      final Optional<String> dateReceived,
                                                      final int pageStart,
+                                                     final String search,
                                                      final String token) throws RecordNotFoundException;
     String create(final MailMockDTO mailMockDTO,
                   final String token) throws RecordNotFoundException, ValidationException;
@@ -30,12 +31,7 @@ public interface MailMockService {
                 final String token) throws RecordNotFoundException;
     PagingResponseDTO<MailServerMessageInboxDTO> loadMessagesFromMailServerInbox(final String externalId,
                                                                     final int pageStart,
+                                                                    final String search,
                                                                     final String token) throws ValidationException;
-    PagingResponseDTO<MailServerMessageInboxDTO> searchForMessagesFromMailServerInbox(final String externalId,
-                                                                                      final Optional<String> sender,
-                                                                                      final Optional<String> subject,
-                                                                                      final Optional<String> dateReceived,
-                                                                                      final int pageStart,
-                                                                                      final String token) throws ValidationException;
 
 }

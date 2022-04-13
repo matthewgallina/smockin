@@ -397,20 +397,21 @@ public class MockedMailServerEngine {
     }
 
     public List<MailServerMessageInboxDTO> getMessagesFromMailServerInbox(final String mailMockExtId,
+                                                                          final Optional<MailMessageSearchDTO> mailMessageSearchDTO,
                                                                           final Optional<Integer> pageStart) throws MockServerException {
         logger.debug("getAllEmailsForAddress called");
 
-        return mailInboxCache.findAllMessages(mailMockExtId, pageStart)
+        return mailInboxCache.findAllMessages(mailMockExtId, mailMessageSearchDTO, pageStart)
                 .stream()
                 .map(c ->
                         c.getMailServerMessageInboxDTO())
                 .collect(Collectors.toList());
     }
 
-    public long getMessageCountFromMailServerInbox(final String mailMockExtId) throws MockServerException {
+    public long getMessageCountFromMailServerInbox(final String mailMockExtId, final Optional<MailMessageSearchDTO> mailMessageSearchDTO) throws MockServerException {
         logger.debug("getMessageCountFromMailServerInbox called");
 
-        return mailInboxCache.countAllMessages(mailMockExtId);
+        return mailInboxCache.countAllMessages(mailMockExtId, mailMessageSearchDTO);
     }
 
     public List<MailServerMessageInboxAttachmentDTO> getMessageAttachmentsFromMailServerInbox(final String mailMockExtId,

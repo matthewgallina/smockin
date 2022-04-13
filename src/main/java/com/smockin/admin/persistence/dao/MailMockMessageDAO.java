@@ -15,13 +15,15 @@ public interface MailMockMessageDAO extends JpaRepository<MailMockMessage, Long>
 
     @Query("FROM MailMockMessage m WHERE m.extId = :extId")
     MailMockMessage findByExtId(@Param("extId") final String extId);
-
-    @Query("SELECT COUNT(1) FROM MailMockMessageAttachment m WHERE m.mailMockMessage.id = :id")
-    Integer findAttachmentCountByMessageId(@Param("id") final long messageId);
-
+    
     @Query("FROM MailMockMessage m WHERE m.mailMock.id = :mailMockId ORDER BY m.dateReceived DESC")
     Page<MailMockMessage> findAllMessageByMailMockId(@Param("mailMockId") final long mailMockId,
                                                      final Pageable pageable);
+
+    @Query("FROM MailMockMessage m WHERE m.mailMock.id = :mailMockId AND m.subject LIKE %:subject% ORDER BY m.dateReceived DESC")
+    Page<MailMockMessage> findAllMessageByMailMockIdAndMatchingSubject(@Param("mailMockId") final long mailMockId,
+                                                                       @Param("subject") final String subject,
+                                                                       final Pageable pageable);
 
     @Query("SELECT COUNT(1) FROM MailMockMessage m WHERE m.mailMock.id = :mailMockId")
     Integer countAllMessageByMailMockId(@Param("mailMockId") final long mailMockId);
