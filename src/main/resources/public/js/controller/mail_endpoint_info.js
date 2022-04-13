@@ -29,6 +29,7 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.selectAllEndpointsHeading = 'select all';
     $scope.deselectAllEndpointsHeading = 'clear selection';
     $scope.purgeSavedMailWarningLabel = '(WARNING disabling auto-save will delete all existing messages)';
+    $scope.mailSearchHolderTxt = 'Message Subject Search...';
 
 
     //
@@ -106,6 +107,9 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
     $scope.mailMessagesTotal = 0;
     $scope.mailMessages = [];
     $scope.messagesSelection = [];
+    $scope.mailMessageSearch = {
+        "subject" : null
+    };
 
 
     //
@@ -139,6 +143,12 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             $scope.showIncludeMailMessagesInSavePrompt = true;
         }
 
+    };
+
+    $scope.filterMailMockMessages = function(event) {
+
+        $scope.currentPageIndex = 0;
+        loadMock();
     };
 
     $scope.doSaveMailAddress = function() {
@@ -517,7 +527,11 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             return;
         }
 
-        restClient.doGet($http, '/mailmock/' + extId + '?pageStart=' + $scope.currentPageIndex, function(status, data) {
+        var searchParam = ($scope.mailMessageSearch.subject != null)
+            ? '&search={ "sender" : null, "subject" : "' + $scope.mailMessageSearch.subject + '", "dateReceived" : null }'
+            : '';
+
+        restClient.doGet($http, '/mailmock/' + extId + '?pageStart=' + $scope.currentPageIndex + searchParam, function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);
@@ -538,7 +552,11 @@ app.controller('mailEndpointInfoController', function($scope, $location, $uibMod
             return;
         }
 
-        restClient.doGet($http, '/mailmock/' + extId + '/inbox?pageStart=' + $scope.currentPageIndex, function(status, data) {
+        var searchParam = ($scope.mailMessageSearch.subject != null)
+            ? '&search={ "sender" : null, "subject" : "' + $scope.mailMessageSearch.subject + '", "dateReceived" : null }'
+            : '';
+
+        restClient.doGet($http, '/mailmock/' + extId + '/inbox?pageStart=' + $scope.currentPageIndex + searchParam, function(status, data) {
 
             if (status != 200) {
                 showAlert(globalVars.GeneralErrorMessage);

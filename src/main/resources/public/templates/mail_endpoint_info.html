@@ -86,6 +86,7 @@
                                 ng-disabled="messagesSelection.length == 0">{{ deleteMessagesButtonLabel }}</button>
 
                     </div>
+
                 </div>
 
                 <span class="batch-actions-group">
@@ -96,6 +97,17 @@
                 </span>
 
                 <br />
+                <br />
+
+                <div class="form-group" >
+                    <input id="mail-search"
+                           class="form-control ng-isolate-scope ng-pristine ng-valid"
+                           ng-model="mailMessageSearch.subject"
+                           placeholder="{{ mailSearchHolderTxt }}"
+                           type="text"
+                           ng-model-options="{ debounce: 1000 }"
+                           ng-change="filterMailMockMessages($event)" />
+                </div>
 
                 <h4 class="no-data-label" ng-if="mailMessages.length == 0">
                     {{ noDataFoundMsg }}
