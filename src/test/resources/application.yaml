@@ -5,3 +5,5 @@ logging:
     ROOT: OFF
 
 spring.main.banner-mode: 'off'
+
+spring.database.url: jdbc:h2:mem:smockintest;MODE=LEGACY

@@ -3,9 +3,9 @@ package com.smockin.admin.persistence.dao;
 import com.smockin.SmockinTestUtils;
 import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.SmockinUser;
-import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import org.junit.After;
 import org.junit.Assert;
@@ -13,21 +13,29 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
  * Created by mgallina.
  */
 @RunWith(SpringRunner.class)
-@SpringBootConfiguration
-@EnableAutoConfiguration
-@EnableJpaRepositories("com.smockin.admin.persistence.dao")
+@DataJpaTest
+@Transactional
+@Rollback
+//@SpringBootConfiguration
+//@EnableAutoConfiguration
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+//@EnableJpaRepositories("com.smockin.admin.persistence.dao")
+@ComponentScan(basePackages = "com.smockin.admin.persistence.dao")
 @EntityScan("com.smockin.admin.persistence.entity")
 public class RestfulMockDAOTest {
 

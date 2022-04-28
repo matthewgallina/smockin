@@ -81,6 +81,13 @@ if "%DRIVER_CLASS%"=="org.h2.Driver" (
 )
 
 
+#
+# Override any proxy environment variables, as this can cause 403 issues with internal S3 client and S3 mock server
+#
+set HTTP_PROXY=
+set HTTPS_PROXY=
+
+
 echo #  JDBC Connectivity Properties:
 echo #  - JDBC DRIVER: %DRIVER_CLASS%
 echo #  - JDBC URL: %JDBC_URL%

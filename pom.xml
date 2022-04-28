@@ -21,7 +21,7 @@
         <java.version>1.8</java.version>
         <spring-boot-test.version>2.6.2</spring-boot-test.version>
         <spark-core.version>2.9.1</spark-core.version>
-        <h2.version>1.4.194</h2.version>
+        <h2.version>2.1.212</h2.version>
         <hikaricp.version>2.6.1</hikaricp.version>
         <commons-lang3.version>3.5</commons-lang3.version>
         <httpclient.version>4.5.13</httpclient.version>
