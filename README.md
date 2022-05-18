@@ -8,7 +8,8 @@
 
 <br />
 
-### ATTENTION, EXISTING USERS MOVING TO 2.19.0! Please first read the release notes for 2.19.0 below.
+### ATTENTION, EXISTING USERS MOVING TO 2.19.0! 
+Please consult the *RECENT RELEASE FEATURES* section for *2.19.0* below before proceeding.
 
 <br />
 <br />
