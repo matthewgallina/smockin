@@ -8,6 +8,11 @@
 
 <br />
 
+### ATTENTION, EXISTING USERS MOVING TO 2.19.0! Please first read the release notes for 2.19.0 below.
+
+<br />
+<br />
+
 ### Dynamic API, S3 Bucket & Mail Server mocking for application development & QA testing
 
    - Visit us: https://www.smockin.com
