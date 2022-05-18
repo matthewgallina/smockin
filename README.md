@@ -164,18 +164,22 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 **New in version 2.19.0**
 
-IMPORTANT! PLEASE READ THIS IF YOU ARE UPGRADING FROM AN EARLIER VERSION.
-
-From 2.19.0 onwards, sMockin's internal H2 database has been upgraded to v2.1 (moving away from v1.4).
+IMPORTANT! From 2.19.0 onwards, sMockin's internal H2 database has been upgraded to v2.1 (moving away from v1.4).
 
 Unfortunately v2 of H2 is not backwards compatible with v1.4, which means you will need to export your existing data and migrate this to the new DB.
+
+<br />
+
+**NOTE, the latest version of sMockin using v1.4 of H2 can be found here.**
+
+https://github.com/matthewgallina/smockin/tree/2.18.4
 
 <br />
 
 To upgrade to 2.19.0, please follow the steps below:
 
 1. In your current version of sMockin (2.18.x or earlier), use the 'Export' feature to backup any mock data your wish to keep.
-2. Next, go to the *user home* directory sMockin is running from and rename the config directory **.smockin** to **.smockin_old**.
+2. Next, go to the *user home* directory sMockin is running from and rename the config directory **.smockin** to **.smockin_2.18.4**.
 3. Download version 2.19.0 (or later) of sMockin. We recommend keeping the previous version of sMockin on your system also for the short term, so you can switch between versions until all of your data has been moved across.
 4. Using the new version of sMockin, run the **install** script. This will create a new **.smockin** config directory, containing the newer H2 database.
 5. Launch the new version of sMockin using one of the **start/run** scripts.
@@ -185,14 +189,13 @@ To upgrade to 2.19.0, please follow the steps below:
 
 Switching between versions of sMockin, is simply a case of ensuring the **.smockin** config directory in your *user home* aligns with version of sMockin you wish to run.
 
-**.smockin_old**
-**.smockin_new**
+A good practice could be to rename/suffix the unused **smockin** config directories with the version of the sMockin application they align too, so as to make them easily identifiable.
 
+e.g.
+
+**.smockin_2.18.4**
 <br />
-
-**NOTE, the latest version of sMockin using v1.4 of H2 can be found here.**
-
-https://github.com/matthewgallina/smockin/tree/2.18.4
+**.smockin_2.19.0**
 
 
 <br />
