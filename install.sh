@@ -24,9 +24,10 @@ DB_DRIVER_DIR_PATH="${DB_DIR_PATH}/driver"
 DB_DATA_DIR_PATH="${DB_DIR_PATH}/data"
 PIDS_DIR_PATH="${APP_DIR_PATH}/pids"
 
-H2_JAR_NAME="h2-1.4.194.jar"
+H2_JAR_NAME="h2-2.1.212.jar"
 DB_PROPS_FILE=db.properties
 APP_PROPS_FILE=app.properties
+DB_PLACEHOLDER_FILE=smockin_db.mv.db
 
 #
 # CREATE THE '.smockin' APP DIRECTORY AND INSTALL THE H2 DB LIB
@@ -58,6 +59,9 @@ then
     # Linux specific
     sed -i -e "s/{USER.HOME}/~/" ${DB_DIR_PATH}/${DB_PROPS_FILE}
   fi
+
+  cp    install/${DB_PLACEHOLDER_FILE}     ${DB_DATA_DIR_PATH}/${DB_PLACEHOLDER_FILE}
+  echo "- Added file ${DB_DATA_DIR_PATH}/${DB_PLACEHOLDER_FILE}"
 
   echo ""
   echo ""

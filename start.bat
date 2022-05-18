@@ -6,14 +6,14 @@ REM   echo %jver%
 IF DEFINED %SMOCKIN_DIR_PATH% (set APP_DIR_PATH=%SMOCKIN_DIR_PATH%) ELSE (set APP_DIR_PATH=%userprofile%\.smockin)
 
 set APP_NAME=sMockin
-set APP_VERSION=2.18.4
+set APP_VERSION=2.19.0
 
 
 set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
 set DB_DATA_DIR_PATH=%DB_DIR_PATH%\data
 set DB_MARKER=db_initialized
-set H2_JAR_NAME=h2-1.4.194.jar
+set H2_JAR_NAME=h2-2.1.212.jar
 set DB_PROPS_FILE=db.properties
 set APP_PROPS_FILE=app.properties
 

@@ -13,14 +13,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.test.annotation.Rollback;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,14 +26,9 @@ import java.util.List;
  * Created by mgallina.
  */
 @RunWith(SpringRunner.class)
-@DataJpaTest
-@Transactional
-@Rollback
-//@SpringBootConfiguration
-//@EnableAutoConfiguration
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-//@EnableJpaRepositories("com.smockin.admin.persistence.dao")
-@ComponentScan(basePackages = "com.smockin.admin.persistence.dao")
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@EnableJpaRepositories("com.smockin.admin.persistence.dao")
 @EntityScan("com.smockin.admin.persistence.entity")
 public class RestfulMockDAOTest {
 

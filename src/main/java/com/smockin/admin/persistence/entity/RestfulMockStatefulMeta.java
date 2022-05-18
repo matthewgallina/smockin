@@ -17,7 +17,7 @@ public class RestfulMockStatefulMeta extends Identifier {
     @JoinColumn(name = "REST_MOCK_ID", nullable = false)
     private RestfulMock restfulMock;
 
-    @Column(name = "INITIAL_RESPONSE_BODY", length = Integer.MAX_VALUE)
+    @Column(name = "INITIAL_RESPONSE_BODY", length = VARCHAR_MAX_VALUE)
     private String initialResponseBody;
 
     @Column(name = "ID_FIELD_NAME", length = 35, nullable = false)

@@ -19,7 +19,7 @@ fi
 
 
 APP_NAME="sMockin!"
-APP_VERSION="2.18.4"
+APP_VERSION="2.19.0"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
@@ -27,7 +27,7 @@ PIDS_DIR_PATH="${APP_DIR_PATH}/pids"
 DB_DRIVER_DIR_PATH="${DB_DIR_PATH}/driver"
 DB_DATA_DIR_PATH="${DB_DIR_PATH}/data"
 DB_MARKER="db_initialized"
-H2_JAR_NAME="h2-1.4.194.jar"
+H2_JAR_NAME="h2-2.1.212.jar"
 DB_PROPS_FILE=db.properties
 APP_PROPS_FILE=app.properties
 SMOCKIN_PID_FILE="$PIDS_DIR_PATH/smockin-app.pid"

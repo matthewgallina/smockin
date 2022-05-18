@@ -5,16 +5,6 @@ server:
 
 spring.main.allow-circular-references: true
 
-jpa:
-  show-sql: false
-  hibernate:
-    ddl-auto: create-drop
-datasource:
-  url: jdbc:h2:mem:smockindev
-  driver-class-name: org.h2.Driver
-  username: sa
-  password:
-
 smockin:
   auth.exclusions: '{"*.html":["GET"],"*.js":["GET"],"*.css":["GET"],"*.woff2":["GET"],"*.png":["GET"],"*.gif":["GET"],"*.ico":["GET"],"/auth":["POST"],"/user/mode":["GET"],"/mockedserver/rest/status":["GET"],"/mockedserver/jms/status":["GET"],"/mockedserver/ftp/status":["GET"],"/password/reset/token/*":["GET","POST"]}'
 

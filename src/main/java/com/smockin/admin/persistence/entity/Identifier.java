@@ -13,6 +13,8 @@ import java.util.Date;
 @Data
 public abstract class Identifier {
 
+    final int VARCHAR_MAX_VALUE = 1000000000;
+
     @Id
     @Column(name = "ID", nullable = false, unique = true, updatable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)

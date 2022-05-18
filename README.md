@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  version 2.18.4
+  version 2.19.0
 </p>
 
 <br />
@@ -155,6 +155,27 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 ### RECENT RELEASE FEATURES
 
 <br />
+
+**New in version 2.19.0**
+
+IMPORTANT! PLEASE READ THIS IF YOU ARE UPGRADING FROM AN EARLIER VERSION.
+
+From 2.19.0 onwards, sMockin uses an upgraded H2 database moving from v1.4 to v2.1.
+
+Unfortunately (and rather annoyingly) v2 of H2 is not backwards compatible.
+
+To migrate your existing mock data, please follow the steps below:
+
+1. In your current version of sMockin, use the 'Export' feature to backup any mock data your wish to keep.
+2. Next, go to the user home sMockin is running under and rename the config directory '.smockin' to '.smockin_old'.
+3. Using version (2.19.0 or later) of sMockin, run the 'install' script. This will create a new '.smockin' config directory, containing the newer H2 database.
+4. Now launch sMockin using the start/run script.
+5. From the dashboard, use the 'Import' feature to save your mock data to the new database.
+
+
+<br />
+<br />
+
 
 **New in version 2.18.0**
 

@@ -30,7 +30,7 @@ public class RestfulMockDefinitionRule extends Identifier {
     @Column(name = "RESPONSE_CONTENT_TYPE", nullable = false, length = 100)
     private String responseContentType;
 
-    @Column(name = "RESPONSE_BODY", length = Integer.MAX_VALUE)
+    @Column(name = "RESPONSE_BODY", length = VARCHAR_MAX_VALUE)
     private String responseBody;
 
     @Column(name = "SLEEP_IN_MILLIS", nullable = false)

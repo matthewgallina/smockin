@@ -20,7 +20,7 @@ public class S3MockFileContent extends Identifier {
     @JoinColumn(name="S3_MOCK_FILE_ID", nullable=false)
     private S3MockFile s3MockFile;
 
-    @Column(name="CONTENT", nullable=false, length=Integer.MAX_VALUE)
+    @Column(name="CONTENT", nullable=false, length=VARCHAR_MAX_VALUE)
     private String content;
 
     public S3MockFileContent(S3MockFile s3MockFile, String content) {
