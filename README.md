@@ -166,17 +166,30 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 IMPORTANT! PLEASE READ THIS IF YOU ARE UPGRADING FROM AN EARLIER VERSION.
 
-From 2.19.0 onwards, sMockin uses an upgraded H2 database moving from v1.4 to v2.1.
+From 2.19.0 onwards, sMockin's internal H2 database has been upgraded to v2.1 (moving away from v1.4).
 
-Unfortunately (and rather annoyingly) v2 of H2 is not backwards compatible.
+Unfortunately v2 of H2 is not backwards compatible with v1.4, which means you will need to export your existing data and migrate this to the new DB.
 
-To migrate your existing mock data, please follow the steps below:
+<br />
 
-1. In your current version of sMockin, use the 'Export' feature to backup any mock data your wish to keep.
-2. Next, go to the user home sMockin is running under and rename the config directory '.smockin' to '.smockin_old'.
-3. Using version (2.19.0 or later) of sMockin, run the 'install' script. This will create a new '.smockin' config directory, containing the newer H2 database.
-4. Now launch sMockin using the start/run script.
-5. From the dashboard, use the 'Import' feature to save your mock data to the new database.
+To upgrade to 2.19.0, please follow the steps below:
+
+1. In your current version of sMockin (2.18.x or earlier), use the 'Export' feature to backup any mock data your wish to keep.
+2. Next, go to the *user home* directory sMockin is running from and rename the config directory **.smockin** to **.smockin_old**.
+3. Download version 2.19.0 (or later) of sMockin (We recommend keeping the previous version of sMockin on your system.).
+4. Using the new version of sMockin, run the **install** script. This will create a new **.smockin** config directory, containing the newer H2 database.
+5. Launch the new version of sMockin using one of the **start/run** scripts.
+6. From the sMockin dashboard, use the **Import** feature to save your mock data to the new database.
+
+<br />
+
+If you wish to return to ...
+
+<br />
+
+**NOTE, the latest version of sMockin using v1.4 of H2 can be found below.**
+
+https://github.com/matthewgallina/smockin/tree/2.18.4
 
 
 <br />
