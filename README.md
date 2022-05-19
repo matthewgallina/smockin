@@ -172,7 +172,7 @@ Unfortunately v2 of H2 is not backwards compatible with v1.4, which means you wi
 
 <br />
 
-**NOTE, the latest version of sMockin using v1.4 of H2 can be found here.**
+**NOTE, the latest version of sMockin to continue using v1.4 of H2 will be kept here:**
 
 https://github.com/matthewgallina/smockin/tree/2.18.4
 
@@ -180,7 +180,7 @@ https://github.com/matthewgallina/smockin/tree/2.18.4
 
 To upgrade to 2.19.0, please follow the steps below:
 
-1. In your current version of sMockin (2.18.x or earlier), use the 'Export' feature to backup any mock data your wish to keep.
+1. In your current version of sMockin (2.18.x or earlier), use the **Export** feature to backup any mock data your wish to keep.
 2. Next, go to the *user home* directory sMockin is running from and rename the config directory **.smockin** to **.smockin_2.18.4**.
 3. Download version 2.19.0 (or later) of sMockin. We recommend keeping the previous version of sMockin on your system also for the short term, so you can switch between versions until all of your data has been moved across.
 4. Using the new version of sMockin, run the **install** script. This will create a new **.smockin** config directory, containing the newer H2 database.
