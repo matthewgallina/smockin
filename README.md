@@ -189,15 +189,27 @@ To upgrade to 2.19.0, please follow the steps below:
 
 <br />
 
-Switching between versions of sMockin, is simply a case of ensuring the **.smockin** config directory in your *user home* aligns with version of sMockin you wish to run.
+Unfortunately not all data can be automatically exported and so will need to be handled manually. 
 
-A good practice could be to rename/suffix the unused **smockin** config directories with the version of the sMockin application they align too, so as to make them easily identifiable.
+This includes: 
 
-e.g.
+- Mail mocks and messages
+- Server configuration
+- Key/Value Data
 
-**.smockin_2.18.4**
 <br />
-**.smockin_2.19.0**
+
+Should you wish to switch between versions of sMockin (as suggested above), then this can be done by simply switching the **.smockin** config directory in your *user home* and ensuring this aligns with version of sMockin you wish to run.
+
+A good practice we advise is to rename/suffix any unused **.smockin** config directories with the version of the sMockin application they align too, so as to make them easily identifiable.
+
+For example:
+
+**.smockin_2.18.4** <- unused config dir
+<br />
+**.smockin_2.19.0** <- unused config dir
+<br />
+**.smockin** <- this is the active config dir
 
 
 <br />
