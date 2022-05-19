@@ -189,9 +189,7 @@ To upgrade to 2.19.0, please follow the steps below:
 
 <br />
 
-Unfortunately not all data can be automatically exported and so will need to be handled manually. 
-
-This includes: 
+Unfortunately not all data can be automatically exported and so will need to be handled manually. This includes: 
 
 - Mail mocks and messages
 - Server configuration
