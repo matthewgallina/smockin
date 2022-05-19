@@ -20,7 +20,7 @@ public class MailMockMessageAttachmentContent extends Identifier {
     @JoinColumn(name="MAIL_MOCK_MSG_ATCH_ID", nullable = false)
     private MailMockMessageAttachment mailMockMessageAttachment;
 
-    @Column(name="CONTENT", nullable=false, length=Integer.MAX_VALUE)
+    @Column(name="CONTENT", nullable=false, length=VARCHAR_MAX_VALUE)
     private String content;
 
 }

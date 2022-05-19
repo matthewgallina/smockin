@@ -23,7 +23,7 @@ public class MailMockMessage extends Identifier {
     @Column(name = "MAIL_SUBJECT", nullable = false, length = 500)
     private String subject;
 
-    @Column(name = "MAIL_BODY", nullable = false, length = Integer.MAX_VALUE)
+    @Column(name = "MAIL_BODY", nullable = false, length = VARCHAR_MAX_VALUE)
     private String body;
 
     @Temporal(TemporalType.TIMESTAMP)

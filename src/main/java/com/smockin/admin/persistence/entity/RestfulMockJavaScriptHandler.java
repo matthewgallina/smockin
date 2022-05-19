@@ -16,7 +16,7 @@ public class RestfulMockJavaScriptHandler extends Identifier {
     @JoinColumn(name = "REST_MOCK_ID", nullable = false)
     private RestfulMock restfulMock;
 
-    @Column(name = "SYNTAX", length = Integer.MAX_VALUE)
+    @Column(name = "SYNTAX", length = VARCHAR_MAX_VALUE)
     private String syntax;
 
 }
