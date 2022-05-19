@@ -9,7 +9,9 @@
 <br />
 
 ### ATTENTION, EXISTING USERS MOVING TO 2.19.0! 
-Please consult the *RECENT RELEASE FEATURES* section for *2.19.0* below before proceeding.
+sMockin uses a new internal database from this version onwards.
+
+Please consult the *RECENT RELEASE FEATURES* section for *2.19.0* below in this page for further details.
 
 <br />
 <br />
@@ -162,9 +164,9 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 <br />
 
-**New in version 2.19.0**
+**IMPORTANT! New in version 2.19.0**
 
-IMPORTANT! From 2.19.0 onwards, sMockin's internal H2 database has been upgraded to v2.1 (moving away from v1.4).
+From 2.19.0 onwards, sMockin's internal H2 database has been upgraded to v2.1 (moving away from v1.4).
 
 Unfortunately v2 of H2 is not backwards compatible with v1.4, which means you will need to export your existing data and migrate this to the new DB.
 
