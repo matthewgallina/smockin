@@ -35,7 +35,8 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
     private static final String GENERAL_ERROR = "Error processing inbound param matching. Please check your token syntax";
 
     @Override
-    public String enrichWithInboundParamMatches(final Request req,
+    public String enrichWithInboundParamMatches(final String inboundPath,
+                                                final Request req,
                                                 final String mockPath,
                                                 final String responseBody,
                                                 final String userCtxPath,
@@ -45,7 +46,7 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
             return null;
         }
 
-        final String sanitizedUserCtxInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), userCtxPath);
+        final String sanitizedUserCtxInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, userCtxPath);
 
         String enrichedResponseBody = responseBody;
 

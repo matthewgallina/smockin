@@ -270,7 +270,7 @@ public class InboundParamMatchServiceTest {
         Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.INACTIVE);
 
         // Test
-        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
+        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request.pathInfo(), request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
 
         // Assertions
         Assert.assertEquals("Hello Roger, you are Male and are 21 years old", result);
@@ -290,7 +290,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
+        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request.pathInfo(), request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
 
         // Assertions
         Assert.assertEquals("Hello Roger, you are  years old", result);
@@ -310,7 +310,7 @@ public class InboundParamMatchServiceTest {
         });
 
         // Test
-        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
+        final String result = inboundParamMatchServiceImpl.enrichWithInboundParamMatches(request.pathInfo(), request, "/person/{name}", responseBody, sanitizedUserCtxInboundPath, userId);
 
         // Assertions
         Assert.assertNotNull(result);

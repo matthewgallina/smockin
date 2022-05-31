@@ -8,7 +8,7 @@ import spark.Request;
 
 public interface StatefulService {
 
-    RestfulResponseDTO process(final Request req, final RestfulMock mock);
+    RestfulResponseDTO process(final String inboundPath, final Request req, final RestfulMock mock);
     void resetState(final String externalId, final String userToken) throws RecordNotFoundException, ValidationException;
 
 }

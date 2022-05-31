@@ -13,6 +13,8 @@ public final class RuleEngineUtils {
 
         final int argPosition = NumberUtils.toInt(fieldName, -1);
 
+        // TODO MG will need to test this with call analytics!
+
         if (argPosition == -1
                 || req.splat().length < argPosition) {
             throw new IllegalArgumentException("Unable to perform wildcard matching on the mocked endpoint '" + req.pathInfo() + "'. Path variable arg count does not align.");

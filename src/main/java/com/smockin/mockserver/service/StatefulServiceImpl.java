@@ -53,11 +53,13 @@ public class StatefulServiceImpl implements StatefulService {
 
 
     @Override
-    public RestfulResponseDTO process(final Request req, final RestfulMock mock) {
+    public RestfulResponseDTO process(final String inboundPath,
+                                      final Request req,
+                                      final RestfulMock mock) {
 
         final RestfulMock parent = loadStatefulParent(mock);
 
-        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), mock.getCreatedBy().getCtxPath());
+        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, mock.getCreatedBy().getCtxPath());
 
         final List<Map<String, Object>> mockStateContent = loadStateForMock(parent);
         final Map<String, String> pathVars = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath());

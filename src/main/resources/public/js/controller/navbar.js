@@ -26,6 +26,7 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.logoutLink = "Logout";
     $scope.helpLink = "Help";
     $scope.userKvpDataLink = "Manage Key/Value Data";
+    $scope.callAnalyticsLink = "Call Analytics";
 
 
     //
@@ -142,6 +143,11 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     $scope.doOpenKvpUserData = function() {
 
         $location.path("/manage_user_kvp_data");
+    };
+
+    $scope.doOpenCallAnalytics = function() {
+
+        $location.path("/call_analytics");
     };
 
     $scope.doChangeServerMode = function(mode) {

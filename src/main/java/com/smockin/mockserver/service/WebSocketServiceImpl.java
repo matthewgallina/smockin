@@ -148,8 +148,8 @@ public class WebSocketServiceImpl implements WebSocketService {
 
                 // check if a rules is matched
                 boolean ruleMatched = false;
-                Request req = new sMockinRequest(message);
-                RestfulResponseDTO response = ruleEngine.process(req, wsMock.getRules());
+                final Request req = new sMockinRequest(message);
+                RestfulResponseDTO response = ruleEngine.process(null, req, wsMock.getRules());
                 if (response != null && response.getResponseBody() != null) {
                     ruleMatched = true;
                     // Only one session should match this key - needs verification

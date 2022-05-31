@@ -46,6 +46,6 @@ public interface JavaScriptResponseHandler {
             + " response;"
             + "}";
 
-    RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock);
+    RestfulResponseDTO executeUserResponse(final String inboundPath, final Request req, final RestfulMock mock);
 
 }

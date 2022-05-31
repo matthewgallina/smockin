@@ -11,6 +11,8 @@ import java.util.List;
  */
 public interface RuleEngine {
 
-    RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules);
+    RestfulResponseDTO process(final String inboundPath,
+                               final Request req,
+                               final List<RestfulMockDefinitionRule> rules);
 
 }

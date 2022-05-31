@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="../css/call_analytics.css" crossorigin="anonymous" />
+
+<div ng-controller="callAnalyticsController">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-9">
+                <h3>{{ heading }}</h3>
+            </div>
+            <div class="col-sm-3 add-call-analytics-button-div">
+                <button id="add-call-analytics-button" type="button" class="btn btn-primary" ng-click="doOpenCreateAnalyticsCall()"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> {{ addCallBatchButtonLabel }}</button>
+            </div>
+        </div>
+
+        <br />
+
+        <hr ng-if="callAnalyticsData.length == 0" />
+
+        <h4 class="no-call-analytics-found" ng-if="callAnalyticsData.length == 0">
+            {{ noDataFoundLabel }}
+        </h4>
+
+        <table class="table table-striped" ng-if="callAnalyticsData.length > 0">
+            <thead>
+            <tr>
+                <th>{{ nameTableLabel }}</th>
+                <th>{{ httpCountTableLabel }}</th>
+                <th>{{ s3countTableLabel }}</th>
+                <th>{{ mailCountTableLabel }}</th>
+                <th>{{ actionTableLabel }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="ca in callAnalyticsData">
+                <td class="name-tbl-col">
+                    <b>{{ ca.name }}</b>
+                    <br />
+                    <br />
+                    <b>/{{ ca.externalId }}</b>
+                </td>
+                <td class="count-tbl-col">{{ ca.restCallCount }}</td>
+                <td class="count-tbl-col">{{ ca.s3ActionCount }}</td>
+                <td class="count-tbl-col">{{ ca.mailReceivedCount }}</td>
+                <td class="action-tbl-col">
+                    <button type="button" class="btn btn-primary" ng-click="doViewCallAnalytic(ca)">{{ viewCallAnalyticsButtonLabel }}</button>
+                    <button type="button" class="btn btn-danger" ng-click="doDeleteCallAnalytic(ca)">{{ deleteCallAnalyticsButtonLabel }}</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+</div>

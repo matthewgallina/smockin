@@ -33,7 +33,7 @@ public class RuleEngineImpl implements RuleEngine {
     private SmockinUserService smockinUserService;
 
 
-    public RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules) {
+    public RestfulResponseDTO process(final String inboundPath, final Request req, final List<RestfulMockDefinitionRule> rules) {
         logger.debug("process called");
 
         for (RestfulMockDefinitionRule rule : rules) {
@@ -46,6 +46,7 @@ public class RuleEngineImpl implements RuleEngine {
 
                     final String inboundValue = extractInboundValue(condition.getRuleMatchingType(),
                             condition.getField(),
+                            inboundPath,
                             req,
                             rule.getRestfulMock().getPath(),
                             rule.getRestfulMock().getCreatedBy().getCtxPath());
@@ -76,7 +77,12 @@ public class RuleEngineImpl implements RuleEngine {
         return null;
     }
 
-    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req, final String mockPath, final String userCtxPath) {
+    String extractInboundValue(final RuleMatchingTypeEnum matchingType,
+                               final String fieldName,
+                               final String inboundPath,
+                               final Request req,
+                               final String mockPath,
+                               final String userCtxPath) {
 
         switch (matchingType) {
             case REQUEST_HEADER:
@@ -86,12 +92,12 @@ public class RuleEngineImpl implements RuleEngine {
             case REQUEST_BODY:
                 return req.body();
             case PATH_VARIABLE:
-                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), userCtxPath);
+                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, userCtxPath);
                 return GeneralUtils.findPathVarIgnoreCase(sanitizedInboundPath, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
                 return RuleEngineUtils.matchOnPathVariable(fieldName, req);
             case REQUEST_BODY_JSON_ANY:
-                return RuleEngineUtils.matchOnJsonField(fieldName, req.body(), req.pathInfo());
+                return RuleEngineUtils.matchOnJsonField(fieldName, req.body(), inboundPath);
             default:
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }

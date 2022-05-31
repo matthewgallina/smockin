@@ -3,12 +3,12 @@
 </p>
 
 <p align="center">
-  version 2.19.0
+  version 2.20.0
 </p>
 
 <br />
 
-### ATTENTION, EXISTING USERS MOVING TO 2.19.0! 
+### ATTENTION, EXISTING USERS MOVING TO 2.19.0 or later!
 sMockin uses a new internal database from this version onwards.
 
 Please consult the *RECENT RELEASE FEATURES* section for *2.19.0* below in this page for further details.

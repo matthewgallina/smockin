@@ -1,0 +1,25 @@
+
+#add-call-analytics-button {
+    margin-top: 15px;
+}
+
+.add-call-analytics-button-div {
+    text-align: right;
+}
+
+.no-call-analytics-found {
+    text-align: center;
+    margin-top: 140px;
+}
+
+.name-tbl-col {
+    width: 35%;
+}
+
+.count-tbl-col {
+    width: 15%;
+}
+
+.action-tbl-col {
+    width: 20%;
+}

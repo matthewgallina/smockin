@@ -180,9 +180,9 @@ app.controller('userKvpDataController', function($scope, $window, $uibModalInsta
             } else if (status == 409) {
 
                 if ($scope.entryMode == $scope.singleEntryMode) {
-                    showAlert("Unable to save the key '" + $scope.kvpData.key + "' already exists");
+                    showAlert("Unable to save. The key '" + $scope.kvpData.key + "' already exists");
                 } else {
-                    showAlert("Unable to save as one of you keys already exists");
+                    showAlert("Unable to save. One of your keys already exists");
                 }
 
                 return;

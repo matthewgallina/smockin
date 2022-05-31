@@ -28,5 +28,13 @@ app.config(function($routeProvider) {
         .when("/manage_user_kvp_data", {
             templateUrl : "manage_user_kvp_data.html",
             controller : "manageUserKvpDataController"
+        })
+        .when("/call_analytics", {
+            templateUrl : "call_analytics.html",
+            controller : "callAnalyticsController"
+        })
+        .when("/call_analytic_details", {
+            templateUrl : "call_analytic_details.html",
+            controller : "callAnalyticDetailsController"
         });
 });

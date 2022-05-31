@@ -45,7 +45,9 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     private final static String CARRIAGE_RETURN_REGEX = "\\r\\n|\\r|\\n";
     private final String extensionsDir = "js-extensions/";
 
-    public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
+    public RestfulResponseDTO executeUserResponse(final String inboundPath,
+                                                  final Request req,
+                                                  final RestfulMock mock) {
         logger.debug("executeUserResponse called");
 
         Object engineResponse;
@@ -54,8 +56,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
             engineResponse = executeJS(
                     defaultRequestObject
-                        + populateRequestObjectWithInbound(req, mock.getPath(), mock.getCreatedBy().getCtxPath())
-                        + populateKVPs(req, mock)
+                        + populateRequestObjectWithInbound(inboundPath, req, mock.getPath(), mock.getCreatedBy().getCtxPath())
+                        + populateKVPs(inboundPath, req, mock)
                         + keyValuePairFindFunc
                         + defaultResponseObject
                         + userResponseFunctionInvoker
@@ -89,7 +91,10 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return buildEngine().eval(js);
     }
 
-    String populateRequestObjectWithInbound(final Request req, final String mockPath, final String ctxPath) {
+    String populateRequestObjectWithInbound(final String inboundPath,
+                                            final Request req,
+                                            final String mockPath,
+                                            final String ctxPath) {
 
         final Map<String, String> reqHeaders =
                 req.headers()
@@ -99,7 +104,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         final StringBuilder reqObject = new StringBuilder();
 
         reqObject.append("request.path=")
-                .append("'").append(req.pathInfo()).append("'")
+                .append("'").append(inboundPath).append("'")
                 .append("; ");
 
         if (StringUtils.isNotBlank(req.body())) {
@@ -108,7 +113,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
                     .append(";");
         }
 
-        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), ctxPath);
+        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, ctxPath);
         applyMapValuesToStringBuilder("request.pathVars", GeneralUtils.findAllPathVars(sanitizedInboundPath, mockPath), reqObject);
         applyMapValuesToStringBuilder("request.parameters", extractAllRequestParams(req), reqObject);
         applyMapValuesToStringBuilder("request.headers", reqHeaders, reqObject);
@@ -165,7 +170,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return responseHeaders.entrySet();
     }
 
-    String populateKVPs(final Request req, final RestfulMock mock) throws ScriptException {
+    String populateKVPs(final String inboundPath, final Request req, final RestfulMock mock) throws ScriptException {
         logger.debug("populateKVPs called");
 
         final String handleResponseFunc = GeneralUtils.removeJsComments(mock.getJavaScriptHandler().getSyntax());
@@ -186,7 +191,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
             }
 
             final int closingParenthesisPos = StringUtils.indexOf(handleResponseFunc, ")", startPos);
-            final String sanitizedKey = findKvpKey(startPos, closingParenthesisPos, req, mock, keyValuePairFuncPrefix, handleResponseFunc);
+            final String sanitizedKey = findKvpKey(startPos, closingParenthesisPos, inboundPath, req, mock, keyValuePairFuncPrefix, handleResponseFunc);
 
             if (sanitizedKey != null) {
                 final UserKeyValueDataDTO userKeyValueDataDTO = userKeyValueDataService.loadByKey(sanitizedKey, mockOwnerUserId);
@@ -205,7 +210,13 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
         return defaultKeyValuePairStoreObject;
     }
 
-    private String findKvpKey(final int startPos, final int closingParenthesisPos, final Request req, final RestfulMock mock, final String keyValuePairFuncPrefix, final String handleResponseFunc)
+    private String findKvpKey(final int startPos,
+                              final int closingParenthesisPos,
+                              final String inboundPath,
+                              final Request req,
+                              final RestfulMock mock,
+                              final String keyValuePairFuncPrefix,
+                              final String handleResponseFunc)
             throws ScriptException {
         logger.debug("findKvpKey called");
 
@@ -236,7 +247,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
             if (requestObjectField.startsWith("pathVars")) {
 
                 final String pathVarsObjectField = StringUtils.remove(requestObjectField, "pathVars").trim();
-                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), mock.getCreatedBy().getCtxPath());
+                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, mock.getCreatedBy().getCtxPath());
                 sanitizedKey = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath())
                         .get(extractObjectField(StringUtils.lowerCase(pathVarsObjectField)));
 

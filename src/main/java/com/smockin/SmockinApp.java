@@ -10,6 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableAsync;
+
 import javax.annotation.PostConstruct;
 
 /**
@@ -19,6 +21,7 @@ import javax.annotation.PostConstruct;
 @ComponentScan({ "com.smockin.admin", "com.smockin.mockserver" })
 @EnableJpaRepositories("com.smockin.admin.persistence.dao")
 @EntityScan("com.smockin.admin.persistence.entity")
+@EnableAsync
 class SmockinConfig {
 
     private final Logger logger = LoggerFactory.getLogger(SmockinConfig.class);

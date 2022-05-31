@@ -9,7 +9,8 @@ import spark.Request;
 
 public interface InboundParamMatchService {
 
-    String enrichWithInboundParamMatches(final Request req,
+    String enrichWithInboundParamMatches(final String inboundPath,
+                                         final Request req,
                                          final String mockPath,
                                          final String responseBody,
                                          final String userCtxPath,

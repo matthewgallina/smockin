@@ -274,7 +274,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.INACTIVE);
 
         // Test
-        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}", "");
+        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req.pathInfo(), req, "/hello/{name}", "");
 
         // Assertions
         Assert.assertNotNull(result);
@@ -297,7 +297,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.ACTIVE);
 
         // Test
-        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req, "/hello/{name}", "/bob");
+        final String result = javaScriptResponseHandler.populateRequestObjectWithInbound(req.pathInfo(), req, "/hello/{name}", "/bob");
 
         // Assertions
         Assert.assertNotNull(result);
@@ -375,7 +375,7 @@ public class JavaScriptResponseHandlerTest {
         mock.setJavaScriptHandler(javaScriptHandler);
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -407,7 +407,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(userKeyValueDataService.loadByKey(Mockito.anyString(), Mockito.anyLong())).thenReturn(userKeyValueDataDTO);
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -442,7 +442,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(req.body()).thenReturn("hello");
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -477,7 +477,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(req.pathInfo()).thenReturn("/hello/bob");
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -513,7 +513,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(req.queryParams(Mockito.anyString())).thenReturn("Harry");
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -549,7 +549,7 @@ public class JavaScriptResponseHandlerTest {
         Mockito.when(req.headers(Mockito.anyString())).thenReturn("Potter");
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -577,7 +577,7 @@ public class JavaScriptResponseHandlerTest {
         mock.setJavaScriptHandler(javaScriptHandler);
 
         // Test
-        final String result = javaScriptResponseHandler.populateKVPs(req, mock);
+        final String result = javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
         // Assertions
         Assert.assertNotNull(result);
@@ -609,7 +609,7 @@ public class JavaScriptResponseHandlerTest {
         mock.setJavaScriptHandler(javaScriptHandler);
 
         // Test
-        javaScriptResponseHandler.populateKVPs(req, mock);
+        javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
     }
 
     @Test
@@ -636,7 +636,7 @@ public class JavaScriptResponseHandlerTest {
         mock.setJavaScriptHandler(javaScriptHandler);
 
         // Test
-        javaScriptResponseHandler.populateKVPs(req, mock);
+        javaScriptResponseHandler.populateKVPs(req.pathInfo(), req, mock);
 
     }
 

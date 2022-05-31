@@ -14,7 +14,7 @@ public class RestfulProject extends Identifier {
     @Column(name="NAME", length = 100, nullable = false, unique = true)
     private String name;
 
-    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "project", orphanRemoval = false)
+    @OneToMany(cascade = CascadeType.REFRESH, fetch = FetchType.LAZY, mappedBy = "project")
     private List<RestfulMock> restfulMocks = new ArrayList<>();
 
 }

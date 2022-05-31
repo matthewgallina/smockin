@@ -3,6 +3,7 @@ package com.smockin.mockserver.engine;
 import com.smockin.admin.enums.UserModeEnum;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.enums.RestMethodEnum;
+import com.smockin.admin.service.CallAnalyticService;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.websocket.LiveLoggingHandler;
 import com.smockin.mockserver.dto.*;
@@ -65,6 +66,12 @@ public class MockedRestServerEngine {
     private LiveLoggingHandler liveLoggingHandler;
 
     @Autowired
+    private CallAnalyticsCaptureService callAnalyticsCaptureService;
+
+    @Autowired
+    private CallAnalyticService callAnalyticService;
+
+    @Autowired
     private SmockinUserService smockinUserService;
 
     @Autowired
@@ -111,6 +118,8 @@ public class MockedRestServerEngine {
 
         applyTrafficLogging(config.isProxyMode());
 
+        callAnalyticsCaptureService.init(callAnalyticService.getAllActiveIds());
+
         initServer(config.getPort());
     }
 
@@ -139,6 +148,7 @@ public class MockedRestServerEngine {
                 serverState.setRunning(false);
             }
 
+            callAnalyticsCaptureService.clear();
             clearState();
 
         } catch (Throwable ex) {
@@ -194,6 +204,7 @@ public class MockedRestServerEngine {
                 return;
             }
 
+            // Trace Id
             final String traceId = GeneralUtils.generateUUID();
 
             request.attribute(GeneralUtils.LOG_REQ_ID, traceId);
@@ -206,6 +217,13 @@ public class MockedRestServerEngine {
                     .collect(Collectors.toMap(h -> h, h -> request.headers(h)));
 
             reqHeaders.put(GeneralUtils.LOG_REQ_ID, traceId);
+
+            // Call Analytics
+            final Optional<String> callAnalyticIdOpt = callAnalyticsCaptureService.extractCallAnalyticId(request.pathInfo());
+
+            if (callAnalyticIdOpt.isPresent()) {
+                request.attribute(GeneralUtils.CALL_ANALYTIC_ID, callAnalyticIdOpt.get());
+            }
 
             liveLoggingHandler.broadcast(
                     LiveLoggingUtils.buildLiveLogInboundDTO(
@@ -237,6 +255,18 @@ public class MockedRestServerEngine {
                         respHeaders,
                         response.body(),
                         isUsingProxyMode));
+
+            if (request.attribute(GeneralUtils.CALL_ANALYTIC_ID) != null) {
+
+                final String amendedPath = MockedRestServerEngineUtils.amendPathForCallAnalytics(request);
+
+                callAnalyticsCaptureService.capture(
+                        request.attribute(GeneralUtils.CALL_ANALYTIC_ID),
+                        request.requestMethod(),
+                        amendedPath,
+                        response.raw().getStatus());
+            }
+
         });
 
     }
@@ -326,9 +356,9 @@ public class MockedRestServerEngine {
     }
 
     String processResponse(final Request request,
-                   final Response response,
-                   final boolean isMultiUserMode,
-                   final boolean isProxyMode) {
+                           final Response response,
+                           final boolean isMultiUserMode,
+                           final boolean isProxyMode) {
 
         return mockedRestServerEngineUtils.loadMockedResponse(request, response, isMultiUserMode, isProxyMode)
                 .orElseGet(() ->
@@ -341,7 +371,9 @@ public class MockedRestServerEngine {
                                                        final boolean isProxyMode)
             throws InterruptedException {
 
-        if (blockLoggingResponse(request, response, isProxyMode)) {
+        final String amendedInboundPath = MockedRestServerEngineUtils.amendPathForCallAnalytics(request); // i.e path with call analytics id removed
+
+        if (blockLoggingResponse(amendedInboundPath, request, response, isProxyMode)) {
 
             logger.debug("Endpoint match made. Blocking response...");
 
@@ -371,18 +403,18 @@ public class MockedRestServerEngine {
                                     if (p.getMethod().isPresent()) {
 
                                         return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
-                                                && StringUtils.equals(request.pathInfo(), p.getPathPattern());
+                                                && StringUtils.equals(amendedInboundPath, p.getPathPattern());
                                     }
 
                                     // Is Admin
                                     if (GeneralUtils.URL_PATH_SEPARATOR.equals(p.getPathPattern())) {
                                         // Nasty solution to a problem of how do we identify the call is to an admin's mock...
                                         // TODO This will improve when we update isInboundPathMultiUserPath to use a cache instead.
-                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
+                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(amendedInboundPath);
                                         return !mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment);
                                     }
 
-                                    return StringUtils.startsWith(request.pathInfo(), p.getPathPattern());
+                                    return StringUtils.startsWith(amendedInboundPath, p.getPathPattern());
                                 })
                         ) {
                             break;
@@ -473,9 +505,10 @@ public class MockedRestServerEngine {
                 && "websocket".equalsIgnoreCase(request.headers(HttpHeaders.UPGRADE));
     }
 
-    boolean blockLoggingResponse(final Request request,
-                          final Response response,
-                          final boolean proxyMode) {
+    boolean blockLoggingResponse(final String inboundPath,
+                                 final Request request,
+                                 final Response response,
+                                 final boolean proxyMode) {
 
         if (logger.isDebugEnabled()) {
             logger.debug("liveBlockEnabled: " + liveBlockingModeEnabled.get());
@@ -490,13 +523,13 @@ public class MockedRestServerEngine {
                     .stream()
                     .anyMatch(p ->
                             p.getMethod().name().equalsIgnoreCase(request.requestMethod())
-                                    && GeneralUtils.matchPaths(p.getPath(), request.pathInfo()))) {
+                                    && GeneralUtils.matchPaths(p.getPath(), inboundPath))) {
 
                 // If so then send response details to live logging console via WS...
                 liveLoggingHandler.broadcast(
                         LiveLoggingUtils.buildLiveLogInterceptedResponseDTO(
                                 request.attribute(GeneralUtils.LOG_REQ_ID),
-                                request.pathInfo(),
+                                inboundPath,
                                 response.raw().getStatus(),
                                 mockedRestServerEngineUtils.extractResponseHeadersAsMap(response),
                                 response.body(),

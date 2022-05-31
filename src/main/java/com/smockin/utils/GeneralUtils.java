@@ -55,6 +55,7 @@ public final class GeneralUtils {
 
     public static final String LOG_REQ_ID = "X-Smockin-Trace-ID";
     public static final String PROXIED_DOWNSTREAM_URL_HEADER = "X-Proxied-Downstream-Url";
+    public static final String CALL_ANALYTIC_ID = "X-Smockin-Call-Analytic-ID";
     public static final String PATH_WILDCARD = "*";
     public static final String URL_PATH_SEPARATOR = "/";
     public static final String CARRIAGE = "\n";

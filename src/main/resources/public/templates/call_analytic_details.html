@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="../css/call_analytic_details.css" crossorigin="anonymous" />
+
+<div ng-controller="callAnalyticDetailsController">
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-sm-9">
+                <h3>{{ heading }}</h3>
+            </div>
+        </div>
+
+        <br />
+        <br />
+
+        <div class="form-group">
+            <label for="path" class="ng-binding">{{ nameLabel }}</label>
+            <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="callAnalyticData.name" type="text" ng-disabled="true" />
+        </div>
+
+        <br />
+
+        <label for="path" class="ng-binding">{{ logsHeading }}</label>
+
+        <br />
+
+        <table class="table table-striped" ng-if="callAnalyticData.logs.length > 0">
+            <thead>
+            <tr>
+                <th>{{ pathTableLabel }}</th>
+                <th>{{ typeTableLabel }}</th>
+                <th>{{ resultTableLabel }}</th>
+                <th>{{ dateCreatedTableLabel }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="al in callAnalyticData.logs">
+                <td>{{ al.path }}</td>
+                <td>{{ al.serverType }}</td>
+                <td>{{ al.result }}</td>
+                <td>{{ al.received | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <br />
+        <br />
+
+        <hr />
+
+        <button type="button" class="btn btn-default back-button pull-right" ng-click="doReturnBack()">{{ backButtonLabel }}</button>
+
+    </div>
+
+</div>

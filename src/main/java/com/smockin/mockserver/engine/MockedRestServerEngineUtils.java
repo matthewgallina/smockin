@@ -94,12 +94,14 @@ public class MockedRestServerEngineUtils {
     }
 
     Optional<String> handleMockLookup(final Request request,
-                           final Response response,
-                           final boolean isMultiUserMode,
-                           final boolean ignore404MockResponses) {
+                                      final Response response,
+                                      final boolean isMultiUserMode,
+                                      final boolean ignore404MockResponses) {
         logger.debug("handleMockLookup called");
 
         try {
+
+            final String amendedInboundPath = amendPathForCallAnalytics(request);
 
             RestMethodEnum method = RestMethodEnum.findByName(request.requestMethod());
 
@@ -110,7 +112,7 @@ public class MockedRestServerEngineUtils {
             final RestfulMock mock = (isMultiUserMode)
                     ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
                     method,
-                    request.pathInfo(),
+                    amendedInboundPath,
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,
                             RestMockTypeEnum.SEQ,
@@ -119,7 +121,7 @@ public class MockedRestServerEngineUtils {
                             RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                     method,
-                    request.pathInfo(),
+                    amendedInboundPath,
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,
                             RestMockTypeEnum.SEQ,
@@ -140,7 +142,7 @@ public class MockedRestServerEngineUtils {
 
             removeSuspendedResponses(mock);
 
-            final String responseBody = processRequest(mock, request, response, ignore404MockResponses);
+            final String responseBody = processRequest(mock, amendedInboundPath, request, response, ignore404MockResponses);
 
             // Yuk! Bit of a hacky work around returning null from processRequest, so as to distinguish an ignored 404...
             return (responseBody != null)
@@ -153,9 +155,7 @@ public class MockedRestServerEngineUtils {
 
     }
 
-    private String amendPathForMultiUser(final Request request, final boolean isMultiUserMode) {
-
-        String inboundPath = request.pathInfo();
+    private String amendPathForMultiUser(final String inboundPath, final boolean isMultiUserMode) {
 
         if (isMultiUserMode) {
 
@@ -166,6 +166,18 @@ public class MockedRestServerEngineUtils {
                 return StringUtils.remove(inboundPath, GeneralUtils.URL_PATH_SEPARATOR + userCtxPathSegment);
             }
 
+        }
+
+        return inboundPath;
+    }
+
+    public static String amendPathForCallAnalytics(final Request request) {
+
+        final String inboundPath = request.pathInfo();
+        final String callAnalyticId = request.attribute(GeneralUtils.CALL_ANALYTIC_ID);
+
+        if (callAnalyticId != null) {
+            return StringUtils.remove(inboundPath, GeneralUtils.URL_PATH_SEPARATOR + callAnalyticId);
         }
 
         return inboundPath;
@@ -190,17 +202,17 @@ public class MockedRestServerEngineUtils {
 
         try {
 
-            final String amendedInboundPath = amendPathForMultiUser(request, isMultiUserMode);
-            final String inboundPath = request.pathInfo();
+            final String amendedInboundPathR1 = amendPathForCallAnalytics(request); // i.e path with call analytics id removed
+            final String amendedInboundPathR2 = amendPathForMultiUser(amendedInboundPathR1, isMultiUserMode); // i.e path with user path removed
 
-            final String userCtxPath = (!StringUtils.equals(inboundPath, amendedInboundPath))
-                ? extractMultiUserCtxPathSegment(inboundPath)
+            final String userCtxPath = (!StringUtils.equals(amendedInboundPathR1, amendedInboundPathR2))
+                ? extractMultiUserCtxPathSegment(amendedInboundPathR1)
                 : "";
 
             final Optional<ProxyForwardConfigCacheDTO> configOpt = proxyMappingCache.find(userCtxPath);
 
             String proxyDownstreamURL = (configOpt.isPresent())
-                                            ? lookUpProxyMappingDownstreamUrl(amendedInboundPath, configOpt.get().getProxyForwardMappings())
+                                            ? lookUpProxyMappingDownstreamUrl(amendedInboundPathR2, configOpt.get().getProxyForwardMappings())
                                             : null;
 
             if (proxyDownstreamURL == null && configOpt.isPresent()) {
@@ -224,13 +236,13 @@ public class MockedRestServerEngineUtils {
 
                 // Make downstream client call of no mock was found
                 return handleClientDownstreamProxyCallResponse(
-                        executeClientDownstreamProxyCall(amendedInboundPath, request, proxyDownstreamURL),
+                        executeClientDownstreamProxyCall(amendedInboundPathR2, request, proxyDownstreamURL),
                         response,
                         proxyDownstreamURL);
             }
 
             // Default to REACTIVE mode...
-            final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(amendedInboundPath, request, proxyDownstreamURL);
+            final Optional<HttpClientResponseDTO> httpClientResponse = executeClientDownstreamProxyCall(amendedInboundPathR2, request, proxyDownstreamURL);
 
             if (!httpClientResponse.isPresent()) {
                 return Optional.empty();
@@ -328,6 +340,7 @@ public class MockedRestServerEngineUtils {
     }
 
     String processRequest(final RestfulMock mock,
+                          final String inboundPath,
                           final Request req,
                           final Response res,
                           final boolean ignore404MockResponses) {
@@ -337,16 +350,16 @@ public class MockedRestServerEngineUtils {
 
         switch (mock.getMockType()) {
             case RULE:
-                outcome = ruleEngine.process(req, mock.getRules());
+                outcome = ruleEngine.process(inboundPath, req, mock.getRules());
                 break;
             case PROXY_HTTP:
-                outcome = proxyService.waitForResponse(req.pathInfo(), mock);
+                outcome = proxyService.waitForResponse(inboundPath, mock);
                 break;
             case CUSTOM_JS:
-                outcome = javaScriptResponseHandler.executeUserResponse(req, mock);
+                outcome = javaScriptResponseHandler.executeUserResponse(inboundPath, req, mock);
                 break;
             case STATEFUL:
-                outcome = statefulService.process(req, mock);
+                outcome = statefulService.process(inboundPath, req, mock);
                 break;
             case SEQ:
             default:
@@ -374,7 +387,7 @@ public class MockedRestServerEngineUtils {
         String response;
 
         try {
-            response = inboundParamMatchService.enrichWithInboundParamMatches(req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath(), mock.getCreatedBy().getId());
+            response = inboundParamMatchService.enrichWithInboundParamMatches(inboundPath, req, mock.getPath(), outcome.getResponseBody(), mock.getCreatedBy().getCtxPath(), mock.getCreatedBy().getId());
             handleLatency(mock);
         } catch (InboundParamMatchException e) {
             logger.error(e.getMessage());
