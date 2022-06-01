@@ -95,7 +95,7 @@ public class RuleEngineImpl implements RuleEngine {
                 final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), inboundPath, userCtxPath);
                 return GeneralUtils.findPathVarIgnoreCase(sanitizedInboundPath, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
-                return RuleEngineUtils.matchOnPathVariable(fieldName, req);
+                return RuleEngineUtils.matchOnPathVariable(fieldName, inboundPath, mockPath);
             case REQUEST_BODY_JSON_ANY:
                 return RuleEngineUtils.matchOnJsonField(fieldName, req.body(), inboundPath);
             default:

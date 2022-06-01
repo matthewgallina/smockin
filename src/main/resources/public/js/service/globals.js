@@ -94,7 +94,7 @@ app.service('globalVars', function() {
 
     this.RuleMatchingTypes = [
         { name : 'Path Variable', value : this.PathVariableText, fieldPlaceholderText : 'Enter \'Path Variable\' Key Name' },
-        { name : 'Path Variable (Wildcard)', value : this.PathVariableWildcardText, fieldPlaceholderText : 'Position of \'Wildcard\' var (e.g for /home/*/pet/* enter 1 or 2)' },
+        { name : 'Path Variable (Wildcard)', value : this.PathVariableWildcardText, fieldPlaceholderText : 'Position of \'Wildcard\' vars (e.g for /home/*/pet/* these are 2 & 4)' },
         { name : 'Request Header', value : this.RequestHeaderText, fieldPlaceholderText : 'Enter \'Request Header\' Key Name' },
         { name : 'Request Parameter', value : this.RequestParamText, fieldPlaceholderText : 'Enter \'Request Parameter\' Key Name' },
         { name : 'Request Body', value : this.RequestBodyText, fieldPlaceholderText : '' },
