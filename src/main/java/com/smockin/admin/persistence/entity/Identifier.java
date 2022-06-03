@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 public abstract class Identifier {
 
-    final int VARCHAR_MAX_VALUE = 1000000000;
+    final int VARCHAR_MAX_VALUE = 10485760;
 
     @Id
     @Column(name = "ID", nullable = false, unique = true, updatable = false)

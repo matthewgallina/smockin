@@ -22,6 +22,7 @@
         <spring-boot-test.version>2.6.7</spring-boot-test.version>
         <spark-core.version>2.9.1</spark-core.version>
         <h2.version>2.1.212</h2.version>
+        <postgresql.version>42.2.1</postgresql.version>
         <hikaricp.version>2.6.1</hikaricp.version>
         <commons-lang3.version>3.5</commons-lang3.version>
         <httpclient.version>4.5.13</httpclient.version>
@@ -85,6 +86,11 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikaricp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
 
         <!-- Apache Commons -->

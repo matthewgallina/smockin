@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  smokin:
+    image: smokin
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      spring_jpa_database: POSTGRESQL
+      spring_datasource_platform: postgres
+      spring_jpa_show-sql: "true"
+      spring_jpa_hibernate_ddl-auto: create-drop
+      spring_database_driverClassName: org.postgresql.Driver
+      spring_datasource_url: jdbc:postgresql://database:5432/postgres
+      spring_datasource_username: postgres
+      spring_datasource_password: postgres
+      server_port: "8000"
+    ports: 
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
+      - "8003:8003"
+    depends_on:
+      - database
+  database:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
