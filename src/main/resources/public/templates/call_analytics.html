@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="../css/call_analytics.css" crossorigin="anonymous" />
 
-<div ng-controller="callAnalyticsController">
+<div ng-cloak class="ng-cloak">
 
     <div class="container">
 
@@ -25,26 +25,18 @@
             <thead>
             <tr>
                 <th>{{ nameTableLabel }}</th>
+                <th>{{ pathTableLabel }}</th>
                 <th>{{ httpCountTableLabel }}</th>
-                <th>{{ s3countTableLabel }}</th>
-                <th>{{ mailCountTableLabel }}</th>
                 <th>{{ actionTableLabel }}</th>
             </tr>
             </thead>
             <tbody>
             <tr ng-repeat="ca in callAnalyticsData">
-                <td class="name-tbl-col">
-                    <b>{{ ca.name }}</b>
-                    <br />
-                    <br />
-                    <b>/{{ ca.externalId }}</b>
-                </td>
+                <td class="name-tbl-col">{{ ca.name }}</td>
+                <td class="path-tbl-col">/{{ ca.externalId }}</td>
                 <td class="count-tbl-col">{{ ca.restCallCount }}</td>
-                <td class="count-tbl-col">{{ ca.s3ActionCount }}</td>
-                <td class="count-tbl-col">{{ ca.mailReceivedCount }}</td>
                 <td class="action-tbl-col">
                     <button type="button" class="btn btn-primary" ng-click="doViewCallAnalytic(ca)">{{ viewCallAnalyticsButtonLabel }}</button>
-                    <button type="button" class="btn btn-danger" ng-click="doDeleteCallAnalytic(ca)">{{ deleteCallAnalyticsButtonLabel }}</button>
                 </td>
             </tr>
             </tbody>

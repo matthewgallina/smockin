@@ -12,9 +12,6 @@ public interface CallAnalyticDAO extends JpaRepository<CallAnalytic, Long> {
     @Query("FROM CallAnalytic ca WHERE ca.extId = :extId")
     CallAnalytic findByExtId(@Param("extId") final String extId);
 
-    @Query("FROM CallAnalytic ca WHERE ca.name = :name")
-    CallAnalytic findByName(@Param("name") final String name);
-
     @Query("FROM CallAnalytic ca WHERE ca.createdBy.id = :userId")
     List<CallAnalytic> findAll(@Param("userId") final long userId);
 

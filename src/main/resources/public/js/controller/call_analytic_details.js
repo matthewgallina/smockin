@@ -9,12 +9,15 @@ app.controller('callAnalyticDetailsController', function($scope, $location, $win
     //
     // Labels
     $scope.heading = 'Call Analytic Details';
-    $scope.nameLabel = 'Name';
-    $scope.logsHeading = 'Call Log';
+    $scope.nameLabel = 'Batch Name';
+    $scope.pathLabel = 'URL Path Prefix';
+    $scope.logsHeading = 'HTTP Call Log';
+    $scope.logsCountHeading = 'Total Calls Received:';
 
 
     //
     // Table Labels
+    $scope.noResultsFoundLabel = 'No Records Found';
     $scope.pathTableLabel = 'Path';
     $scope.typeTableLabel = 'Type';
     $scope.resultTableLabel = 'Result';
@@ -24,6 +27,7 @@ app.controller('callAnalyticDetailsController', function($scope, $location, $win
     //
     // Buttons
     $scope.backButtonLabel = "Back";
+    $scope.deleteCallAnalyticsButtonLabel = "Delete";
 
 
     //
@@ -37,6 +41,27 @@ app.controller('callAnalyticDetailsController', function($scope, $location, $win
         $location.path("/call_analytics");
     };
 
+    $scope.doDeleteCallAnalytic = function() {
+
+        utils.openDeleteConfirmation("Are you sure you wish to delete this call analytics batch?", function (alertResponse) {
+
+            if (alertResponse) {
+
+                restClient.doDelete($http, '/call-analytic/' + extId, function(status, data) {
+
+                    if (status != 204) {
+                        showAlert(globalVars.GeneralErrorMessage);
+                        return;
+                    }
+
+                    $location.path("/call_analytics");
+                });
+
+            }
+
+        });
+
+    };
 
     //
     // Internal Functions

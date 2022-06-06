@@ -1,4 +1,13 @@
 
-.back-button {
+.call-analytics-button {
     width: 120px;
+}
+
+.call-log-table-wrapper {
+    overflow-y: scroll;
+}
+
+.no-records-found {
+    margin-top: 120px;
+    text-align: center;
 }

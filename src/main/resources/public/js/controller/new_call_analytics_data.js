@@ -5,7 +5,7 @@ app.controller('newCallAnalyticsDataController', function($scope, $window, $uibM
     //
     // Labels
     $scope.heading = 'New Call Analytic Batch';
-    $scope.nameLabel = 'Name';
+    $scope.nameLabel = 'Batch Name';
     $scope.namePlaceholderTxt = 'Enter a name...';
 
 
@@ -64,7 +64,7 @@ app.controller('newCallAnalyticsDataController', function($scope, $window, $uibM
 
         // Validation
         if (utils.isBlank($scope.callAnalyticData.name)) {
-            showAlert("'Name' is required");
+            showAlert("'Batch Name' is required");
             return;
         }
 
@@ -82,7 +82,7 @@ app.controller('newCallAnalyticsDataController', function($scope, $window, $uibM
                 showAlert(data.message);
                 return;
             } else if (status == 409) {
-                showAlert("Unable to save. The name '" + $scope.callAnalyticData.name + "' already exists");
+                showAlert("Unable to save. The batch name '" + $scope.callAnalyticData.name + "' already exists");
                 return;
             }
 

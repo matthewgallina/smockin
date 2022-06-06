@@ -4,9 +4,10 @@ app.controller('callAnalyticsController', function($scope, $location, $window, $
 
     //
     // Labels
-    $scope.heading = 'Call Analytics';
-    $scope.nameTableLabel = "Name";
-    $scope.httpCountTableLabel = "HTTP Call Count";
+    $scope.heading = "Call Analytics";
+    $scope.nameTableLabel = "Batch Name";
+    $scope.pathTableLabel = "URL Path Prefix";
+    $scope.httpCountTableLabel = "Calls Received";
     $scope.s3countTableLabel = "S3 Call Count";
     $scope.mailCountTableLabel = "Mail Call Count";
     $scope.actionTableLabel = "Action";
@@ -17,7 +18,6 @@ app.controller('callAnalyticsController', function($scope, $location, $window, $
     // Buttons
     $scope.addCallBatchButtonLabel = "Add Call Analytics Batch";
     $scope.viewCallAnalyticsButtonLabel = "View";
-    $scope.deleteCallAnalyticsButtonLabel = "Delete";
 
 
     //
@@ -27,28 +27,6 @@ app.controller('callAnalyticsController', function($scope, $location, $window, $
 
     //
     // Scoped Functions
-    $scope.doDeleteCallAnalytic = function(callAnalyticData) {
-
-        utils.openDeleteConfirmation("Are you sure you wish to delete this call analytics batch?", function (alertResponse) {
-
-            if (alertResponse) {
-
-                restClient.doDelete($http, '/call-analytic/' + callAnalyticData.externalId, function(status, data) {
-
-                    if (status != 204) {
-                        showAlert(globalVars.GeneralErrorMessage);
-                        return;
-                    }
-
-                    loadCallAnalyticsTableData();
-                });
-
-            }
-
-        });
-
-    };
-
     $scope.doOpenCreateAnalyticsCall = function() {
 
         var modalInstance = $uibModal.open({

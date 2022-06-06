@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="../css/call_analytic_details.css" crossorigin="anonymous" />
 
-<div ng-controller="callAnalyticDetailsController">
+<div ng-cloak class="ng-cloak" window-dimensions-directive>
 
     <div class="container">
 
@@ -13,42 +13,63 @@
         <br />
         <br />
 
-        <div class="form-group">
-            <label for="path" class="ng-binding">{{ nameLabel }}</label>
-            <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="callAnalyticData.name" type="text" ng-disabled="true" />
+        <div class="row">
+            <div class="col-sm-6">
+
+                <div class="form-group">
+                    <label for="name" class="ng-binding">{{ nameLabel }}</label>
+                    <input id="name" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="callAnalyticData.name" type="text" ng-disabled="true" />
+                </div>
+
+            </div>
+            <div class="col-sm-6">
+
+                <div class="form-group">
+                    <label for="path" class="ng-binding">{{ pathLabel }}</label>
+                    <input id="path" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="callAnalyticData.externalId" type="text" ng-disabled="true" />
+                </div>
+
+            </div>
         </div>
-
-        <br />
-
-        <label for="path" class="ng-binding">{{ logsHeading }}</label>
-
-        <br />
-
-        <table class="table table-striped" ng-if="callAnalyticData.logs.length > 0">
-            <thead>
-            <tr>
-                <th>{{ pathTableLabel }}</th>
-                <th>{{ typeTableLabel }}</th>
-                <th>{{ resultTableLabel }}</th>
-                <th>{{ dateCreatedTableLabel }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="al in callAnalyticData.logs">
-                <td>{{ al.path }}</td>
-                <td>{{ al.serverType }}</td>
-                <td>{{ al.result }}</td>
-                <td>{{ al.received | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
-            </tr>
-            </tbody>
-        </table>
-
-        <br />
-        <br />
 
         <hr />
 
-        <button type="button" class="btn btn-default back-button pull-right" ng-click="doReturnBack()">{{ backButtonLabel }}</button>
+        <label class="ng-binding">{{ logsHeading }}</label>
+        <label class="ng-binding pull-right">{{ logsCountHeading }} {{ callAnalyticData.logs.length }}</label>
+
+        <br />
+
+        <div class="call-log-table-wrapper" style="height: {{ (height - 420) }}px;">
+
+            <div class="no-records-found" ng-if="callAnalyticData.logs.length == 0">
+                {{ noResultsFoundLabel }}
+            </div>
+
+            <table class="table table-striped" ng-if="callAnalyticData.logs.length > 0">
+                <thead>
+                <tr>
+                    <th>{{ pathTableLabel }}</th>
+                    <th>{{ typeTableLabel }}</th>
+                    <th>{{ resultTableLabel }}</th>
+                    <th>{{ dateCreatedTableLabel }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="al in callAnalyticData.logs">
+                    <td>{{ al.path }}</td>
+                    <td>{{ al.serverType }}</td>
+                    <td>{{ al.result }}</td>
+                    <td>{{ al.received | date: 'dd MMM yyyy HH:mm' : 'UTC' }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+        </div>
+
+        <hr />
+
+        <button type="button" class="btn btn-default call-analytics-button" ng-click="doReturnBack()">{{ backButtonLabel }}</button>
+        <button type="button" class="btn btn-danger call-analytics-button pull-right" ng-click="doDeleteCallAnalytic(ca)">{{ deleteCallAnalyticsButtonLabel }}</button>
 
     </div>
 

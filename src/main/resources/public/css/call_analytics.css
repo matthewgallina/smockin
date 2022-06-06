@@ -13,7 +13,11 @@
 }
 
 .name-tbl-col {
-    width: 35%;
+    width: 15%;
+}
+
+.path-tbl-col {
+    width: 30%;
 }
 
 .count-tbl-col {
@@ -21,5 +25,5 @@
 }
 
 .action-tbl-col {
-    width: 20%;
+    width: 10%;
 }

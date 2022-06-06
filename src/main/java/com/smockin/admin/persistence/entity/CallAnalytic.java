@@ -8,13 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "CALL_ANALYTIC", uniqueConstraints={
-        @UniqueConstraint(columnNames = {"NAME", "CREATED_BY"})
-})
+@Table(name = "CALL_ANALYTIC")
 @Data
 public class CallAnalytic extends Identifier {
 
-    @Column(name="NAME", length = 50, nullable = false)
+    @Column(name="NAME", length = 35, nullable = false)
     private String name;
 
     @Enumerated(EnumType.STRING)
