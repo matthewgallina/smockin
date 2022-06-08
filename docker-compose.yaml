@@ -10,7 +10,7 @@ services:
       spring_jpa_database: POSTGRESQL
       spring_datasource_platform: postgres
       spring_jpa_show-sql: "true"
-      spring_jpa_hibernate_ddl-auto: create-drop
+      spring_jpa_hibernate_ddl-auto: update
       spring_database_driverClassName: org.postgresql.Driver
       spring_datasource_url: jdbc:postgresql://database:5432/postgres
       spring_datasource_username: postgres
