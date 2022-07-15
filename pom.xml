@@ -37,7 +37,7 @@
         <owasp.plugin.version>5.3.0</owasp.plugin.version>
         <lombok.version>1.18.12</lombok.version>
         <s3mock.version>2.2.2</s3mock.version>
-        <aws-java-sdk-s3.version>1.12.85</aws-java-sdk-s3.version>
+        <aws-java-sdk-s3.version>1.12.261</aws-java-sdk-s3.version>
         <s3proxy.version>1.7.1</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
     </properties>
