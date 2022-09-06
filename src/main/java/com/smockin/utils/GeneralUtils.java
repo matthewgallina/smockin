@@ -342,7 +342,11 @@ public final class GeneralUtils {
 
             while (ze != null) {
 
-                final File newFile = new File(destDir + File.separator + ze.getName());
+                final File newFile = new File(destDir, ze.getName());
+
+                if (!newFile.toPath().normalize().startsWith(destDir)) {
+                    throw new RuntimeException("Bad zip entry");
+                }
 
                 if (ze.isDirectory()) {
 
