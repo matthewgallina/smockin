@@ -40,6 +40,7 @@
         <aws-java-sdk-s3.version>1.12.261</aws-java-sdk-s3.version>
         <s3proxy.version>1.7.1</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
+        <jackson-databind.version>2.14.2</jackson-databind.version>
     </properties>
 
     <dependencies>
@@ -72,7 +73,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.14.2</version>
+            <version>${jackson-databind.version}</version>
         </dependency>
 
         <!-- Spark (HTTP Server) -->
