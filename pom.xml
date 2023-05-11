@@ -19,7 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
-        <spring-boot-test.version>2.6.7</spring-boot-test.version>
+        <spring-boot-test.version>2.7.11</spring-boot-test.version>
         <spark-core.version>2.9.1</spark-core.version>
         <h2.version>2.1.212</h2.version>
         <hikaricp.version>2.6.1</hikaricp.version>
@@ -33,11 +33,11 @@
         <openapi-generator.version>5.1.0</openapi-generator.version>
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
-        <spring-boot-maven-plugin.version>2.6.7</spring-boot-maven-plugin.version>
+        <spring-boot-maven-plugin.version>2.7.11</spring-boot-maven-plugin.version>
         <owasp.plugin.version>5.3.0</owasp.plugin.version>
         <lombok.version>1.18.12</lombok.version>
         <s3mock.version>2.2.2</s3mock.version>
-        <aws-java-sdk-s3.version>1.12.85</aws-java-sdk-s3.version>
+        <aws-java-sdk-s3.version>1.12.261</aws-java-sdk-s3.version>
         <s3proxy.version>1.7.1</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
     </properties>
@@ -68,7 +68,14 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-        <!-- Spark - REST -->
+        <!-- Jackson (JSON) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.14.2</version>
+        </dependency>
+
+        <!-- Spark (HTTP Server) -->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
@@ -113,7 +120,6 @@
             <artifactId>commons-email</artifactId>
             <version>${commons-email.version}</version>
         </dependency>
-
 
         <!-- Lombok -->
         <dependency>
