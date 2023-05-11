@@ -36,7 +36,7 @@
 
         <br />
 
-        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade alert-format">{{alert.msg}}</div>
+        <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + alert.type" close="closeAlert()" class="alert-fade">{{ alert.msg }}</div>
 
         <div class="row">
             <div class="col-sm-6">
@@ -582,7 +582,7 @@
         <hr />
 
         <div class="action-buttons">
-            <button class="btn btn-default" type="button" ng-click="doCancel()">{{ cancelButtonLabel }}</button>
+            <button class="btn btn-default" type="button" ng-click="doClose()">{{ closeButtonLabel }}</button>
             <button class="btn btn-danger" type="button" ng-click="doDelete()" ng-if="!isNew && !readOnly">{{ deleteButtonLabel }}</button>
             <button class="btn btn-primary" type="button" ng-click="doSaveEndpoint()" ng-if="!readOnly">{{ saveButtonLabel }}</button>
         </div>
