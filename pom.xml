@@ -18,7 +18,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <spring-boot-test.version>2.7.11</spring-boot-test.version>
         <spark-core.version>2.9.1</spark-core.version>
         <h2.version>2.1.212</h2.version>
@@ -41,6 +41,7 @@
         <s3proxy.version>1.7.1</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
         <jackson-databind.version>2.14.2</jackson-databind.version>
+        <java-ngrok.version>2.1.0</java-ngrok.version>
     </properties>
 
     <dependencies>
@@ -188,6 +189,12 @@
             <version>${greenmail.version}</version>
         </dependency>
 
+        <!-- ngrok -->
+        <dependency>
+            <groupId>com.github.alexdlaird</groupId>
+            <artifactId>java-ngrok</artifactId>
+            <version>${java-ngrok.version}</version>
+        </dependency>
 
         <!-- Testing Related -->
         <dependency>
@@ -244,11 +251,11 @@
                     </execution>
                 </executions>
                 <!-- For hot loading during development  -->
-                <!--
+<!-- -->
                 <configuration>
                     <addResources>true</addResources>
                 </configuration>
-                -->
+<!-- -->
             </plugin>
 
             <plugin>
