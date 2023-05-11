@@ -23,6 +23,9 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     var SsePathPlaceHolderTxt = 'e.g. (/hello)';
 
     var GetMethod = 'GET';
+    var PostMethod = 'POST';
+    var PutMethod = 'PUT';
+    var DeleteMethod = 'DELETE';
     var AllMethods = 'ALL METHODS';
 
     $scope.JsonContentType = globalVars.JsonContentType;
@@ -107,7 +110,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     // Buttons
     $scope.saveButtonLabel = 'Save';
     $scope.deleteButtonLabel = 'Delete';
-    $scope.cancelButtonLabel = 'Cancel';
+    $scope.closeButtonLabel = 'Close';
     $scope.addRuleButtonLabel = 'Add Rule';
     $scope.addSequenceButtonLabel = 'Add Seq Response';
     $scope.viewButtonLabel = "View";
@@ -146,6 +149,8 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         $scope.alerts.push({ "type" : type, "msg" : msg });
 
         alertPromise = $timeout(closeAlertFunc, TimeoutDefinitions.AlertTimeoutMillis);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     $scope.closeAlert = closeAlertFunc;
@@ -173,6 +178,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     ];
 
     $scope.isNew = isNew;
+    $scope.lastUpdateAction = null;
 
     $scope.responseHeaderList = [];
 
@@ -756,6 +762,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
 
             if (alertResponse) {
 
+                $scope.lastUpdateAction = DeleteMethod;
                 utils.showBlockingOverlay();
                 restClient.doDelete($http, '/restmock/' + extId, serverCallbackFunc);
 
@@ -901,16 +908,35 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
         }
 
         if (!isNew) {
+            $scope.lastUpdateAction = PutMethod;
             restClient.doPut($http, '/restmock/' + extId, reqData, serverCallbackFunc);
         } else {
+            $scope.lastUpdateAction = PostMethod;
             restClient.doPost($http, '/restmock', reqData, serverCallbackFunc);
         }
 
     };
 
-    $scope.doCancel = function() {
+    $scope.doClose = function() {
 
-        $location.path("/dashboard").search({});
+        if ($scope.lastUpdateAction == null) {
+            $location.path("/dashboard").search({});
+            return;
+        }
+
+        utils.showBlockingOverlay();
+
+        checkAutoRefreshStatus(function(autoRefresh) {
+
+            var locParams = {};
+
+            if (autoRefresh != null && autoRefresh) {
+                locParams.restart = 'true';
+            }
+
+            utils.hideBlockingOverlay();
+            $location.path("/dashboard").search(locParams);
+        });
 
     };
 
@@ -1263,6 +1289,12 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     var serverCallbackFunc = function (status, data) {
 
         if (status == 201 || status == 204) {
+
+            if ($scope.lastUpdateAction == PutMethod) {
+                utils.hideBlockingOverlay();
+                showAlert("Changes saved", "success");
+                return;
+            }
 
             checkAutoRefreshStatus(function(autoRefresh) {
 
