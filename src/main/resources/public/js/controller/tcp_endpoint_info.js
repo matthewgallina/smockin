@@ -920,7 +920,7 @@ app.controller('tcpEndpointInfoController', function($scope, $location, $uibModa
     $scope.doClose = function() {
 
         if ($scope.lastUpdateAction == null) {
-            $location.path("/dashboard");
+            $location.path("/dashboard").search({});
             return;
         }
 
