@@ -13,7 +13,7 @@
 
             <ul class="nav navbar-nav navbar-right">
 
-                <li uib-dropdown on-toggle="toggled(open)" ng-if="displayTunnelDropDown()" class="tunnel-dropdown">
+                <li uib-dropdown on-toggle="toggled(open)" ng-if="displayTunnelDropDown() && !readOnly" class="tunnel-dropdown">
                     <a href id="tunnel-dropdown" class="tools-link" uib-dropdown-toggle>
                         <span class="glyphicon glyphicon-cloud tunnel-dropdown-icon" aria-hidden="true"></span>
                         &nbsp; {{ tunnelLabel }} : {{ (activeTunnelURL != null) ? tunnelOnLabel : tunnelOffLabel }} <span class="caret"></span>

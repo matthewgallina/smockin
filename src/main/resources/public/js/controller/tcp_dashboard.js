@@ -1,5 +1,5 @@
 
-app.controller('tcpDashboardController', function($scope, $window, $rootScope, $location, $timeout, $uibModal, $http, restClient, globalVars, utils, $routeParams, auth) {
+app.controller('tcpDashboardController', function($scope, $rootScope, $window, $location, $timeout, $uibModal, $http, restClient, globalVars, utils, $routeParams, auth) {
 
 
     //
@@ -577,10 +577,33 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
 
     }
 
+    function checkTunnelState() {
+
+        $rootScope.activeTunnelURL = null;
+
+        restClient.doGet($http, '/tunnel', function(status, data) {
+
+            if (status == 401) {
+                showAlert(globalVars.AuthRequiredMessage);
+                return;
+            } else if (status != 200) {
+                showAlert(globalVars.GeneralErrorMessage);
+                return;
+            }
+
+            if (data.enabled) {
+                $rootScope.activeTunnelURL = data.uri;
+            }
+
+        });
+
+    }
+
 
     //
     // Init page
     loadTableData();
     loadTcpServerStatus();
+    checkTunnelState();
 
 });

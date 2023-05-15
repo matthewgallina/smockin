@@ -1,5 +1,5 @@
 
-app.controller('navbarController', function($scope, $rootScope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
+app.controller('navbarController', function($scope, $rootScope, $window, $location, $uibModal, auth, $http, globalVars, restClient, utils) {
 
     var dashboardView = $location.search()["dv"];
 
@@ -39,6 +39,8 @@ app.controller('navbarController', function($scope, $rootScope, $window, $locati
         : $scope.httpServerMode;
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.isAdmin = auth.isAdmin();
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
+
     var httpClientState = null;
     var wsClientState = null;
 
@@ -190,11 +192,35 @@ app.controller('navbarController', function($scope, $rootScope, $window, $locati
 
     $scope.doToggleTunnelMode = function(enabled) {
 
+        if ($scope.readOnly) {
+            return;
+        }
+
+        if (($rootScope.activeTunnelURL != null && enabled)
+                || ($rootScope.activeTunnelURL == null && !enabled)) {
+            return;
+        }
+
         $rootScope.activeTunnelURL = null;
 
-        if (enabled) {
-            $rootScope.activeTunnelURL = "https://sdfsdfasdfasdfasdfasdfasdf.ngrok.com?id=3432423423423423423243234234234";
-        }
+        var requestBody = {
+            'enabled' : enabled
+        };
+
+        utils.showLoadingOverlay(((enabled) ? 'Enabling' : 'Disabling') + ' Ngrok Tunnel');
+
+        restClient.doPut($http, '/tunnel', requestBody, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status != 200) {
+                return;
+            }
+
+            $rootScope.activeTunnelURL = data.uri;
+
+            $window.location.reload();
+        });
 
     };
 
