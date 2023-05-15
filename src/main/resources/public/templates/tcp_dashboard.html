@@ -21,6 +21,9 @@
                             )
                         </span>
                     </h3>
+                    <span ng-if="activeTunnelURL != null">
+                        <b>{{ ngrokUrlLabel }}</b> <a ng-click="copyToClipBoard(activeTunnelURL)" class="copy-to-clipboard">{{ activeTunnelURL }}</a>
+                    </span>
                 </div>
                 <div class="col-sm-4" ng-if="!readOnly">
                     <button type="button" class="btn btn-default start-button" ng-if="mockServerStatus == mockServerStopped" ng-click="startTcpMockServer()"><span class="glyphicon glyphicon-play" aria-hidden="true" /></button>

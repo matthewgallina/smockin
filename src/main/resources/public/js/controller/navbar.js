@@ -1,5 +1,5 @@
 
-app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
+app.controller('navbarController', function($scope, $rootScope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
 
     var dashboardView = $location.search()["dv"];
 
@@ -13,7 +13,11 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     //
     // Labels
     $scope.navbarLabel = (auth.isLoggedIn()) ? auth.getFullName() : "Tools";
-    $scope.helpLink = "Help"
+    $scope.helpLink = "Help";
+    $scope.tunnelLabel = 'ngrok';
+    $scope.tunnelSwitchLabel = 'Switch';
+    $scope.tunnelOnLabel = 'On';
+    $scope.tunnelOffLabel = 'Off';
 
 
     //
@@ -150,8 +154,12 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
         $location.path("/dashboard").search({ "dv" : mode });
     };
 
-    $scope.displayServerDropDown = function() {
+    $scope.displayTunnelDropDown = function() {
+        return ($scope.selectedServerMode == $scope.httpServerMode)
+                    && ($location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard");
+    };
 
+    $scope.displayServerDropDown = function() {
         return $location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard";
     };
 
@@ -178,6 +186,16 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     $scope.doOpenHelp = function() {
         $window.open('https://www.smockin.com/help/', '_blank');
+    };
+
+    $scope.doToggleTunnelMode = function(enabled) {
+
+        $rootScope.activeTunnelURL = null;
+
+        if (enabled) {
+            $rootScope.activeTunnelURL = "https://sdfsdfasdfasdfasdfasdfasdf.ngrok.com?id=3432423423423423423243234234234";
+        }
+
     };
 
 });

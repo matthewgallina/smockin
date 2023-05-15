@@ -84,3 +84,7 @@
     margin-top: 15px;
     width: 85px;
 }
+
+.copy-to-clipboard {
+    cursor: pointer;
+}

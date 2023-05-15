@@ -42,6 +42,7 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
     $scope.enabledLabel = "Enabled";
     $scope.disabledLabel = "Disabled";
     $scope.allMethodsLabel = "ALL METHODS";
+    $scope.ngrokUrlLabel = 'Ngrok URL:';
 
 
     //
@@ -381,6 +382,13 @@ app.controller('tcpDashboardController', function($scope, $window, $rootScope, $
             }
         }
 
+    };
+
+    $scope.copyToClipBoard = function(copyText) {
+
+      navigator.clipboard.writeText(copyText);
+
+      showAlert("URL copied to clipboard", "success");
     };
 
 
