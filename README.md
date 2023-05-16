@@ -8,10 +8,14 @@
 
 <br />
 
-### ATTENTION, EXISTING USERS MOVING TO 2.19.0! 
-sMockin uses a new internal database from this version onwards.
 
-Please consult the *RECENT RELEASE FEATURES* section for *2.19.0* below in this page for further details.
+
+### NEW in version 2.20.0
+
+- Ngrok is now built into sMockin.
+- Make your mocks publibcally accessible in seconds! 
+- JDK 11 or later is now required in order build to this project.
+
 
 <br />
 <br />
@@ -128,7 +132,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 ### ACKNOWLEDGEMENTS / THIRD PARTIES
 
-   sMockin is built upon the following open source frameworks:
+   sMockin is built upon the following frameworks:
 
         Spring Boot                 -       https://projects.spring.io/spring-boot
         Hibernate                   -       http://hibernate.org
@@ -154,7 +158,8 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
         Code Mirror                 -       https://codemirror.net/
         S3proxy                     -       https://github.com/gaul/s3proxy
         GreenMail                   -       https://greenmail-mail-test.github.io/greenmail/
-
+        java-ngrok                  -       https://github.com/alexdlaird/java-ngrok
+        Ngrok                       -       https://ngrok.com/
 
 <br/>
 <br />
