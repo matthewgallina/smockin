@@ -25,6 +25,15 @@
     max-height: 25px;
 }
 
+.tunnel-dropdown {
+    margin-right: 20px;
+}
+
+.tunnel-dropdown-icon {
+    font-size: 18px;
+    top: 4px;
+}
+
 .server-mode-dropdown {
     margin-right: 20px;
 }
@@ -32,4 +41,8 @@
 .server-mode-dropdown-icon {
     font-size: 18px;
     top: 4px;
+}
+
+#active-tunnel-url {
+    color: #fff;
 }

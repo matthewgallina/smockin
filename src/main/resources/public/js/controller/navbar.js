@@ -1,5 +1,5 @@
 
-app.controller('navbarController', function($scope, $window, $location, $uibModal, auth, $http, globalVars, restClient) {
+app.controller('navbarController', function($scope, $rootScope, $window, $location, $uibModal, auth, $http, globalVars, restClient, utils) {
 
     var dashboardView = $location.search()["dv"];
 
@@ -13,7 +13,11 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
     //
     // Labels
     $scope.navbarLabel = (auth.isLoggedIn()) ? auth.getFullName() : "Tools";
-    $scope.helpLink = "Help"
+    $scope.helpLink = "Help";
+    $scope.tunnelLabel = 'ngrok';
+    $scope.tunnelSwitchLabel = 'Switch';
+    $scope.tunnelOnLabel = 'On';
+    $scope.tunnelOffLabel = 'Off';
 
 
     //
@@ -35,6 +39,8 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
         : $scope.httpServerMode;
     $scope.isLoggedIn = auth.isLoggedIn();
     $scope.isAdmin = auth.isAdmin();
+    $scope.readOnly = (auth.isLoggedIn() && !auth.isAdmin());
+
     var httpClientState = null;
     var wsClientState = null;
 
@@ -150,8 +156,12 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
         $location.path("/dashboard").search({ "dv" : mode });
     };
 
-    $scope.displayServerDropDown = function() {
+    $scope.displayTunnelDropDown = function() {
+        return ($scope.selectedServerMode == $scope.httpServerMode)
+                    && ($location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard");
+    };
 
+    $scope.displayServerDropDown = function() {
         return $location.path() == "" || $location.path() == "/" || $location.path() == "/dashboard";
     };
 
@@ -178,6 +188,40 @@ app.controller('navbarController', function($scope, $window, $location, $uibModa
 
     $scope.doOpenHelp = function() {
         $window.open('https://www.smockin.com/help/', '_blank');
+    };
+
+    $scope.doToggleTunnelMode = function(enabled) {
+
+        if ($scope.readOnly) {
+            return;
+        }
+
+        if (($rootScope.activeTunnelURL != null && enabled)
+                || ($rootScope.activeTunnelURL == null && !enabled)) {
+            return;
+        }
+
+        $rootScope.activeTunnelURL = null;
+
+        var requestBody = {
+            'enabled' : enabled
+        };
+
+        utils.showLoadingOverlay(((enabled) ? 'Enabling' : 'Disabling') + ' Ngrok Tunnel');
+
+        restClient.doPut($http, '/tunnel', requestBody, function(status, data) {
+
+            utils.hideLoadingOverlay();
+
+            if (status != 200) {
+                return;
+            }
+
+            $rootScope.activeTunnelURL = data.uri;
+
+            $window.location.reload();
+        });
+
     };
 
 });

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo ""
-echo "PLEASE NOTE: Smockin requires Java 8 or later to run"
+echo "PLEASE NOTE: Smockin requires Java 11 or later to run"
 echo ""
 
 APP_DIR_PATH="${HOME}/.smockin"
