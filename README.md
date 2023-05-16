@@ -12,9 +12,10 @@
 
 ### NEW! in version 2.20.0
 
-- Ngrok is now built into sMockin.
+- **Ngrok** is now built into sMockin.
 - Make your mocks publicly accessible in seconds.
-- JDK 11 or later is now required in order build and run sMockin from source.
+- Java 11 (or later) is now required to build and run sMockin from source.
+- Java 8 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk8
 
 
 <br />
