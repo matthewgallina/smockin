@@ -6,6 +6,7 @@ import com.github.alexdlaird.ngrok.protocol.Tunnel;
 import com.smockin.admin.dto.TunnelRequestDTO;
 import com.smockin.admin.dto.response.TunnelResponseDTO;
 import com.smockin.admin.exception.AuthException;
+import com.smockin.admin.exception.TunnelException;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class TunnelServiceImpl implements TunnelService {
     private UserTokenServiceUtils userTokenServiceUtils;
     private MockedServerEngineService mockedServerEngineService;
 
-    private AtomicReference<NgrokClient> ngrokClientRef = new AtomicReference();
+    private final AtomicReference<NgrokClient> ngrokClientRef = new AtomicReference();
 
 
     @Autowired
@@ -37,13 +38,20 @@ public class TunnelServiceImpl implements TunnelService {
     @Override
     public TunnelResponseDTO load(final String token) {
 
-        final NgrokClient ngrokClient = ngrokClientRef.get();
+        final NgrokClient ngrokClient = getNgrokClientInstance();
 
         if (ngrokClient == null) {
             return new TunnelResponseDTO(false, null);
         }
 
         final boolean isRunning = ngrokClient.getNgrokProcess().isRunning();
+
+        if (isRunning && ngrokClient.getTunnels().isEmpty()) {
+            throw new TunnelException("ngrok Tunnel is missing");
+        }
+        if (isRunning && ngrokClient.getTunnels().size() > 1) {
+            throw new TunnelException("Multiple ngrok tunnels were found");
+        }
 
         final String uri = (isRunning)
                 ? ngrokClient.getTunnels().get(0).getPublicUrl()
@@ -58,12 +66,10 @@ public class TunnelServiceImpl implements TunnelService {
 
         smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
 
-        final MockServerState serverState = mockedServerEngineService.getRestServerState();
-
-        NgrokClient ngrokClient = ngrokClientRef.get();
+        NgrokClient ngrokClient = getNgrokClientInstance();
 
         if (ngrokClient == null) {
-            ngrokClientRef.set(ngrokClient = new NgrokClient.Builder().build());
+            ngrokClientRef.set(ngrokClient = instanceNgrokClient());
         }
 
         if (!dto.isEnabled()) {
@@ -80,6 +86,8 @@ public class TunnelServiceImpl implements TunnelService {
             return new TunnelResponseDTO(true, ngrokClient.getTunnels().get(0).getPublicUrl());
         }
 
+        final MockServerState serverState = mockedServerEngineService.getRestServerState();
+
         final CreateTunnel createTunnel = new CreateTunnel.Builder()
                 .withAddr(serverState.getPort())
                 .build();
@@ -87,6 +95,14 @@ public class TunnelServiceImpl implements TunnelService {
         final Tunnel httpTunnel = ngrokClient.connect(createTunnel);
 
         return new TunnelResponseDTO(ngrokClient.getNgrokProcess().isRunning(), httpTunnel.getPublicUrl());
+    }
+
+    NgrokClient instanceNgrokClient() {
+        return new NgrokClient.Builder().build();
+    }
+
+    NgrokClient getNgrokClientInstance() {
+        return ngrokClientRef.get();
     }
 
 }
