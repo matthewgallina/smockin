@@ -23,8 +23,6 @@ binary
 TODO
 standalone
 build_all_distributions.sh
-Dockerfile
-launch.sh
 /src/test/java/com/smockin/localtemp
 sMockin.app
 *.zip
