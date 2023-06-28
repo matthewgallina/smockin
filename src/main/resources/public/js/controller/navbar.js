@@ -213,7 +213,13 @@ app.controller('navbarController', function($scope, $rootScope, $window, $locati
 
             utils.hideLoadingOverlay();
 
+            if (status == 400) {
+                $rootScope.$broadcast(globalVars.CoreDashboardAlertBroadcast, { message : data.message });
+                return;
+            }
+
             if (status != 200) {
+                $rootScope.$broadcast(globalVars.CoreDashboardAlertBroadcast, { message : globalVars.GeneralErrorMessage });
                 return;
             }
 

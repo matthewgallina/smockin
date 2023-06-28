@@ -27,6 +27,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
     $scope.maxThreadsPlaceholderTxt = 'The Maximum Threads (Concurrent Requests) allowed';
     $scope.minThreadsPlaceholderTxt = 'The Minimum Threads (Concurrent Requests) allowed';
     $scope.timeOutMillisPlaceholderTxt = 'Connection Idle Time Out (in Milliseconds)';
+    $scope.ngrokAuthTokenLabel = 'Ngrok Auth Token';
+    $scope.ngrokAuthTokenLabelPlaceholderTxt = 'Enter Your Ngrok Auth Token...';
 
 
     //
@@ -70,7 +72,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         "timeOutMillis" : 0,
         "autoStart" : false,
         "enableCors" : false,
-        "autoGenInboxes" : false
+        "autoGenInboxes" : false,
+        "ngrokAuthToken" : null,
     };
 
 
@@ -125,6 +128,11 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
         if (ServerType == globalVars.RestfulServerType) {
             req.nativeProperties = {
                 "ENABLE_CORS" : ($scope.serverConfig.enableCors) ? "TRUE" : "FALSE"
+            };
+        }
+        if (ServerType == globalVars.RestfulServerType) {
+            req.nativeProperties = {
+                "NGROK_AUTH_TOKEN" : $scope.serverConfig.ngrokAuthToken
             };
         }
         if (ServerType == globalVars.MailServerType) {
@@ -195,7 +203,8 @@ app.controller('serverConfigController', function($scope, $location, $uibModal, 
                     "timeOutMillis" : data.timeOutMillis,
                     "autoStart" : data.autoStart,
                     "enableCors" : (data.nativeProperties.ENABLE_CORS != null && data.nativeProperties.ENABLE_CORS.toUpperCase() == "TRUE"),
-                    "autoGenInboxes" : (data.nativeProperties.AUTO_GEN_INBOXES != null && data.nativeProperties.AUTO_GEN_INBOXES.toUpperCase() == "TRUE")
+                    "autoGenInboxes" : (data.nativeProperties.AUTO_GEN_INBOXES != null && data.nativeProperties.AUTO_GEN_INBOXES.toUpperCase() == "TRUE"),
+                    "ngrokAuthToken" : data.nativeProperties.NGROK_AUTH_TOKEN
                 };
 
                 return;

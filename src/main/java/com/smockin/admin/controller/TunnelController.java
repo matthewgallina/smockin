@@ -3,6 +3,7 @@ package com.smockin.admin.controller;
 import com.smockin.admin.dto.TunnelRequestDTO;
 import com.smockin.admin.dto.response.TunnelResponseDTO;
 import com.smockin.admin.exception.AuthException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.service.TunnelService;
 import com.smockin.utils.GeneralUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,7 @@ public class TunnelController {
     public @ResponseBody
     ResponseEntity<TunnelResponseDTO> update(@RequestBody final TunnelRequestDTO dto,
                                              @RequestHeader(value = GeneralUtils.OAUTH_HEADER_NAME, required = false) final String bearerToken)
-            throws AuthException {
+            throws AuthException, ValidationException {
 
         return ResponseEntity.ok(tunnelService.update(dto, GeneralUtils.extractOAuthToken(bearerToken)));
     }

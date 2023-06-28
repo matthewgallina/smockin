@@ -1,5 +1,5 @@
 
-app.controller('dashboardController', function($scope, $location, $routeParams, $timeout, globalVars) {
+app.controller('dashboardController', function($scope, $rootScope, $location, $routeParams, $timeout, globalVars) {
 
     //
     // Constants
@@ -43,5 +43,11 @@ app.controller('dashboardController', function($scope, $location, $routeParams, 
     if (dashboardView != null) {
         $scope.currentServerModeView = dashboardView;
     }
+
+    //
+    // Listener
+    $rootScope.$on(globalVars.CoreDashboardAlertBroadcast, function(event, data) {
+        $scope.showAlert(data.message, data.type);
+    });
 
 });

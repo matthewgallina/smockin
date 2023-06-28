@@ -29,6 +29,11 @@
         <input id="timeOutMillis" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.timeOutMillis" placeholder="{{ timeOutMillisPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
     </div>
 
+    <div class="form-group" ng-if="serverConfig.serverType == RestfulServerType">
+        <label for="ngrok-auth-token" class="ng-binding">{{ ngrokAuthTokenLabel }}</label>
+        <input id="ngrok-auth-token" class="form-control ng-isolate-scope ng-pristine ng-valid" ng-model="serverConfig.ngrokAuthToken" placeholder="{{ ngrokAuthTokenPlaceholderTxt }}" type="text" ng-disabled="readOnly" />
+    </div>
+
     <div class="form-group">
         <input id="autoStart"  ng-model="serverConfig.autoStart" type="checkbox" ng-disabled="readOnly" />
         <label for="autoStart" class="ng-binding">{{ autoStartLabel }}</label>
