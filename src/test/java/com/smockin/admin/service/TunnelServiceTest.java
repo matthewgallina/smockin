@@ -10,8 +10,11 @@ import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.TunnelException;
 import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.entity.SmockinUser;
+import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.utils.GeneralUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -197,6 +200,12 @@ public class TunnelServiceTest {
                 .thenReturn(serverState);
         Mockito.when(ngrokClient.connect(Mockito.any(CreateTunnel.class)))
                 .thenReturn(tunnel);
+        final MockedServerConfigDTO mockedServerConfig = new MockedServerConfigDTO();
+        mockedServerConfig.getNativeProperties().put(GeneralUtils.NGROK_AUTH_TOKEN, "123456");
+        Mockito.when(mockedServerEngineService
+                        .loadServerConfig(Mockito.any(ServerTypeEnum.class)))
+                .thenReturn(mockedServerConfig);
+
 
         // Test
         final TunnelResponseDTO responseDTO = tunnelService.update(new TunnelRequestDTO(true), UUID.randomUUID().toString());
