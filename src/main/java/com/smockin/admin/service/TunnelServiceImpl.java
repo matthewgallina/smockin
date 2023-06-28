@@ -7,8 +7,13 @@ import com.smockin.admin.dto.TunnelRequestDTO;
 import com.smockin.admin.dto.response.TunnelResponseDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.TunnelException;
+import com.smockin.admin.exception.ValidationException;
+import com.smockin.admin.persistence.enums.ServerTypeEnum;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.utils.GeneralUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +67,7 @@ public class TunnelServiceImpl implements TunnelService {
 
     @Override
     public TunnelResponseDTO update(final TunnelRequestDTO dto,
-                                    final String token) throws AuthException {
+                                    final String token) throws AuthException, ValidationException {
 
         smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
 
@@ -86,11 +91,20 @@ public class TunnelServiceImpl implements TunnelService {
             return new TunnelResponseDTO(true, ngrokClient.getTunnels().get(0).getPublicUrl());
         }
 
+        final MockedServerConfigDTO mockedServerConfig = mockedServerEngineService.loadServerConfig(ServerTypeEnum.RESTFUL);
+        final String authToken = mockedServerConfig.getNativeProperties().get(GeneralUtils.NGROK_AUTH_TOKEN);
+
+        if (StringUtils.isBlank(authToken)) {
+            throw new ValidationException("Unable to start ngrok. Could not locate an Auth Token in Server Config.");
+        }
+
         final MockServerState serverState = mockedServerEngineService.getRestServerState();
 
         final CreateTunnel createTunnel = new CreateTunnel.Builder()
                 .withAddr(serverState.getPort())
                 .build();
+
+        ngrokClient.setAuthToken(authToken);
 
         final Tunnel httpTunnel = ngrokClient.connect(createTunnel);
 

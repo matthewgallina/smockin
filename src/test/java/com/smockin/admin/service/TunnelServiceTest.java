@@ -8,6 +8,7 @@ import com.smockin.admin.dto.TunnelRequestDTO;
 import com.smockin.admin.dto.response.TunnelResponseDTO;
 import com.smockin.admin.exception.AuthException;
 import com.smockin.admin.exception.TunnelException;
+import com.smockin.admin.exception.ValidationException;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.MockServerState;
@@ -168,7 +169,7 @@ public class TunnelServiceTest {
     }
 
     @Test
-    public void update_newInstance_Pass() throws AuthException {
+    public void update_newInstance_Pass() throws AuthException, ValidationException {
 
         // Setup
         final String uri = "https://123.smockin-test.com";
@@ -212,7 +213,7 @@ public class TunnelServiceTest {
     }
 
     @Test
-    public void update_killTunnel_Pass() throws AuthException {
+    public void update_killTunnel_Pass() throws AuthException, ValidationException {
 
         // Setup
         final String uri = "https://123.smockin-test.com";
@@ -246,7 +247,7 @@ public class TunnelServiceTest {
     }
 
     @Test
-    public void update_alreadyRunning_Pass() throws AuthException {
+    public void update_alreadyRunning_Pass() throws AuthException, ValidationException {
 
         // Setup
         final String uri = "https://123.smockin-test.com";
@@ -277,7 +278,7 @@ public class TunnelServiceTest {
     }
 
     @Test
-    public void update_newInstanceButNotEnabled_Pass() throws AuthException {
+    public void update_newInstanceButNotEnabled_Pass() throws AuthException, ValidationException {
 
         // Setup
         Mockito.when(userTokenServiceUtils.loadCurrentActiveUser(Mockito.anyString()))

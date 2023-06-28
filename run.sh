@@ -5,7 +5,7 @@ echo "PLEASE NOTE: Smockin requires Java 11 or later to run"
 echo ""
 
 APP_NAME="sMockin!"
-APP_VERSION="2.20.0"
+APP_VERSION="2.20.1"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"

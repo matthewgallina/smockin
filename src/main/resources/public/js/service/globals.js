@@ -58,6 +58,8 @@ app.service('globalVars', function() {
     this.JsonContentType = 'application/json';
     this.XmlContentType = 'application/xml';
 
+    this.CoreDashboardAlertBroadcast = 'CORE_DASHBOARD_ALERT_BROADCAST';
+
     this.ContentMimeTypes = [
         this.JsonContentType,
         'text/html',

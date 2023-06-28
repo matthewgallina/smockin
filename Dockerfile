@@ -1,14 +1,14 @@
 # Dockerfile
 
 #
-# docker build -t smockin-2200 .
-# docker tag smockin-2200 mgallina/smockin:2200
-# docker push mgallina/smockin:2200
-# docker run --name smockin -d -p 8000:8000 -p 8001:8001 -p 8002:8002 -p 8003:8003 mgallina/smockin:2200
+# docker build -t smockin-2201 .
+# docker tag smockin-2201 mgallina/smockin:2201
+# docker push mgallina/smockin:2201
+# docker run --name smockin -d -p 8000:8000 -p 8001:8001 -p 8002:8002 -p 8003:8003 mgallina/smockin:2201
 #
 
 FROM adoptopenjdk/openjdk11:jre-11.0.19_7-ubuntu
-ARG APP_VERSION_ARG='2.20.0'
+ARG APP_VERSION_ARG='2.20.1'
 RUN mkdir /app
 RUN mkdir /app/db
 RUN mkdir /app/db/data
