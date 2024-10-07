@@ -5,7 +5,7 @@ echo "PLEASE NOTE: Smockin requires Java 11 or later to run"
 echo ""
 
 APP_NAME="sMockin!"
-APP_VERSION="2.20.1"
+APP_VERSION="2.20.2"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
@@ -13,7 +13,7 @@ PIDS_DIR_PATH="${APP_DIR_PATH}/pids"
 DB_DRIVER_DIR_PATH="${DB_DIR_PATH}/driver"
 DB_DATA_DIR_PATH="${DB_DIR_PATH}/data"
 DB_MARKER="db_initialized"
-H2_JAR_NAME="h2-2.1.212.jar"
+H2_JAR_NAME="h2-2.3.232.jar"
 DB_PROPS_FILE=db.properties
 APP_PROPS_FILE=app.properties
 SMOCKIN_PID_FILE="$PIDS_DIR_PATH/smockin-app.pid"
