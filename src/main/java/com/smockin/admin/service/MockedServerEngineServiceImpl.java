@@ -667,6 +667,8 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
         proxyForwardUserConfig.getProxyForwardMappings().clear();
 
+        proxyForwardUserConfigDAO.saveAndFlush(proxyForwardUserConfig);
+
         if (!proxyForwardMappings.isEmpty()) {
 
             proxyForwardUserConfig.getProxyForwardMappings().addAll(
