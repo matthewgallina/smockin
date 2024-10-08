@@ -8,14 +8,14 @@
 #
 
 FROM adoptopenjdk/openjdk11:jre-11.0.19_7-ubuntu
-ARG APP_VERSION_ARG='2.20.1'
+ARG APP_VERSION_ARG='2.20.2'
 RUN mkdir /app
 RUN mkdir /app/db
 RUN mkdir /app/db/data
 RUN mkdir /app/db/driver
 RUN mkdir /app/log
 WORKDIR /app
-COPY install/h2-2.1.212.jar /app/db/driver/h2-2.1.212.jar
+COPY install/h2-2.3.232.jar /app/db/driver/h2-2.3.232.jar
 COPY install/smockin_db.mv.db /app/db/data/smockin_db.mv.db
 COPY target/smockin-${APP_VERSION_ARG}.jar /app/smockin-${APP_VERSION_ARG}.jar
 COPY launch.sh /app/launch.sh

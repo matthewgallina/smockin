@@ -1,7 +1,7 @@
 #!/bin/sh
 
-APP_VERSION="2.20.1"
-H2_DB_JAR="h2-2.1.212"
+APP_VERSION="2.20.2"
+H2_DB_JAR="h2-2.3.232"
 
 DB_USERNAME="smockin"
 DB_PASSWORD="smockin"

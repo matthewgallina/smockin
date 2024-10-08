@@ -13,7 +13,7 @@ set DB_DIR_PATH=%APP_DIR_PATH%\db
 set DB_DRIVER_DIR_PATH=%DB_DIR_PATH%\driver
 set DB_DATA_DIR_PATH=%DB_DIR_PATH%\data
 
-set H2_JAR_NAME=h2-2.1.212.jar
+set H2_JAR_NAME=h2-2.3.232.jar
 set DB_PROPS_FILE=db.properties
 set APP_PROPS_FILE=app.properties
 set DB_PLACEHOLDER_FILE=smockin_db.mv.db

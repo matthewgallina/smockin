@@ -10,7 +10,7 @@ DB_DRIVER_DIR_PATH="${DB_DIR_PATH}/driver"
 DB_DATA_DIR_PATH="${DB_DIR_PATH}/data"
 PIDS_DIR_PATH="${APP_DIR_PATH}/pids"
 
-H2_JAR_NAME="h2-2.1.212.jar"
+H2_JAR_NAME="h2-2.3.232.jar"
 DB_PROPS_FILE=db.properties
 APP_PROPS_FILE=app.properties
 DB_PLACEHOLDER_FILE=smockin_db.mv.db
