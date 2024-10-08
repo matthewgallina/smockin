@@ -10,15 +10,13 @@
 
 
 
-### NEW! in version 2.20.0
+### NEW! in version 2.20.2
 
-- **Ngrok** is now built into sMockin.
-- Your API mocks can now be made publicly accessible in seconds!
+- Fixed issue where proxy mappings were not saving.
+- Upgraded sMockin's H2 DB to version 2.3.232.
 
-**Change of JDK version**
 
-- Java 11 (or later) is now required to build the main branch.
-- Java 8 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk8
+**Note, 2.3.232 IS NOT compatible with previous versions of H2** you should therefore use the various exporters to save all of your previous data before moving to this version of sMockin.
 
 
 <br />
@@ -64,13 +62,14 @@ sMockin runs as a small web app which can be either installed locally onto a per
 * Monitor and log traffic going to the HTTP or S3 mock servers.
 * Choose whether to build your API mocks using JavaScript or without code.
 * A rich and complete UI solution.
+* Leverages Ngrok allowing you to make your API mocks publicly accessible.
 
 
 <br/>
 
 ### REQUIREMENTS
 
-   - Java 8
+   - Java 11
    - Maven 3
 
    Please Note
@@ -170,6 +169,19 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 
 ### RECENT RELEASE FEATURES
+
+<br />
+
+**New in version 2.20.0**
+
+- **Ngrok** is now built into sMockin.
+- Your API mocks can now be made publicly accessible in seconds!
+
+**Change of JDK version**
+
+- Java 11 (or later) is now required to build the main branch.
+- Java 8 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk8
+
 
 <br />
 
