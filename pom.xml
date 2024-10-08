@@ -25,7 +25,7 @@
         <hikaricp.version>2.6.1</hikaricp.version>
         <commons-lang3.version>3.5</commons-lang3.version>
         <httpclient.version>4.5.13</httpclient.version>
-        <commons-io.version>2.7</commons-io.version>
+        <commons-io.version>2.17.0</commons-io.version>
         <commons-email.version>1.5</commons-email.version>
         <mockito-core.version>3.2.0</mockito-core.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
