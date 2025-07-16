@@ -74,67 +74,67 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
+            <version>2.14.2</version>
         </dependency>
 
         <!-- Spark (HTTP Server) -->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
-            <version>${spark-core.version}</version>
+            <version>2.9.4</version>
         </dependency>
 
         <!-- DB -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
+            <version>2.3.232</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
+            <version>2.6.1</version>
         </dependency>
 
         <!-- Apache Commons -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
+            <version>3.5</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>fluent-hc</artifactId>
-            <version>${httpclient.version}</version>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>${commons-io.version}</version>
+            <version>2.17.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-email</artifactId>
-            <version>${commons-email.version}</version>
+            <version>1.5</version>
         </dependency>
 
         <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
+            <version>1.18.12</version>
         </dependency>
 
         <!-- RAML -->
         <dependency>
             <groupId>org.raml</groupId>
             <artifactId>raml-parser-2</artifactId>
-            <version>${raml-parser.version}</version>
+            <version>1.0.47</version>
             <exclusions>
                 <exclusion>
                     <groupId>javax.mail</groupId>
@@ -147,33 +147,33 @@
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>
-            <version>${openapi-generator.version}</version>
+            <version>7.13.0</version>
         </dependency>
 
         <!-- Encryption -->
         <dependency>
             <groupId>org.jasypt</groupId>
             <artifactId>jasypt</artifactId>
-            <version>${jasypt.version}</version>
+            <version>1.9.2</version>
         </dependency>
 
         <!-- JWT -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
-            <version>${java-jwt.version}</version>
+            <version>3.19.3</version>
         </dependency>
 
         <!-- S3 Mock -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>${aws-java-sdk-s3.version}</version>
+            <version>1.12.768</version>
         </dependency>
         <dependency>
             <groupId>org.gaul</groupId>
             <artifactId>s3proxy</artifactId>
-            <version>${s3proxy.version}</version>
+            <version>2.2.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
@@ -186,28 +186,28 @@
         <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail</artifactId>
-            <version>${greenmail.version}</version>
+            <version>1.6.5</version>
         </dependency>
 
         <!-- ngrok -->
         <dependency>
             <groupId>com.github.alexdlaird</groupId>
             <artifactId>java-ngrok</artifactId>
-            <version>${java-ngrok.version}</version>
+            <version>2.1.0</version>
         </dependency>
 
         <!-- Testing Related -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito-core.version}</version>
+            <version>3.2.0</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-test.version}</version>
+            <version>3.0.8</version>
             <scope>test</scope>
         </dependency>
 
