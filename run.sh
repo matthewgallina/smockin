@@ -4,8 +4,11 @@ echo ""
 echo "PLEASE NOTE: Smockin requires Java 11 or later to run"
 echo ""
 
+#echo "Setting JAVA_HOME to JDK 11..."
+#export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.29.jdk/Contents/Home
+
 APP_NAME="sMockin!"
-APP_VERSION="2.20.2"
+APP_VERSION="2.20.3"
 
 APP_DIR_PATH="${HOME}/.smockin"
 DB_DIR_PATH="${APP_DIR_PATH}/db"
