@@ -1,6 +1,6 @@
 #!/bin/sh
 
-APP_VERSION="2.20.2"
+APP_VERSION="2.20.3"
 H2_DB_JAR="h2-2.3.232"
 
 DB_USERNAME="smockin"
