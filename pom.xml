@@ -19,8 +19,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
-        <spring-boot-test.version>2.7.11</spring-boot-test.version>
-        <spark-core.version>2.9.1</spark-core.version>
+        <spring-boot-test.version>3.0.8</spring-boot-test.version>
+        <spark-core.version>2.9.4</spark-core.version>
         <h2.version>2.3.232</h2.version>
         <hikaricp.version>2.6.1</hikaricp.version>
         <commons-lang3.version>3.5</commons-lang3.version>
@@ -29,19 +29,20 @@
         <commons-email.version>1.5</commons-email.version>
         <mockito-core.version>3.2.0</mockito-core.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <raml-parser.version>1.0.25</raml-parser.version>
-        <openapi-generator.version>5.1.0</openapi-generator.version>
+        <raml-parser.version>1.0.47</raml-parser.version>
+        <openapi-generator.version>7.13.0</openapi-generator.version>
         <jasypt.version>1.9.2</jasypt.version>
         <java-jwt.version>3.4.0</java-jwt.version>
         <spring-boot-maven-plugin.version>2.7.11</spring-boot-maven-plugin.version>
         <owasp.plugin.version>5.3.0</owasp.plugin.version>
-        <lombok.version>1.18.12</lombok.version>
+        <lombok.version>1.18.42</lombok.version>
         <s3mock.version>2.2.2</s3mock.version>
-        <aws-java-sdk-s3.version>1.12.261</aws-java-sdk-s3.version>
-        <s3proxy.version>1.7.1</s3proxy.version>
+        <aws-java-sdk-s3.version>1.12.768</aws-java-sdk-s3.version>
+        <s3proxy.version>2.6.0</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
         <jackson-databind.version>2.14.2</jackson-databind.version>
         <java-ngrok.version>2.1.0</java-ngrok.version>
+        <graaljs.version>25.0.2</graaljs.version>
     </properties>
 
     <dependencies>
@@ -194,6 +195,18 @@
             <groupId>com.github.alexdlaird</groupId>
             <artifactId>java-ngrok</artifactId>
             <version>${java-ngrok.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>polyglot</artifactId>
+            <version>${graaljs.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.graalvm.polyglot</groupId>
+            <artifactId>js</artifactId>
+            <version>${graaljs.version}</version>
+            <type>pom</type>
         </dependency>
 
         <!-- Testing Related -->
