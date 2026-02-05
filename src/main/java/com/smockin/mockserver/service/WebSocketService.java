@@ -6,6 +6,8 @@ import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import org.eclipse.jetty.websocket.api.Session;
+
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -22,6 +24,6 @@ public interface WebSocketService {
     List<PushClientDTO> getClientConnections(final String mockExtId, final String token) throws RecordNotFoundException, ValidationException;
     String getExternalId(final Session session);
     void clearSession();
-    void respondToMessage(final Session session, final String message);
+    void respondToMessage(final Session session, final String message) throws IOException;
 
 }

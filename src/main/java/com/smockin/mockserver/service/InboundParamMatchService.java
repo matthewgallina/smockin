@@ -1,7 +1,7 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.mockserver.exception.InboundParamMatchException;
-import spark.Request;
+import io.javalin.http.Context;
 
 /**
  * Created by mgallina.
@@ -9,7 +9,7 @@ import spark.Request;
 
 public interface InboundParamMatchService {
 
-    String enrichWithInboundParamMatches(final Request req,
+    String enrichWithInboundParamMatches(final Context ctx,
                                          final String mockPath,
                                          final String responseBody,
                                          final String userCtxPath,

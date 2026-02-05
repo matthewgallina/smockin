@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.smockin.admin.enums.UserModeEnum;
+import io.javalin.http.Context;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -17,16 +18,29 @@ import org.springframework.http.MediaType;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.AntPathMatcher;
-import spark.Request;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -70,28 +84,28 @@ public final class GeneralUtils {
     }
 
 
-    public final static String generateUUID() {
+    public static String generateUUID() {
         return UUID.randomUUID().toString();
     }
 
     // Should be set to UTC from command line
-    public final static Date getCurrentDate() {
+    public static Date getCurrentDate() {
         return Date.from(getCurrentDateTime().atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public final static Date toDate(final LocalDateTime localDateTime) {
+    public static Date toDate(final LocalDateTime localDateTime) {
         return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
     }
 
-    public final static LocalDateTime getCurrentDateTime() {
+    public static LocalDateTime getCurrentDateTime() {
         return LocalDateTime.now();
     }
 
-    public final static Instant getCurrentDateTimeInstant() {
+    public static Instant getCurrentDateTimeInstant() {
         return getCurrentDateTime().toInstant(ZoneOffset.UTC);
     }
 
-    public final static String createFileNameUniqueTimeStamp() {
+    public static String createFileNameUniqueTimeStamp() {
         return new SimpleDateFormat(UNIQUE_TIMESTAMP_FORMAT)
                 .format(getCurrentDate());
     }
@@ -101,16 +115,17 @@ public final class GeneralUtils {
      * Returns the header value for the given name.
      * Look up is case insensitive (as Java Spark handles header look ups with case sensitivity, which is wrong)
      *
-     * @param request
+
      * @param headerName
+     * @param ctx
      * @returns String
      *
      */
-    public static String findHeaderIgnoreCase(final Request request, final String headerName) {
-
-        for (String h : request.headers()) {
+    public static String findHeaderIgnoreCase(final Context ctx, final String headerName) {
+        var request = ctx.req();
+        for (String h : Collections.list(request.getHeaderNames())) {
             if (h.equalsIgnoreCase(headerName)) {
-                return request.headers(h);
+                return request.getHeader(h);
             }
         }
 
@@ -203,11 +218,11 @@ public final class GeneralUtils {
         if (!NumberUtils.isDigits(versionNo))
             throw new IllegalArgumentException("extracted versionNo is not a valid number: " + versionNo);
 
-        return Integer.valueOf(versionNo);
+        return Integer.parseInt(versionNo);
     }
 
     public static String removeAllLineBreaks(final String original) {
-        return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
+        return StringUtils.replaceAll(original, System.lineSeparator(), "");
     }
 
     public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
@@ -407,50 +422,50 @@ public final class GeneralUtils {
         }
     }
 
-    public static String extractRequestParamByName(final Request req, final String fieldName) {
+    public static String extractRequestParamByName(final Context ctx, final String fieldName) {
 
-        return extractAllRequestParams(req)
+        return extractAllRequestParams(ctx)
                 .entrySet()
                 .stream()
                 .filter(p ->
                         StringUtils.equalsIgnoreCase(fieldName, p.getKey()))
-                .map(p ->
-                        p.getValue())
+                .map(Map.Entry::getValue)
+                .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
     }
 
-    public static Map<String, String> extractAllRequestParams(final Request req) {
+    public static Map<String, String> extractAllRequestParams(final Context ctx) {
+        var req = ctx.req();
+        if (!StringUtils.equalsIgnoreCase(HttpMethod.POST.name(), req.getMethod())
+                && !StringUtils.equalsIgnoreCase(HttpMethod.PUT.name(), req.getMethod())
+                && !StringUtils.equalsIgnoreCase(HttpMethod.PATCH.name(), req.getMethod())) {
 
-        if (!StringUtils.equalsIgnoreCase(HttpMethod.POST.name(), req.requestMethod())
-                && !StringUtils.equalsIgnoreCase(HttpMethod.PUT.name(), req.requestMethod())
-                && !StringUtils.equalsIgnoreCase(HttpMethod.PATCH.name(), req.requestMethod())) {
-
-            if (req.queryParams().isEmpty()) {
+            if (ctx.queryParamMap().isEmpty()) {
                 return new HashMap<>();
             }
 
-            return req.queryParams()
+            return req.getParameterMap().entrySet()
                     .stream()
-                    .collect(Collectors.toMap(k -> k, k -> req.queryParams(k)));
+                    .collect(HashMap::new,
+                            (m, v) -> m.put(v.getKey(), (v.getValue() != null && v.getValue().length != 0) ? v.getValue()[0] : null),
+                            HashMap::putAll);
         }
 
-        final Map<String, String> allParams = req.queryMap()
-                .toMap()
+        final Map<String, String> allParams = ctx.queryParamMap()
                 .entrySet()
                 .stream()
                 .collect(HashMap::new,
-                        (m,v) ->
-                            m.put(v.getKey(), (v.getValue() != null && v.getValue().length != 0) ? v.getValue()[0] : null),
+                        (m, v) -> m.put(v.getKey(), (v.getValue() != null && !v.getValue().isEmpty()) ? v.getValue().get(0) : null),
                         HashMap::putAll);
 
-
-        if (req.contentType() != null
-                && (req.contentType().contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                ||  req.contentType().contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
-
-            if (req.body() != null && req.body().contains("=")) {
-                allParams.putAll(URLEncodedUtils.parse(req.body(), Charset.defaultCharset())
+        if (ctx.contentType() != null
+                && (Objects.requireNonNull(ctx.contentType()).contains(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                ||  Objects.requireNonNull(ctx.contentType()).contains(MediaType.MULTIPART_FORM_DATA_VALUE))) {
+            
+            ctx.body();
+            if (ctx.body().contains("=")) {
+                allParams.putAll(URLEncodedUtils.parse(ctx.body(), Charset.defaultCharset())
                                     .stream()
                                     .collect(HashMap::new, (m,v) -> m.put(v.getName(), v.getValue()), HashMap::putAll));
             }

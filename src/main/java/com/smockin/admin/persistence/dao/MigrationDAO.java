@@ -1,8 +1,7 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.Identifier;
-
-import javax.persistence.Query;
+import jakarta.persistence.Query;
 
 /**
  * Created by gallina.

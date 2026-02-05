@@ -1,11 +1,10 @@
 package com.smockin.admin.persistence.dao;
 
 import com.smockin.admin.persistence.entity.Identifier;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import org.springframework.stereotype.Repository;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
 
 /**
  * Created by mgallina.

@@ -12,6 +12,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.enums.PatchCommandEnum;
 import com.smockin.utils.GeneralUtils;
+import io.javalin.http.Context;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -22,10 +23,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spark.Request;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -53,11 +57,11 @@ public class StatefulServiceImpl implements StatefulService {
 
 
     @Override
-    public RestfulResponseDTO process(final Request req, final RestfulMock mock) {
+    public RestfulResponseDTO process(final Context ctx, final RestfulMock mock) {
 
         final RestfulMock parent = loadStatefulParent(mock);
 
-        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), mock.getCreatedBy().getCtxPath());
+        final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), ctx.req().getPathInfo(), mock.getCreatedBy().getCtxPath());
 
         final List<Map<String, Object>> mockStateContent = loadStateForMock(parent);
         final Map<String, String> pathVars = GeneralUtils.findAllPathVars(sanitizedInboundPath, mock.getPath());
@@ -65,25 +69,26 @@ public class StatefulServiceImpl implements StatefulService {
         final String dataId = pathVars.get(fieldId);
 
         StatefulResponse statefulResponse;
-
+        final var req = ctx.req();
+        final String body = ctx.body();
         try {
 
-            switch (RestMethodEnum.findByName(req.requestMethod())) {
+            switch (RestMethodEnum.findByName(req.getMethod())) {
 
                 case GET:
                     statefulResponse = handleGet(dataId, mockStateContent, parent.getRestfulMockStatefulMeta());
                     break;
 
                 case POST:
-                    statefulResponse = handlePost(parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    statefulResponse = handlePost(parent.getExtId(), body, mockStateContent, parent.getRestfulMockStatefulMeta());
                     break;
 
                 case PUT:
-                    statefulResponse = handlePut(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    statefulResponse = handlePut(dataId, parent.getExtId(), body, mockStateContent, parent.getRestfulMockStatefulMeta());
                     break;
 
                 case PATCH:
-                    statefulResponse = handlePatch(dataId, parent.getExtId(), req.body(), mockStateContent, parent.getRestfulMockStatefulMeta());
+                    statefulResponse = handlePatch(dataId, parent.getExtId(), body, mockStateContent, parent.getRestfulMockStatefulMeta());
                     break;
 
                 case DELETE:

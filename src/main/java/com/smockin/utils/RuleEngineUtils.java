@@ -1,24 +1,27 @@
 package com.smockin.utils;
 
+import io.javalin.http.Context;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
-import spark.Request;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public final class RuleEngineUtils {
 
-    public static String matchOnPathVariable(final String fieldName, final Request req) {
+    public static String matchOnPathVariable(final String fieldName, final Context ctx) {
 
         final int argPosition = NumberUtils.toInt(fieldName, -1);
 
+        final String[] splatParams = ctx.pathParamMap().values().toArray(new String[0]);
+
         if (argPosition == -1
-                || req.splat().length < argPosition) {
-            throw new IllegalArgumentException("Unable to perform wildcard matching on the mocked endpoint '" + req.pathInfo() + "'. Path variable arg count does not align.");
+                || splatParams.length < argPosition) {
+            throw new IllegalArgumentException("Unable to perform wildcard matching on the mocked endpoint '" + ctx.path() + "'. Path variable arg count does not align.");
         }
 
-        return req.splat()[(argPosition - 1)];
+        return splatParams[(argPosition - 1)];
 
     }
 

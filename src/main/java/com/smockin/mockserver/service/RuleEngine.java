@@ -2,7 +2,7 @@ package com.smockin.mockserver.service;
 
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
-import spark.Request;
+import io.javalin.http.Context;
 
 import java.util.List;
 
@@ -11,6 +11,6 @@ import java.util.List;
  */
 public interface RuleEngine {
 
-    RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules);
+    RestfulResponseDTO process(final Context ctx, final List<RestfulMockDefinitionRule> rules);
 
 }
