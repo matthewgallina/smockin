@@ -14,17 +14,42 @@ import com.smockin.mockserver.service.dto.PushClientDTO;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
+import io.javalin.config.Key;
+import io.javalin.config.MultipartConfig;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
+import io.javalin.json.JsonMapper;
+import io.javalin.plugin.ContextPlugin;
+import io.javalin.router.Endpoint;
+import io.javalin.router.Endpoints;
+import io.javalin.security.RouteRole;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.websocket.api.Callback;
 import org.eclipse.jetty.websocket.api.Session;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spark.Request;
 
 import java.io.IOException;
-import java.util.*;
+import java.io.InputStream;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Created by mgallina.
@@ -77,19 +102,15 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         if (wsMock == null) {
             if (session.isOpen()) {
-                try {
-                    session.getRemote().sendString("No suitable mock found for " + wsPath);
-                    session.disconnect();
-                } catch(IOException e) {
-                    logger.error("Error closing non mock matching web socket client connection", e);
-                }
+                session.sendText("No suitable mock found for " + wsPath, Callback.NOOP);
+                session.disconnect();
             }
             return;
         }
 
         final String path = mockedRestServerEngineUtils.buildUserPath(wsMock);
 
-        session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS);
+        session.setIdleTimeout(Duration.ofMillis((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS));
 
         final Set<SessionIdWrapper> sessions = sessionMap.computeIfAbsent(path, k -> new HashSet<>());
         final String assignedId = GeneralUtils.generateUUID();
@@ -127,7 +148,7 @@ public class WebSocketServiceImpl implements WebSocketService {
      * @param session
      * @param message
      */
-    public void respondToMessage(final Session session, final String message) {
+    public void respondToMessage(final Session session, final String message) throws IOException {
         logger.debug("respondToMessage called, with message {}", message);
 
         final String wsPath = session.getUpgradeRequest().getRequestURI().getPath();
@@ -139,7 +160,7 @@ public class WebSocketServiceImpl implements WebSocketService {
             Set<SessionIdWrapper> sessions = sessionMap.get(wsPath);
 
             final RestfulMock wsMock = restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
-                    RestMethodEnum.GET, wsPath, Arrays.asList(RestMockTypeEnum.RULE_WS));
+                    RestMethodEnum.GET, wsPath, List.of(RestMockTypeEnum.RULE_WS));
 
             if (wsMock != null && wsMock.getDefinitions().get(0) != null) {
 
@@ -148,15 +169,16 @@ public class WebSocketServiceImpl implements WebSocketService {
 
                 // check if a rules is matched
                 boolean ruleMatched = false;
-                Request req = new sMockinRequest(message);
+                // Use sMockinRequest to wrap the message as the request body
+                Context req = new sMockinRequest(message);
                 RestfulResponseDTO response = ruleEngine.process(req, wsMock.getRules());
                 if (response != null && response.getResponseBody() != null) {
                     ruleMatched = true;
                     // Only one session should match this key - needs verification
                     for (SessionIdWrapper wrapper : sessions) {
-                        if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
+                        if (wrapper.session().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
                                 .equals(sessionHandshake)) {
-                            final String id = wrapper.getId();
+                            final String id = wrapper.id();
                             sendMessage(id, new WebSocketDTO(wsPath, response.getResponseBody()));
                             break;
                         }
@@ -166,9 +188,9 @@ public class WebSocketServiceImpl implements WebSocketService {
                 if (!ruleMatched && order.getResponseBody() != null) {
                     // Only one session should match this key - needs verification
                     for (SessionIdWrapper wrapper : sessions) {
-                        if (wrapper.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
+                        if (wrapper.session().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY)
                                 .equals(sessionHandshake)) {
-                            final String id = wrapper.getId();
+                            final String id = wrapper.id();
                             sendMessage(id, new WebSocketDTO(wsPath, order.getResponseBody()));
                             break;
                         }
@@ -192,19 +214,16 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
 
-        sessionMap.entrySet().forEach(entry -> {
-            Set<SessionIdWrapper> sessionSet = entry.getValue();
-            sessionSet.forEach( s -> {
-                if (s.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
-                    sessionSet.remove(s);
-
-                    // TODO Need to account for multi users
+        sessionMap.forEach((key, sessionSet) -> sessionSet.forEach(s -> {
+            if (s.session().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
+                sessionSet.remove(s);
+                
+                // TODO Need to account for multi users
 //                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, "Websocket closed", false));
-
-                    return;
-                }
-            });
-        });
+                
+                return;
+            }
+        }));
 
     }
 
@@ -221,16 +240,12 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         // Push to specific client session for the given handshake id
         sessions.stream()
-            .filter(s -> (s.getId().equals(id)))
+            .filter(s -> (s.id().equals(id)))
             .findFirst()
             .ifPresent(s -> {
-                try {
-                    s.getSession().getRemote().sendString(dto.getBody());
-                    // TODO Need to account for multi users
+                s.session().sendText(dto.getBody(),Callback.NOOP);
+                // TODO Need to account for multi users
 //                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
-                } catch (IOException e) {
-                    throw new MockServerException(e);
-                }
             });
 
     }
@@ -252,7 +267,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         }
 
         sessionMap.get(prefixedPath)
-                .forEach(s -> sessionHandshakeIds.add(new PushClientDTO(s.getId(), s.getDateJoined())));
+                .forEach(s -> sessionHandshakeIds.add(new PushClientDTO(s.id(), s.dateJoined())));
 
         return sessionHandshakeIds;
     }
@@ -263,64 +278,140 @@ public class WebSocketServiceImpl implements WebSocketService {
         final String sessionHandshake = session.getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY);
 
         for (SessionIdWrapper sw : sessionMap.get(wsPath)) {
-            if (sw.getSession().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
-                return sw.getId();
+            if (sw.session().getUpgradeResponse().getHeader(WS_HAND_SHAKE_KEY).equals(sessionHandshake)) {
+                return sw.id();
             }
         }
 
         return null;
     }
-
-    private class sMockinRequest extends Request {
-    	String body;
-    	
-    	sMockinRequest(String value) {
-    		body = value;
-    	}
-    	
-    	@Override
-    	public String body() {
-    		return body;
-    	}
-    	
-    }
-
+    
     /**
      * Private class used to associate each WebSocket session against an allocated UUID.
-     *
+     * <p>
      * The UUID is used as an external identifier.
      *
      */
-    private final class SessionIdWrapper {
-
-        private final String id;
-        private final String traceId;
-        private final Session session;
-        private final Date dateJoined;
-
-        public SessionIdWrapper(final String id, final String traceId, final Session session, final Date dateJoined) {
-            this.id = id;
-            this.traceId = traceId;
-            this.session = session;
-            this.dateJoined = dateJoined;
-        }
-
-        public String getId() {
-            return id;
-        }
-        public String getTraceId() {
-            return traceId;
-        }
-        public Session getSession() {
-            return session;
-        }
-        public Date getDateJoined() {
-            return dateJoined;
-        }
+        private record SessionIdWrapper(String id, String traceId, Session session, Date dateJoined) {
+        
     }
 
     public void clearSession() {
         sessionMap.clear();
     }
 
+    // Minimal mock Context for WebSocket messages
+    private static class sMockinRequest implements Context {
+       private final String body;
+        
+        private sMockinRequest(String body) {
+            this.body = body;
+        }
+        
+        @Override
+        public String body() {
+            return body;
+        }
+        
+        @Override
+        public @NonNull HttpServletRequest req() {
+            return null;
+        }
+        
+        @Override
+        public @NonNull HttpServletResponse res() {
+            return null;
+        }
+        
+        @Override
+        public @NonNull Endpoints endpoints() {
+            return null;
+        }
+        
+        @Override
+        public @NonNull Endpoint endpoint() {
+            return null;
+        }
+        
+        @Override
+        public <T> T appData(@NonNull Key<T> key) {
+            return null;
+        }
+        
+        @Override
+        public @NonNull JsonMapper jsonMapper() {
+            return null;
+        }
+        
+        @Override
+        public <T> T with(@NonNull Class<? extends ContextPlugin<?, T>> aClass) {
+            return null;
+        }
+        
+        @Override
+        public @NonNull MultipartConfig multipartConfig() {
+            return null;
+        }
+        
+        @Override
+        public boolean strictContentTypes() {
+            return false;
+        }
+        
+        @Override
+        public @NonNull String pathParam(@NonNull String s) {
+            return "";
+        }
+        
+        @Override
+        public @NonNull Map<String, String> pathParamMap() {
+            return Map.of();
+        }
+        
+        @Override
+        public @NonNull ServletOutputStream outputStream() {
+            return null;
+        }
+        
+        @Override
+        public @NonNull Context minSizeForCompression(int i) {
+            return null;
+        }
+        
+        @Override
+        public @NonNull Context result(@NonNull InputStream inputStream) {
+            return null;
+        }
+        
+        @Override
+        public @Nullable InputStream resultInputStream() {
+            return null;
+        }
+        
+        @Override
+        public void future(@NonNull Supplier<? extends CompletableFuture<?>> supplier) {
+        
+        }
+        
+        @Override
+        public void redirect(@NonNull String s, @NonNull HttpStatus httpStatus) {
+        
+        }
+        
+        @Override
+        public void writeJsonStream(@NonNull Stream<?> stream) {
+        
+        }
+        
+        @Override
+        public @NonNull Context skipRemainingHandlers() {
+            return null;
+        }
+        
+        @Override
+        public @NonNull Set<RouteRole> routeRoles() {
+            return Set.of();
+        }
+        // Optionally override other methods if needed for rules
+    }
 }

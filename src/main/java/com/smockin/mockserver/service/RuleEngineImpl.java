@@ -8,12 +8,12 @@ import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.utils.RuleEngineUtils;
+import io.javalin.http.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import spark.Request;
 
 import java.util.List;
 
@@ -33,8 +33,14 @@ public class RuleEngineImpl implements RuleEngine {
     private SmockinUserService smockinUserService;
 
 
-    public RestfulResponseDTO process(final Request req, final List<RestfulMockDefinitionRule> rules) {
+    public RestfulResponseDTO process(final Context ctx, final List<RestfulMockDefinitionRule> rules) {
         logger.debug("process called");
+
+        // Guard against null context (e.g., from WebSocket rules)
+        if (ctx == null) {
+            logger.debug("Context is null, skipping rule processing");
+            return null;
+        }
 
         for (RestfulMockDefinitionRule rule : rules) {
 
@@ -46,7 +52,7 @@ public class RuleEngineImpl implements RuleEngine {
 
                     final String inboundValue = extractInboundValue(condition.getRuleMatchingType(),
                             condition.getField(),
-                            req,
+                            ctx,
                             rule.getRestfulMock().getPath(),
                             rule.getRestfulMock().getCreatedBy().getCtxPath());
 
@@ -76,26 +82,25 @@ public class RuleEngineImpl implements RuleEngine {
         return null;
     }
 
-    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Request req, final String mockPath, final String userCtxPath) {
-
+    String extractInboundValue(final RuleMatchingTypeEnum matchingType, final String fieldName, final Context ctx, final String mockPath, final String userCtxPath) {
+        final var req = ctx.req();
         switch (matchingType) {
             case REQUEST_HEADER:
-                return req.headers(fieldName);
+                return req.getHeader(fieldName);
             case REQUEST_PARAM:
-                return GeneralUtils.extractRequestParamByName(req, fieldName);
+                return GeneralUtils.extractRequestParamByName(ctx, fieldName);
             case REQUEST_BODY:
-                return req.body();
+                return ctx.body();
             case PATH_VARIABLE:
-                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.pathInfo(), userCtxPath);
+                final String sanitizedInboundPath = GeneralUtils.sanitizeMultiUserPath(smockinUserService.getUserMode(), req.getPathInfo(), userCtxPath);
                 return GeneralUtils.findPathVarIgnoreCase(sanitizedInboundPath, mockPath, fieldName);
             case PATH_VARIABLE_WILD:
-                return RuleEngineUtils.matchOnPathVariable(fieldName, req);
+                return RuleEngineUtils.matchOnPathVariable(fieldName, ctx);
             case REQUEST_BODY_JSON_ANY:
-                return RuleEngineUtils.matchOnJsonField(fieldName, req.body(), req.pathInfo());
+                return RuleEngineUtils.matchOnJsonField(fieldName, ctx.body(), req.getPathInfo());
             default:
                 throw new IllegalArgumentException("Unsupported Rule Matching Type : " + matchingType);
         }
-
     }
 
 }

@@ -15,6 +15,7 @@ import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.service.utils.RestfulMockServiceUtils;
 import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
+import jakarta.transaction.Transactional;
 import org.apache.commons.io.FileUtils;
 import org.raml.v2.api.RamlModelBuilder;
 import org.raml.v2.api.RamlModelResult;
@@ -26,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

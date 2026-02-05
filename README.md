@@ -3,17 +3,35 @@
 </p>
 
 <p align="center">
-  version 2.20.3
+  version 2.21.0
 </p>
 
 <br />
 
 
 
-### NEW! in version 2.20.3
+### NEW! in version 2.21.0
 
-- Dependency updates
-- We will be looking to update this project to run on a later version of (JDK 21+)
+**Major Framework Upgrades:**
+
+- Upgraded to **Spring Boot 3.2.5** (from 2.7.11).
+- Now requires **Java 17** (from Java 11).
+- Migrated HTTP server from **Spark** to **Javalin 7.0**.
+- Upgraded to **Jetty 12.0.14**.
+- Migrated from `javax.*` to `jakarta.*` namespace.
+
+**Dependency Updates:**
+
+- Upgraded S3proxy to version 3.0.0.
+- Upgraded GreenMail to version 2.1.8.
+- Upgraded Lombok to version 1.18.34.
+- Added Nashorn JavaScript engine (nashorn-core 15.4) for JavaScript mock support.
+- Updated Apache Commons IO to version 2.17.0.
+
+**Previous in version 2.20.2:**
+
+- Fixed issue where proxy mappings were not saving.
+- Upgraded sMockin's H2 DB to version 2.3.232.
 
 
 **Note, 2.3.232 IS NOT compatible with previous versions of H2** you should therefore use the various exporters to save all of your previous data before moving to this version of sMockin.
@@ -69,7 +87,7 @@ sMockin runs as a small web app which can be either installed locally onto a per
 
 ### REQUIREMENTS
 
-   - Java 11
+   - Java 17
    - Maven 3
 
    Please Note
@@ -139,7 +157,7 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
         Spring Boot                 -       https://projects.spring.io/spring-boot
         Hibernate                   -       http://hibernate.org
-        Spark                       -       http://sparkjava.com
+        Javalin                     -       https://javalin.io
         Maven                       -       https://maven.apache.org
         AngularJS                   -       https://angularjs.org
         UI Bootstrap                -       https://angular-ui.github.io/bootstrap
@@ -172,6 +190,14 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 <br />
 
+**New in version 2.21.0**
+
+- Major upgrade to Spring Boot 3.2.5 and Java 17.
+- Migrated HTTP server from Spark to Javalin 7.0.
+- Updated multiple dependencies including S3proxy, GreenMail, and Lombok.
+
+<br />
+
 **New in version 2.20.0**
 
 - **Ngrok** is now built into sMockin.
@@ -179,7 +205,8 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 **Change of JDK version**
 
-- Java 11 (or later) is now required to build the main branch.
+- Java 17 (or later) is now required to build the main branch.
+- Java 11 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk11
 - Java 8 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk8
 
 

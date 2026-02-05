@@ -21,7 +21,7 @@ public class AuthInterceptorTest {
 
     @Spy
     @InjectMocks
-    private AuthInterceptor authInterceptor = new AuthInterceptor();
+    private AuthInterceptor authInterceptor;
 
 
     @Test

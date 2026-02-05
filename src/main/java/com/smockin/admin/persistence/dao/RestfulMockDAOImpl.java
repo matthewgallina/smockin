@@ -7,11 +7,12 @@ import com.smockin.admin.persistence.enums.RestMethodEnum;
 import com.smockin.admin.persistence.enums.RestMockTypeEnum;
 import com.smockin.admin.persistence.enums.SmockinUserRoleEnum;
 import com.smockin.utils.GeneralUtils;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.AntPathMatcher;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+
 import java.util.List;
 
 /**

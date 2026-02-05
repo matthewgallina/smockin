@@ -1,24 +1,33 @@
 package com.smockin.mockserver.service;
 
 import com.smockin.admin.enums.UserModeEnum;
-import com.smockin.admin.persistence.entity.*;
+import com.smockin.admin.persistence.entity.RestfulMock;
+import com.smockin.admin.persistence.entity.RestfulMockDefinitionRule;
+import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroup;
+import com.smockin.admin.persistence.entity.RestfulMockDefinitionRuleGroupCondition;
+import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RuleComparatorEnum;
 import com.smockin.admin.persistence.enums.RuleDataTypeEnum;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
+import io.javalin.http.Context;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import spark.QueryParamsMap;
-import spark.Request;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,17 +36,17 @@ import java.util.Map;
 /**
  * Created by mgallina.
  */
-@RunWith(MockitoJUnitRunner.class)
+@RunWith(MockitoJUnitRunner.Silent.class)
 public class RuleEngineTest {
 
     @Mock
     private RuleResolver ruleResolver;
 
     @Mock
-    private Request req;
+    private Context ctx;
 
     @Mock
-    private QueryParamsMap queryParamsMap;
+    private HttpServletRequest request;
 
     @Mock
     private List<RestfulMockDefinitionRule> rules;
@@ -57,44 +66,31 @@ public class RuleEngineTest {
 
     @Before
     public void setUp() {
-
         userCtxPath = "";
+        Mockito.when(ctx.req()).thenReturn(request);
         Mockito.when(smockinUserService.getUserMode()).thenReturn(UserModeEnum.INACTIVE);
-
     }
 
     @Test
-    public void process_nullRules_Test() {
-
-        // Assertions
+    public void process_nullRules_Test()  {
         thrown.expect(NullPointerException.class);
 
-        // Setup
         rules = null;
 
-        // Test
-        ruleEngine.process(req, rules);
-
+        ruleEngine.process(ctx, rules);
     }
 
     @Test
-    public void process_emptyRules_Test() {
-
-        // Setup
+    public void process_emptyRules_Test()  {
         rules = new ArrayList<RestfulMockDefinitionRule>();
 
-        // Test
-        final RestfulResponseDTO result = ruleEngine.process(req, rules);
+        final RestfulResponseDTO result = ruleEngine.process(ctx, rules);
 
-        // Assertions
         Assert.assertNull(result);
-
     }
 
     @Test
-    public void process_Test() {
-
-        // Setup
+    public void process_Test()  {
         rules = new ArrayList<>();
 
         final RestfulMock mock = new RestfulMock();
@@ -110,13 +106,12 @@ public class RuleEngineTest {
         rule.getConditionGroups().add(group);
         rules.add(rule);
 
-        Mockito.when(req.body()).thenReturn("{ \"name\" : \"joe\" }");
+        final String body = "{ \"name\" : \"joe\" }";
+        Mockito.when(ctx.body()).thenReturn(body);
         Mockito.when(ruleResolver.processRuleComparison(Mockito.any(RestfulMockDefinitionRuleGroupCondition.class), Mockito.anyString())).thenReturn(true);
 
-        // Test
-        final RestfulResponseDTO result = ruleEngine.process(req, rules);
+        final RestfulResponseDTO result = ruleEngine.process(ctx, rules);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals(rule.getHttpStatusCode(), result.getHttpStatusCode());
         Assert.assertEquals(rule.getResponseContentType(), result.getResponseContentType());
@@ -124,146 +119,108 @@ public class RuleEngineTest {
     }
 
     @Test
-    public void extractInboundValue_nullRuleMatchingType_Test() {
-
-        // Assertions
+    public void extractInboundValue_nullRuleMatchingType_Test()  {
         thrown.expect(NullPointerException.class);
 
-        // Test
-        ruleEngine.extractInboundValue(null, "", req, "/person/{name}", userCtxPath);
-
+        ruleEngine.extractInboundValue(null, "", ctx, "/person/{name}", userCtxPath);
     }
 
     @Test
-    public void extractInboundValue_reqHeader_Test() {
-
-        // Setup
+    public void extractInboundValue_reqHeader_Test()  {
         final String fieldName = "name";
         final String reqResponse = "Hey Joe";
-        Mockito.when(req.headers(fieldName)).thenReturn(reqResponse);
+        Mockito.when(request.getHeader(fieldName)).thenReturn(reqResponse);
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_HEADER, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_HEADER, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals(reqResponse, result);
-
     }
 
     @Test
-    public void extractInboundValue_reqParam_Test() {
-
-        // Setup
+    public void extractInboundValue_reqParam_Test()  {
         final String fieldName = "name";
         final String reqResponse = "Hey Joe";
-        final Map<String, String[]> params = new HashMap<>();
+        Map<String, String[]> params = new HashMap<>();
         params.put(fieldName, new String[] { reqResponse });
-        Mockito.when(req.requestMethod()).thenReturn(HttpMethod.POST.name());
-        Mockito.when(queryParamsMap.toMap()).thenReturn(params);
-        Mockito.when(req.queryMap()).thenReturn(queryParamsMap);
+        Mockito.when(request.getMethod()).thenReturn(HttpMethod.POST.name());
+        Mockito.when(ctx.queryParamMap()).thenReturn(new HashMap<>());
+        Mockito.when(ctx.contentType()).thenReturn(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        Mockito.when(ctx.body()).thenReturn(fieldName + "=" + reqResponse);
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_PARAM, "name", req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_PARAM, "name", ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals(reqResponse, result);
-
     }
 
     @Test
-    public void extractInboundValue_reqBody_Test() {
-
-        // Setup
+    public void extractInboundValue_reqBody_Test()  {
         final String reqResponse = "Hey Joe";
-        Mockito.when(req.body()).thenReturn(reqResponse);
+        Mockito.when(ctx.body()).thenReturn(reqResponse);
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY, "", req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY, "", ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals(reqResponse, result);
-
     }
 
     @Test
-    public void extractInboundValue_pathVariable_Test() {
-
-        // Setup
+    public void extractInboundValue_pathVariable_Test()  {
         final String fieldName = "name";
-        Mockito.when(req.pathInfo()).thenReturn("/person/Joe");
+        Mockito.when(request.getPathInfo()).thenReturn("/person/Joe");
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.PATH_VARIABLE, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.PATH_VARIABLE, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals("Joe", result);
-
     }
 
     @Test
-    public void extractInboundValue_jsonReqBody_Test() {
-
-        // Setup
+    public void extractInboundValue_jsonReqBody_Test()  {
         final String fieldName = "username";
         final String fieldValue = "admin";
-        Mockito.when(req.body()).thenReturn("{\"username\":\"" + fieldValue + "\"}");
+        final String jsonBody = "{\"username\":\"" + fieldValue + "\"}";
+        Mockito.when(ctx.body()).thenReturn(jsonBody);
+        Mockito.when(request.getPathInfo()).thenReturn("/person/test");
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNotNull(result);
         Assert.assertEquals(fieldValue, result);
-
     }
 
     @Test
-    public void extractInboundValue_jsonReqBody_NotFound_Test() {
-
-        // Setup
+    public void extractInboundValue_jsonReqBody_NotFound_Test()  {
         final String fieldName = "username";
-        Mockito.when(req.body()).thenReturn("{\"foo\":\"bar\"}");
+        Mockito.when(ctx.body()).thenReturn("{\"foo\":\"bar\"}");
+        Mockito.when(request.getPathInfo()).thenReturn("/person/test");
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNull(result);
-
     }
 
     @Test
-    public void extractInboundValue_jsonReqBody_invalidJson_Test() {
-
-        // Setup
+    public void extractInboundValue_jsonReqBody_invalidJson_Test()  {
         final String fieldName = "username";
-        Mockito.when(req.body()).thenReturn("username = admin");
+        Mockito.when(ctx.body()).thenReturn("username = admin");
+        Mockito.when(request.getPathInfo()).thenReturn("/person/test");
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNull(result);
-
     }
 
     @Test
-    public void extractInboundValue_jsonReqBody_null_Test() {
-
-        // Setup
+    public void extractInboundValue_jsonReqBody_null_Test() throws IOException {
         final String fieldName = "username";
-        Mockito.when(req.body()).thenReturn(null);
+        Mockito.when(request.getReader()).thenReturn(new java.io.BufferedReader(new java.io.StringReader("")));
+        Mockito.when(request.getPathInfo()).thenReturn("/person/test");
 
-        // Test
-        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, req, "/person/{name}", userCtxPath);
+        final String result = ruleEngine.extractInboundValue(RuleMatchingTypeEnum.REQUEST_BODY_JSON_ANY, fieldName, ctx, "/person/{name}", userCtxPath);
 
-        // Assertions
         Assert.assertNull(result);
-
     }
 
 }

@@ -18,22 +18,31 @@ import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import com.smockin.admin.service.MailMockMessageService;
 import com.smockin.admin.service.SmockinUserService;
-import com.smockin.mockserver.dto.*;
+import com.smockin.mockserver.dto.MailMessageSearchDTO;
+import com.smockin.mockserver.dto.MailServerMessageInboxAttachmentDTO;
+import com.smockin.mockserver.dto.MailServerMessageInboxDTO;
+import com.smockin.mockserver.dto.MockServerState;
+import com.smockin.mockserver.dto.MockedServerConfigDTO;
+import com.smockin.mockserver.dto.SmockinGreenMailUserWrapper;
 import com.smockin.mockserver.exception.MockServerException;
 import com.smockin.utils.GeneralUtils;
+import jakarta.mail.Address;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Flags;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Multipart;
+import jakarta.mail.Part;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.mail.util.MimeMessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.mail.*;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -526,11 +535,46 @@ public class MockedMailServerEngine {
     }
 
     String extractHtmlContent(final MimeMessage message) throws Exception {
-        return new MimeMessageParser(message).parse().getHtmlContent();
+        return extractContentByType(message, "text/html");
     }
 
     String extractPlainContent(final MimeMessage message) throws Exception {
-        return new MimeMessageParser(message).parse().getPlainContent();
+        return extractContentByType(message, "text/plain");
+    }
+
+    private String extractContentByType(final MimeMessage message, final String mimeType) throws Exception {
+        final Object content = message.getContent();
+        
+        if (content instanceof String contentString)  {
+            if (message.isMimeType(mimeType)) {
+                return contentString;
+            }
+            return null;
+        }
+        
+        if (content instanceof Multipart multipart) {
+            return extractContentFromMultipart(multipart, mimeType);
+        }
+        
+        return null;
+    }
+
+    private String extractContentFromMultipart(final Multipart multipart, final String mimeType) throws Exception {
+        for (int i = 0; i < multipart.getCount(); i++) {
+            final BodyPart bodyPart = multipart.getBodyPart(i);
+            
+            if (bodyPart.isMimeType(mimeType)) {
+                return (String) bodyPart.getContent();
+            }
+            
+            if (bodyPart.getContent() instanceof Multipart multipartBody) {
+                final String result = extractContentFromMultipart(multipartBody, mimeType);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     void extractAndSaveAllAttachments(final String messageExternalId,
