@@ -3,17 +3,17 @@
 </p>
 
 <p align="center">
-  version 2.20.2
+  version 2.20.3
 </p>
 
 <br />
 
 
 
-### NEW! in version 2.20.2
+### NEW! in version 2.20.3
 
-- Fixed issue where proxy mappings were not saving.
-- Upgraded sMockin's H2 DB to version 2.3.232.
+- Dependency updates
+- We will be looking to update this project to run on a later version of (JDK 21+)
 
 
 **Note, 2.3.232 IS NOT compatible with previous versions of H2** you should therefore use the various exporters to save all of your previous data before moving to this version of sMockin.
