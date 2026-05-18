@@ -30,10 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +141,7 @@ public class MockDefinitionImportExportServiceImpl implements MockDefinitionImpo
             throw new ValidationException("Unsupported Server Type: " + serverTypeEnum);
         }
 
-        final byte[] archiveBytes = GeneralUtils.createArchive(exportFileName, exportContent.getBytes());
+        final byte[] archiveBytes = GeneralUtils.createArchive(exportFileName, exportContent.getBytes(StandardCharsets.UTF_8));
 
         return GeneralUtils.base64Encode(archiveBytes);
     }

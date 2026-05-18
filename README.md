@@ -3,26 +3,26 @@
 </p>
 
 <p align="center">
-  version 2.20.3
+  version 2.21.0
 </p>
 
 <br />
 
 
 
-### NEW! in version 2.20.3
+### NEW! in version 2.21.0
 
-- Dependency updates
-- We will be looking to update this project to run on a later version of (JDK 21+)
-
-
-**Note, 2.3.232 IS NOT compatible with previous versions of H2** you should therefore use the various exporters to save all of your previous data before moving to this version of sMockin.
+- **MQ Mock Server** - Full support for Apache Kafka, RabbitMQ, ActiveMQ, IBM MQ, and Solace.
+- Protocol-based architecture: JMS (ActiveMQ, IBM MQ, Solace), AMQP (RabbitMQ), Kafka Protocol
+- Transparent message interception - your applications connect using original protocols, sMockin automatically captures and stores messages.
+- Connection pooling and health monitoring for production environments.
+- Spring Boot 3.4.13 + Java 21 for Jakarta EE support.
 
 
 <br />
 <br />
 
-### Dynamic API, S3 Bucket & Mail Server mocking for application development & QA testing
+### Dynamic API, S3 Bucket, Mail Server & MQ Mocking for application development & QA testing
 
    - Visit us: https://www.smockin.com
 
@@ -36,7 +36,7 @@
 
 ### OVERVIEW
 
-sMockin is a development tool used to dynamically mock API endpoints, S3 buckets & Email Accounts.
+sMockin is a development tool used to dynamically mock API endpoints, S3 buckets, Email Accounts & Message Queues.
 
 Featuring a rich UI an built in mock servers, creating and managing mocks can be done quickly, both with or without code.
 
@@ -56,6 +56,7 @@ sMockin runs as a small web app which can be either installed locally onto a per
 
 * Create dynamic API mocks to mimic real world application behaviour.
 * Create & manage S3 Bucket mocks where an AWS account may not be available.
+* **(NEW)** Create & manage MQ mocks for Apache Kafka, RabbitMQ, ActiveMQ, IBM MQ, and Solace.
 * (NEW) Create & manage mock mail inboxes.
 * Run sMockin centrally and create user accounts for your team.
 * Import / Export mocks to share between your team & version control.
@@ -69,7 +70,7 @@ sMockin runs as a small web app which can be either installed locally onto a per
 
 ### REQUIREMENTS
 
-   - Java 11
+   - Java 21
    - Maven 3
 
    Please Note
@@ -179,8 +180,9 @@ The full text of this license can be found at https://www.apache.org/licenses/LI
 
 **Change of JDK version**
 
-- Java 11 (or later) is now required to build the main branch.
-- Java 8 users can continue to build sMockin from this branch: https://github.com/matthewgallina/smockin/tree/jdk8
+- Java 21 is now required to build the main branch.
+- Java 11 users should use version 2.20.x or earlier.
+- Spring Boot upgraded to 3.4.13 for Jakarta EE support.
 
 
 <br />
@@ -262,6 +264,51 @@ Featuring different synchronisation modes, developing and testing around S3 has 
 Once you've created your first bucket, this can be accessed from port 8002 using any S3 client like so:
 
 ![s3 client](https://raw.githubusercontent.com/mgtechsoftware/smockin/master/public/image/s3-client.png)
+
+<br />
+<br />
+
+
+**New in version 2.21.0**
+
+- Introducing MQ (Message Queue) Mocking!
+
+sMockin now supports mocking for popular Message Queue systems. Point your application to sMockin's MQ Mock Server instead of your real MQ infrastructure during development and testing.
+
+**Supported MQ Types**:
+- **Kafka** - Full support with native Kafka API (Producer & Consumer)
+- **RabbitMQ** - Full AMQP 0-9-1 support with Exchange/Queue/RoutingKey configuration
+- **ActiveMQ** - Full JMS 2.0 support with TCP/VM/HTTP protocols (Apache Artemis)
+- **IBM MQ** - JMS 2.0 support (requires Jakarta EE compatible client, IBM MQ 9.4+)
+- **Solace** - Full JMS support with JNDI, SMF/SMFS protocols, and direct API configuration
+
+**MQ Mock Features**:
+- ✅ Message interception and storage
+- ✅ Real-time message viewing
+- ✅ Support for Queues and Topics
+- ✅ Message history and search
+- ✅ Connection pooling for production
+- ✅ Multi-protocol support: JMS, AMQP, Kafka
+- ✅ Health monitoring and auto-reconnect
+
+**MQ Configuration Properties**:
+
+| MQ Type | MQ Type Enum | Required Properties |
+|---------|--------------|-------------------|
+| **Kafka** | `KAFKA` | `bootstrapServers`, `groupId` |
+| **RabbitMQ** | `AMQP` | `host`, `port`, `username`, `password` |
+| **ActiveMQ** | `JMS` (jmsProvider=ACTIVEMQ) | `brokerUrl` (e.g., `tcp://localhost:61616`) |
+| **IBM MQ** | `JMS` (jmsProvider=IBMMQ) | `queueManager`, `channel`, `connectionName`, `username`, `password` |
+| **Solace** | `JMS` (jmsProvider=SOLACE) | `host` (smf:// or smfs://), `vpn`, `username`, `password` |
+
+**Important Notes**:
+- **Kafka**: Uses native Kafka API, fully functional out of the box
+- **RabbitMQ**: Full AMQP 0-9-1 support, includes Exchange/Queue binding
+- **ActiveMQ**: Uses Apache Artemis, supports TCP/VM/HTTP/HTTPS protocols
+- **IBM MQ**: Requires Jakarta EE compatible client (IBM MQ 9.4+) for Spring Boot 3.x. See `IBM_MQ_JAKARTA_UPGRADE_GUIDE.md` for migration steps.
+- **Solace**: Supports SMF (plain text) and SMFS (TLS/SSL) protocols, plus JNDI configuration
+- All MQ types use the **same protocol** as the real MQ system - just point your application to the actual MQ server address
+- For detailed usage guide, see `MQ_MOCK_USER_GUIDE.md`
 
 <br />
 <br />

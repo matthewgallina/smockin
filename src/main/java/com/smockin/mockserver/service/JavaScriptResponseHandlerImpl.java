@@ -6,8 +6,8 @@ import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.service.UserKeyValueDataService;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.openjdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
@@ -22,8 +22,11 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +46,7 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     private UserKeyValueDataService userKeyValueDataService;
 
     private final static String CARRIAGE_RETURN_REGEX = "\\r\\n|\\r|\\n";
-    private final String extensionsDir = "js-extensions/";
+    private final static String extensionsDir = "js-extensions/";
 
     public RestfulResponseDTO executeUserResponse(final Request req, final RestfulMock mock) {
         logger.debug("executeUserResponse called");
@@ -308,21 +311,20 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
     private void loadEngineExtensions(final ScriptEngine engine) {
 
         try {
+            // Use try-with-resources to properly close the reader and specify UTF-8 encoding
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(
+                            getClass().getClassLoader().getResourceAsStream(extensionsDir + "from-xml.min.js"),
+                            StandardCharsets.UTF_8))) {
+                engine.eval(reader); // XML support
+            }
 
-            engine.eval(new FileReader(getExtensionsFilePath("from-xml.min.js"))); // XML support
-
-        } catch (ScriptException | FileNotFoundException e) {
+        } catch (ScriptException | IOException e) {
             logger.error("Error loading JS extensions", e);
         }
     }
 
-    private String getExtensionsFilePath(final String extensionsFileName) {
-
-        return getClass()
-                .getClassLoader()
-                .getResource(extensionsDir + extensionsFileName)
-                .getFile();
-    }
+    // getExtensionsFilePath method removed - now using getResourceAsStream directly in loadEngineExtensions
 
     // A few security restrictions...
     private void applyEngineBindings(final ScriptEngine engine) {
@@ -337,7 +339,8 @@ public class JavaScriptResponseHandlerImpl implements JavaScriptResponseHandler 
 
     String removeLineBreaks(final String input) {
 
-        return StringUtils.replaceAll(input, CARRIAGE_RETURN_REGEX, "");
+        // Use String.replaceAll() for regex replacement
+        return input.replaceAll(CARRIAGE_RETURN_REGEX, "");
     }
 
 }

@@ -13,6 +13,7 @@ import java.util.Date;
  */
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class S3MockBucketResponseLiteDTO extends S3MockBucketDTO {
 
     private String extId;

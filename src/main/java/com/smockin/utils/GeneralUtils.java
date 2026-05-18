@@ -164,7 +164,7 @@ public final class GeneralUtils {
     public static String sanitizeMultiUserPath(final UserModeEnum usermode, final String pathInfo, final String ctxPath) {
 
         return ( UserModeEnum.ACTIVE.equals(usermode) && StringUtils.isNotBlank(ctxPath) )
-                    ? StringUtils.removeFirst(pathInfo, ctxPath)
+                    ? StringUtils.replaceOnce(pathInfo, ctxPath, "")
                     : pathInfo;
     }
 
@@ -203,11 +203,11 @@ public final class GeneralUtils {
         if (!NumberUtils.isDigits(versionNo))
             throw new IllegalArgumentException("extracted versionNo is not a valid number: " + versionNo);
 
-        return Integer.valueOf(versionNo);
+        return Integer.parseInt(versionNo);
     }
 
     public static String removeAllLineBreaks(final String original) {
-        return StringUtils.replaceAll(original, System.getProperty("line.separator"), "");
+        return StringUtils.replace(original, System.getProperty("line.separator"), "");
     }
 
     public static List<Map<String, ?>> deserialiseJSONToList(final String jsonStr) {
@@ -328,8 +328,12 @@ public final class GeneralUtils {
 
         final File dir = new File(destDir);
 
-        if (!dir.exists())
-            dir.mkdirs();
+        if (!dir.exists()) {
+            boolean created = dir.mkdirs();
+            if (!created) {
+                logger.warn("Failed to create directory: {}", destDir);
+            }
+        }
 
         final byte[] buffer = new byte[1024];
         FileInputStream fis = null;
@@ -350,8 +354,10 @@ public final class GeneralUtils {
                 }
 
                 if (ze.isDirectory()) {
-
-                    newFile.mkdir();
+                    boolean created = newFile.mkdir();
+                    if (!created) {
+                        logger.warn("Failed to create directory: {}", newFile.getAbsolutePath());
+                    }
 
                 } else {
 
@@ -516,7 +522,7 @@ public final class GeneralUtils {
     public static String base64Encode(final byte[] plainContentBytes) {
 
         if (org.apache.commons.codec.binary.Base64.isBase64(plainContentBytes)) {
-            return new String(plainContentBytes);
+        return new String(plainContentBytes, Charset.defaultCharset());
         }
 
         return Base64.getEncoder().encodeToString(plainContentBytes);
@@ -528,7 +534,7 @@ public final class GeneralUtils {
             return plainContent;
         }
 
-        return Base64.getEncoder().encodeToString(plainContent.getBytes());
+        return Base64.getEncoder().encodeToString(plainContent.getBytes(Charset.defaultCharset()));
     }
 
     public static String base64Decode(final String encodedContent) {
@@ -537,7 +543,7 @@ public final class GeneralUtils {
             return encodedContent;
         }
 
-        return new String(Base64.getDecoder().decode(encodedContent.getBytes()));
+        return new String(Base64.getDecoder().decode(encodedContent.getBytes(Charset.defaultCharset())), Charset.defaultCharset());
     }
 
     public static void closeSilently(final InputStream fis) {

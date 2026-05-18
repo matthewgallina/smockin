@@ -2,7 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by mgallina.
@@ -12,6 +12,7 @@ import javax.persistence.*;
         @UniqueConstraint(columnNames = {"USER_KEY", "CREATED_BY"})
 })
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class UserKeyValueData extends Identifier {
 
     @Column(name = "USER_KEY", nullable = false, length = 50)

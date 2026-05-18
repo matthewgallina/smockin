@@ -3,7 +3,7 @@ package com.smockin.admin.persistence.entity;
 import com.smockin.utils.GeneralUtils;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
 
 /**
@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 public abstract class Identifier {
 
-    final int VARCHAR_MAX_VALUE = 1000000000;
+    static final int VARCHAR_MAX_VALUE = 1000000000;
 
     @Id
     @Column(name = "ID", nullable = false, unique = true, updatable = false)

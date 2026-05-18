@@ -2,7 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by mgallina.
@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "REST_MOCK_JS_HANDLER")
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class RestfulMockJavaScriptHandler extends Identifier {
 
     @OneToOne(fetch = FetchType.LAZY)

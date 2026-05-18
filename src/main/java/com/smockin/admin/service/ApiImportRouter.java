@@ -19,6 +19,10 @@ public class ApiImportRouter {
     @Qualifier("ramlApiImportService")
     private ApiImportService ramlApiImportService;
 
+    @Autowired
+    @Qualifier("openApiApiImportService")
+    private ApiImportService openApiApiImportService;
+
     public void route(final String importType, final ApiImportDTO dto, final String token) throws MockImportException, ValidationException {
         logger.debug("route called");
 
@@ -27,6 +31,9 @@ public class ApiImportRouter {
         switch (ApiImportTypeEnum.valueOf(importType)) {
             case RAML:
                 ramlApiImportService.importApiDoc(dto, token);
+                break;
+            case OPENAPI:
+                openApiApiImportService.importApiDoc(dto, token);
                 break;
             default:
                 throw new ValidationException("Unsupported import type");

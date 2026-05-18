@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.Optional;
 
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class MailServerMessageInboxAttachmentDTO extends MailServerMessageInboxAttachmentLiteDTO {
 
     private String base64Content;

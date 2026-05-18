@@ -1,0 +1,110 @@
+swagger: "2.0"
+info:
+  title: Pet Store API
+  version: "1.0.0"
+  description: A sample Pet Store API for testing Swagger 2.0 import
+basePath: /v1
+host: localhost:8001
+schemes:
+  - http
+paths:
+  /pets:
+    get:
+      summary: List all pets
+      description: Returns a list of all pets
+      responses:
+        200:
+          description: A list of pets
+          headers:
+            X-Total-Count:
+              type: integer
+              description: Total number of pets
+          schema:
+            type: array
+            items:
+              type: object
+          examples:
+            application/json:
+              - id: 1
+                name: "Buddy"
+                status: "available"
+              - id: 2
+                name: "Max"
+                status: "pending"
+    post:
+      summary: Create a pet
+      description: Creates a new pet
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: pet
+          required: true
+          description: Pet object to create
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "Rex"
+              status:
+                type: string
+                example: "available"
+      responses:
+        201:
+          description: Pet created successfully
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+          examples:
+            application/json:
+              id: 3
+              name: "Rex"
+  /pets/{petId}:
+    get:
+      summary: Get pet by ID
+      description: Returns a single pet
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          description: The ID of the pet
+      responses:
+        200:
+          description: Successful response
+          schema:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              status:
+                type: string
+          examples:
+            application/json:
+              id: 1
+              name: "Buddy"
+              status: "available"
+        404:
+          description: Pet not found
+          examples:
+            application/json:
+              error: "Pet not found"
+    delete:
+      summary: Delete a pet
+      description: Deletes a pet by ID
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          type: integer
+          description: The ID of the pet to delete
+      responses:
+        204:
+          description: Pet deleted successfully

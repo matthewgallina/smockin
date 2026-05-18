@@ -43,17 +43,17 @@ public class HttpClientResponseDTO {
     }
 
     public Map<String, String> getHeaders() {
-        return headers;
+        return new HashMap<>(headers);
     }
     public void setHeaders(Map<String, String> headers) {
-        this.headers = headers;
+        this.headers = headers != null ? new HashMap<>(headers) : new HashMap<>();
     }
 
     public String getBody() {
         return body;
     }
     public void setBody(String responseBody) {
-        this.body = body;
+        this.body = responseBody;
     }
 
 }

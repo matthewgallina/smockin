@@ -23,6 +23,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class HttpClientServiceImpl implements HttpClientService {
     private final Logger logger = LoggerFactory.getLogger(HttpClientServiceImpl.class);
 
     @Autowired
+    @Lazy
     private MockedServerEngineService mockedServerEngineService;
 
     @Override
@@ -157,7 +159,7 @@ public class HttpClientServiceImpl implements HttpClientService {
     HttpClientResponseDTO patch(final HttpClientCallDTO reqDto) throws IOException {
 
         final Request request = Request.Patch(reqDto.getUrl())
-                .bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes() : null);
+                .bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes(StandardCharsets.UTF_8) : null);
 
         return executeRequest(request, reqDto, isHttps(reqDto.getUrl()));
     }

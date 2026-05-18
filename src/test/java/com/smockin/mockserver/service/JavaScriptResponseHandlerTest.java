@@ -7,7 +7,7 @@ import com.smockin.admin.persistence.entity.RestfulMockJavaScriptHandler;
 import com.smockin.admin.persistence.entity.SmockinUser;
 import com.smockin.admin.service.SmockinUserService;
 import com.smockin.admin.service.UserKeyValueDataService;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;

@@ -46,7 +46,8 @@ public class RestfulResponseDTO {
     }
 
     public Map<String, String> getHeaders() {
-        return headers;
+        // Return a copy to avoid exposing internal state
+        return new HashMap<>(headers);
     }
 
 }

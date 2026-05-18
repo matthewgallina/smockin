@@ -63,6 +63,16 @@
             </div>
         </div>
 
+        <div class="import-info" ng-show="importType == OpenApiImportType">
+            {{ pleaseNoteLabel }}
+            <br />
+            <div class="import-info-details">
+                <i>- {{ existingEndpointsInfo }}</i>
+                <br />
+                <i>- {{ openApiVersionInfo }}</i>
+            </div>
+        </div>
+
     </form>
 
 </div>

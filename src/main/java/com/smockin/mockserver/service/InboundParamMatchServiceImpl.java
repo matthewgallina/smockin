@@ -6,7 +6,6 @@ import com.smockin.admin.service.UserKeyValueDataService;
 import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.enums.ParamMatchTypeEnum;
 import com.smockin.utils.GeneralUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 import spark.Request;
 
 import java.text.SimpleDateFormat;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by mgallina on 09/08/17.
@@ -329,7 +329,9 @@ public class InboundParamMatchServiceImpl implements InboundParamMatchService {
 
         final int startInc = (randomNumberContentParams.length == 2) ? Integer.parseInt(randomNumberContentParams[0].trim()) : 0;
         final int endExcl = (randomNumberContentParams.length == 2) ? Integer.parseInt(randomNumberContentParams[1].trim()) : Integer.parseInt(randomNumberContentParams[0].trim());
-        final int randomValue = RandomUtils.nextInt(startInc, endExcl);
+        
+        // Handle the case where startInc == endExcl (should return that value)
+        final int randomValue = (startInc == endExcl) ? startInc : ThreadLocalRandom.current().nextInt(startInc, endExcl);
 
         if (logger.isDebugEnabled()) {
             logger.debug("Random number value: " + randomValue);

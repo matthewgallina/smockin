@@ -14,6 +14,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class S3MockBucketResponseDTO extends S3MockBucketResponseLiteDTO {
 
     private List<S3MockDirResponseDTO> children = new ArrayList<>();

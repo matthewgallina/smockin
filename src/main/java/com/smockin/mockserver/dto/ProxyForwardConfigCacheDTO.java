@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class ProxyForwardConfigCacheDTO extends ProxyForwardConfigDTO {
 
     private String createdByUserExtId;

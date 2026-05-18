@@ -113,7 +113,7 @@ public class CoreDataHandler {
         final String appVersionArg = System.getProperty("app.version");
 
         if (appVersionArg == null) {
-            logger.error("Invalid application version arg (-Dapp.version): " + appVersionArg);
+            logger.error("Invalid application version arg (-Dapp.version): null");
             return;
         }
 

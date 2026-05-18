@@ -15,21 +15,21 @@ public class PushClientDTO {
 
     public PushClientDTO(final String id, final Date dateJoined) {
         this.id = id;
-        this.dateJoined = dateJoined;
+        this.dateJoined = dateJoined != null ? new Date(dateJoined.getTime()) : null;
     }
 
     public String getId() {
         return id;
     }
     public void setId(String handshakeId) {
-        this.id = id;
+        this.id = handshakeId;
     }
 
     public Date getDateJoined() {
-        return dateJoined;
+        return dateJoined != null ? new Date(dateJoined.getTime()) : null;
     }
     public void setDateJoined(Date dateJoined) {
-        this.dateJoined = dateJoined;
+        this.dateJoined = dateJoined != null ? new Date(dateJoined.getTime()) : null;
     }
 
 }

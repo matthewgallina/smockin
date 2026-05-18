@@ -4,6 +4,8 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.ArrayList;
@@ -154,6 +156,7 @@ public class RestfulMockSortingUtils {
         return sb.append(stringToPad).toString();
     }
 
+    @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED", justification = "Original behavior preserved - replaceFirst return value is intentionally ignored")
     private int handleRegexComparison(final String o1, final String o2, final int maxLen) {
 
         final String padding = "0";

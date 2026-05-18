@@ -6,48 +6,67 @@
 
     <groupId>com.smockin</groupId>
     <artifactId>smockin</artifactId>
-    <version>2.20.3</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.11</version>
+        <version>3.4.13</version>
     </parent>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>11</java.version>
-        <spring-boot-test.version>3.0.8</spring-boot-test.version>
-        <spark-core.version>2.9.4</spark-core.version>
-        <h2.version>2.3.232</h2.version>
-        <hikaricp.version>2.6.1</hikaricp.version>
-        <commons-lang3.version>3.5</commons-lang3.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <commons-io.version>2.17.0</commons-io.version>
-        <commons-email.version>1.5</commons-email.version>
-        <mockito-core.version>3.2.0</mockito-core.version>
-        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <raml-parser.version>1.0.47</raml-parser.version>
-        <openapi-generator.version>7.13.0</openapi-generator.version>
+        <java.version>21</java.version>
+        
+        <!-- Dependencies managed by Spring Boot (versions controlled by parent POM):
+             - H2 Database
+             - HikariCP
+             - Jackson (databind, core, datatype-jdk8)
+             - commons-lang3
+             - commons-io
+             - httpclient & fluent-hc
+             - Lombok
+             - Guava
+             - Mockito
+             - spring-boot-starter-test
+        -->
+        
+        <!-- Dependencies NOT managed by Spring Boot - requiring explicit versions -->
+        <spark-core.version>3.0.3</spark-core.version>
+        <nashorn-core.version>15.4</nashorn-core.version>
+        <raml-parser.version>1.0.25</raml-parser.version>
+        <swagger-parser.version>2.1.36</swagger-parser.version>
+        <openapi-generator.version>7.12.0</openapi-generator.version>
         <jasypt.version>1.9.2</jasypt.version>
-        <java-jwt.version>3.4.0</java-jwt.version>
-        <spring-boot-maven-plugin.version>2.7.11</spring-boot-maven-plugin.version>
-        <owasp.plugin.version>5.3.0</owasp.plugin.version>
-        <lombok.version>1.18.42</lombok.version>
-        <s3mock.version>2.2.2</s3mock.version>
-        <aws-java-sdk-s3.version>1.12.768</aws-java-sdk-s3.version>
-        <s3proxy.version>2.6.0</s3proxy.version>
-        <greenmail.version>1.6.5</greenmail.version>
-        <jackson-databind.version>2.14.2</jackson-databind.version>
+        <java-jwt.version>4.5.0</java-jwt.version>
+        <s3proxy.version>2.7.0</s3proxy.version>
+        <aws-java-sdk-s3.version>1.12.780</aws-java-sdk-s3.version>
+        <greenmail.version>2.1.2</greenmail.version>
+        <angus-mail.version>2.0.3</angus-mail.version>
+        <httpclient.version>4.5.14</httpclient.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <guava.version>33.4.0-jre</guava.version>
         <java-ngrok.version>2.1.0</java-ngrok.version>
-        <graaljs.version>25.0.2</graaljs.version>
+        <spotbugs-annotations.version>4.9.0</spotbugs-annotations.version>
+        
+        <!-- MQ Dependencies -->
+        <!-- Protocol-based MQ Support: JMS, AMQP, Kafka -->
+        <rabbitmq.version>5.20.0</rabbitmq.version>
+        <ibm-mq.version>9.3.3.0</ibm-mq.version>
+        <solace-jms.version>10.20.0</solace-jms.version>
+        
+        <!-- Plugin versions -->
+        <spotbugs.plugin.version>4.8.6.6</spotbugs.plugin.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
+        <owasp.plugin.version>11.1.1</owasp.plugin.version>
     </properties>
 
     <dependencies>
 
-        <!-- Spring -->
+        <!-- Spring Boot Starters (all versions managed by parent POM) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -71,37 +90,44 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-        <!-- Jackson (JSON) -->
+        <!-- Nashorn JavaScript Engine (replacement for removed JDK Nashorn in Java 15+) -->
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>${nashorn-core.version}</version>
+        </dependency>
+
+        <!-- Jackson (JSON) - Explicit declaration for clarity, version managed by Spring Boot -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson-databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
         </dependency>
 
-        <!-- Spark (HTTP Server) -->
+        <!-- Spark HTTP Server - Jakarta EE compatible fork -->
         <dependency>
-            <groupId>com.sparkjava</groupId>
+            <groupId>org.zoomba-lang</groupId>
             <artifactId>spark-core</artifactId>
             <version>${spark-core.version}</version>
         </dependency>
 
-        <!-- DB -->
+        <!-- Database - H2 and HikariCP versions managed by Spring Boot -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${hikaricp.version}</version>
         </dependency>
 
-        <!-- Apache Commons -->
+        <!-- Apache Commons - Versions managed by Spring Boot -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -118,33 +144,34 @@
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-email</artifactId>
-            <version>${commons-email.version}</version>
-        </dependency>
 
-        <!-- Lombok -->
+        <!-- Lombok - Version managed by Spring Boot -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
         </dependency>
 
-        <!-- RAML -->
+        <!-- RAML Parser - Note: raml-parser-2 requires javax.mail internally (javax.mail and jakarta.mail can coexist) -->
         <dependency>
             <groupId>org.raml</groupId>
             <artifactId>raml-parser-2</artifactId>
             <version>${raml-parser.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mailapi</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
-        <!-- OpenAPI -->
+        <!-- Swagger/OpenAPI Parser (for importing OpenAPI/Swagger specs) -->
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <version>${swagger-parser.version}</version>
+        </dependency>
+        <!-- Swagger 2.0 to OpenAPI 3.0 converter -->
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser-v2-converter</artifactId>
+            <version>${swagger-parser.version}</version>
+        </dependency>
+
+        <!-- OpenAPI Generator Maven Plugin -->
         <dependency>
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -158,14 +185,22 @@
             <version>${jasypt.version}</version>
         </dependency>
 
-        <!-- JWT -->
+        <!-- JWT Authentication -->
         <dependency>
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>${java-jwt.version}</version>
         </dependency>
 
-        <!-- S3 Mock -->
+        <!-- SpotBugs Annotations (for suppressing false positives in static analysis) -->
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <version>${spotbugs-annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- S3 Mock Testing -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
@@ -183,51 +218,48 @@
             </exclusions>
         </dependency>
 
-        <!-- Mail Server -->
+        <!-- Mail Server (GreenMail for testing) -->
         <dependency>
             <groupId>com.icegreen</groupId>
             <artifactId>greenmail</artifactId>
             <version>${greenmail.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>${angus-mail.version}</version>
+        </dependency>
 
-        <!-- ngrok -->
+        <!-- ngrok Tunnel -->
         <dependency>
             <groupId>com.github.alexdlaird</groupId>
             <artifactId>java-ngrok</artifactId>
             <version>${java-ngrok.version}</version>
         </dependency>
 
+        <!-- Guava - Version managed by Spring Boot -->
         <dependency>
-            <groupId>org.graalvm.polyglot</groupId>
-            <artifactId>polyglot</artifactId>
-            <version>${graaljs.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.polyglot</groupId>
-            <artifactId>js</artifactId>
-            <version>${graaljs.version}</version>
-            <type>pom</type>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
 
-        <!-- Testing Related -->
+        <!-- Testing Dependencies - Versions managed by Spring Boot -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito-core.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>${spring-boot-test.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.8.2</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -237,7 +269,88 @@
             </exclusions>
         </dependency>
 
+        <!-- MQ Dependencies - Protocol-based Support: JMS, AMQP, Kafka -->
+        
+        <!-- AMQP Client for RabbitMQ -->
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>${rabbitmq.version}</version>
+        </dependency>
+        
+        <!-- IBM MQ Client (JMS Provider) -->
+        <!-- Note: For Jakarta EE compatibility (Spring Boot 3.x), use IBM MQ 9.4+ Jakarta client -->
+        <dependency>
+            <groupId>com.ibm.mq</groupId>
+            <artifactId>com.ibm.mq.allclient</artifactId>
+            <version>${ibm-mq.version}</version>
+        </dependency>
+        
+        <!-- Spring JMS Support (for ActiveMQ, IBM MQ, Solace JMS) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-artemis</artifactId>
+        </dependency>
+        
+        <!-- Solace JMS Client - DISABLED by default 
+             To enable Solace support:
+             1. Uncomment the dependency below
+             2. Download sol-jms from Solace Developer Portal (https://solace.com/downloads/)
+             3. Install to local Maven repository:
+                mvn install:install-file -Dfile=sol-jms-10.20.0.jar -DgroupId=com.solace.pubsub -DartifactId=sol-jms -Dversion=10.20.0 -Dpackaging=jar
+        <dependency>
+            <groupId>com.solace.pubsub</groupId>
+            <artifactId>sol-jms</artifactId>
+            <version>${solace-jms.version}</version>
+        </dependency>
+        -->
+        
+        <!-- Spring Kafka Support (version managed by Spring Boot parent) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        
+        <!-- Embedded Kafka for Testing -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+        <!-- Embedded RabbitMQ for Testing -->
+        <dependency>
+            <groupId>org.springframework.amqp</groupId>
+            <artifactId>spring-rabbit-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Monitoring: Micrometer and Prometheus Support -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
     </dependencies>
+
+    <!-- Maven Repositories for Solace and other dependencies -->
+    <repositories>
+        <!-- Solace PubSub+ Maven Repository -->
+        <repository>
+            <id>SolacePubSubSoftwareRepository</id>
+            <url>https://maven.solace.com/artifactory/pubsubplus-client/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <build>
         <plugins>
@@ -255,7 +368,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -263,7 +375,12 @@
                         </goals>
                     </execution>
                 </executions>
-                <!-- For hot loading during development  -->
+                <configuration>
+                    <systemPropertyVariables>
+                        <app.version>${project.version}</app.version>
+                    </systemPropertyVariables>
+                </configuration>
+                <!-- For hot loading during development -->
                 <!--
                 <configuration>
                     <addResources>true</addResources>
@@ -286,7 +403,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>properties-maven-plugin</artifactId>
-                <version>1.0.0</version>
+                <version>${properties-maven-plugin.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -304,10 +421,24 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- SpotBugs (FindBugs successor) for static code analysis -->
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${spotbugs.plugin.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Medium</threshold>
+                    <failOnError>true</failOnError>
+                    <xmlOutput>true</xmlOutput>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
-    <!-- mvn install -P owasp) -->
+    <!-- Profiles: mvn install -P owasp -->
     <profiles>
         <profile>
             <id>owasp</id>
@@ -317,8 +448,32 @@
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
                         <version>${owasp.plugin.version}</version>
+                        <configuration>
+                            <failBuildOnCVSS>7</failBuildOnCVSS>
+                            <suppressionFile>${project.basedir}/dependency-check-suppressions.xml</suppressionFile>
+                        </configuration>
                         <executions>
                             <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
+        <profile>
+            <id>spotbugs</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.spotbugs</groupId>
+                        <artifactId>spotbugs-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <phase>verify</phase>
                                 <goals>
                                     <goal>check</goal>
                                 </goals>

@@ -24,16 +24,15 @@ import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.mail.util.MimeMessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.mail.*;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.*;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -526,11 +525,50 @@ public class MockedMailServerEngine {
     }
 
     String extractHtmlContent(final MimeMessage message) throws Exception {
-        return new MimeMessageParser(message).parse().getHtmlContent();
+        return extractContentByType(message, "text/html");
     }
 
     String extractPlainContent(final MimeMessage message) throws Exception {
-        return new MimeMessageParser(message).parse().getPlainContent();
+        return extractContentByType(message, "text/plain");
+    }
+
+    String extractContentByType(final MimeMessage message, final String contentType) throws Exception {
+        if (message.isMimeType(contentType)) {
+            return message.getContent().toString();
+        }
+
+        if (message.getContent() instanceof Multipart) {
+            Multipart multipart = (Multipart) message.getContent();
+            for (int i = 0; i < multipart.getCount(); i++) {
+                BodyPart bodyPart = multipart.getBodyPart(i);
+                if (bodyPart.isMimeType(contentType)) {
+                    return bodyPart.getContent().toString();
+                }
+                if (bodyPart.getContent() instanceof Multipart) {
+                    String result = extractFromMultipart((Multipart) bodyPart.getContent(), contentType);
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    String extractFromMultipart(final Multipart multipart, final String contentType) throws Exception {
+        for (int i = 0; i < multipart.getCount(); i++) {
+            BodyPart bodyPart = multipart.getBodyPart(i);
+            if (bodyPart.isMimeType(contentType)) {
+                return bodyPart.getContent().toString();
+            }
+            if (bodyPart.getContent() instanceof Multipart) {
+                String result = extractFromMultipart((Multipart) bodyPart.getContent(), contentType);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     void extractAndSaveAllAttachments(final String messageExternalId,

@@ -26,7 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -187,7 +187,7 @@ public class RamlApiImportServiceImpl implements ApiImportService {
 
             m.responses().stream().forEach(resp -> {
 
-                final int statusCode = Integer.valueOf(resp.code().value());
+                final int statusCode = Integer.parseInt(resp.code().value());
                 debug("HTTP Response Status Code: " + statusCode); // HTTP response code
 
                 // Accounts for response codes which will not have a body such as 204.
@@ -279,7 +279,10 @@ public class RamlApiImportServiceImpl implements ApiImportService {
                 GeneralUtils.unpackArchive(uploadedFile.getAbsolutePath(), parent);
 
                 // Delete uploaded zip file
-                uploadedFile.delete();
+                boolean deleted = uploadedFile.delete();
+                if (!deleted) {
+                    logger.warn("Failed to delete uploaded zip file: {}", uploadedFile.getAbsolutePath());
+                }
 
                 return Files.find(Paths.get(parent), 5, (path, attr)
                         -> path.getFileName().toString().toLowerCase().indexOf(".raml") > -1)

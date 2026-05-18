@@ -2,7 +2,7 @@ package com.smockin.admin.persistence.entity;
 
 import lombok.Data;
 import org.hibernate.annotations.ColumnDefault;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by mgallina.
@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "PROXY_FORWARD_MAPPING")
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class ProxyForwardMapping extends Identifier {
 
     @ManyToOne

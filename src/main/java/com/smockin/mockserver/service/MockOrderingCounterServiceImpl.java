@@ -4,7 +4,6 @@ import com.smockin.admin.persistence.entity.RestfulMock;
 import com.smockin.admin.persistence.entity.RestfulMockDefinitionOrder;
 import com.smockin.utils.GeneralUtils;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
-import org.apache.commons.lang3.RandomUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by gallina.
@@ -94,7 +94,7 @@ public class MockOrderingCounterServiceImpl implements MockOrderingCounterServic
 
     RestfulMockDefinitionOrder getRandomResponse(final RestfulMock restfulMock) {
 
-        final int randomIndex = RandomUtils.nextInt(0, restfulMock.getDefinitions().size());
+        final int randomIndex = ThreadLocalRandom.current().nextInt(0, restfulMock.getDefinitions().size());
 
         return restfulMock.getDefinitions().get(randomIndex);
     }

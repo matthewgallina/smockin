@@ -14,6 +14,8 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.mockserver.dto.*;
 import com.smockin.mockserver.engine.*;
 import com.smockin.mockserver.exception.MockServerException;
+import com.smockin.admin.persistence.entity.MQMock;
+import com.smockin.admin.persistence.enums.MQTypeEnum;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -79,6 +82,12 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
 
     @Autowired
     private MailMockMessageDAO mailMockMessageDAO;
+
+    @Autowired
+    private MockedMQServerEngine mockedMQServerEngine;
+
+    @Autowired
+    private MQMockDAO mqMockDAO;
 
 
     //
@@ -289,6 +298,89 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
             logger.error("Stopping Mail Mocking Engine", ex);
             throw ex;
         }
+
+    }
+
+
+    //
+    // MQ (IBM MQ, Solace, Kafka)
+    @Override
+    public MockedServerConfigDTO startMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        return startMQ();
+    }
+
+    private MockedServerConfigDTO startMQ() throws MockServerException {
+
+        try {
+
+            final MockedServerConfigDTO configDTO = loadServerConfig(ServerTypeEnum.JMS);
+
+            final List<MQMock> activeMocks = mqMockDAO.findAllActive();
+
+            mockedMQServerEngine.start(configDTO, activeMocks);
+
+            return configDTO;
+        } catch (IllegalArgumentException ex) {
+            logger.error("Starting MQ Mocking Engine", ex);
+            mockedMQServerEngine.shutdown();
+            throw ex;
+        } catch (RecordNotFoundException ex) {
+            logger.error("Starting MQ Mocking Engine, due to missing mock server config", ex);
+            throw new MockServerException("Missing mock MQ server config");
+        } catch (MockServerException ex) {
+            logger.error("Starting MQ Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public MockedServerConfigDTO restartMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        if (getMQServerState().isRunning()) {
+            shutdownMQ();
+        }
+
+        return startMQ();
+    }
+
+    @Override
+    public MockServerState getMQServerState() throws MockServerException {
+        return mockedMQServerEngine.getCurrentState();
+    }
+
+    @Override
+    public void shutdownMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        shutdownMQ();
+    }
+
+    private void shutdownMQ() throws MockServerException {
+
+        try {
+            mockedMQServerEngine.shutdown();
+        } catch (MockServerException ex) {
+            logger.error("Stopping MQ Mocking Engine", ex);
+            throw ex;
+        }
+
+    }
+
+    @Override
+    public void clearAllMQMessages(final String mqMockExtId, final String token) throws AuthException, RecordNotFoundException {
+
+        smockinUserService.assertCurrentUserIsAdmin(userTokenServiceUtils.loadCurrentActiveUser(token));
+
+        // Clear messages from database
+        // This would require additional DAO method - for now just log
+        logger.info("Clearing all MQ messages for mock: {}", mqMockExtId);
 
     }
 
@@ -594,7 +686,7 @@ public class MockedServerEngineServiceImpl implements MockedServerEngineService 
         final String exportContent =
             GeneralUtils.serialiseJson(dtos);
 
-        final byte[] exportBytes = exportContent.getBytes();
+        final byte[] exportBytes = exportContent.getBytes(StandardCharsets.UTF_8);
 
         return Optional.of(GeneralUtils.base64Encode(exportBytes));
     }

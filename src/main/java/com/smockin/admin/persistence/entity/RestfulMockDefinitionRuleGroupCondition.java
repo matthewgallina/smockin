@@ -5,7 +5,7 @@ import com.smockin.admin.persistence.enums.RuleDataTypeEnum;
 import com.smockin.admin.persistence.enums.RuleMatchingTypeEnum;
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by mgallina.
@@ -13,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "REST_MOCK_RULE_GRP_COND")
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class RestfulMockDefinitionRuleGroupCondition extends Identifier {
 
     @ManyToOne(fetch = FetchType.LAZY)

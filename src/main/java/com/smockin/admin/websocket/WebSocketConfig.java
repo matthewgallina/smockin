@@ -7,9 +7,7 @@ import com.smockin.admin.service.utils.UserTokenServiceUtils;
 import com.smockin.utils.GeneralUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.websocket.api.WebSocketBehavior;
-import org.eclipse.jetty.websocket.api.WebSocketPolicy;
-import org.eclipse.jetty.websocket.server.WebSocketServerFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +23,7 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import org.springframework.web.socket.server.jetty.JettyRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Map;
 
 @Configuration
@@ -57,10 +55,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     private DefaultHandshakeHandler handshakeHandler() {
-        return new DefaultHandshakeHandler(
-                new JettyRequestUpgradeStrategy(
-                        new WebSocketServerFactory(servletContext,
-                                new WebSocketPolicy(WebSocketBehavior.SERVER))));
+        return new DefaultHandshakeHandler(new JettyRequestUpgradeStrategy());
     }
 
     public HandshakeInterceptor userInterceptor() {

@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +42,11 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
     private UserTokenServiceUtils userTokenServiceUtils;
 
     @Autowired
+    @Lazy
     private MockedServerEngineService mockedServerEngineService;
 
     @Autowired
+    @Lazy
     private MockedMailServerEngine mockedMailServerEngine;
 
 
@@ -241,7 +244,7 @@ public class MailMockMessageServiceImpl implements MailMockMessageService {
                         .findFirst();
 
             if (!attachmentDTO.isPresent()) {
-                new RecordNotFoundException();
+                throw new RecordNotFoundException();
             }
 
             return attachmentDTO.get();

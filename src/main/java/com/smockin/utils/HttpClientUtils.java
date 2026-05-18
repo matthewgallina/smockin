@@ -7,6 +7,7 @@ import org.apache.http.message.BasicNameValuePair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +49,7 @@ public final class HttpClientUtils {
             return;
         }
 
-        request.bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes() : null);
+        request.bodyByteArray((reqDto.getBody() != null) ? reqDto.getBody().getBytes(Charset.defaultCharset()) : null);
 
     }
 

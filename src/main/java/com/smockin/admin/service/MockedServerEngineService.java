@@ -40,6 +40,13 @@ public interface MockedServerEngineService {
     MockedServerConfigDTO restartMail(final String token) throws MockServerException, RecordNotFoundException, AuthException;
     void clearAllMailMessages(final StoreTypeEnum storeType, final String token) throws AuthException;
 
+    // MQ (IBM MQ, Solace, Kafka)
+    MockedServerConfigDTO startMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockServerState getMQServerState() throws MockServerException;
+    void shutdownMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    MockedServerConfigDTO restartMQ(final String token) throws MockServerException, RecordNotFoundException, AuthException;
+    void clearAllMQMessages(final String mqMockExtId, final String token) throws AuthException, RecordNotFoundException;
+
     // Config
     MockedServerConfigDTO loadServerConfig(final ServerTypeEnum serverType) throws RecordNotFoundException;
     void saveServerConfig(final ServerTypeEnum serverType, final MockedServerConfigDTO config, final String token) throws RecordNotFoundException, AuthException, ValidationException;

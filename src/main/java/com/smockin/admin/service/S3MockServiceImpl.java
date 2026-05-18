@@ -344,7 +344,7 @@ public class S3MockServiceImpl implements S3MockService {
             s3MockDirDAO.delete(dir);
             s3MockDirDAO.flush();
 
-            final S3Mock bucket = s3MockDAO.getById(bucketId);
+            final S3Mock bucket = s3MockDAO.getReferenceById(bucketId);
 
             if (RecordStatusEnum.INACTIVE.equals(bucket.getStatus())
                     || S3SyncModeEnum.NO_SYNC.equals(bucket.getSyncMode())) {

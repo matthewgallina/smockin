@@ -1,12 +1,32 @@
 server:
   port: 8000
 
-#logging.level.com.smockin: ERROR
-
-spring.main.allow-circular-references: true
+#logging.level.com.smockin: DEBUG
+logging:
+  level:
+    com.smockin: DEBUG
+    org.springframework: INFO
 
 smockin:
   auth.exclusions: '{"*.html":["GET"],"*.js":["GET"],"*.css":["GET"],"*.woff2":["GET"],"*.png":["GET"],"*.gif":["GET"],"*.ico":["GET"],"/auth":["POST"],"/user/mode":["GET"],"/mockedserver/rest/status":["GET"],"/mockedserver/jms/status":["GET"],"/mockedserver/ftp/status":["GET"],"/password/reset/token/*":["GET","POST"]}'
+
+# Monitoring: Actuator and Prometheus configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: smockin
 
 spring:
   servlet:
@@ -20,8 +40,9 @@ spring:
 # The 'start.sh' script overrides the below DB related params using values defined
 # in the DB config file: '$USER_HOME/.smockin/db/db.properties'.
 spring:
-  profiles:
-    active: production
+  config:
+    activate:
+      on-profile: production
   jpa:
     show-sql: false
     open-in-view: false
@@ -33,7 +54,7 @@ spring:
     driver-class-name:
     username:
     password:
-    maximumPoolSize: 10
     hikari:
       poolName: smockinpool
+      maximum-pool-size: 10
       idle-timeout: 10000

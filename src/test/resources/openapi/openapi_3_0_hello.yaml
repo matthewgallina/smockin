@@ -1,0 +1,100 @@
+openapi: "3.0.0"
+info:
+  title: Hello World API
+  version: "1.0"
+  description: A simple API for testing OpenAPI import
+servers:
+  - url: http://localhost:8001/v1
+paths:
+  /hello:
+    get:
+      summary: Get hello message
+      description: Returns a simple hello message
+      responses:
+        200:
+          description: Successful response
+          headers:
+            X-Powered-By:
+              description: Server identifier
+              schema:
+                type: string
+              example: Smockin
+          content:
+            application/json:
+              example:
+                message: "Hello, World!"
+  /hello/{name}:
+    get:
+      summary: Get personalized hello
+      description: Returns a personalized hello message
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: The name to greet
+          schema:
+            type: string
+            example: John
+        - name: lastName
+          in: query
+          required: false
+          description: The person's last name
+          schema:
+            type: string
+            example: Doe
+      responses:
+        200:
+          description: Successful response
+          content:
+            application/json:
+              example:
+                message: "Hello, John!"
+        404:
+          description: Name not found
+          content:
+            application/json:
+              example:
+                error: "Name not found"
+        400:
+          description: Missing name parameter
+          content:
+            application/json:
+              example:
+                error: "Missing name parameter"
+    post:
+      summary: Create a new greeting
+      description: Creates a new personalized greeting
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          description: OAuth Token
+          schema:
+            type: string
+          example: "Bearer 1234-5678-9000"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Harry
+            example:
+              name: Harry
+      responses:
+        201:
+          description: Created successfully
+          headers:
+            X-Powered-By:
+              description: Server identifier
+              schema:
+                type: string
+              example: Smockin
+          content:
+            application/json:
+              example:
+                id: 1
+                message: "Greeting created"

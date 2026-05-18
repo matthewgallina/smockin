@@ -60,6 +60,7 @@ public class RestfulMockServiceUtils {
     }
 
     @Transactional
+    @SuppressWarnings("deprecation")
     public RestfulMockResponseDTO buildRestfulMockDefinitionDTO(final RestfulMock rmd) {
 
         final String path = formatOutboundPathVarArgs(rmd.getPath());
@@ -68,7 +69,8 @@ public class RestfulMockServiceUtils {
 
         final RestfulMockResponseDTO dto = new RestfulMockResponseDTO(rmd.getExtId(), path, rmd.getCreatedBy().getCtxPath(), rmd.getMethod(), rmd.getStatus(),
                 rmd.getMockType(), isStatefulParent, rmd.getDateCreated(), rmd.getCreatedBy().getUsername(), rmd.getProxyTimeOutInMillis(), rmd.getWebSocketTimeoutInMillis(), rmd.getSseHeartBeatInMillis(), rmd.isProxyPushIdOnConnect(),
-                rmd.isRandomiseDefinitions(), rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null,
+                rmd.isRandomiseDefinitions(),
+                rmd.isProxyForwardWhenNoRuleMatch(), rmd.isRandomiseLatency(), rmd.getRandomiseLatencyRangeMinMillis(), rmd.getRandomiseLatencyRangeMaxMillis(), (rmd.getProject() != null) ? rmd.getProject().getExtId() : null,
                 (rmd.getJavaScriptHandler() != null) ? rmd.getJavaScriptHandler().getSyntax() : null,
                 (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getInitialResponseBody() : null,
                 (isStatefulParent && rmd.getRestfulMockStatefulMeta() != null) ? rmd.getRestfulMockStatefulMeta().getIdFieldName() : null,
@@ -388,6 +390,7 @@ public class RestfulMockServiceUtils {
 
     }
 
+    @SuppressWarnings("deprecation")
     public RestfulMock buildRestfulMock(final RestfulMockDTO dto, final SmockinUser smockinUser) {
 
         return new RestfulMock(
@@ -409,6 +412,7 @@ public class RestfulMockServiceUtils {
 
     }
 
+    @SuppressWarnings("deprecation")
     public void handleMockFieldsUpdate(final RestfulMockDTO dto, final RestfulMock mock)
             throws ValidationException {
 
@@ -425,7 +429,9 @@ public class RestfulMockServiceUtils {
         mock.setSseHeartBeatInMillis(dto.getSseHeartBeatInMillis());
         mock.setProxyPushIdOnConnect(dto.isProxyPushIdOnConnect());
         mock.setRandomiseDefinitions(dto.isRandomiseDefinitions());
-        mock.setProxyForwardWhenNoRuleMatch(dto.isProxyForwardWhenNoRuleMatch());
+        @SuppressWarnings("deprecation")
+        boolean proxyForward = dto.isProxyForwardWhenNoRuleMatch();
+        mock.setProxyForwardWhenNoRuleMatch(proxyForward);
         mock.setLastUpdated(GeneralUtils.getCurrentDate()); // force update to lastUpdated, as changes to child records do not otherwise change this
         mock.setRandomiseLatency(dto.isRandomiseLatency());
         mock.setRandomiseLatencyRangeMinMillis(dto.getRandomiseLatencyRangeMinMillis());

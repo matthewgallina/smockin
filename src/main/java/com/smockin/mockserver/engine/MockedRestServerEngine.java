@@ -23,7 +23,7 @@ import spark.Request;
 import spark.Response;
 import spark.Spark;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -211,7 +211,7 @@ public class MockedRestServerEngine {
                     LiveLoggingUtils.buildLiveLogInboundDTO(
                         request.attribute(GeneralUtils.LOG_REQ_ID),
                         request.requestMethod(),
-                        request.pathInfo(),
+                        MockedRestServerEngineUtils.getPathInfo(request),
                         reqHeaders,
                         request.body(),
                         isUsingProxyMode,
@@ -232,7 +232,7 @@ public class MockedRestServerEngine {
             liveLoggingHandler.broadcast(
                     LiveLoggingUtils.buildLiveLogOutboundDTO(
                         request.attribute(GeneralUtils.LOG_REQ_ID),
-                        request.pathInfo(),
+                        MockedRestServerEngineUtils.getPathInfo(request),
                         response.raw().getStatus(),
                         respHeaders,
                         response.body(),
@@ -371,18 +371,18 @@ public class MockedRestServerEngine {
                                     if (p.getMethod().isPresent()) {
 
                                         return request.requestMethod().equalsIgnoreCase(p.getMethod().get().name())
-                                                && StringUtils.equals(request.pathInfo(), p.getPathPattern());
+                                                && StringUtils.equals(MockedRestServerEngineUtils.getPathInfo(request), p.getPathPattern());
                                     }
 
                                     // Is Admin
                                     if (GeneralUtils.URL_PATH_SEPARATOR.equals(p.getPathPattern())) {
                                         // Nasty solution to a problem of how do we identify the call is to an admin's mock...
                                         // TODO This will improve when we update isInboundPathMultiUserPath to use a cache instead.
-                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(request.pathInfo());
+                                        final String userCtxPathSegment = mockedRestServerEngineUtils.extractMultiUserCtxPathSegment(MockedRestServerEngineUtils.getPathInfo(request));
                                         return !mockedRestServerEngineUtils.isInboundPathMultiUserPath(userCtxPathSegment);
                                     }
 
-                                    return StringUtils.startsWith(request.pathInfo(), p.getPathPattern());
+                                    return StringUtils.startsWith(MockedRestServerEngineUtils.getPathInfo(request), p.getPathPattern());
                                 })
                         ) {
                             break;
@@ -480,7 +480,7 @@ public class MockedRestServerEngine {
         if (logger.isDebugEnabled()) {
             logger.debug("liveBlockEnabled: " + liveBlockingModeEnabled.get());
             logger.debug("inbound method: " + request.requestMethod());
-            logger.debug("inbound path: " + request.pathInfo());
+            logger.debug("inbound path: " + MockedRestServerEngineUtils.getPathInfo(request));
         }
 
         if (this.liveBlockingModeEnabled.get()) {
@@ -490,13 +490,13 @@ public class MockedRestServerEngine {
                     .stream()
                     .anyMatch(p ->
                             p.getMethod().name().equalsIgnoreCase(request.requestMethod())
-                                    && GeneralUtils.matchPaths(p.getPath(), request.pathInfo()))) {
+                                    && GeneralUtils.matchPaths(p.getPath(), MockedRestServerEngineUtils.getPathInfo(request)))) {
 
                 // If so then send response details to live logging console via WS...
                 liveLoggingHandler.broadcast(
                         LiveLoggingUtils.buildLiveLogInterceptedResponseDTO(
                                 request.attribute(GeneralUtils.LOG_REQ_ID),
-                                request.pathInfo(),
+                                MockedRestServerEngineUtils.getPathInfo(request),
                                 response.raw().getStatus(),
                                 mockedRestServerEngineUtils.extractResponseHeadersAsMap(response),
                                 response.body(),

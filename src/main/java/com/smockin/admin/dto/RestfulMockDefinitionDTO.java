@@ -1,6 +1,6 @@
 package com.smockin.admin.dto;
 
-import javax.persistence.Column;
+import jakarta.persistence.Column;
 import java.util.HashMap;
 import java.util.Map;
 

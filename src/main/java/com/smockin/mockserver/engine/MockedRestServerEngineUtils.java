@@ -18,7 +18,6 @@ import com.smockin.mockserver.exception.InboundParamMatchException;
 import com.smockin.mockserver.service.*;
 import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.utils.GeneralUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +31,7 @@ import spark.Response;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 /**
@@ -110,7 +110,7 @@ public class MockedRestServerEngineUtils {
             final RestfulMock mock = (isMultiUserMode)
                     ? restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForMultiUser(
                     method,
-                    request.pathInfo(),
+                    getPathInfo(request),
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,
                             RestMockTypeEnum.SEQ,
@@ -119,7 +119,7 @@ public class MockedRestServerEngineUtils {
                             RestMockTypeEnum.CUSTOM_JS))
                     : restfulMockDAO.findActiveByMethodAndPathPatternAndTypesForSingleUser(
                     method,
-                    request.pathInfo(),
+                    getPathInfo(request),
                     Arrays.asList(RestMockTypeEnum.PROXY_SSE,
                             RestMockTypeEnum.PROXY_HTTP,
                             RestMockTypeEnum.SEQ,
@@ -155,7 +155,7 @@ public class MockedRestServerEngineUtils {
 
     private String amendPathForMultiUser(final Request request, final boolean isMultiUserMode) {
 
-        String inboundPath = request.pathInfo();
+        String inboundPath = getPathInfo(request);
 
         if (isMultiUserMode) {
 
@@ -169,6 +169,36 @@ public class MockedRestServerEngineUtils {
         }
 
         return inboundPath;
+    }
+
+    /**
+     * Get path info from request, handling Jetty 12 compatibility issue
+     * where pathInfo() may return null.
+     */
+    public static String getPathInfo(final Request request) {
+        String pathInfo = request.pathInfo();
+        if (pathInfo == null || pathInfo.isEmpty()) {
+            // Fallback to servletPath for Jetty 12 compatibility
+            pathInfo = request.servletPath();
+            if (pathInfo == null || pathInfo.isEmpty()) {
+                // Extract from URL as last resort
+                String url = request.url();
+                if (url != null && !url.isEmpty()) {
+                    try {
+                        java.net.URI uri = new java.net.URI(url);
+                        pathInfo = uri.getPath();
+                        if (pathInfo == null || pathInfo.isEmpty()) {
+                            pathInfo = "/";
+                        }
+                    } catch (Exception e) {
+                        pathInfo = "/";
+                    }
+                } else {
+                    pathInfo = "/";
+                }
+            }
+        }
+        return pathInfo;
     }
 
     public String extractMultiUserCtxPathSegment(final String inboundPath) {
@@ -191,7 +221,7 @@ public class MockedRestServerEngineUtils {
         try {
 
             final String amendedInboundPath = amendPathForMultiUser(request, isMultiUserMode);
-            final String inboundPath = request.pathInfo();
+            final String inboundPath = getPathInfo(request);
 
             final String userCtxPath = (!StringUtils.equals(inboundPath, amendedInboundPath))
                 ? extractMultiUserCtxPathSegment(inboundPath)
@@ -297,7 +327,7 @@ public class MockedRestServerEngineUtils {
 
         String host = StringUtils.remove(proxyDownstreamURL, HttpClientService.HTTPS_PROTOCOL);
         host = StringUtils.remove(host, HttpClientService.HTTP_PROTOCOL);
-        host = StringUtils.removeAll(host, GeneralUtils.URL_PATH_SEPARATOR);
+        host = StringUtils.replace(host, GeneralUtils.URL_PATH_SEPARATOR, "");
 
         return host;
     }
@@ -446,7 +476,7 @@ public class MockedRestServerEngineUtils {
         long max = (mock.getRandomiseLatencyRangeMaxMillis() > 0) ? mock.getRandomiseLatencyRangeMaxMillis() : 5000;
 
         try {
-            Thread.sleep(RandomUtils.nextLong(min, (max + 1)));
+            Thread.sleep(ThreadLocalRandom.current().nextLong(min, (max + 1)));
         } catch (InterruptedException ex) {
             logger.error("Failed to apply randomised latency and prolong current thread execution", ex);
         }
@@ -523,7 +553,7 @@ public class MockedRestServerEngineUtils {
             logger.debug("inbound request url: " + request.url());
             logger.debug("inbound request query string : " + request.queryString());
             logger.debug("inbound request method: " + request.requestMethod());
-            logger.debug("inbound request path: " + request.pathInfo());
+            logger.debug("inbound request path: " + getPathInfo(request));
             logger.debug("inbound request body: " + request.body());
 
             request.headers()

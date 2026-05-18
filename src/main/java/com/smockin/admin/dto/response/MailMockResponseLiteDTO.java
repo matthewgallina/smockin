@@ -9,6 +9,7 @@ import java.util.Date;
 
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class MailMockResponseLiteDTO extends MailMockDTO {
 
     private String externalId;

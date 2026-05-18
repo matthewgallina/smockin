@@ -1,0 +1,227 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "sMockin REST API Requests",
+      "type": "stat",
+      "id": 1,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_rest_requests_total[5m]))",
+          "legendFormat": "Requests/sec"
+        }
+      ]
+    },
+    {
+      "title": "sMockin REST API Errors",
+      "type": "stat",
+      "id": 2,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_rest_errors_total[5m]))",
+          "legendFormat": "Errors/sec"
+        }
+      ]
+    },
+    {
+      "title": "REST API Response Time (P95)",
+      "type": "graph",
+      "id": 3,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(smockin_rest_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "P95 Latency"
+        }
+      ]
+    },
+    {
+      "title": "Active Mocks",
+      "type": "stat",
+      "id": 4,
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+      "targets": [
+        {
+          "expr": "smockin_rest_active_mocks",
+          "legendFormat": "REST Mocks"
+        }
+      ]
+    },
+    {
+      "title": "Active S3 Buckets",
+      "type": "stat",
+      "id": 5,
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+      "targets": [
+        {
+          "expr": "smockin_s3_active_buckets",
+          "legendFormat": "S3 Buckets"
+        }
+      ]
+    },
+    {
+      "title": "Active Mail Accounts",
+      "type": "stat",
+      "id": 6,
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+      "targets": [
+        {
+          "expr": "smockin_mail_active_accounts",
+          "legendFormat": "Mail Accounts"
+        }
+      ]
+    },
+    {
+      "title": "MQ Messages Sent/Received",
+      "type": "graph",
+      "id": 7,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_mq_messages_sent_total[5m]))",
+          "legendFormat": "Messages Sent/sec"
+        },
+        {
+          "expr": "sum(rate(smockin_mq_messages_received_total[5m]))",
+          "legendFormat": "Messages Received/sec"
+        }
+      ]
+    },
+    {
+      "title": "MQ Active Connections",
+      "type": "stat",
+      "id": 8,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "targets": [
+        {
+          "expr": "smockin_mq_active_connections",
+          "legendFormat": "Active Connections"
+        }
+      ]
+    },
+    {
+      "title": "MQ Errors",
+      "type": "stat",
+      "id": 9,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_mq_errors_total[5m]))",
+          "legendFormat": "Errors/sec"
+        }
+      ]
+    },
+    {
+      "title": "Proxy Requests",
+      "type": "graph",
+      "id": 10,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_proxy_requests_total[5m]))",
+          "legendFormat": "Proxy Requests/sec"
+        }
+      ]
+    },
+    {
+      "title": "Blocked Requests",
+      "type": "stat",
+      "id": 11,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_proxy_blocked_requests_total[5m]))",
+          "legendFormat": "Blocked/sec"
+        }
+      ]
+    },
+    {
+      "title": "WebSocket Messages",
+      "type": "graph",
+      "id": 12,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 48},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_ws_messages_sent_total[5m]))",
+          "legendFormat": "WS Sent/sec"
+        },
+        {
+          "expr": "sum(rate(smockin_ws_messages_received_total[5m]))",
+          "legendFormat": "WS Received/sec"
+        }
+      ]
+    },
+    {
+      "title": "S3 Uploads/Downloads",
+      "type": "graph",
+      "id": 13,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 56},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_s3_uploads_total[5m]))",
+          "legendFormat": "Uploads/sec"
+        },
+        {
+          "expr": "sum(rate(smockin_s3_downloads_total[5m]))",
+          "legendFormat": "Downloads/sec"
+        }
+      ]
+    },
+    {
+      "title": "Mail Messages Received",
+      "type": "graph",
+      "id": 14,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 64},
+      "targets": [
+        {
+          "expr": "sum(rate(smockin_mail_received_total[5m]))",
+          "legendFormat": "Mail/sec"
+        }
+      ]
+    },
+    {
+      "title": "JVM Memory Usage",
+      "type": "graph",
+      "id": 15,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 72},
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{area=\"heap\"}",
+          "legendFormat": "Heap Used"
+        },
+        {
+          "expr": "jvm_memory_committed_bytes{area=\"heap\"}",
+          "legendFormat": "Heap Committed"
+        }
+      ]
+    },
+    {
+      "title": "JVM GC Pause",
+      "type": "graph",
+      "id": 16,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 72},
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum[5m])",
+          "legendFormat": "GC Pause Rate"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["smockin", "mocking", "monitoring"],
+  "templating": {"list": []},
+  "time": {"from": "now-1h", "to": "now"},
+  "title": "sMockin Complete Dashboard",
+  "uid": "smockin-complete-dashboard",
+  "version": 1
+}

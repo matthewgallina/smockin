@@ -15,6 +15,7 @@ import com.smockin.mockserver.service.dto.RestfulResponseDTO;
 import com.smockin.mockserver.service.dto.WebSocketDTO;
 import com.smockin.utils.GeneralUtils;
 import org.eclipse.jetty.websocket.api.Session;
+import org.eclipse.jetty.websocket.api.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import spark.Request;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -78,9 +80,9 @@ public class WebSocketServiceImpl implements WebSocketService {
         if (wsMock == null) {
             if (session.isOpen()) {
                 try {
-                    session.getRemote().sendString("No suitable mock found for " + wsPath);
+                    session.sendText("No suitable mock found for " + wsPath, org.eclipse.jetty.websocket.api.Callback.NOOP);
                     session.disconnect();
-                } catch(IOException e) {
+                } catch(Exception e) {
                     logger.error("Error closing non mock matching web socket client connection", e);
                 }
             }
@@ -89,7 +91,7 @@ public class WebSocketServiceImpl implements WebSocketService {
 
         final String path = mockedRestServerEngineUtils.buildUserPath(wsMock);
 
-        session.setIdleTimeout((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS);
+        session.setIdleTimeout(Duration.ofMillis((wsMock.getWebSocketTimeoutInMillis() > 0) ? wsMock.getWebSocketTimeoutInMillis() : MAX_IDLE_TIMEOUT_MILLIS));
 
         final Set<SessionIdWrapper> sessions = sessionMap.computeIfAbsent(path, k -> new HashSet<>());
         final String assignedId = GeneralUtils.generateUUID();
@@ -225,10 +227,10 @@ public class WebSocketServiceImpl implements WebSocketService {
             .findFirst()
             .ifPresent(s -> {
                 try {
-                    s.getSession().getRemote().sendString(dto.getBody());
+                    s.getSession().sendText(dto.getBody(), org.eclipse.jetty.websocket.api.Callback.NOOP);
                     // TODO Need to account for multi users
 //                    liveLoggingHandler.broadcast(LiveLoggingUtils.buildLiveLogOutboundDTO(s.getTraceId(), null,null, null, dto.getBody(), false));
-                } catch (IOException e) {
+                } catch (Exception e) {
                     throw new MockServerException(e);
                 }
             });

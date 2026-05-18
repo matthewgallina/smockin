@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 /**
  * Created by mgallina.
@@ -14,6 +14,7 @@ import javax.persistence.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class MailMockMessageAttachmentContent extends Identifier {
 
     @OneToOne(fetch = FetchType.LAZY)

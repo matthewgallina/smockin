@@ -11,6 +11,7 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class ProxyForwardConfigResponseDTO extends ProxyForwardConfigDTO {
 
     private boolean proxyMode;

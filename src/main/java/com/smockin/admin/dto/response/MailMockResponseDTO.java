@@ -6,6 +6,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
+@lombok.EqualsAndHashCode(callSuper = true)
 public class MailMockResponseDTO extends MailMockResponseLiteDTO {
 
     private PagingResponseDTO<MailMockMessageResponseDTO> messages;

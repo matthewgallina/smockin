@@ -13,6 +13,7 @@ import java.util.Optional;
  */
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class S3MockDirResponseDTO extends S3MockDirDTO {
 
     private String extId;

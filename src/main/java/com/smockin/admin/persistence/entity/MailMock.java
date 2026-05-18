@@ -4,7 +4,7 @@ import com.smockin.admin.persistence.enums.RecordStatusEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +15,7 @@ import java.util.List;
 @Table(name = "MAIL_MOCK")
 @Data
 @NoArgsConstructor
+@lombok.EqualsAndHashCode(callSuper = true)
 public class MailMock extends Identifier {
 
     @Column(name = "ADDRESS", nullable = false, length = 120, unique = true)
