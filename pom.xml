@@ -40,7 +40,7 @@
         <aws-java-sdk-s3.version>1.12.768</aws-java-sdk-s3.version>
         <s3proxy.version>2.6.0</s3proxy.version>
         <greenmail.version>1.6.5</greenmail.version>
-        <jackson-databind.version>2.14.2</jackson-databind.version>
+        <jackson-databind.version>2.22.0</jackson-databind.version>
         <java-ngrok.version>2.1.0</java-ngrok.version>
         <graaljs.version>25.0.2</graaljs.version>
     </properties>
